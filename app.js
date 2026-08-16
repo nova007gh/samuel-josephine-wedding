@@ -76,9 +76,11 @@ $('#enterFromHome')?.addEventListener('click', () => switchView('story'));
 /* ---------------------------------------------------------
    Tab navigation
    --------------------------------------------------------- */
+const SUBVIEW_TAB = { guestbook:'more', memories:'more', rsvp:'more' };
 function switchView(name){
+  const tabName = SUBVIEW_TAB[name] || name;
   $$('.view').forEach(v => v.classList.toggle('hidden', v.dataset.view !== name));
-  $$('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  $$('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tabName));
   window.scrollTo({ top: 0, behavior: 'instant' });
 }
 $$('.tab').forEach(tab => tab.addEventListener('click', () => switchView(tab.dataset.tab)));

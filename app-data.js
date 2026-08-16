@@ -4,8 +4,9 @@
    IndexedDB — memory vault + key/value settings
    ========================================================= */
 const DB_NAME = 'SJWeddingMemories';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE = 'memories';
+const GB_STORE = 'guestbook';
 
 function openMemoryDB(){
   return new Promise((resolve, reject) => {
@@ -16,6 +17,10 @@ function openMemoryDB(){
         const store = db.createObjectStore(STORE, { keyPath:'id', autoIncrement:true });
         store.createIndex('category', 'category', { unique:false });
         store.createIndex('createdAt', 'createdAt', { unique:false });
+      }
+      if (!db.objectStoreNames.contains(GB_STORE)) {
+        const gb = db.createObjectStore(GB_STORE, { keyPath:'id', autoIncrement:true });
+        gb.createIndex('createdAt', 'createdAt', { unique:false });
       }
     };
     request.onsuccess = () => resolve(request.result);
@@ -146,19 +151,26 @@ async function renderGallery(){
 
     const card = document.createElement('article');
     card.className = 'mem-card';
-    const media = item.type.startsWith('video/')
-      ? `<video controls playsinline preload="metadata" src="${url}"></video>`
-      : `<img loading="lazy" decoding="async" src="${url}" alt="${escapeHTML(item.caption || 'Wedding memory')}">`;
+    let media;
+    if (item.type.startsWith('video/')){
+      media = `<video controls playsinline preload="metadata" src="${url}"></video>`;
+    } else if (item.type.startsWith('audio/')){
+      media = `<div class="mem-audio"><span class="mem-audio-icon">&#127908;</span><audio controls preload="metadata" src="${url}"></audio></div>`;
+    } else {
+      media = `<img loading="lazy" decoding="async" src="${url}" alt="${escapeHTML(item.caption || 'Wedding memory')}">`;
+    }
 
+    const byline = item.guestName ? `<p class="mem-by">by ${escapeHTML(item.guestName)}</p>` : '';
     card.innerHTML = `
       ${media}
       <div class="mem-meta">
         <span class="mem-cat">${escapeHTML(CATEGORY_LABELS[item.category] || item.category)}</span>
         <p class="mem-cap">${escapeHTML(item.caption || 'A beautiful memory')}</p>
+        ${byline}
         ${item.seeded ? '' : `<button class="mem-del" data-id="${item.id}" type="button">Remove</button>`}
       </div>`;
 
-    if (!item.type.startsWith('video/')){
+    if (!item.type.startsWith('video/') && !item.type.startsWith('audio/')){
       card.querySelector('img').addEventListener('click', () =>
         openLightbox(url, item.caption || CATEGORY_LABELS[item.category] || ''));
     }

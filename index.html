@@ -20,6 +20,7 @@
   <link rel="stylesheet" href="app.css" />
   <link rel="stylesheet" href="app-views.css" />
   <link rel="stylesheet" href="app-forms.css" />
+  <link rel="stylesheet" href="app-social.css" />
 </head>
 <body class="locked">
 
@@ -322,38 +323,29 @@
     </div>
   </section>
 
-  <!-- ---------- More ---------- -->
+  <!-- ---------- More (hub menu) ---------- -->
   <section class="view hidden" data-view="more">
-    <h1 class="page-title">RSVP</h1>
+    <h1 class="page-title">More</h1>
     <div class="divider"><span></span><i>&#10084;</i><span></span></div>
-    <p class="page-sub">Kindly respond so we can save you a seat.</p>
+    <p class="page-sub">Guest book, shared memories &amp; RSVP.</p>
 
-    <form id="rsvpForm" class="upload-card">
-      <label class="field">Full name
-        <input name="fullName" type="text" required placeholder="First and last name" />
-      </label>
-      <label class="field">Email
-        <input name="email" type="email" placeholder="you@example.com" />
-      </label>
-      <label class="field">Will you be joining us?
-        <select name="attendance" required>
-          <option value="">Please select</option>
-          <option>Joyfully accept</option>
-          <option>Regretfully decline</option>
-        </select>
-      </label>
-      <label class="field">Number of guests
-        <input name="guestCount" type="number" min="1" max="6" value="1" />
-      </label>
-      <label class="field">Song request
-        <input name="song" type="text" placeholder="What should we dance to?" />
-      </label>
-      <label class="field">Message for the couple
-        <textarea name="message" rows="3" placeholder="Send Sam &amp; Jossy your love"></textarea>
-      </label>
-      <button class="map-button" type="submit">SEND RSVP</button>
-      <p id="rsvpStatus" class="upload-status"></p>
-    </form>
+    <div class="menu-list">
+      <button class="menu-item" data-goto="guestbook" type="button">
+        <span class="menu-icon menu-icon--gold">&#128172;</span>
+        <span class="menu-text"><strong>Guest Book</strong><small>Leave your love &amp; wishes</small></span>
+        <span class="menu-chev">&#10095;</span>
+      </button>
+      <button class="menu-item" data-goto="memories" type="button">
+        <span class="menu-icon menu-icon--purple">&#128247;</span>
+        <span class="menu-text"><strong>Share Memories</strong><small>Photos, videos &amp; messages</small></span>
+        <span class="menu-chev">&#10095;</span>
+      </button>
+      <button class="menu-item" data-goto="rsvp" type="button">
+        <span class="menu-icon menu-icon--green">&#9993;</span>
+        <span class="menu-text"><strong>RSVP</strong><small>Kindly respond before Dec 01, 2026</small></span>
+        <span class="menu-chev">&#10095;</span>
+      </button>
+    </div>
 
     <div class="more-actions">
       <button id="addToCalendar" class="enter-wide" type="button">ADD TO CALENDAR</button>
@@ -365,6 +357,116 @@
       <span>#AlwaysAndForever</span>
       <span class="heart">&#10084;</span>
     </div>
+  </section>
+
+  <!-- ---------- Guest Book ---------- -->
+  <section class="view hidden" data-view="guestbook">
+    <button class="back-link" data-goto="more" type="button">&#10094; Back</button>
+    <h1 class="page-title">Guest Book</h1>
+    <div class="divider"><span></span><i>&#10084;</i><span></span></div>
+    <p class="page-sub">Leave your love &amp; wishes</p>
+
+    <div class="chips chips--center" id="gbFilters">
+      <button class="chip active" data-gb-filter="all">All</button>
+      <button class="chip" data-gb-filter="pending">Pending</button>
+      <button class="chip" data-gb-filter="approved">Approved</button>
+    </div>
+
+    <div id="gbList" class="gb-list"></div>
+    <p id="gbEmpty" class="page-sub">No messages yet &mdash; be the first to leave your wishes!</p>
+
+    <button id="gbAddBtn" class="map-button" type="button">
+      <span class="plus-badge">&#43;</span> Leave a Message
+    </button>
+  </section>
+
+  <!-- ---------- Share Memories ---------- -->
+  <section class="view hidden" data-view="memories">
+    <button class="back-link" data-goto="more" type="button">&#10094; Back</button>
+    <h1 class="page-title">Share Memories</h1>
+    <div class="divider"><span></span><i>&#10084;</i><span></span></div>
+    <p class="page-sub">Share a photo or video</p>
+
+    <div class="menu-list">
+      <label class="menu-item">
+        <span class="menu-icon menu-icon--purple">&#128444;</span>
+        <span class="menu-text"><strong>Upload Photo</strong><small>Share a picture</small></span>
+        <span class="menu-chev">&#10095;</span>
+        <input id="shareTypePhoto" type="file" accept="image/*" multiple class="hidden" />
+      </label>
+      <label class="menu-item">
+        <span class="menu-icon menu-icon--purple">&#127909;</span>
+        <span class="menu-text"><strong>Upload Video</strong><small>Share a video</small></span>
+        <span class="menu-chev">&#10095;</span>
+        <input id="shareTypeVideo" type="file" accept="video/*" class="hidden" />
+      </label>
+      <label class="menu-item">
+        <span class="menu-icon menu-icon--red">&#128247;</span>
+        <span class="menu-text"><strong>Take Selfie</strong><small>With your camera</small></span>
+        <span class="menu-chev">&#10095;</span>
+        <input id="shareTypeSelfie" type="file" accept="image/*" capture="user" class="hidden" />
+      </label>
+      <button class="menu-item" id="shareTypeVoice" type="button">
+        <span class="menu-icon menu-icon--purple">&#127908;</span>
+        <span class="menu-text"><strong>Voice Message</strong><small>Record audio</small></span>
+        <span class="menu-chev">&#10095;</span>
+      </button>
+      <button class="menu-item" id="shareTypeVideoMsg" type="button">
+        <span class="menu-icon menu-icon--green">&#9654;</span>
+        <span class="menu-text"><strong>Video Message</strong><small>Record video</small></span>
+        <span class="menu-chev">&#10095;</span>
+      </button>
+    </div>
+
+    <div class="notice-card">
+      <span class="notice-icon">&#128077;</span>
+      <p>All submissions include your name and are reviewed before being published.</p>
+    </div>
+
+    <button class="menu-item menu-item--wide" data-goto="gallery" type="button">
+      <span class="menu-icon menu-icon--gold">&#128101;</span>
+      <span class="menu-text"><strong>View Shared Memories</strong><small>See all the moments shared by our guests</small></span>
+      <span class="menu-chev">&#10095;</span>
+    </button>
+  </section>
+
+  <!-- ---------- RSVP ---------- -->
+  <section class="view hidden" data-view="rsvp">
+    <button class="back-link" data-goto="more" type="button">&#10094; Back</button>
+    <h1 class="page-title page-title--serif">RSVP</h1>
+    <div class="divider"><span></span><i>&#10084;</i><span></span></div>
+    <p class="page-sub">Kindly respond before <b class="gold-text">Dec 01, 2026</b></p>
+
+    <div class="rsvp-hero">
+      <span class="rsvp-hero-icon">&#128111;</span>
+      <h3>Sam &amp; Jossy</h3>
+      <p>are getting married!</p>
+      <p>We can't wait to celebrate<br>with you.</p>
+    </div>
+
+    <form id="rsvpForm" class="rsvp-form">
+      <label class="field">Name(s)
+        <input name="fullName" type="text" required placeholder="Enter your name" />
+      </label>
+
+      <p class="field-label">Will you attend?</p>
+      <div class="attend-toggle" id="attendToggle">
+        <button type="button" class="attend-btn active" data-attend="Joyfully accept">&#10003; Yes, I'll be there</button>
+        <button type="button" class="attend-btn" data-attend="Regretfully decline">Sorry, can't make it</button>
+      </div>
+      <input type="hidden" name="attendance" value="Joyfully accept" />
+
+      <p class="field-label">Number of Guests</p>
+      <div class="stepper">
+        <button type="button" id="guestMinus" aria-label="Fewer guests">&#8722;</button>
+        <span id="guestCountDisplay">1</span>
+        <button type="button" id="guestPlus" aria-label="More guests">&#43;</button>
+      </div>
+      <input type="hidden" name="guestCount" value="1" />
+
+      <button class="map-button rsvp-submit" type="submit">SUBMIT RSVP</button>
+      <p id="rsvpStatus" class="upload-status"></p>
+    </form>
   </section>
 
   <!-- ---------- Bottom tab bar ---------- -->
@@ -392,6 +494,71 @@
   </nav>
 </main>
 
+<!-- Guest book: leave a message -->
+<div id="gbModal" class="sheet hidden" role="dialog" aria-label="Leave a message">
+  <form id="gbForm" class="sheet-card">
+    <h3 class="sheet-title">Leave a Message</h3>
+    <label class="field">Your name
+      <input name="gbName" type="text" required placeholder="Enter your name" />
+    </label>
+    <label class="field">Your message
+      <textarea name="gbMessage" rows="4" required placeholder="Send Sam &amp; Jossy your love &amp; wishes"></textarea>
+    </label>
+    <label class="field">Add a selfie (optional)
+      <input name="gbSelfie" type="file" accept="image/*" capture="user" />
+    </label>
+    <div class="sheet-actions">
+      <button type="button" class="sheet-cancel" data-close-sheet>Cancel</button>
+      <button type="submit" class="map-button">POST MESSAGE</button>
+    </div>
+  </form>
+</div>
+
+<!-- Share memories: name + caption before saving -->
+<div id="shareModal" class="sheet hidden" role="dialog" aria-label="Share memory details">
+  <form id="shareForm" class="sheet-card">
+    <h3 class="sheet-title" id="shareTitle">Share Memory</h3>
+    <div id="sharePreview" class="share-preview"></div>
+    <label class="field">Your name
+      <input name="shareName" type="text" required placeholder="Enter your name" />
+    </label>
+    <label class="field">Caption (optional)
+      <input name="shareCaption" type="text" placeholder="A little note about this memory" />
+    </label>
+    <label class="field">Category
+      <select name="shareCategory">
+        <option value="favorite-moments">Favorite Moments</option>
+        <option value="first-together">First Together</option>
+        <option value="engagement">Proposal &amp; Engagement</option>
+        <option value="adulthood">Adulthood</option>
+      </select>
+    </label>
+    <div class="sheet-actions">
+      <button type="button" class="sheet-cancel" data-close-sheet>Cancel</button>
+      <button type="submit" class="map-button">SHARE</button>
+    </div>
+  </form>
+</div>
+
+<!-- Voice / video recorder -->
+<div id="recModal" class="sheet hidden" role="dialog" aria-label="Recorder">
+  <div class="sheet-card rec-card">
+    <h3 class="sheet-title" id="recTitle">Voice Message</h3>
+    <video id="recVideoPreview" class="rec-video hidden" playsinline muted></video>
+    <div id="recWave" class="rec-wave hidden"><span></span><span></span><span></span><span></span><span></span></div>
+    <p id="recTimer" class="rec-timer">00:00</p>
+    <p id="recHint" class="rec-hint">Tap the button to start recording</p>
+    <div class="rec-controls">
+      <button id="recToggle" class="rec-button" type="button" aria-label="Start or stop recording"><span></span></button>
+    </div>
+    <div id="recReview" class="rec-review hidden"></div>
+    <div class="sheet-actions">
+      <button type="button" class="sheet-cancel" data-close-sheet>Cancel</button>
+      <button type="button" id="recSave" class="map-button" disabled>USE RECORDING</button>
+    </div>
+  </div>
+</div>
+
 <div id="lightbox" class="lightbox hidden" role="dialog" aria-label="Photo viewer">
   <button id="lightboxClose" class="lightbox-close" aria-label="Close photo viewer">&#10005;</button>
   <div id="lightboxBody" class="lightbox-body"></div>
@@ -401,5 +568,6 @@
 <audio id="backgroundMusic" loop preload="none"></audio>
 <script src="app.js"></script>
 <script src="app-data.js"></script>
+<script src="app-social.js"></script>
 </body>
 </html>

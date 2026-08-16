@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v21-welcome-flow';
+const CACHE = 'sj-wedding-v22-guestbook';
 const ASSETS = [
   './',
   './index.html',
@@ -8,6 +8,8 @@ const ASSETS = [
   './app-forms.css',
   './app.js',
   './app-data.js',
+  './app-social.js',
+  './app-social.css',
   './manifest.webmanifest',
   './assets/official-landing-page.jpg',
   './assets/official-landing-4k.webp',
