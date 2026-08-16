@@ -11,15 +11,30 @@
 const intro = document.getElementById('intro');
 const site = document.getElementById('site');
 const sealButton = document.getElementById('sealButton');
+const landingFrame = document.getElementById('landingFrame');
+const welcomeReveal = document.getElementById('welcomeReveal');
+const enterWedding = document.getElementById('enterWedding');
 
 sealButton.addEventListener('click', () => {
-  intro.classList.add('opening');
+  if (intro.classList.contains('breaking')) return;
+  intro.classList.add('breaking');
+  sealButton.disabled = true;
+
+  setTimeout(() => intro.classList.add('opening-envelope'), 520);
+  setTimeout(() => {
+    landingFrame.classList.add('hidden');
+    welcomeReveal.classList.remove('hidden');
+  }, 1150);
+});
+
+enterWedding.addEventListener('click', () => {
+  intro.classList.add('exit');
   setTimeout(() => {
     intro.classList.add('hidden');
     site.classList.remove('hidden');
     document.body.classList.remove('locked');
     window.scrollTo({top:0, behavior:'instant'});
-  }, 850);
+  }, 620);
 });
 
 const target = new Date('2027-01-09T10:00:00+00:00');

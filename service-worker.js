@@ -1,12 +1,14 @@
 
-const CACHE = 'sj-wedding-v14-intro-sparkle-glow';
+const CACHE = 'sj-wedding-v15-official-landing';
 const ASSETS = [
   './',
   './index.html',
   './styles.css',
   './script.js',
   './manifest.webmanifest',
-  './assets/intro-frontpage.jpg',
+  './assets/official-landing-page.jpg',
+  './assets/official-landing-4k.webp',
+  './assets/seal-pressed.png',
   './assets/seal-embossed.svg',
   './assets/seal-4k.png',
   './assets/seal-transparent.png',

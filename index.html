@@ -59,61 +59,69 @@
     </div>
   </template>
 
-  <div id="intro" class="intro intro--art">
-    <div class="invite-art">
-      <img
-        class="invite-art__image"
-        src="assets/intro-frontpage.jpg"
-        alt="You are cordially invited to the wedding of Samuel Nana Yaw Obeng and Josephine Abena Owusua Appiah. Tap the seal to open."
-      />
-      <div class="invite-fx" aria-hidden="true">
+  <div id="intro" class="opening">
+    <div id="landingFrame" class="landing-frame">
+      <picture>
+        <source srcset="assets/official-landing-4k.webp" type="image/webp">
+        <img src="assets/official-landing-page.jpg" class="landing-art" alt="You are cordially invited to the wedding of Samuel Nana Yaw Obeng and Josephine Abena Owusua Appiah. Tap the seal to open.">
+      </picture>
+
+      <div class="invite-fx invite-fx--landing" aria-hidden="true">
         <span class="invite-fx__glow invite-fx__glow--seam-left"></span>
         <span class="invite-fx__glow invite-fx__glow--seam-right"></span>
         <span class="invite-fx__glow invite-fx__glow--seal"></span>
 
-        <svg class="invite-fx__spark" viewBox="0 0 1834 3190" preserveAspectRatio="none">
+        <svg class="invite-fx__spark" viewBox="0 0 934 1545" preserveAspectRatio="none">
           <defs>
             <filter id="sparkGlow" x="-30%" y="-30%" width="160%" height="160%">
-              <feGaussianBlur stdDeviation="9" result="blur" />
+              <feGaussianBlur stdDeviation="5" result="blur" />
               <feMerge>
                 <feMergeNode in="blur" />
                 <feMergeNode in="SourceGraphic" />
               </feMerge>
             </filter>
-            <linearGradient id="sparkFade" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stop-color="#fff6df" stop-opacity="0" />
-              <stop offset="50%" stop-color="#ffd489" stop-opacity="1" />
-              <stop offset="100%" stop-color="#fff6df" stop-opacity="0" />
-            </linearGradient>
           </defs>
 
           <g filter="url(#sparkGlow)">
             <path class="spark-trace spark-trace--floral" pathLength="1000"
-              d="M 0,1512 C 300,1572 620,1706 917,1792 C 1214,1706 1540,1520 1834,1436" />
+              d="M 0,733 C 153,762 316,827 467,868 C 618,827 785,737 934,696" />
             <path class="spark-trace spark-trace--left-edge" pathLength="1000"
-              d="M 96,1338 C 214,1494 372,1618 560,1706" />
+              d="M 49,648 C 109,724 190,784 285,827" />
             <path class="spark-trace spark-trace--right-edge" pathLength="1000"
-              d="M 1738,1268 C 1620,1430 1462,1560 1286,1660" />
+              d="M 885,614 C 825,693 745,756 655,804" />
             <path class="spark-trace spark-trace--seam-left" pathLength="1000"
-              d="M 0,1958 L 917,2452" />
+              d="M 0,948 L 467,1188" />
             <path class="spark-trace spark-trace--seam-right" pathLength="1000"
-              d="M 1834,1902 L 917,2452" />
+              d="M 934,921 L 467,1188" />
           </g>
 
           <g class="twinkles">
-            <circle class="twinkle" cx="238" cy="1470" r="7" />
-            <circle class="twinkle" cx="470" cy="1618" r="5" />
-            <circle class="twinkle" cx="694" cy="1734" r="6" />
-            <circle class="twinkle" cx="1128" cy="1720" r="5" />
-            <circle class="twinkle" cx="1372" cy="1598" r="7" />
-            <circle class="twinkle" cx="1618" cy="1452" r="5" />
-            <circle class="twinkle" cx="150" cy="1266" r="4" />
-            <circle class="twinkle" cx="1700" cy="1180" r="6" />
+            <circle class="twinkle" cx="121" cy="712" r="4" />
+            <circle class="twinkle" cx="239" cy="784" r="3" />
+            <circle class="twinkle" cx="354" cy="840" r="3.5" />
+            <circle class="twinkle" cx="574" cy="833" r="3" />
+            <circle class="twinkle" cx="699" cy="774" r="4" />
+            <circle class="twinkle" cx="824" cy="703" r="3" />
+            <circle class="twinkle" cx="76" cy="613" r="2.5" />
+            <circle class="twinkle" cx="866" cy="571" r="3.5" />
           </g>
         </svg>
       </div>
 
-      <button id="sealButton" class="invite-art__seal-hit" aria-label="Tap the seal to open the invitation"></button>
+      <button id="sealButton" class="seal-hotspot" aria-label="Break the S and J wax seal and open the invitation">
+        <span class="crack crack1"></span><span class="crack crack2"></span><span class="crack crack3"></span>
+        <span class="spark spark1">✦</span><span class="spark spark2">✦</span><span class="spark spark3">✦</span>
+      </button>
+    </div>
+
+    <div id="welcomeReveal" class="welcome-reveal hidden">
+      <div class="welcome-card">
+        <img src="assets/seal-pressed.png" class="welcome-seal" alt="Samuel and Josephine wax seal">
+        <p class="welcome-eyebrow">WELCOME TO OUR FOREVER</p>
+        <h1>Samuel &amp; Josephine</h1>
+        <p class="welcome-script">We are so happy you are here.</p>
+        <button id="enterWedding" class="welcome-button" type="button">ENTER OUR WEDDING</button>
+      </div>
     </div>
   </div>
 
