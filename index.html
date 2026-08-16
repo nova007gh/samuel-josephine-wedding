@@ -19,6 +19,46 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body class="locked">
+
+  <template id="waxSealTpl">
+    <div class="wax-seal" aria-label="S and J Always and Forever wedding seal">
+      <div class="wax-seal__inner">
+        <div class="wax-seal__dots"></div>
+
+        <div class="wax-seal__ornament wax-seal__ornament--top">
+          <span class="ornament-center">&#10022;</span>
+        </div>
+
+        <div class="wax-seal__laurel wax-seal__laurel--left">
+          <span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span>
+        </div>
+        <div class="wax-seal__laurel wax-seal__laurel--right">
+          <span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span>
+        </div>
+
+        <div class="wax-seal__monogram">
+          <span class="initial initial--s">S</span>
+          <span class="ampersand">&amp;</span>
+          <span class="initial initial--j">J</span>
+        </div>
+
+        <div class="wax-seal__heart-row">
+          <span class="line"></span>
+          <span class="heart">&#9829;</span>
+          <span class="line"></span>
+        </div>
+
+        <div class="wax-seal__tagline">#Always &amp; Forever</div>
+
+        <div class="wax-seal__ornament wax-seal__ornament--bottom">
+          <span>&#10086;</span>
+        </div>
+      </div>
+    </div>
+  </template>
+
   <div id="intro" class="intro">
     <div class="intro-glow"></div>
     <div class="paper emboss">
@@ -27,7 +67,7 @@
       <div class="floral-divider">✦</div>
 
       <button id="sealButton" class="seal-button" aria-label="Open invitation">
-        <img src="assets/seal-embossed.svg" alt="Samuel and Josephine embossed champagne wedding seal" class="seal-emboss" />
+        <div class="wax-seal-slot wax-seal-slot--intro"></div>
       </button>
 
       <p class="hashtag">#AlwaysAndForever</p>
@@ -57,7 +97,8 @@
         <p class="subtitle">invite you to celebrate their wedding</p>
 
         <div class="welcome-photo glass" id="welcomePhotoCard">
-          <img id="welcomePhoto" alt="Samuel and Josephine" src="assets/seal-embossed.svg" class="welcome-photo-default" />
+          <img id="welcomePhoto" alt="Samuel and Josephine" class="welcome-photo-default hidden" />
+          <div id="welcomePhotoDefault" class="wax-seal-slot wax-seal-slot--welcome"></div>
           <label class="welcome-photo-upload">
             <input id="welcomePhotoFile" type="file" accept="image/*" />
             <span>UPLOAD WELCOME PHOTO</span>
@@ -323,7 +364,7 @@
     </section>
 
     <footer>
-      <img src="assets/seal-embossed.svg" alt="" class="footer-seal" />
+      <div class="wax-seal-slot wax-seal-slot--footer"></div>
       <p>Samuel &amp; Josephine</p>
       <span>#AlwaysAndForever</span>
       <small>January 9, 2027 • Accra, Ghana</small>
@@ -333,7 +374,7 @@
   <div id="successModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="successTitle">
     <div class="modal-card glass">
       <button id="closeModal" class="close">×</button>
-      <img src="assets/seal-embossed.svg" alt="" class="modal-seal" />
+      <div class="wax-seal-slot wax-seal-slot--modal"></div>
       <h3 id="successTitle">Thank You!</h3>
       <p>Thank you for celebrating with us! We cannot wait to share our special day with you.</p>
       <p class="script-line">Always &amp; Forever</p>

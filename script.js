@@ -1,4 +1,13 @@
 
+// Populate every .wax-seal-slot from the <template id="waxSealTpl"> once at load
+(function hydrateWaxSeals(){
+  const tpl = document.getElementById('waxSealTpl');
+  if (!tpl) return;
+  document.querySelectorAll('.wax-seal-slot').forEach(slot => {
+    if (slot.childElementCount === 0) slot.appendChild(tpl.content.cloneNode(true));
+  });
+})();
+
 const intro = document.getElementById('intro');
 const site = document.getElementById('site');
 const sealButton = document.getElementById('sealButton');
@@ -289,12 +298,24 @@ async function kvGet(key){
 
 const welcomePhoto = document.getElementById('welcomePhoto');
 const welcomePhotoFile = document.getElementById('welcomePhotoFile');
+const welcomePhotoDefault = document.getElementById('welcomePhotoDefault');
+
+function showWelcomePhoto(hasPhoto){
+  if (!welcomePhoto || !welcomePhotoDefault) return;
+  welcomePhoto.classList.toggle('hidden', !hasPhoto);
+  welcomePhotoDefault.classList.toggle('hidden', hasPhoto);
+}
 
 (async () => {
   try {
     const blob = await kvGet('welcomePhoto');
-    if (blob && welcomePhoto) welcomePhoto.src = URL.createObjectURL(blob);
-  } catch(e){ console.warn(e); }
+    if (blob && welcomePhoto) {
+      welcomePhoto.src = URL.createObjectURL(blob);
+      showWelcomePhoto(true);
+    } else {
+      showWelcomePhoto(false);
+    }
+  } catch(e){ console.warn(e); showWelcomePhoto(false); }
 })();
 
 welcomePhotoFile?.addEventListener('change', async (e) => {
@@ -302,6 +323,7 @@ welcomePhotoFile?.addEventListener('change', async (e) => {
   if (!file) return;
   await kvSet('welcomePhoto', file);
   welcomePhoto.src = URL.createObjectURL(file);
+  showWelcomePhoto(true);
   e.target.value = '';
 });
 
