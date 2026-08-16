@@ -747,7 +747,7 @@ img {
 
 /* Slot sizing per context */
 .wax-seal-slot{ display:inline-block; }
-.wax-seal-slot--intro{ width: min(44vw, 220px); }
+.wax-seal-slot--intro{ width: min(40vw, 198px); }
 .wax-seal-slot--welcome{ width: 100%; max-width: 420px; margin: 0 auto; display:block; }
 .wax-seal-slot--footer{ width: 120px; margin: 0 auto 8px; display:block; }
 .wax-seal-slot--modal{ width: 150px; margin: 0 auto 8px; display:block; }
@@ -836,7 +836,7 @@ img {
 }
 
 .couple-names{
-  margin: 16px 0 4px;
+  margin: 18px 0 10px;
   text-align: center;
   line-height: 1;
   position: relative;
@@ -852,7 +852,7 @@ img {
 }
 .couple-names small{
   display: block;
-  margin: 4px 0 10px;
+  margin: 6px 0 16px;
   font-family: "Cormorant Garamond", serif;
   letter-spacing: .24em;
   font-size: .9rem;
@@ -860,7 +860,7 @@ img {
 }
 .couple-names .amp{
   display: block;
-  margin: 0 0 4px;
+  margin: 2px 0 8px;
   font-family: "Cormorant Garamond", serif;
   font-size: clamp(2.3rem, 7vw, 3rem);
   color: #947032;
@@ -887,8 +887,8 @@ img {
 .envelope{
   position: relative;
   width: min(94%, 520px);
-  margin: 20px auto 2px;
-  padding: 38px 0 58px;
+  margin: 14px auto 2px;
+  padding: 46px 0 66px;
   display: grid;
   place-items: center;
 }
@@ -950,10 +950,10 @@ img {
 .envelope .seal-button{
   position: relative;
   z-index: 3;
-  margin-top: 24px;
+  margin-top: 34px;
 }
 .intro-hashtag{
-  margin: 8px 0 8px;
+  margin: 14px 0 10px;
   font-family: "Cormorant Garamond", serif;
   font-size: clamp(2rem, 4.5vw, 2.25rem);
   color: #775523;
@@ -965,7 +965,7 @@ img {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  width: min(65%, 230px);
+  width: min(62%, 210px);
   margin: 0 auto 2px;
 }
 .tap-heart-row .tap-line{
@@ -982,7 +982,7 @@ img {
   margin-top: 4px;
   font-family: "Cormorant Garamond", serif;
   letter-spacing: .24em;
-  font-size: 1.08rem;
+  font-size: 1.02rem;
   color: #6e4e23;
 }
 .intro .chevron{
@@ -1003,7 +1003,7 @@ img {
   }
   .intro .eyebrow{ font-size: .78rem; letter-spacing: .24em; }
   .couple-names small{ font-size: .78rem; letter-spacing: .2em; }
-  .envelope{ width: 98%; padding: 28px 0 48px; margin-top: 18px; }
+  .envelope{ width: 98%; padding: 32px 0 52px; margin-top: 12px; }
   .intro-hashtag{ font-size: 1.7rem; }
   .intro .tap{ font-size: .94rem; letter-spacing: .2em; }
 }
