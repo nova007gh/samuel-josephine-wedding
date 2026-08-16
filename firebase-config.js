@@ -1,5 +1,7 @@
 'use strict';
 
+const ADMIN_PASSWORD = 'SJ2027!';
+
 const firebaseConfig = {
   apiKey: "AIzaSyD3f9DX63UNykrP_2h2jecOGsG6LO1kApA",
   authDomain: "wedding-4db15.firebaseapp.com",

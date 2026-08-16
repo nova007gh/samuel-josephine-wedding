@@ -94,7 +94,7 @@ $('#enterFromHome')?.addEventListener('click', () => switchView('story'));
    --------------------------------------------------------- */
 const SUBVIEW_TAB = {
   guestbook:'more', memories:'more', rsvp:'more', voicemsg:'more', videomsg:'more',
-  admin:'more', approvals:'more', voiceAdmin:'more', videoAdmin:'more', rsvpAdmin:'more'
+  admin:'more', adminlogin:'more', approvals:'more', voiceAdmin:'more', videoAdmin:'more', rsvpAdmin:'more'
 };
 function switchView(name){
   const tabName = SUBVIEW_TAB[name] || name;

@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v31-firebase-backend';
+const CACHE = 'sj-wedding-v32-admin-password';
 const ASSETS = [
   './',
   './index.html',

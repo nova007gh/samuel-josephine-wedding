@@ -486,6 +486,43 @@ document.getElementById('shareTypeVideoMsg')?.addEventListener('click', async ()
 });
 
 /* =========================================================
+   Admin login
+   ========================================================= */
+const adminLoginForm = document.getElementById('adminLoginForm');
+const adminPassword = document.getElementById('adminPassword');
+const adminLoginError = document.getElementById('adminLoginError');
+
+function isAdminAuthenticated(){
+  return sessionStorage.getItem('sj_admin_auth') === '1';
+}
+
+function checkAdminAuth(){
+  const params = new URLSearchParams(window.location.search);
+  const target = params.get('view') || (params.has('admin') ? 'admin' : null);
+  if (target === 'admin'){
+    if (isAdminAuthenticated()) switchView('admin');
+    else switchView('adminlogin');
+  }
+}
+checkAdminAuth();
+
+adminLoginForm?.addEventListener('submit', e => {
+  e.preventDefault();
+  const value = adminPassword?.value || '';
+  if (value === ADMIN_PASSWORD){
+    sessionStorage.setItem('sj_admin_auth', '1');
+    switchView('admin');
+  } else {
+    adminLoginError.textContent = 'Incorrect password. Please try again.';
+    adminPassword?.select();
+  }
+});
+
+document.querySelector('[data-goto="adminlogin"]')?.addEventListener('click', () => {
+  if (isAdminAuthenticated()) switchView('admin');
+});
+
+/* =========================================================
    Admin dashboard
    ========================================================= */
 let adminMemories = [];

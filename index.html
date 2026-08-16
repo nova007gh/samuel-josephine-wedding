@@ -352,7 +352,7 @@
         <span class="menu-text"><strong>RSVP</strong><small>Kindly respond before Dec 01, 2026</small></span>
         <span class="menu-chev">&#10095;</span>
       </button>
-      <button class="menu-item" data-goto="admin" type="button">
+      <button class="menu-item" data-goto="adminlogin" type="button">
         <span class="menu-icon menu-icon--gold">&#128100;</span>
         <span class="menu-text"><strong>Admin Dashboard</strong><small>Samuel &amp; Josephine only</small></span>
         <span class="menu-chev">&#10095;</span>
@@ -570,6 +570,22 @@
 
       <button class="map-button rsvp-submit" type="submit">SUBMIT RSVP</button>
       <p id="rsvpStatus" class="upload-status"></p>
+    </form>
+  </section>
+
+  <!-- ---------- Admin Login ---------- -->
+  <section class="view hidden" data-view="adminlogin">
+    <button class="back-link" data-goto="more" type="button">&#10094; Back</button>
+    <h1 class="page-title page-title--serif">Admin Login</h1>
+    <div class="divider"><span></span><i>&#10084;</i><span></span></div>
+    <p class="page-sub">Samuel &amp; Josephine only</p>
+
+    <form id="adminLoginForm" class="rsvp-form">
+      <label class="field">Password
+        <input id="adminPassword" type="password" placeholder="Enter admin password" required />
+      </label>
+      <p id="adminLoginError" class="upload-status" style="color:#b03a2e; margin-top:6px;"></p>
+      <button class="map-button rsvp-submit" type="submit">UNLOCK DASHBOARD</button>
     </form>
   </section>
 
