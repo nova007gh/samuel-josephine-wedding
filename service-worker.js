@@ -1,11 +1,12 @@
 
-const CACHE = 'sj-wedding-v10-intro-final-pass';
+const CACHE = 'sj-wedding-v11-seal-monogram-fix';
 const ASSETS = [
   './',
   './index.html',
   './styles.css',
   './script.js',
   './manifest.webmanifest',
+  './assets/intro-frontpage.jpg',
   './assets/seal-embossed.svg',
   './assets/seal-4k.png',
   './assets/seal-transparent.png',
