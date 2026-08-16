@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v34-landing-page-back';
+const CACHE = 'sj-wedding-v35-invitation-seal';
 const ASSETS = [
   './',
   './index.html',

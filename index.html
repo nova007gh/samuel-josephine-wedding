@@ -45,35 +45,18 @@
   </div>
 
   <!-- ==========================================================
-       SCREEN 2 — welcome to our forever
+       SCREEN 2 — enter the wedding, tap the seal
        ========================================================== -->
   <div id="welcomeReveal" class="welcome-reveal hidden">
-    <div class="floral-bg"></div>
-    <div class="envelope-stage">
-      <div class="envelope-wrap" id="envelopeWrap">
-        <div class="envelope-body">
-          <div class="envelope-back"></div>
-          <div class="envelope-letter" id="envelopeLetter">
-            <p class="letter-eyebrow">WELCOME TO<br>OUR FOREVER</p>
-            <div class="divider"><span></span><i>&#10084;</i><span></span></div>
-            <p class="letter-names">
-              <span>Sam</span>
-              <span class="amp">&amp;</span>
-              <span>Jossy</span>
-            </p>
-            <div class="divider divider--ornate"><span></span><i>&#10084;</i><span></span></div>
-            <p class="letter-hash">#AlwaysAndForever</p>
-          </div>
-          <div class="envelope-front"></div>
-          <div class="envelope-flap" id="envelopeFlap">
-            <img src="assets/seal-pressed-320.png" class="envelope-seal" width="320" height="320" decoding="async" alt="" />
-          </div>
-        </div>
-      </div>
-      <button id="enterWedding" class="enter-button hidden" type="button">
-        ENTER OUR WEDDING <span aria-hidden="true">&#10095;</span>
+    <div class="welcome-invite">
+      <img src="assets/official-landing-page.jpg" class="welcome-invite-art"
+           alt="You are cordially invited to the wedding of Samuel and Josephine. Tap the seal to open." />
+      <button id="welcomeSealButton" class="welcome-seal-hotspot" type="button"
+              aria-label="Tap the wax seal to open the wedding app">
+        <span class="welcome-seal-split"></span>
+        <span id="welcomeSealBurst" class="welcome-seal-burst"></span>
       </button>
-      <span class="chevron-down hidden" aria-hidden="true">&#9662;&#9662;</span>
+      <p class="welcome-tap-hint">TAP THE SEAL TO OPEN</p>
     </div>
   </div>
 </div>

@@ -4,10 +4,10 @@ const $ = sel => document.querySelector(sel);
 const $$ = sel => [...document.querySelectorAll(sel)];
 
 /* ---------------------------------------------------------
-   Screen 1 — seal break, shards and dust
+   Seal break, shards and dust
    --------------------------------------------------------- */
-function buildBurst(){
-  const host = $('#sealBurst');
+function buildBurst(hostId){
+  const host = $('#' + hostId);
   if (!host) return;
 
   const shards = 18;
@@ -39,13 +39,25 @@ function buildBurst(){
     host.appendChild(el);
   }
 }
-buildBurst();
+buildBurst('sealBurst');
+buildBurst('welcomeSealBurst');
 
 const opening = $('#opening');
 const sealButton = $('#sealButton');
 const landingFrame = $('#landingFrame');
 const welcomeReveal = $('#welcomeReveal');
-const enterWedding = $('#enterWedding');
+const welcomeSealButton = $('#welcomeSealButton');
+
+function enterApp(){
+  welcomeReveal.classList.add('exit');
+  setTimeout(() => {
+    welcomeReveal.classList.add('hidden');
+    opening.classList.add('hidden');
+    $('#app').classList.remove('hidden');
+    document.body.classList.remove('locked');
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, 700);
+}
 
 sealButton?.addEventListener('click', () => {
   if (opening.classList.contains('breaking')) return;
@@ -56,35 +68,15 @@ sealButton?.addEventListener('click', () => {
   setTimeout(() => {
     landingFrame.classList.add('hidden');
     welcomeReveal.classList.remove('hidden');
-    void welcomeReveal.offsetWidth;
-    welcomeReveal.classList.add('showing');
-
-    // open the envelope, show the letter, then reveal the button
-    setTimeout(() => {
-      welcomeReveal.classList.add('opening');
-      setTimeout(() => {
-        const chevron = welcomeReveal.querySelector('.chevron-down');
-        if (chevron){ chevron.classList.remove('hidden'); chevron.classList.add('show'); }
-      }, 1750);
-      setTimeout(() => {
-        enterWedding.classList.remove('hidden');
-        enterWedding.classList.add('show');
-      }, 1900);
-    }, 450);
   }, 1550);
 });
 
-/* ---------------------------------------------------------
-   Screen 2 -> app
-   --------------------------------------------------------- */
-$('#enterWedding')?.addEventListener('click', () => {
-  opening.classList.add('exit');
-  setTimeout(() => {
-    opening.classList.add('hidden');
-    $('#app').classList.remove('hidden');
-    document.body.classList.remove('locked');
-    window.scrollTo({ top: 0, behavior: 'instant' });
-  }, 620);
+welcomeSealButton?.addEventListener('click', () => {
+  if (welcomeReveal.classList.contains('breaking')) return;
+  welcomeReveal.classList.add('breaking');
+  welcomeSealButton.disabled = true;
+
+  setTimeout(enterApp, 1200);
 });
 
 $('#enterFromHome')?.addEventListener('click', () => switchView('story'));
