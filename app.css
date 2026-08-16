@@ -229,7 +229,21 @@ button{ font:inherit; cursor:pointer; }
   border-radius:4px;
   box-shadow:0 20px 45px rgba(96,63,22,.22);
   text-align:center;
-  animation:letterRise 1s cubic-bezier(.2,.8,.3,1) both;
+  animation:letterRise .9s cubic-bezier(.2,.8,.3,1) both;
+}
+
+/* staggered entrance for the letter contents */
+.letter > *{
+  animation:fadeUp .7s cubic-bezier(.2,.8,.3,1) both;
+}
+.letter > :nth-child(1){ animation-delay:.25s; }
+.letter > :nth-child(2){ animation-delay:.4s; }
+.letter > :nth-child(3){ animation-delay:.5s; }
+.letter > :nth-child(4){ animation-delay:.65s; }
+.letter > :nth-child(5){ animation-delay:.75s; }
+@keyframes fadeUp{
+  from{ opacity:0; transform:translateY(14px); }
+  to{ opacity:1; transform:none; }
 }
 .letter::after{
   content:"";
@@ -294,7 +308,7 @@ button{ font:inherit; cursor:pointer; }
   border-top:1px solid rgba(255,255,255,.5);
   clip-path:polygon(0 12%,50% 0,100% 12%,100% 100%,0 100%);
   text-align:center;
-  animation:envelopeUp .9s cubic-bezier(.2,.8,.3,1) both;
+  animation:envelopeUp .9s cubic-bezier(.2,.8,.3,1) .15s both;
 }
 @keyframes envelopeUp{
   from{ opacity:0; transform:translateY(46px); }
@@ -314,9 +328,15 @@ button{ font:inherit; cursor:pointer; }
 }
 .envelope-seal{
   width:112px;
+  height:auto;
   margin:16% auto 0;
   opacity:.92;
   mix-blend-mode:multiply;
+  animation:sealIn .7s cubic-bezier(.2,.8,.3,1) .55s both;
+}
+@keyframes sealIn{
+  from{ opacity:0; transform:scale(.72); }
+  to{ opacity:.92; transform:none; }
 }
 .enter-button{
   display:inline-flex;
@@ -335,14 +355,18 @@ button{ font:inherit; cursor:pointer; }
   letter-spacing:.14em;
   box-shadow:0 10px 26px rgba(105,71,22,.34), inset 0 1px 0 rgba(255,255,255,.35);
   transition:transform .25s ease, box-shadow .25s ease;
+  animation:fadeUp .7s cubic-bezier(.2,.8,.3,1) .8s backwards;
 }
 .enter-button:hover{ transform:translateY(-2px); box-shadow:0 16px 34px rgba(105,71,22,.4); }
+.enter-button:active{ transform:translateY(0) scale(.97); transition-duration:.12s; }
 .chevron-down{
   display:block;
   margin:6px auto 0;
   color:rgba(138,98,32,.6);
   font-size:1.1rem;
-  animation:nudge 1.8s ease-in-out infinite;
+  animation:
+    fadeUp .6s ease 1.05s both,
+    nudge 1.8s ease-in-out 1.7s infinite;
 }
 
 @keyframes letterRise{
@@ -357,8 +381,11 @@ button{ font:inherit; cursor:pointer; }
 @media(prefers-reduced-motion:reduce){
   .landing-frame,
   .letter,
+  .letter > *,
   .envelope,
-  .welcome-reveal{ animation-duration:.01s; }
+  .envelope-seal,
+  .enter-button,
+  .welcome-reveal{ animation-duration:.01s; animation-delay:0s; }
   .seal-hotspot::before,
   .chevron-down{ animation:none; }
 }
