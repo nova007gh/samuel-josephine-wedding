@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v32-admin-password';
+const CACHE = 'sj-wedding-v33-new-seal';
 const ASSETS = [
   './',
   './index.html',
