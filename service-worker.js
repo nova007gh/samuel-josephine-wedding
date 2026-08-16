@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v36-guest-flow';
+const CACHE = 'sj-wedding-v37-fix-routes';
 const ASSETS = [
   './',
   './index.html',
@@ -44,6 +44,21 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
+  const url = new URL(event.request.url);
+
+  // Network-first for HTML so users always get the latest UI
+  if (event.request.mode === 'navigate' || url.pathname.endsWith('.html') || url.pathname === '/' || url.pathname === './'){
+    event.respondWith(
+      fetch(event.request).then(response => {
+        const copy = response.clone();
+        caches.open(CACHE).then(cache => cache.put(event.request, copy));
+        return response;
+      }).catch(() => caches.match(event.request).then(c => c || caches.match('./index.html')))
+    );
+    return;
+  }
+
+  // Cache-first for everything else (CSS, JS, images, fonts)
   event.respondWith(
     caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
       const copy = response.clone();

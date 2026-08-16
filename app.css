@@ -161,6 +161,7 @@ button{ font:inherit; cursor:pointer; }
 }
 
 .opening.opening-envelope .landing-frame{ animation:openInvite .65s ease forwards; }
+.opening.opening-envelope{ animation:openingExit .65s ease forwards; }
 .opening.exit{ animation:openingExit .65s ease forwards; }
 
 @keyframes landingIn{
