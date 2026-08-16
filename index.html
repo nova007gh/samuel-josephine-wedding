@@ -46,27 +46,31 @@
        ========================================================== -->
   <div id="welcomeReveal" class="welcome-reveal hidden">
     <div class="floral-bg"></div>
-    <div class="welcome-scene">
-      <div class="letter">
-        <p class="letter-eyebrow">WELCOME TO<br>OUR FOREVER</p>
-        <div class="divider"><span></span><i>&#10084;</i><span></span></div>
-        <p class="letter-names">
-          <span>Sam</span>
-          <span class="amp">&amp;</span>
-          <span>Jossy</span>
-        </p>
-        <div class="divider divider--ornate"><span></span><i>&#10084;</i><span></span></div>
-        <p class="letter-hash">#AlwaysAndForever</p>
+    <div class="envelope-stage">
+      <div class="envelope-wrap" id="envelopeWrap">
+        <div class="envelope-body">
+          <div class="envelope-back"></div>
+          <div class="envelope-letter" id="envelopeLetter">
+            <p class="letter-eyebrow">WELCOME TO<br>OUR FOREVER</p>
+            <div class="divider"><span></span><i>&#10084;</i><span></span></div>
+            <p class="letter-names">
+              <span>Sam</span>
+              <span class="amp">&amp;</span>
+              <span>Jossy</span>
+            </p>
+            <div class="divider divider--ornate"><span></span><i>&#10084;</i><span></span></div>
+            <p class="letter-hash">#AlwaysAndForever</p>
+          </div>
+          <div class="envelope-front"></div>
+          <div class="envelope-flap" id="envelopeFlap">
+            <img src="assets/seal-pressed-320.png" class="envelope-seal" width="320" height="320" decoding="async" alt="" />
+          </div>
+        </div>
       </div>
-
-      <div class="envelope">
-        <span class="envelope-flap"></span>
-        <img src="assets/seal-pressed-320.png" class="envelope-seal" width="320" height="320" decoding="async" alt="" />
-        <button id="enterWedding" class="enter-button" type="button">
-          ENTER OUR WEDDING <span aria-hidden="true">&#10095;</span>
-        </button>
-        <span class="chevron-down" aria-hidden="true">&#9662;&#9662;</span>
-      </div>
+      <button id="enterWedding" class="enter-button hidden" type="button">
+        ENTER OUR WEDDING <span aria-hidden="true">&#10095;</span>
+      </button>
+      <span class="chevron-down hidden" aria-hidden="true">&#9662;&#9662;</span>
     </div>
   </div>
 </div>

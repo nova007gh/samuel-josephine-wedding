@@ -45,6 +45,7 @@ const opening = $('#opening');
 const sealButton = $('#sealButton');
 const landingFrame = $('#landingFrame');
 const welcomeReveal = $('#welcomeReveal');
+const enterWedding = $('#enterWedding');
 
 sealButton?.addEventListener('click', () => {
   if (opening.classList.contains('breaking')) return;
@@ -57,6 +58,19 @@ sealButton?.addEventListener('click', () => {
     welcomeReveal.classList.remove('hidden');
     void welcomeReveal.offsetWidth;
     welcomeReveal.classList.add('showing');
+
+    // open the envelope, show the letter, then reveal the button
+    setTimeout(() => {
+      welcomeReveal.classList.add('opening');
+      setTimeout(() => {
+        const chevron = welcomeReveal.querySelector('.chevron-down');
+        if (chevron){ chevron.classList.remove('hidden'); chevron.classList.add('show'); }
+      }, 1750);
+      setTimeout(() => {
+        enterWedding.classList.remove('hidden');
+        enterWedding.classList.add('show');
+      }, 1900);
+    }, 450);
   }, 1550);
 });
 
