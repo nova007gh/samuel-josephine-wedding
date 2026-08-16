@@ -1,10 +1,13 @@
 
-const CACHE = 'sj-wedding-v16-welcome-restyle';
+const CACHE = 'sj-wedding-v19-photos-rsvp';
 const ASSETS = [
   './',
   './index.html',
-  './styles.css',
-  './script.js',
+  './app.css',
+  './app-views.css',
+  './app-forms.css',
+  './app.js',
+  './app-data.js',
   './manifest.webmanifest',
   './assets/official-landing-page.jpg',
   './assets/official-landing-4k.webp',
@@ -13,7 +16,15 @@ const ASSETS = [
   './assets/seal-4k.png',
   './assets/seal-transparent.png',
   './assets/icons/icon-192.png',
-  './assets/icons/icon-512.png'
+  './assets/icons/icon-512.png',
+  './assets/couple-home.jpg',
+  './assets/story/sam-childhood.jpg',
+  './assets/story/jossy-childhood.jpg',
+  './assets/story/sam-adult.jpg',
+  './assets/story/jossy-adult.jpg',
+  './assets/story/facetime.jpg',
+  './assets/story/proposal.jpg',
+  './assets/story/now.jpg'
 ];
 
 self.addEventListener('install', event => {

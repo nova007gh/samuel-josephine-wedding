@@ -1,0 +1,334 @@
+/* =========================================================
+   Samuel & Josephine — mobile app shell
+   Screens: seal break, envelope welcome, home, story, events
+   ========================================================= */
+
+:root{
+  --paper:#f7efe4;
+  --paper-2:#f3e7d6;
+  --cream:#faf4ea;
+  --gold:#a97c2c;
+  --gold-deep:#8a6220;
+  --gold-light:#d4ab5f;
+  --ink:#4a3a24;
+  --muted:#8b7355;
+  --line:rgba(169,124,44,.22);
+  --shadow:0 18px 50px rgba(88,58,20,.14);
+  --tabbar-h:64px;
+}
+
+*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html{ -webkit-text-size-adjust:100%; }
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:"Montserrat",system-ui,sans-serif;
+  overflow-x:hidden;
+}
+body.locked{ overflow:hidden; }
+img{ display:block; max-width:100%; }
+button{ font:inherit; cursor:pointer; }
+.hidden{ display:none !important; }
+
+.script{ font-family:"Parisienne",cursive; font-weight:400; }
+.heart{ color:var(--gold); }
+
+/* soft floral corner wash used across screens */
+.floral-bg{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    radial-gradient(120% 60% at 0% 0%, rgba(214,188,148,.35), transparent 55%),
+    radial-gradient(120% 60% at 100% 0%, rgba(214,188,148,.32), transparent 55%),
+    radial-gradient(120% 55% at 0% 100%, rgba(206,178,136,.28), transparent 55%),
+    radial-gradient(120% 55% at 100% 100%, rgba(206,178,136,.26), transparent 55%);
+}
+
+/* =========================================================
+   SCREEN 1 — invitation + seal break
+   ========================================================= */
+.opening{
+  position:fixed;
+  inset:0;
+  z-index:1000;
+  display:grid;
+  place-items:center;
+  background:#ead9c4;
+  overflow:hidden;
+}
+.landing-frame{
+  position:relative;
+  height:100dvh;
+  max-width:100vw;
+  aspect-ratio:934/1545;
+  animation:landingIn 1.1s ease both;
+}
+.landing-frame picture,
+.landing-art{ display:block; width:100%; height:100%; }
+.landing-art{ object-fit:cover; user-select:none; -webkit-user-drag:none; }
+
+.seal-hotspot{
+  position:absolute;
+  left:50%;
+  top:70.25%;
+  width:28.8%;
+  aspect-ratio:1;
+  transform:translate(-50%,-50%);
+  border:0;
+  padding:0;
+  border-radius:50%;
+  background:transparent;
+  z-index:5;
+}
+.seal-hotspot::before{
+  content:"";
+  position:absolute;
+  inset:-7%;
+  border-radius:50%;
+  box-shadow:0 0 0 0 rgba(202,153,78,.34);
+  animation:sealRipple 2s infinite;
+}
+.seal-hotspot:focus-visible{ outline:2px solid rgba(255,236,200,.9); outline-offset:6px; }
+
+/* the split that tears the wax apart */
+.seal-split{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:6px;
+  height:0;
+  transform:translate(-50%,-50%) rotate(8deg);
+  background:linear-gradient(180deg,transparent,#fff3d6 18%,#ffe6ae 50%,#fff3d6 82%,transparent);
+  filter:drop-shadow(0 0 14px rgba(255,205,120,.95));
+  opacity:0;
+  border-radius:6px;
+  z-index:6;
+}
+.opening.breaking .seal-split{ opacity:1; animation:sealSplit .5s cubic-bezier(.2,.8,.3,1) forwards; }
+
+.seal-burst{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+}
+
+/* gold shards flung from the seal */
+.shard{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:var(--sz,14px);
+  height:var(--sz,14px);
+  margin:calc(var(--sz,14px) / -2);
+  background:linear-gradient(135deg,#f7e3ad,#d8ae5c 45%,#a97c2c);
+  clip-path:polygon(50% 0%,100% 38%,82% 100%,18% 100%,0% 38%);
+  opacity:0;
+  z-index:6;
+  filter:drop-shadow(0 3px 6px rgba(105,70,20,.4));
+}
+.opening.breaking .shard{
+  animation:shardFly var(--dur,.9s) cubic-bezier(.15,.7,.3,1) forwards;
+  animation-delay:var(--delay,0s);
+}
+
+/* fine gold dust */
+.dust{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:var(--sz,5px);
+  height:var(--sz,5px);
+  margin:calc(var(--sz,5px) / -2);
+  border-radius:50%;
+  background:radial-gradient(circle,#fff4d4,#e0b968);
+  opacity:0;
+  z-index:6;
+}
+.opening.breaking .dust{
+  animation:dustFly var(--dur,1s) ease-out forwards;
+  animation-delay:var(--delay,0s);
+}
+
+.opening.opening-envelope .landing-frame{ animation:openInvite .8s ease forwards; }
+.opening.exit{ animation:openingExit .65s ease forwards; }
+
+@keyframes landingIn{
+  from{ opacity:0; transform:scale(1.03); filter:blur(6px); }
+  to{ opacity:1; transform:none; filter:none; }
+}
+@keyframes sealRipple{ 70%,100%{ box-shadow:0 0 0 24px rgba(202,153,78,0); } }
+@keyframes sealSplit{ to{ height:82%; } }
+@keyframes shardFly{
+  0%{ opacity:0; transform:translate(0,0) rotate(0deg) scale(.4); }
+  12%{ opacity:1; }
+  100%{
+    opacity:0;
+    transform:translate(var(--tx,60px),var(--ty,-70px)) rotate(var(--rot,180deg)) scale(1);
+  }
+}
+@keyframes dustFly{
+  0%{ opacity:0; transform:translate(0,0) scale(.3); }
+  15%{ opacity:1; }
+  100%{ opacity:0; transform:translate(var(--tx,40px),var(--ty,-60px)) scale(1.1); }
+}
+@keyframes openInvite{ to{ opacity:0; transform:scale(1.08); filter:blur(7px); } }
+@keyframes openingExit{ to{ opacity:0; filter:blur(7px); transform:scale(1.02); } }
+
+@media(max-width:520px){
+  .landing-frame{ width:100vw; height:auto; max-height:100dvh; }
+  .landing-art{ object-fit:contain; background:#ead9c4; }
+}
+
+/* =========================================================
+   SCREEN 2 — envelope welcome
+   ========================================================= */
+.welcome-reveal{
+  position:absolute;
+  inset:0;
+  display:block;
+  overflow:hidden;
+  background:
+    radial-gradient(90% 50% at 50% 0%, #f4e6d3, transparent 60%),
+    linear-gradient(#efdfc8,#e6d2b6);
+}
+.welcome-scene{
+  position:relative;
+  width:100%;
+  height:100%;
+  display:grid;
+  grid-template-rows:1fr auto;
+}
+
+/* the letter sliding out of the envelope */
+.letter{
+  position:relative;
+  z-index:2;
+  width:min(78%,340px);
+  margin:clamp(18px,5vh,48px) auto 0;
+  padding:34px 22px 28px;
+  background:linear-gradient(#fdf8f0,#f8eedf);
+  border:1px solid rgba(178,138,78,.3);
+  border-radius:4px;
+  box-shadow:0 20px 45px rgba(96,63,22,.22);
+  text-align:center;
+  animation:letterRise 1s cubic-bezier(.2,.8,.3,1) both;
+}
+.letter::after{
+  content:"";
+  position:absolute;
+  inset:9px;
+  border:1px solid rgba(178,138,78,.32);
+  pointer-events:none;
+}
+.letter-eyebrow{
+  margin:0;
+  font-size:.82rem;
+  font-weight:600;
+  letter-spacing:.16em;
+  line-height:1.7;
+  color:#5c4a30;
+}
+.letter-names{
+  margin:6px 0 0;
+  font-family:"Parisienne",cursive;
+  font-size:clamp(2.6rem,12vw,3.4rem);
+  line-height:1.05;
+  color:var(--gold);
+  text-shadow:0 1px 0 rgba(255,250,238,.9);
+}
+.letter-names span{ display:block; }
+.letter-names .amp{
+  font-size:.55em;
+  margin:2px 0;
+}
+.letter-hash{
+  margin:10px 0 0;
+  font-family:"Cormorant Garamond",Georgia,serif;
+  font-style:italic;
+  font-size:.95rem;
+  color:var(--muted);
+}
+
+/* gold filigree divider */
+.divider{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  margin:12px auto;
+  width:min(84%,220px);
+}
+.divider span{
+  flex:1;
+  height:1px;
+  background:linear-gradient(to right,transparent,rgba(169,124,44,.55),transparent);
+}
+.divider i{ font-style:normal; color:var(--gold); font-size:.95rem; }
+.divider--ornate i{ letter-spacing:.1em; }
+
+/* envelope body over the letter */
+.envelope{
+  position:relative;
+  z-index:3;
+  margin-top:-14%;
+  padding:0 0 max(18px,env(safe-area-inset-bottom));
+  background:linear-gradient(#f0dfc6,#e7d1b2);
+  border-top:1px solid rgba(255,255,255,.5);
+  clip-path:polygon(0 12%,50% 0,100% 12%,100% 100%,0 100%);
+  text-align:center;
+}
+.envelope-flap{
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  height:0;
+  border-left:50vw solid transparent;
+  border-right:50vw solid transparent;
+  border-top:26vw solid rgba(233,212,182,.75);
+  filter:drop-shadow(0 3px 6px rgba(120,85,35,.15));
+  pointer-events:none;
+}
+.envelope-seal{
+  width:112px;
+  margin:16% auto 0;
+  opacity:.92;
+  mix-blend-mode:multiply;
+}
+.enter-button{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  width:min(80%,300px);
+  margin:18px auto 6px;
+  padding:16px 26px;
+  border:1px solid #c79c48;
+  border-radius:999px;
+  background:linear-gradient(#b98c33,#8a6220);
+  color:#fff7e4;
+  font-size:.82rem;
+  font-weight:600;
+  letter-spacing:.14em;
+  box-shadow:0 10px 26px rgba(105,71,22,.34), inset 0 1px 0 rgba(255,255,255,.35);
+  transition:transform .25s ease, box-shadow .25s ease;
+}
+.enter-button:hover{ transform:translateY(-2px); box-shadow:0 16px 34px rgba(105,71,22,.4); }
+.chevron-down{
+  display:block;
+  margin:6px auto 0;
+  color:rgba(138,98,32,.6);
+  font-size:1.1rem;
+  animation:nudge 1.8s ease-in-out infinite;
+}
+
+@keyframes letterRise{
+  from{ opacity:0; transform:translateY(60px); }
+  to{ opacity:1; transform:none; }
+}
+@keyframes nudge{
+  0%,100%{ transform:translateY(0); opacity:.55; }
+  50%{ transform:translateY(5px); opacity:1; }
+}

@@ -1,0 +1,190 @@
+/* =========================================================
+   Gallery uploads, filter chips, forms
+   ========================================================= */
+.upload-card{
+  margin:16px 0 0;
+  padding:18px 16px;
+  border-radius:18px;
+  background:rgba(255,255,255,.76);
+  border:1px solid rgba(169,124,44,.18);
+  box-shadow:0 10px 26px rgba(112,78,26,.1);
+}
+.field{
+  display:block;
+  margin-bottom:12px;
+  font-size:.64rem;
+  font-weight:700;
+  letter-spacing:.13em;
+  text-transform:uppercase;
+  color:#7a6340;
+}
+.field input,
+.field select,
+.field textarea{
+  width:100%;
+  margin-top:6px;
+  padding:12px 13px;
+  border:1px solid rgba(169,124,44,.26);
+  border-radius:12px;
+  background:rgba(255,255,255,.9);
+  color:var(--ink);
+  font-family:"Montserrat",sans-serif;
+  font-size:.86rem;
+  font-weight:400;
+  letter-spacing:0;
+  text-transform:none;
+}
+.field textarea{ resize:vertical; }
+.field input:focus,
+.field select:focus,
+.field textarea:focus{
+  outline:none;
+  border-color:rgba(169,124,44,.6);
+  box-shadow:0 0 0 3px rgba(212,171,95,.22);
+}
+
+.upload-drop{
+  display:grid;
+  place-items:center;
+  padding:22px 14px;
+  border:1px dashed rgba(169,124,44,.5);
+  border-radius:14px;
+  background:rgba(253,247,237,.7);
+  color:var(--gold-deep);
+  font-size:.68rem;
+  font-weight:700;
+  letter-spacing:.14em;
+  cursor:pointer;
+}
+.upload-drop:hover{ background:rgba(250,240,223,.9); }
+.upload-status{
+  margin:10px 0 0;
+  font-size:.74rem;
+  line-height:1.5;
+  color:var(--gold-deep);
+}
+
+.chips{
+  display:flex;
+  gap:8px;
+  margin:14px 0 0;
+  padding-bottom:6px;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.chips::-webkit-scrollbar{ display:none; }
+.chip{
+  flex:0 0 auto;
+  padding:9px 14px;
+  border:1px solid rgba(169,124,44,.24);
+  border-radius:999px;
+  background:rgba(255,255,255,.7);
+  color:#7a6340;
+  font-size:.68rem;
+  font-weight:600;
+  white-space:nowrap;
+}
+.chip.active{
+  background:linear-gradient(#9d7527,#7d5a1c);
+  border-color:#c79c48;
+  color:#fdf2dc;
+}
+
+.mem-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin:16px 0 0;
+}
+.mem-card{
+  border-radius:16px;
+  overflow:hidden;
+  background:rgba(255,255,255,.82);
+  border:1px solid rgba(169,124,44,.16);
+  box-shadow:0 8px 20px rgba(112,78,26,.1);
+}
+.mem-card img,
+.mem-card video{
+  width:100%;
+  aspect-ratio:1/1;
+  object-fit:cover;
+  background:#e8d7bd;
+}
+.mem-meta{ padding:10px 11px 12px; }
+.mem-cat{
+  display:block;
+  font-size:.56rem;
+  font-weight:700;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--gold-deep);
+}
+.mem-cap{
+  margin:4px 0 8px;
+  font-family:"Cormorant Garamond",Georgia,serif;
+  font-size:.9rem;
+  line-height:1.4;
+  color:#5f4d33;
+}
+.mem-del{
+  border:1px solid rgba(169,124,44,.3);
+  border-radius:999px;
+  padding:6px 12px;
+  background:rgba(255,255,255,.8);
+  color:#8a6220;
+  font-size:.6rem;
+  font-weight:700;
+  letter-spacing:.1em;
+}
+
+.more-actions{ display:grid; gap:10px; margin-top:14px; }
+.photo-placeholder{ cursor:pointer; }
+
+.mem-card img{ cursor:zoom-in; }
+
+/* =========================================================
+   Lightbox photo viewer
+   ========================================================= */
+.lightbox{
+  position:fixed;
+  inset:0;
+  z-index:200;
+  display:grid;
+  grid-template-rows:1fr auto;
+  align-items:center;
+  padding:52px 16px 24px;
+  background:rgba(26,18,8,.92);
+  backdrop-filter:blur(6px);
+  animation:lightboxIn .25s ease both;
+}
+@keyframes lightboxIn{ from{ opacity:0; } to{ opacity:1; } }
+.lightbox-body{ display:grid; place-items:center; min-height:0; }
+.lightbox-body img,
+.lightbox-body video{
+  max-width:100%;
+  max-height:calc(100dvh - 130px);
+  border-radius:12px;
+  box-shadow:0 24px 60px rgba(0,0,0,.5);
+}
+.lightbox-caption{
+  margin:12px auto 0;
+  max-width:420px;
+  text-align:center;
+  font-family:"Cormorant Garamond",Georgia,serif;
+  font-size:1rem;
+  color:#f2e5cc;
+}
+.lightbox-close{
+  position:absolute;
+  top:calc(12px + env(safe-area-inset-top));
+  right:14px;
+  width:40px;
+  height:40px;
+  display:grid;
+  place-items:center;
+  border:1px solid rgba(242,229,204,.35);
+  border-radius:50%;
+  background:rgba(255,255,255,.1);
+  color:#f2e5cc;
+  font-size:1rem;
+}
