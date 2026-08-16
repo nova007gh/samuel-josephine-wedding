@@ -91,6 +91,9 @@ button{ font:inherit; cursor:pointer; }
   animation:sealRipple 2s infinite;
 }
 .seal-hotspot:focus-visible{ outline:2px solid rgba(255,236,200,.9); outline-offset:6px; }
+.seal-hotspot:active{ transform:translate(-50%,-50%) scale(.96); }
+.opening.breaking .seal-hotspot{ animation:sealPress .45s cubic-bezier(.2,.8,.3,1); }
+.opening.breaking .seal-hotspot::before{ animation:none; box-shadow:none; }
 
 /* the split that tears the wax apart */
 .seal-split{
@@ -105,6 +108,7 @@ button{ font:inherit; cursor:pointer; }
   opacity:0;
   border-radius:6px;
   z-index:6;
+  will-change:height,opacity;
 }
 .opening.breaking .seal-split{ opacity:1; animation:sealSplit .5s cubic-bezier(.2,.8,.3,1) forwards; }
 
@@ -127,6 +131,7 @@ button{ font:inherit; cursor:pointer; }
   opacity:0;
   z-index:6;
   filter:drop-shadow(0 3px 6px rgba(105,70,20,.4));
+  will-change:transform,opacity;
 }
 .opening.breaking .shard{
   animation:shardFly var(--dur,.9s) cubic-bezier(.15,.7,.3,1) forwards;
@@ -145,13 +150,14 @@ button{ font:inherit; cursor:pointer; }
   background:radial-gradient(circle,#fff4d4,#e0b968);
   opacity:0;
   z-index:6;
+  will-change:transform,opacity;
 }
 .opening.breaking .dust{
   animation:dustFly var(--dur,1s) ease-out forwards;
   animation-delay:var(--delay,0s);
 }
 
-.opening.opening-envelope .landing-frame{ animation:openInvite .8s ease forwards; }
+.opening.opening-envelope .landing-frame{ animation:openInvite .65s ease forwards; }
 .opening.exit{ animation:openingExit .65s ease forwards; }
 
 @keyframes landingIn{
@@ -159,6 +165,11 @@ button{ font:inherit; cursor:pointer; }
   to{ opacity:1; transform:none; filter:none; }
 }
 @keyframes sealRipple{ 70%,100%{ box-shadow:0 0 0 24px rgba(202,153,78,0); } }
+@keyframes sealPress{
+  0%{ transform:translate(-50%,-50%) scale(1); }
+  35%{ transform:translate(-50%,-50%) scale(.92); }
+  100%{ transform:translate(-50%,-50%) scale(1); }
+}
 @keyframes sealSplit{ to{ height:82%; } }
 @keyframes shardFly{
   0%{ opacity:0; transform:translate(0,0) rotate(0deg) scale(.4); }
@@ -192,6 +203,11 @@ button{ font:inherit; cursor:pointer; }
   background:
     radial-gradient(90% 50% at 50% 0%, #f4e6d3, transparent 60%),
     linear-gradient(#efdfc8,#e6d2b6);
+  animation:welcomeIn .7s ease both;
+}
+@keyframes welcomeIn{
+  from{ opacity:0; }
+  to{ opacity:1; }
 }
 .welcome-scene{
   position:relative;
@@ -278,6 +294,11 @@ button{ font:inherit; cursor:pointer; }
   border-top:1px solid rgba(255,255,255,.5);
   clip-path:polygon(0 12%,50% 0,100% 12%,100% 100%,0 100%);
   text-align:center;
+  animation:envelopeUp .9s cubic-bezier(.2,.8,.3,1) both;
+}
+@keyframes envelopeUp{
+  from{ opacity:0; transform:translateY(46px); }
+  to{ opacity:1; transform:none; }
 }
 .envelope-flap{
   position:absolute;
@@ -331,4 +352,13 @@ button{ font:inherit; cursor:pointer; }
 @keyframes nudge{
   0%,100%{ transform:translateY(0); opacity:.55; }
   50%{ transform:translateY(5px); opacity:1; }
+}
+
+@media(prefers-reduced-motion:reduce){
+  .landing-frame,
+  .letter,
+  .envelope,
+  .welcome-reveal{ animation-duration:.01s; }
+  .seal-hotspot::before,
+  .chevron-down{ animation:none; }
 }

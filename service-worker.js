@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v19-photos-rsvp';
+const CACHE = 'sj-wedding-v20-smooth-anim';
 const ASSETS = [
   './',
   './index.html',
@@ -11,10 +11,7 @@ const ASSETS = [
   './manifest.webmanifest',
   './assets/official-landing-page.jpg',
   './assets/official-landing-4k.webp',
-  './assets/seal-pressed.png',
-  './assets/seal-embossed.svg',
-  './assets/seal-4k.png',
-  './assets/seal-transparent.png',
+  './assets/seal-pressed-320.png',
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png',
   './assets/couple-home.jpg',
