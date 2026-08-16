@@ -201,9 +201,18 @@ button{ font:inherit; cursor:pointer; }
   display:block;
   overflow:hidden;
   background:
-    radial-gradient(90% 50% at 50% 0%, #f4e6d3, transparent 60%),
-    linear-gradient(#efdfc8,#e6d2b6);
-  animation:welcomeIn .7s ease both;
+    radial-gradient(110% 60% at 50% 0%, #f7efe4, transparent 55%),
+    linear-gradient(#f0dfc6,#e6d2b6);
+}
+.welcome-reveal::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:url('assets/official-landing-page.jpg') center / cover no-repeat;
+  opacity:.18;
+  filter:blur(8px) saturate(1.1);
+  transform:scale(1.05);
+  animation:welcomeIn 1s ease both;
 }
 @keyframes welcomeIn{
   from{ opacity:0; }
@@ -221,13 +230,13 @@ button{ font:inherit; cursor:pointer; }
 .letter{
   position:relative;
   z-index:2;
-  width:min(78%,340px);
-  margin:clamp(18px,5vh,48px) auto 0;
-  padding:34px 22px 28px;
-  background:linear-gradient(#fdf8f0,#f8eedf);
-  border:1px solid rgba(178,138,78,.3);
-  border-radius:4px;
-  box-shadow:0 20px 45px rgba(96,63,22,.22);
+  width:min(84%,360px);
+  margin:clamp(28px,6vh,56px) auto 0;
+  padding:38px 26px 32px;
+  background:linear-gradient(180deg,#fdfbf7,#f8eedf);
+  border:1px solid rgba(178,138,78,.28);
+  border-radius:6px;
+  box-shadow:0 24px 55px rgba(96,63,22,.24);
   text-align:center;
   animation:letterRise .9s cubic-bezier(.2,.8,.3,1) both;
 }
@@ -254,16 +263,16 @@ button{ font:inherit; cursor:pointer; }
 }
 .letter-eyebrow{
   margin:0;
-  font-size:.82rem;
+  font-size:.86rem;
   font-weight:600;
-  letter-spacing:.16em;
+  letter-spacing:.18em;
   line-height:1.7;
   color:#5c4a30;
 }
 .letter-names{
-  margin:6px 0 0;
+  margin:8px 0 0;
   font-family:"Parisienne",cursive;
-  font-size:clamp(2.6rem,12vw,3.4rem);
+  font-size:clamp(2.9rem,13vw,3.8rem);
   line-height:1.05;
   color:var(--gold);
   text-shadow:0 1px 0 rgba(255,250,238,.9);
@@ -274,10 +283,10 @@ button{ font:inherit; cursor:pointer; }
   margin:2px 0;
 }
 .letter-hash{
-  margin:10px 0 0;
+  margin:12px 0 0;
   font-family:"Cormorant Garamond",Georgia,serif;
   font-style:italic;
-  font-size:.95rem;
+  font-size:1rem;
   color:var(--muted);
 }
 
@@ -303,12 +312,15 @@ button{ font:inherit; cursor:pointer; }
   position:relative;
   z-index:3;
   margin-top:-14%;
-  padding:0 0 max(18px,env(safe-area-inset-bottom));
-  background:linear-gradient(#f0dfc6,#e7d1b2);
-  border-top:1px solid rgba(255,255,255,.5);
+  padding:0 0 max(28px,env(safe-area-inset-bottom));
+  background:
+    radial-gradient(120% 40% at 50% 0%, rgba(247,239,228,.95), rgba(232,216,194,.92) 60%, rgba(222,204,178,.95) 100%),
+    linear-gradient(#f0dfc6,#e7d1b2);
+  border-top:1px solid rgba(255,255,255,.55);
   clip-path:polygon(0 12%,50% 0,100% 12%,100% 100%,0 100%);
   text-align:center;
   animation:envelopeUp .9s cubic-bezier(.2,.8,.3,1) .15s both;
+  box-shadow:0 -20px 50px rgba(96,63,22,.12);
 }
 @keyframes envelopeUp{
   from{ opacity:0; transform:translateY(46px); }
@@ -339,26 +351,43 @@ button{ font:inherit; cursor:pointer; }
   to{ opacity:.92; transform:none; }
 }
 .enter-button{
+  position:relative;
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  gap:12px;
-  width:min(80%,300px);
-  margin:18px auto 6px;
-  padding:16px 26px;
-  border:1px solid #c79c48;
+  gap:14px;
+  width:min(86%,320px);
+  margin:22px auto 8px;
+  padding:18px 28px;
+  border:0;
   border-radius:999px;
-  background:linear-gradient(#b98c33,#8a6220);
+  background:
+    radial-gradient(120% 40% at 50% 0%, rgba(255,250,230,.45), transparent 50%),
+    linear-gradient(180deg,#c79c48 0%,#a9832f 20%,#8a6220 100%);
   color:#fff7e4;
   font-size:.82rem;
-  font-weight:600;
-  letter-spacing:.14em;
-  box-shadow:0 10px 26px rgba(105,71,22,.34), inset 0 1px 0 rgba(255,255,255,.35);
+  font-weight:700;
+  letter-spacing:.16em;
+  text-shadow:0 1px 2px rgba(80,48,10,.35);
+  box-shadow:0 14px 34px rgba(105,71,22,.38), inset 0 1px 0 rgba(255,255,255,.35), inset 0 -2px 0 rgba(0,0,0,.08);
   transition:transform .25s ease, box-shadow .25s ease;
+  overflow:hidden;
   animation:fadeUp .7s cubic-bezier(.2,.8,.3,1) .8s backwards;
 }
-.enter-button:hover{ transform:translateY(-2px); box-shadow:0 16px 34px rgba(105,71,22,.4); }
-.enter-button:active{ transform:translateY(0) scale(.97); transition-duration:.12s; }
+.enter-button::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(120deg,transparent 40%,rgba(255,255,255,.18) 50%,transparent 60%);
+  transform:translateX(-100%);
+  animation:btnShine 3.2s ease-in-out 1.4s infinite;
+}
+@keyframes btnShine{
+  0%{ transform:translateX(-100%); }
+  40%,100%{ transform:translateX(100%); }
+}
+.enter-button:hover{ transform:translateY(-3px); box-shadow:0 18px 40px rgba(105,71,22,.46); }
+.enter-button:active{ transform:translateY(-1px) scale(.98); }
 .chevron-down{
   display:block;
   margin:6px auto 0;
