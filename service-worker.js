@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v11-seal-monogram-fix';
+const CACHE = 'sj-wedding-v12-intro-artwork';
 const ASSETS = [
   './',
   './index.html',
