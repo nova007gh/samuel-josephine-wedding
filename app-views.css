@@ -9,6 +9,28 @@
     radial-gradient(90% 40% at 50% 0%, #fbf5ec, transparent 60%),
     linear-gradient(#f7efe4,#f2e6d5);
 }
+.app::before,.app::after,
+.welcome-reveal::before,.welcome-reveal::after{
+  content:"";
+  position:absolute;
+  width:140px;
+  height:180px;
+  pointer-events:none;
+  background:url('assets/leaf-sprig.png') no-repeat center / contain;
+  opacity:.78;
+  z-index:1;
+  animation:floralIn 1.1s ease .25s both;
+}
+.app::before,.welcome-reveal::before{ top:8px; left:-10px; transform:rotate(-12deg); }
+.app::after,.welcome-reveal::after{ top:8px; right:-10px; transform:scaleX(-1) rotate(-12deg); }
+
+@keyframes floralIn{
+  from{ opacity:0; transform:translateY(-20px) rotate(-12deg); }
+  to{ opacity:.78; transform:translateY(0) rotate(-12deg); }
+}
+@media(prefers-reduced-motion:reduce){
+  .app::before,.app::after,.welcome-reveal::before,.welcome-reveal::after{ animation:none; opacity:.78; }
+}
 
 .app-header{
   position:sticky;
@@ -47,9 +69,14 @@
 }
 .icon-button.is-on{ background:linear-gradient(#b98c33,#8a6220); color:#fff6e2; border-color:#c79c48; }
 
-.view{ position:relative; padding:8px 18px 26px; animation:viewIn .4s ease both; }
+.view{ position:relative; padding:8px 18px 26px; }
 .view.hidden{ display:none; }
-@keyframes viewIn{ from{ opacity:0; transform:translateY(8px); } to{ opacity:1; transform:none; } }
+.view:not(.hidden){ animation:viewIn .45s cubic-bezier(.2,.8,.3,1) both; }
+@keyframes viewIn{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:none; } }
+@keyframes fadeUp{
+  from{ opacity:0; transform:translateY(12px); }
+  to{ opacity:1; transform:none; }
+}
 
 /* page titles */
 .page-title{
@@ -59,7 +86,10 @@
   font-size:clamp(2.4rem,10vw,3rem);
   line-height:1.1;
   color:var(--gold);
+  animation:fadeUp .6s .1s ease both;
 }
+.page-title + .divider,
+.page-title + .divider + .page-sub{ animation:fadeUp .55s .2s ease both; }
 .page-sub{
   margin:6px auto 0;
   max-width:300px;
