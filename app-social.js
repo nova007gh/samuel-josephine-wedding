@@ -4,8 +4,12 @@
    Navigation for menu items / back links
    ========================================================= */
 document.querySelectorAll('[data-goto]').forEach(el => {
-  el.addEventListener('click', () => switchView(el.dataset.goto));
+  el.addEventListener('click', () => {
+    teardownRecorders();
+    switchView(el.dataset.goto);
+  });
 });
+document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', teardownRecorders));
 
 /* =========================================================
    Sheets (bottom modals)
@@ -21,16 +25,12 @@ function closeSheet(id){
 document.querySelectorAll('[data-close-sheet]').forEach(btn => {
   btn.addEventListener('click', () => {
     const sheet = btn.closest('.sheet');
-    if (sheet?.id === 'recModal') stopRecorder(true);
     if (sheet) closeSheet(sheet.id);
   });
 });
 document.querySelectorAll('.sheet').forEach(sheet => {
   sheet.addEventListener('click', e => {
-    if (e.target === sheet){
-      if (sheet.id === 'recModal') stopRecorder(true);
-      closeSheet(sheet.id);
-    }
+    if (e.target === sheet) closeSheet(sheet.id);
   });
 });
 
@@ -208,7 +208,7 @@ const shareKindLabels = {
   voice:'Voice Message', videomsg:'Video Message'
 };
 
-function openShareSheet(blob, type, kind){
+function openShareSheet(blob, type, kind, guestName=''){
   pendingShare = { blob, type, kind };
   document.getElementById('shareTitle').textContent = shareKindLabels[kind] || 'Share Memory';
 
@@ -218,6 +218,11 @@ function openShareSheet(blob, type, kind){
   if (type.startsWith('image/')) preview.innerHTML = `<img src="${url}" alt="">`;
   else if (type.startsWith('video/')) preview.innerHTML = `<video src="${url}" controls playsinline></video>`;
   else if (type.startsWith('audio/')) preview.innerHTML = `<audio src="${url}" controls></audio>`;
+
+  if (guestName){
+    const nameInput = document.querySelector('#shareForm input[name="shareName"]');
+    if (nameInput) nameInput.value = guestName;
+  }
   openSheet('shareModal');
 }
 
@@ -256,118 +261,268 @@ document.getElementById('shareForm')?.addEventListener('submit', async e => {
   pendingShare = null;
   e.target.reset();
   closeSheet('shareModal');
+  teardownRecorders();
   await renderGallery();
   switchView('gallery');
 });
 
 /* =========================================================
-   Voice / video recorder (MediaRecorder)
+   Voice & video message pages (MediaRecorder)
    ========================================================= */
-let recStream = null;
-let recRecorder = null;
-let recChunks = [];
-let recBlob = null;
-let recMode = 'voice';
-let recTick = null;
-let recStarted = 0;
-
-const recTimer = document.getElementById('recTimer');
-const recHint = document.getElementById('recHint');
-const recToggle = document.getElementById('recToggle');
-const recSave = document.getElementById('recSave');
-const recWave = document.getElementById('recWave');
-const recVideoPreview = document.getElementById('recVideoPreview');
-const recReview = document.getElementById('recReview');
+const MAX_REC_MS = 120000; // 02:00
 
 function fmtTime(ms){
   const s = Math.floor(ms / 1000);
   return `${String(Math.floor(s / 60)).padStart(2,'0')}:${String(s % 60).padStart(2,'0')}`;
 }
 
-async function openRecorder(mode){
-  recMode = mode;
-  recBlob = null;
-  recChunks = [];
-  document.getElementById('recTitle').textContent = mode === 'voice' ? 'Voice Message' : 'Video Message';
-  recTimer.textContent = '00:00';
-  recHint.textContent = 'Tap the button to start recording';
-  recSave.disabled = true;
-  recReview.classList.add('hidden');
-  recReview.innerHTML = '';
-  recToggle.classList.remove('recording');
-  recWave.classList.toggle('hidden', mode !== 'voice');
-  recVideoPreview.classList.toggle('hidden', mode !== 'videomsg');
+/* ---------- voice message page ---------- */
+const voiceWave = document.getElementById('voiceWave');
+const voiceCtx2d = voiceWave?.getContext('2d');
+const voiceElapsed = document.getElementById('voiceElapsed');
+const voiceRecBtn = document.getElementById('voiceRecBtn');
+const voiceHint = document.getElementById('voiceHint');
+const voiceReview = document.getElementById('voiceReview');
+const voiceSubmit = document.getElementById('voiceSubmit');
 
+let vStream = null, vRecorder = null, vChunks = [], vBlob = null;
+let vTick = null, vStart = 0, vAudioCtx = null, vAnalyser = null, vRaf = null;
+
+function drawWaveBars(levels){
+  if (!voiceCtx2d) return;
+  const { width:w, height:h } = voiceWave;
+  voiceCtx2d.clearRect(0, 0, w, h);
+  const n = levels.length;
+  const barW = 5, gap = (w - n * barW) / (n + 1);
+  voiceCtx2d.fillStyle = '#a97c2c';
+  levels.forEach((lvl, i) => {
+    const bh = Math.max(5, lvl * h);
+    const x = gap + i * (barW + gap);
+    voiceCtx2d.beginPath();
+    voiceCtx2d.roundRect(x, (h - bh) / 2, barW, bh, 3);
+    voiceCtx2d.fill();
+  });
+}
+function drawIdleWave(){
+  drawWaveBars(Array.from({ length:36 }, (_, i) => .1 + .22 * Math.abs(Math.sin(i * .55))));
+}
+drawIdleWave();
+
+function animateVoiceWave(){
+  if (!vAnalyser) return;
+  const data = new Uint8Array(vAnalyser.frequencyBinCount);
+  vAnalyser.getByteFrequencyData(data);
+  const bars = 36;
+  const step = Math.floor(data.length / bars) || 1;
+  const levels = Array.from({ length:bars }, (_, i) => {
+    let sum = 0;
+    for (let j = 0; j < step; j++) sum += data[i * step + j] || 0;
+    return Math.min(1, (sum / step / 255) * 1.6 + .06);
+  });
+  drawWaveBars(levels);
+  vRaf = requestAnimationFrame(animateVoiceWave);
+}
+
+function stopVoice(discard){
+  if (vRecorder && vRecorder.state === 'recording') vRecorder.stop();
+  clearInterval(vTick);
+  cancelAnimationFrame(vRaf);
+  vStream?.getTracks().forEach(t => t.stop());
+  vStream = null;
+  vRecorder = null;
+  vAnalyser = null;
+  vAudioCtx?.close().catch(() => {});
+  vAudioCtx = null;
+  voiceRecBtn?.classList.remove('recording');
+  if (discard){
+    vBlob = null;
+    if (voiceReview){ voiceReview.classList.add('hidden'); voiceReview.innerHTML = ''; }
+    if (voiceSubmit) voiceSubmit.disabled = true;
+    if (voiceElapsed) voiceElapsed.textContent = '00:00';
+    if (voiceHint) voiceHint.textContent = 'Tap to start recording';
+    drawIdleWave();
+  }
+}
+
+voiceRecBtn?.addEventListener('click', async () => {
+  if (vRecorder && vRecorder.state === 'recording'){
+    vRecorder.stop();
+    return;
+  }
   try {
-    recStream = await navigator.mediaDevices.getUserMedia(
-      mode === 'voice' ? { audio:true } : { audio:true, video:{ facingMode:'user' } });
-  } catch(err){
-    alert('We need microphone' + (mode === 'videomsg' ? ' and camera' : '') + ' access to record. Please allow it and try again.');
+    vStream = await navigator.mediaDevices.getUserMedia({ audio:true });
+  } catch {
+    alert('We need microphone access to record your voice message. Please allow it and try again.');
     return;
   }
-  if (mode === 'videomsg'){
-    recVideoPreview.srcObject = recStream;
-    recVideoPreview.play().catch(() => {});
-  }
-  openSheet('recModal');
-}
+  vAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  vAnalyser = vAudioCtx.createAnalyser();
+  vAnalyser.fftSize = 256;
+  vAudioCtx.createMediaStreamSource(vStream).connect(vAnalyser);
+  animateVoiceWave();
 
-recToggle?.addEventListener('click', () => {
-  if (recRecorder && recRecorder.state === 'recording'){
-    recRecorder.stop();
-    return;
-  }
-  if (!recStream) return;
-  recChunks = [];
-  recRecorder = new MediaRecorder(recStream);
-  recRecorder.ondataavailable = e => { if (e.data.size) recChunks.push(e.data); };
-  recRecorder.onstop = () => {
-    clearInterval(recTick);
-    recToggle.classList.remove('recording');
-    recWave.classList.remove('active');
-    recBlob = new Blob(recChunks, { type: recRecorder.mimeType || (recMode === 'voice' ? 'audio/webm' : 'video/webm') });
-    const url = URL.createObjectURL(recBlob);
-    recReview.classList.remove('hidden');
-    recReview.innerHTML = recMode === 'voice'
-      ? `<audio src="${url}" controls></audio>`
-      : `<video src="${url}" controls playsinline></video>`;
-    if (recMode === 'videomsg') recVideoPreview.classList.add('hidden');
-    recHint.textContent = 'Listen back, then use or re-record';
-    recSave.disabled = false;
+  vChunks = [];
+  vRecorder = new MediaRecorder(vStream);
+  vRecorder.ondataavailable = e => { if (e.data.size) vChunks.push(e.data); };
+  vRecorder.onstop = () => {
+    vBlob = new Blob(vChunks, { type: vRecorder?.mimeType || 'audio/webm' });
+    stopVoice(false);
+    const url = URL.createObjectURL(vBlob);
+    voiceReview.classList.remove('hidden');
+    voiceReview.innerHTML = `<audio src="${url}" controls></audio>`;
+    voiceHint.textContent = 'Listen back, then submit or re-record';
+    voiceSubmit.disabled = false;
   };
-  recRecorder.start();
-  recStarted = Date.now();
-  recTick = setInterval(() => { recTimer.textContent = fmtTime(Date.now() - recStarted); }, 250);
-  recToggle.classList.add('recording');
-  recWave.classList.add('active');
-  recReview.classList.add('hidden');
-  recHint.textContent = 'Recording… tap again to stop';
-  recSave.disabled = true;
-  if (recMode === 'videomsg') recVideoPreview.classList.remove('hidden');
+  vRecorder.start();
+  vStart = Date.now();
+  vTick = setInterval(() => {
+    const ms = Date.now() - vStart;
+    voiceElapsed.textContent = fmtTime(ms);
+    if (ms >= MAX_REC_MS && vRecorder?.state === 'recording') vRecorder.stop();
+  }, 200);
+  voiceRecBtn.classList.add('recording');
+  voiceReview.classList.add('hidden');
+  voiceHint.textContent = 'Tap to stop recording';
+  voiceSubmit.disabled = true;
 });
 
-function stopRecorder(discard){
-  if (recRecorder && recRecorder.state === 'recording') recRecorder.stop();
-  clearInterval(recTick);
-  recStream?.getTracks().forEach(t => t.stop());
-  recStream = null;
-  recRecorder = null;
-  recVideoPreview.srcObject = null;
-  if (discard) recBlob = null;
+voiceSubmit?.addEventListener('click', () => {
+  if (!vBlob) return;
+  openShareSheet(vBlob, vBlob.type || 'audio/webm', 'voice',
+    document.getElementById('voiceName')?.value.trim() || '');
+});
+
+/* ---------- video message page ---------- */
+const vmPreview = document.getElementById('vmPreview');
+const vmOverlay = document.getElementById('vmOverlay');
+const vmElapsed = document.getElementById('vmElapsed');
+const vmRecordBtn = document.getElementById('vmRecord');
+const vmReview = document.getElementById('vmReview');
+const vmSubmit = document.getElementById('vmSubmit');
+const vmFlash = document.getElementById('vmFlash');
+
+let camStream = null, camFacing = 'user', torchOn = false;
+let vmRecorder = null, vmChunks = [], vmBlob = null, vmTick = null, vmStart = 0;
+
+async function startCamera(){
+  camStream?.getTracks().forEach(t => t.stop());
+  try {
+    camStream = await navigator.mediaDevices.getUserMedia({
+      audio:true,
+      video:{ facingMode:camFacing }
+    });
+  } catch {
+    alert('We need camera and microphone access to record your video message. Please allow it and try again.');
+    return false;
+  }
+  vmPreview.srcObject = camStream;
+  vmPreview.classList.toggle('mirrored', camFacing === 'user');
+  vmPreview.play().catch(() => {});
+  return true;
 }
 
-recSave?.addEventListener('click', () => {
-  if (!recBlob) return;
-  const blob = recBlob;
-  const type = blob.type || (recMode === 'voice' ? 'audio/webm' : 'video/webm');
-  const kind = recMode;
-  stopRecorder(false);
-  closeSheet('recModal');
-  openShareSheet(blob, type, kind);
+function stopVideoMsg(discard){
+  if (vmRecorder && vmRecorder.state === 'recording') vmRecorder.stop();
+  clearInterval(vmTick);
+  camStream?.getTracks().forEach(t => t.stop());
+  camStream = null;
+  vmRecorder = null;
+  torchOn = false;
+  if (vmPreview) vmPreview.srcObject = null;
+  vmRecordBtn?.classList.remove('recording');
+  if (discard){
+    vmBlob = null;
+    if (vmReview){ vmReview.classList.add('hidden'); vmReview.innerHTML = ''; }
+    if (vmSubmit) vmSubmit.disabled = true;
+    if (vmElapsed){ vmElapsed.textContent = '00:00 / 02:00'; vmElapsed.classList.add('hidden'); }
+    vmOverlay?.classList.remove('hidden');
+    if (vmFlash) vmFlash.querySelector('small').textContent = 'Flash Off';
+  }
+}
+
+function toggleVideoRecording(){
+  if (vmRecorder && vmRecorder.state === 'recording'){
+    vmRecorder.stop();
+    return;
+  }
+  if (!camStream) return;
+  vmChunks = [];
+  vmRecorder = new MediaRecorder(camStream);
+  vmRecorder.ondataavailable = e => { if (e.data.size) vmChunks.push(e.data); };
+  vmRecorder.onstop = () => {
+    clearInterval(vmTick);
+    vmRecordBtn.classList.remove('recording');
+    vmBlob = new Blob(vmChunks, { type: vmRecorder?.mimeType || 'video/webm' });
+    const url = URL.createObjectURL(vmBlob);
+    vmReview.classList.remove('hidden');
+    vmReview.innerHTML = `<video src="${url}" controls playsinline></video>`;
+    vmSubmit.disabled = false;
+    vmElapsed.classList.add('hidden');
+    vmOverlay.classList.remove('hidden');
+    vmOverlay.querySelector('p').textContent = 'Tap to record again';
+  };
+  vmRecorder.start();
+  vmStart = Date.now();
+  vmTick = setInterval(() => {
+    const ms = Date.now() - vmStart;
+    vmElapsed.textContent = `${fmtTime(ms)} / 02:00`;
+    if (ms >= MAX_REC_MS && vmRecorder?.state === 'recording') vmRecorder.stop();
+  }, 200);
+  vmRecordBtn.classList.add('recording');
+  vmOverlay.classList.add('hidden');
+  vmElapsed.classList.remove('hidden');
+  vmReview.classList.add('hidden');
+  vmSubmit.disabled = true;
+}
+
+vmRecordBtn?.addEventListener('click', toggleVideoRecording);
+document.getElementById('vmViewfinder')?.addEventListener('click', e => {
+  if (e.target.closest('video, .vf-overlay')) toggleVideoRecording();
 });
 
-document.getElementById('shareTypeVoice')?.addEventListener('click', () => openRecorder('voice'));
-document.getElementById('shareTypeVideoMsg')?.addEventListener('click', () => openRecorder('videomsg'));
+document.getElementById('vmFlip')?.addEventListener('click', async () => {
+  if (vmRecorder && vmRecorder.state === 'recording') return;
+  camFacing = camFacing === 'user' ? 'environment' : 'user';
+  await startCamera();
+});
+
+vmFlash?.addEventListener('click', async () => {
+  const track = camStream?.getVideoTracks()[0];
+  if (!track) return;
+  const caps = track.getCapabilities?.();
+  if (!caps || !caps.torch){
+    vmFlash.querySelector('small').textContent = 'No Flash';
+    setTimeout(() => { vmFlash.querySelector('small').textContent = torchOn ? 'Flash On' : 'Flash Off'; }, 1500);
+    return;
+  }
+  torchOn = !torchOn;
+  try {
+    await track.applyConstraints({ advanced:[{ torch:torchOn }] });
+    vmFlash.querySelector('small').textContent = torchOn ? 'Flash On' : 'Flash Off';
+  } catch { torchOn = !torchOn; }
+});
+
+vmSubmit?.addEventListener('click', () => {
+  if (!vmBlob) return;
+  openShareSheet(vmBlob, vmBlob.type || 'video/webm', 'videomsg',
+    document.getElementById('vmName')?.value.trim() || '');
+});
+
+/* ---------- open the pages ---------- */
+document.getElementById('shareTypeVoice')?.addEventListener('click', () => {
+  teardownRecorders();
+  switchView('voicemsg');
+});
+document.getElementById('shareTypeVideoMsg')?.addEventListener('click', async () => {
+  teardownRecorders();
+  switchView('videomsg');
+  await startCamera();
+});
+
+function teardownRecorders(){
+  stopVoice(true);
+  stopVideoMsg(true);
+}
 
 /* =========================================================
    RSVP — attendance toggle + guest stepper

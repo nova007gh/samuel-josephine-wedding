@@ -430,6 +430,92 @@
     </button>
   </section>
 
+  <!-- ---------- Voice Message ---------- -->
+  <section class="view hidden" data-view="voicemsg">
+    <button class="back-link" data-goto="memories" type="button">&#10094; Back</button>
+    <h1 class="page-title page-title--serif">Voice Message</h1>
+    <div class="divider"><span></span><i>&#10084;</i><span></span></div>
+    <p class="page-sub">Record &amp; submit your voice message<br>Share your love, wishes and prayers with us!</p>
+
+    <div class="rec-page-card">
+      <div class="couple-circle">
+        <img src="assets/couple-home.jpg" alt="Sam and Jossy" />
+        <span class="couple-circle-heart">&#10084;</span>
+      </div>
+      <label class="field">Your Name
+        <input id="voiceName" type="text" placeholder="Enter your name" autocomplete="name" />
+      </label>
+    </div>
+
+    <div class="rec-page-card rec-page-card--center">
+      <canvas id="voiceWave" class="voice-wave" width="600" height="90"></canvas>
+      <p class="rec-timer"><span id="voiceElapsed">00:00</span> / 02:00</p>
+      <button id="voiceRecBtn" class="mic-button" type="button" aria-label="Start or stop recording">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8.5 21h7"/></svg>
+      </button>
+      <p id="voiceHint" class="rec-hint">Tap to start recording</p>
+      <div id="voiceReview" class="rec-review hidden"></div>
+
+      <div class="notice-card">
+        <span class="notice-icon">&#128077;</span>
+        <p>All submissions require your name and are reviewed before being published.</p>
+      </div>
+      <button id="voiceSubmit" class="map-button" type="button" disabled>PREVIEW &amp; SUBMIT</button>
+    </div>
+  </section>
+
+  <!-- ---------- Video Message ---------- -->
+  <section class="view hidden" data-view="videomsg">
+    <button class="back-link" data-goto="memories" type="button">&#10094; Back</button>
+    <h1 class="page-title page-title--serif">Video Message</h1>
+    <div class="divider"><span></span><i>&#10084;</i><span></span></div>
+    <p class="page-sub">Record &amp; submit your video message<br>Share your love, wishes and prayers with us!</p>
+
+    <div class="rec-page-card">
+      <div class="couple-circle">
+        <img src="assets/couple-home.jpg" alt="Sam and Jossy" />
+        <span class="couple-circle-heart">&#10084;</span>
+      </div>
+      <label class="field">Your Name
+        <input id="vmName" type="text" placeholder="Enter your name" autocomplete="name" />
+      </label>
+
+      <div class="viewfinder" id="vmViewfinder">
+        <video id="vmPreview" playsinline muted></video>
+        <span class="vf-corner vf-corner--tl"></span>
+        <span class="vf-corner vf-corner--tr"></span>
+        <span class="vf-corner vf-corner--bl"></span>
+        <span class="vf-corner vf-corner--br"></span>
+        <div id="vmOverlay" class="vf-overlay">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="6" width="13" height="12" rx="2.5"/><path d="m15.5 10.5 6-3v9l-6-3z"/></svg>
+          <p>Tap to start recording</p>
+          <small>Max 02:00</small>
+        </div>
+        <p id="vmElapsed" class="vf-timer hidden">00:00 / 02:00</p>
+      </div>
+
+      <div class="vm-controls">
+        <button id="vmFlip" class="vm-side" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 9.5V7a2 2 0 0 1 2-2h2.5L10 3h4l1.5 2H18a2 2 0 0 1 2 2v2.5"/><path d="M20 14.5V17a2 2 0 0 1-2 2h-2.5L14 21h-4l-1.5-2H6a2 2 0 0 1-2-2v-2.5"/><circle cx="12" cy="12" r="3"/></svg>
+          <small>Flip Camera</small>
+        </button>
+        <button id="vmRecord" class="vm-record" type="button" aria-label="Start or stop recording"><span></span></button>
+        <button id="vmFlash" class="vm-side" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M13 2 5 13h5l-1 9 8-11h-5l1-9z"/></svg>
+          <small>Flash Off</small>
+        </button>
+      </div>
+
+      <div id="vmReview" class="rec-review hidden"></div>
+
+      <div class="notice-card">
+        <span class="notice-icon">&#128077;</span>
+        <p>All submissions require your name and are reviewed before being published.</p>
+      </div>
+      <button id="vmSubmit" class="map-button" type="button" disabled>PREVIEW &amp; SUBMIT</button>
+    </div>
+  </section>
+
   <!-- ---------- RSVP ---------- -->
   <section class="view hidden" data-view="rsvp">
     <button class="back-link" data-goto="more" type="button">&#10094; Back</button>
@@ -538,25 +624,6 @@
       <button type="submit" class="map-button">SHARE</button>
     </div>
   </form>
-</div>
-
-<!-- Voice / video recorder -->
-<div id="recModal" class="sheet hidden" role="dialog" aria-label="Recorder">
-  <div class="sheet-card rec-card">
-    <h3 class="sheet-title" id="recTitle">Voice Message</h3>
-    <video id="recVideoPreview" class="rec-video hidden" playsinline muted></video>
-    <div id="recWave" class="rec-wave hidden"><span></span><span></span><span></span><span></span><span></span></div>
-    <p id="recTimer" class="rec-timer">00:00</p>
-    <p id="recHint" class="rec-hint">Tap the button to start recording</p>
-    <div class="rec-controls">
-      <button id="recToggle" class="rec-button" type="button" aria-label="Start or stop recording"><span></span></button>
-    </div>
-    <div id="recReview" class="rec-review hidden"></div>
-    <div class="sheet-actions">
-      <button type="button" class="sheet-cancel" data-close-sheet>Cancel</button>
-      <button type="button" id="recSave" class="map-button" disabled>USE RECORDING</button>
-    </div>
-  </div>
 </div>
 
 <div id="lightbox" class="lightbox hidden" role="dialog" aria-label="Photo viewer">
