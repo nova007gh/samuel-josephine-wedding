@@ -67,6 +67,17 @@
   color:var(--gold-deep);
   font-size:1rem;
 }
+.icon-button.has-song{ position:relative; }
+.icon-button.has-song::after{
+  content:"";
+  position:absolute;
+  top:3px;
+  right:3px;
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:#6b9e5b;
+}
 .icon-button.is-on{ background:linear-gradient(#b98c33,#8a6220); color:#fff6e2; border-color:#c79c48; }
 
 .view{ position:relative; padding:8px 18px 26px; }
