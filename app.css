@@ -209,9 +209,11 @@ button{ font:inherit; cursor:pointer; }
   position:absolute;
   inset:0;
   background:url('assets/official-landing-page.jpg') center / cover no-repeat;
-  opacity:.18;
+  opacity:0;
   filter:blur(8px) saturate(1.1);
   transform:scale(1.05);
+}
+.welcome-reveal.showing::before{
   animation:welcomeIn 1s ease both;
 }
 @keyframes welcomeIn{
@@ -238,18 +240,23 @@ button{ font:inherit; cursor:pointer; }
   border-radius:6px;
   box-shadow:0 24px 55px rgba(96,63,22,.24);
   text-align:center;
+  opacity:0;
+  transform:translateY(40px);
+}
+.welcome-reveal.showing .letter{
   animation:letterRise .9s cubic-bezier(.2,.8,.3,1) both;
 }
 
 /* staggered entrance for the letter contents */
-.letter > *{
+.letter > *{ opacity:0; transform:translateY(14px); }
+.welcome-reveal.showing .letter > *{
   animation:fadeUp .7s cubic-bezier(.2,.8,.3,1) both;
 }
-.letter > :nth-child(1){ animation-delay:.25s; }
-.letter > :nth-child(2){ animation-delay:.4s; }
-.letter > :nth-child(3){ animation-delay:.5s; }
-.letter > :nth-child(4){ animation-delay:.65s; }
-.letter > :nth-child(5){ animation-delay:.75s; }
+.welcome-reveal.showing .letter > :nth-child(1){ animation-delay:.25s; }
+.welcome-reveal.showing .letter > :nth-child(2){ animation-delay:.4s; }
+.welcome-reveal.showing .letter > :nth-child(3){ animation-delay:.5s; }
+.welcome-reveal.showing .letter > :nth-child(4){ animation-delay:.65s; }
+.welcome-reveal.showing .letter > :nth-child(5){ animation-delay:.75s; }
 @keyframes fadeUp{
   from{ opacity:0; transform:translateY(14px); }
   to{ opacity:1; transform:none; }
@@ -319,8 +326,12 @@ button{ font:inherit; cursor:pointer; }
   border-top:1px solid rgba(255,255,255,.55);
   clip-path:polygon(0 12%,50% 0,100% 12%,100% 100%,0 100%);
   text-align:center;
-  animation:envelopeUp .9s cubic-bezier(.2,.8,.3,1) .15s both;
+  opacity:0;
+  transform:translateY(46px);
   box-shadow:0 -20px 50px rgba(96,63,22,.12);
+}
+.welcome-reveal.showing .envelope{
+  animation:envelopeUp .9s cubic-bezier(.2,.8,.3,1) .15s both;
 }
 @keyframes envelopeUp{
   from{ opacity:0; transform:translateY(46px); }
@@ -342,8 +353,10 @@ button{ font:inherit; cursor:pointer; }
   width:112px;
   height:auto;
   margin:16% auto 0;
-  opacity:.92;
+  opacity:0;
   mix-blend-mode:multiply;
+}
+.welcome-reveal.showing .envelope-seal{
   animation:sealIn .7s cubic-bezier(.2,.8,.3,1) .55s both;
 }
 @keyframes sealIn{
@@ -372,7 +385,11 @@ button{ font:inherit; cursor:pointer; }
   box-shadow:0 14px 34px rgba(105,71,22,.38), inset 0 1px 0 rgba(255,255,255,.35), inset 0 -2px 0 rgba(0,0,0,.08);
   transition:transform .25s ease, box-shadow .25s ease;
   overflow:hidden;
-  animation:fadeUp .7s cubic-bezier(.2,.8,.3,1) .8s backwards;
+  opacity:0;
+  transform:translateY(14px);
+}
+.welcome-reveal.showing .enter-button{
+  animation:fadeUp .7s cubic-bezier(.2,.8,.3,1) .8s both;
 }
 .enter-button::before{
   content:"";
@@ -393,6 +410,10 @@ button{ font:inherit; cursor:pointer; }
   margin:6px auto 0;
   color:rgba(138,98,32,.6);
   font-size:1.1rem;
+  opacity:0;
+  transform:translateY(14px);
+}
+.welcome-reveal.showing .chevron-down{
   animation:
     fadeUp .6s ease 1.05s both,
     nudge 1.8s ease-in-out 1.7s infinite;

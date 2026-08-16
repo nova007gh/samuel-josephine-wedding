@@ -55,6 +55,8 @@ sealButton?.addEventListener('click', () => {
   setTimeout(() => {
     landingFrame.classList.add('hidden');
     welcomeReveal.classList.remove('hidden');
+    void welcomeReveal.offsetWidth;
+    welcomeReveal.classList.add('showing');
   }, 1550);
 });
 
