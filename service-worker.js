@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v23-voice-video-pages';
+const CACHE = 'sj-wedding-v24-seal-logo-home';
 const ASSETS = [
   './',
   './index.html',

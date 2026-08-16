@@ -78,7 +78,9 @@
   <div class="floral-bg"></div>
 
   <header class="app-header">
-    <span class="app-brand">S&amp;J</span>
+    <button class="app-brand" data-goto="home" type="button" aria-label="Home">
+      <img src="assets/seal-pressed-320.png" alt="S&J seal" />
+    </button>
     <button id="musicToggle" class="icon-button" aria-label="Toggle background music">&#9835;</button>
   </header>
 
@@ -104,13 +106,13 @@
     </div>
 
     <figure class="couple-photo">
-      <img id="couplePhoto" class="hidden" alt="Sam and Jossy" />
+      <img id="couplePhoto" class="hidden" alt="" />
       <label id="couplePlaceholder" class="photo-placeholder">
         <strong>Sam &amp; Jossy</strong>
         <span>TAP TO ADD YOUR PHOTO</span>
         <input id="couplePhotoFile" type="file" accept="image/*" class="hidden" />
       </label>
-      <figcaption>#AlwaysAndForever</figcaption>
+      <figcaption class="couple-caption"><span>&#10084;</span> #AlwaysAndForever <span>&#10084;</span></figcaption>
     </figure>
 
     <button id="enterFromHome" class="enter-wide" type="button">

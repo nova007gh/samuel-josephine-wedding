@@ -22,11 +22,17 @@
   backdrop-filter:blur(12px);
 }
 .app-brand{
-  font-family:"Cormorant Garamond",Georgia,serif;
-  font-size:1.5rem;
-  font-weight:600;
-  letter-spacing:.02em;
-  color:var(--gold-deep);
+  padding:0;
+  border:0;
+  background:transparent;
+  cursor:pointer;
+}
+.app-brand img{
+  height:38px;
+  width:auto;
+  border-radius:50%;
+  object-fit:cover;
+  box-shadow:0 4px 12px rgba(112,78,26,.2);
 }
 .icon-button{
   width:40px;
@@ -160,19 +166,24 @@
 /* couple photo */
 .couple-photo{
   position:relative;
-  margin:18px 0 0;
-  border-radius:20px;
+  margin:22px 0 0;
+  border-radius:24px;
   overflow:hidden;
   aspect-ratio:4/3.4;
   background:linear-gradient(140deg,#e8d7bd,#d9c3a2);
   box-shadow:var(--shadow);
+  animation:fadeUp .6s .2s ease both;
 }
 .couple-photo img{ width:100%; height:100%; object-fit:cover; }
-.couple-photo figcaption{
+.couple-photo .couple-caption{
   position:absolute;
   left:0;
   right:0;
   bottom:12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
   text-align:center;
   font-family:"Cormorant Garamond",Georgia,serif;
   font-style:italic;
@@ -188,7 +199,10 @@
   gap:6px;
   text-align:center;
   color:#8a6f4a;
+  cursor:pointer;
+  transition:background .2s ease;
 }
+.photo-placeholder:active{ background:rgba(255,255,255,.15); }
 .photo-placeholder strong{
   font-family:"Parisienne",cursive;
   font-size:2rem;
