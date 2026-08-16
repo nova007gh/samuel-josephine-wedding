@@ -813,6 +813,11 @@ img {
 .paper-invite::before{ left: -7%; top: -2%; transform: rotate(-10deg); }
 .paper-invite::after{ right: -8%; top: -1%; transform: scaleX(-1) rotate(-12deg); }
 
+.paper-invite .emboss-floral-top,
+.paper-invite .emboss-floral-mid,
+.paper-invite .emboss-floral-bottom{ pointer-events:none; position:absolute; z-index:1; }
+.paper-invite::selection{ background: rgba(180,134,66,.24); }
+
 .intro .eyebrow{
   color: #6b4d24;
   font-family: "Cormorant Garamond", serif;
@@ -859,15 +864,56 @@ img {
   font-family: "Cormorant Garamond", serif;
   font-size: clamp(2.3rem, 7vw, 3rem);
   color: #947032;
+  position: relative;
+  width: min(72%, 340px);
+  margin-left: auto;
+  margin-right: auto;
+}
+.couple-names .amp::before,
+.couple-names .amp::after{
+  content: "";
+  position: absolute;
+  top: 52%;
+  width: 34%;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(147,111,58,.62), transparent);
+}
+.couple-names .amp::before{ left: 2%; }
+.couple-names .amp::after{ right: 2%; }
+.couple-names .name:last-of-type{
+  margin-top: 4px;
 }
 
 .envelope{
   position: relative;
   width: min(94%, 520px);
-  margin: 24px auto 4px;
+  margin: 20px auto 2px;
   padding: 38px 0 58px;
   display: grid;
   place-items: center;
+}
+.envelope::before,
+.envelope::after{
+  content:"";
+  position:absolute;
+  width: 50%;
+  height: 2px;
+  bottom: 28.5%;
+  z-index: 2;
+  pointer-events:none;
+  filter: blur(.2px);
+}
+.envelope::before{
+  left: 4.5%;
+  transform: rotate(-33deg);
+  transform-origin: left center;
+  background: linear-gradient(to right, rgba(255,191,97,0), rgba(255,191,97,.95), rgba(255,191,97,0));
+}
+.envelope::after{
+  right: 4.5%;
+  transform: rotate(33deg);
+  transform-origin: right center;
+  background: linear-gradient(to left, rgba(255,191,97,0), rgba(255,191,97,.95), rgba(255,191,97,0));
 }
 .envelope-flap{
   position: absolute;
@@ -904,12 +950,12 @@ img {
 .envelope .seal-button{
   position: relative;
   z-index: 3;
-  margin-top: 20px;
+  margin-top: 24px;
 }
 .intro-hashtag{
-  margin: 2px 0 6px;
+  margin: 8px 0 8px;
   font-family: "Cormorant Garamond", serif;
-  font-size: clamp(1.45rem, 4.5vw, 2rem);
+  font-size: clamp(2rem, 4.5vw, 2.25rem);
   color: #775523;
   text-shadow: 0 1px 0 rgba(255,244,224,.8);
 }
@@ -929,19 +975,19 @@ img {
 }
 .tap-heart{
   color: #926829;
-  font-size: .92rem;
+  font-size: .84rem;
   text-shadow: 0 1px 0 rgba(255,241,212,.8);
 }
 .intro .tap{
   margin-top: 4px;
   font-family: "Cormorant Garamond", serif;
-  letter-spacing: .26em;
-  font-size: .98rem;
+  letter-spacing: .24em;
+  font-size: 1.08rem;
   color: #6e4e23;
 }
 .intro .chevron{
-  margin-top: -4px;
-  font-size: 1.8rem;
+  margin-top: -2px;
+  font-size: 1.3rem;
   color: #8f6427;
 }
 
@@ -958,5 +1004,6 @@ img {
   .intro .eyebrow{ font-size: .78rem; letter-spacing: .24em; }
   .couple-names small{ font-size: .78rem; letter-spacing: .2em; }
   .envelope{ width: 98%; padding: 28px 0 48px; margin-top: 18px; }
-  .intro .tap{ font-size: .9rem; letter-spacing: .2em; }
+  .intro-hashtag{ font-size: 1.7rem; }
+  .intro .tap{ font-size: .94rem; letter-spacing: .2em; }
 }
