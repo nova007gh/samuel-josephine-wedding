@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5, user-scalable=yes" />
+  <meta name="theme-color" content="#f3eadc" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Samuel & Josephine" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png" />
+  <link rel="icon" sizes="192x192" href="assets/icons/icon-192.png" />
+  <title>Samuel & Josephine | January 9, 2027</title>
+  <meta name="description" content="The wedding celebration of Samuel Nana Yaw Obeng and Josephine Abena Owusua Appiah." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Italiana&family=Montserrat:wght@300;400;500;600&family=Parisienne&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="locked">
+  <div id="intro" class="intro">
+    <div class="intro-glow"></div>
+    <div class="paper emboss">
+      <p class="eyebrow">YOU ARE CORDIALLY INVITED</p>
+      <h1><span>Samuel</span><small>NANA YAW OBENG</small><b>&amp;</b><span>Josephine</span><small>ABENA OWUSUA APPIAH</small></h1>
+      <div class="floral-divider">✦</div>
+
+      <button id="sealButton" class="seal-button" aria-label="Open invitation">
+        <img src="assets/seal-embossed.svg" alt="Samuel and Josephine embossed champagne wedding seal" class="seal-emboss" />
+      </button>
+
+      <p class="hashtag">#AlwaysAndForever</p>
+      <p class="tap">TAP THE SEAL TO OPEN</p>
+      <span class="chevron">⌄</span>
+    </div>
+  </div>
+
+  <main id="site" class="site hidden">
+    <header class="hero section">
+      <nav class="nav glass">
+        <a class="brand" href="#home">S&amp;J</a>
+        <button id="menuButton" class="menu-button" aria-label="Open menu">☰</button>
+        <div id="navLinks" class="nav-links">
+          <a href="#story">Our Story</a>
+          <a href="#memories">Memories</a>
+          <a href="#details">Details</a>
+          <a href="#dress">Dress Code</a>
+          <a href="#rsvp">RSVP</a>
+          <a href="#install">Install</a>
+        </div>
+      </nav>
+
+      <div id="home" class="hero-inner">
+        <p class="eyebrow">TOGETHER WITH THEIR FAMILIES</p>
+        <h2>Samuel <i>&amp;</i> Josephine</h2>
+        <p class="subtitle">invite you to celebrate their wedding</p>
+
+        <div class="welcome-photo glass" id="welcomePhotoCard">
+          <img id="welcomePhoto" alt="Samuel and Josephine" src="assets/seal-embossed.svg" class="welcome-photo-default" />
+          <label class="welcome-photo-upload">
+            <input id="welcomePhotoFile" type="file" accept="image/*" />
+            <span>UPLOAD WELCOME PHOTO</span>
+          </label>
+          <p class="hashtag welcome-hashtag">#AlwaysAndForever</p>
+        </div>
+
+        <div class="date-lockup">
+          <span>JANUARY</span><strong>09</strong><span>2027</span>
+        </div>
+        <p class="location">Accra, Ghana</p>
+
+        <div id="countdown" class="countdown glass" aria-label="Wedding countdown">
+          <div><strong id="days">000</strong><span>Days</span></div>
+          <div><strong id="hours">00</strong><span>Hours</span></div>
+          <div><strong id="minutes">00</strong><span>Minutes</span></div>
+          <div><strong id="seconds">00</strong><span>Seconds</span></div>
+        </div>
+
+        <p class="script-line">Two hearts that beat as one forever!!</p>
+        <div class="hero-actions"><a href="#rsvp" class="primary-button">RSVP NOW</a><button id="installButton" class="secondary-button hidden">INSTALL APP</button></div>
+      </div>
+    </header>
+
+    
+    <section id="story" class="section story">
+      <div class="section-heading">
+        <p class="eyebrow">OUR JOURNEY</p>
+        <h3>Our Love Story</h3>
+        <p>A living story of where we came from, how we met, and the moments that brought us to forever.</p>
+      </div>
+
+      <div class="story-card glass">
+        <div class="story-display" id="storyDisplay">
+          <p id="storyText">What began with a simple Instagram connection became something neither of us could ignore. Samuel saw Josephine’s beautiful picture, left the comment “very pretty,” and she responded. That small moment opened the door to conversations that quickly became something much deeper. Just three days later, during a FaceTime call, Samuel asked Josephine to be his wife. Four months later, Samuel traveled from Atlanta to Accra to finally meet her in person. The next day, on Josephine’s birthday, he surprised her with a proposal and a beautiful diamond ring — and she said YES. Now, surrounded by family and friends, they are preparing to begin their forever together.</p>
+        </div>
+
+        <details class="story-editor glass">
+          <summary>Edit Our Story</summary>
+          <label>How we met / our story
+            <textarea id="storyEditor" rows="10" placeholder="Write your story here..."></textarea>
+          </label>
+          <div class="editor-actions">
+            <button type="button" id="saveStory" class="primary-button">SAVE STORY</button>
+            <button type="button" id="resetStory" class="secondary-button">RESET</button>
+          </div>
+          <p class="microcopy">This prototype saves your story privately on the current device.</p>
+        </details>
+
+        <div class="timeline">
+          <article><span>01</span><h4>Two Separate Journeys</h4><p>Two lives, two stories, and experiences that eventually prepared us for each other.</p></article>
+          <article><span>02</span><h4>Instagram</h4><p>A beautiful picture, a “very pretty” comment, and the conversation began.</p></article>
+          <article><span>03</span><h4>Three Days Later</h4><p>During a FaceTime call, Samuel asked Josephine to become his wife.</p></article>
+          <article><span>04</span><h4>Four Months Later</h4><p>Samuel traveled from Atlanta to Accra to meet Josephine in person.</p></article>
+          <article><span>05</span><h4>The Birthday Proposal</h4><p>The next day, Samuel surprised Josephine with a beautiful diamond ring — and she said YES.</p></article>
+          <article><span>06</span><h4>January 9, 2027</h4><p>Our families and friends gather with us as we begin our forever.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="memories" class="section memories">
+      <div class="section-heading">
+        <p class="eyebrow">FROM THEN TO FOREVER</p>
+        <h3>Our Memory Gallery</h3>
+        <p>Upload childhood memories, adulthood portraits, our first photos together, and favorite videos. On supported phones you can select directly from your photo library or camera.</p>
+      </div>
+
+      <div class="memory-controls glass">
+        <label class="upload-field">
+          <span>Memory category</span>
+          <select id="memoryCategory">
+            <option value="samuel-childhood">Samuel — Childhood</option>
+            <option value="josephine-childhood">Josephine — Childhood</option>
+            <option value="samuel-adulthood">Samuel — Adulthood</option>
+            <option value="josephine-adulthood">Josephine — Adulthood</option>
+            <option value="first-together">Our First Pictures Together</option>
+            <option value="couple-videos">Our Videos Together</option>
+            <option value="engagement">Proposal & Engagement</option>
+            <option value="favorite-moments">Favorite Moments</option>
+          </select>
+        </label>
+
+        <label class="upload-field">
+          <span>Caption</span>
+          <input id="memoryCaption" type="text" placeholder="e.g. Our first dinner together" />
+        </label>
+
+        <label class="memory-upload-button">
+          <input id="memoryFiles" type="file" accept="image/*,video/*" multiple />
+          <span>＋ UPLOAD PHOTOS / VIDEOS</span>
+        </label>
+
+        <div class="upload-progress hidden" id="uploadProgress">
+          <span id="uploadProgressText">Saving memories…</span>
+        </div>
+        <p class="microcopy">Photos and videos are stored in this device’s browser for this prototype. A production version can upload them securely to your wedding cloud library.</p>
+      </div>
+
+      <div class="memory-tabs" id="memoryTabs">
+        <button class="memory-tab active" data-filter="all">All</button>
+        <button class="memory-tab" data-filter="samuel-childhood">Samuel Childhood</button>
+        <button class="memory-tab" data-filter="josephine-childhood">Josephine Childhood</button>
+        <button class="memory-tab" data-filter="samuel-adulthood">Samuel Adulthood</button>
+        <button class="memory-tab" data-filter="josephine-adulthood">Josephine Adulthood</button>
+        <button class="memory-tab" data-filter="first-together">First Together</button>
+        <button class="memory-tab" data-filter="couple-videos">Videos</button>
+        <button class="memory-tab" data-filter="engagement">Engagement</button>
+      </div>
+
+      <div id="memoryEmpty" class="memory-empty glass">
+        <div class="memory-empty-icon">♡</div>
+        <h4>Your memories will live here</h4>
+        <p>Upload your first photo or video above.</p>
+      </div>
+
+      <div id="memoryGallery" class="memory-gallery"></div>
+    </section>
+
+
+    <section id="details" class="section details">
+      <div class="section-heading">
+        <p class="eyebrow">THE CELEBRATION</p>
+        <h3>Wedding Details</h3>
+      </div>
+      <div class="detail-grid">
+        <article class="glass">
+          <span class="icon">❦</span>
+          <h4>Traditional Wedding</h4>
+          <p><strong>10:00 AM</strong></p>
+          <p>Saturday, January 9, 2027</p>
+          <small>Traditional engagement & family rites.</small>
+        </article>
+        <article class="glass">
+          <span class="icon">♡</span>
+          <h4>White Wedding</h4>
+          <p><strong>3:00 PM</strong></p>
+          <p>Saturday, January 9, 2027</p>
+          <small>Church ceremony & vows.</small>
+        </article>
+        <article class="glass">
+          <span class="icon">✦</span>
+          <h4>Reception</h4>
+          <p><strong>6:00 PM</strong></p>
+          <p>Saturday, January 9, 2027</p>
+          <small>Dinner • Music • Dancing.</small>
+        </article>
+        <article class="glass">
+          <span class="icon">⌖</span>
+          <h4>Venue</h4>
+          <p>Accra, Ghana</p>
+          <small>Exact venue details to follow.</small>
+          <a class="text-link" href="#rsvp">Confirm attendance →</a>
+        </article>
+      </div>
+    </section>
+
+    <section id="dress" class="section dress">
+      <div class="section-heading light">
+        <p class="eyebrow">CELEBRATE IN STYLE</p>
+        <h3>Dress Code</h3>
+      </div>
+      <div class="dress-copy">
+        <p class="script-line">Elegant. Timeless. Regal.</p>
+        <div class="dress-grid">
+          <article class="dress-card">
+            <span class="dress-icon">❦</span>
+            <h5>Traditional</h5>
+            <p>Elegant African Attire</p>
+          </article>
+          <article class="dress-card">
+            <span class="dress-icon">♡</span>
+            <h5>White Wedding</h5>
+            <p>Formal / Black Tie</p>
+          </article>
+          <article class="dress-card">
+            <span class="dress-icon">✦</span>
+            <h5>Reception</h5>
+            <p>Formal / Cocktail</p>
+          </article>
+        </div>
+        <div class="swatches">
+          <span title="Champagne"></span><span title="Ivory"></span><span title="Black"></span><span title="Gold"></span>
+        </div>
+      </div>
+    </section>
+
+    <section id="rsvp" class="section rsvp">
+      <div class="section-heading">
+        <p class="eyebrow">KINDLY RESPOND</p>
+        <h3>RSVP</h3>
+        <p>Kindly RSVP by <strong>December 1, 2026</strong>. Please reply for every member of your household included on your invitation.</p>
+      </div>
+
+      <form id="rsvpForm" class="rsvp-form glass">
+        <div class="form-row two">
+          <label>First name<input name="firstName" required /></label>
+          <label>Last name<input name="lastName" required /></label>
+        </div>
+        <label>Email address<input type="email" name="email" required /></label>
+        <label>Phone number<input name="phone" /></label>
+
+        <fieldset>
+          <legend>Will you be joining us?</legend>
+          <div class="choice-row">
+            <label class="choice"><input type="radio" name="attendance" value="Attending" required /><span>Joyfully Accept</span></label>
+            <label class="choice"><input type="radio" name="attendance" value="Declined" required /><span>Regretfully Decline</span></label>
+          </div>
+        </fieldset>
+
+        <div class="form-row two">
+          <label>Number of guests
+            <div class="guest-stepper">
+              <button type="button" class="stepper-btn" data-step="-1" aria-label="Decrease guests">−</button>
+              <input id="guestCount" name="guestCount" type="number" min="1" max="6" value="1" readonly />
+              <button type="button" class="stepper-btn" data-step="1" aria-label="Increase guests">+</button>
+            </div>
+          </label>
+          <label>Meal preference
+            <select name="meal">
+              <option>Not selected</option>
+              <option>Chicken</option>
+              <option>Beef</option>
+              <option>Fish</option>
+              <option>Vegetarian</option>
+            </select>
+          </label>
+        </div>
+
+        <fieldset id="attendeesFieldset">
+          <legend>Names of attendees</legend>
+          <div id="attendeeList" class="attendee-list"></div>
+        </fieldset>
+
+        <label>Dietary restrictions<textarea name="dietary" rows="3" placeholder="Please tell us about any allergies or dietary needs."></textarea></label>
+        <label>Song request<input name="song" placeholder="What will get you on the dance floor?" /></label>
+        <label>Message for Samuel &amp; Josephine<textarea name="message" rows="4"></textarea></label>
+
+        <button type="submit" class="primary-button full">SUBMIT RSVP</button>
+        <p id="formStatus" class="form-status" role="status"></p>
+      </form>
+    </section>
+
+    <section class="section gifts">
+      <div class="section-heading">
+        <p class="eyebrow">WITH LOVE</p>
+        <h3>Gifts &amp; Wishes</h3>
+      </div>
+      <p>Your presence is the greatest gift. Gift registry and celebration details may be added here later.</p>
+    </section>
+
+    <section id="install" class="section install-guide">
+      <div class="section-heading">
+        <p class="eyebrow">KEEP IT CLOSE</p>
+        <h3>Add to Home Screen</h3>
+        <p>Install this invitation on your phone for one-tap access to the countdown, memories, and RSVP.</p>
+      </div>
+      <ol class="install-steps">
+        <li class="glass"><span class="step-num">1</span><div><h5>Tap the share icon</h5><p>Open this page in Safari (iPhone) or Chrome (Android) and tap the browser share button.</p></div></li>
+        <li class="glass"><span class="step-num">2</span><div><h5>Scroll down and tap</h5><p>Choose <em>Add to Home Screen</em> from the share menu.</p></div></li>
+        <li class="glass"><span class="step-num">3</span><div><h5>Tap Add</h5><p>Our seal will appear as an app icon on your home screen. Open it anytime.</p></div></li>
+      </ol>
+      <div class="hero-actions"><button id="installButton2" class="primary-button hidden">INSTALL APP</button></div>
+    </section>
+
+    <footer>
+      <img src="assets/seal-embossed.svg" alt="" class="footer-seal" />
+      <p>Samuel &amp; Josephine</p>
+      <span>#AlwaysAndForever</span>
+      <small>January 9, 2027 • Accra, Ghana</small>
+    </footer>
+  </main>
+
+  <div id="successModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="successTitle">
+    <div class="modal-card glass">
+      <button id="closeModal" class="close">×</button>
+      <img src="assets/seal-embossed.svg" alt="" class="modal-seal" />
+      <h3 id="successTitle">Thank You!</h3>
+      <p>Thank you for celebrating with us! We cannot wait to share our special day with you.</p>
+      <p class="script-line">Always &amp; Forever</p>
+      <div class="modal-actions">
+        <button type="button" id="addToCalendar" class="primary-button">ADD TO CALENDAR</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
