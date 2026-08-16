@@ -781,15 +781,16 @@ img {
 .intro--art .intro-glow{ display: none; }
 .invite-art{
   position: relative;
-  width: 100%;
   height: 100%;
-  display: grid;
-  place-items: center;
+  max-height: 100%;
+  width: auto;
+  max-width: 100%;
+  aspect-ratio: 1834 / 3190;
 }
 .invite-art__image{
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
   display: block;
   user-select: none;
@@ -798,10 +799,9 @@ img {
 .invite-art__seal-hit{
   position: absolute;
   left: 50%;
-  top: 71.5%;
-  width: 30%;
+  top: 70.8%;
+  width: 37%;
   aspect-ratio: 1;
-  max-width: 260px;
   transform: translate(-50%, -50%);
   border: 0;
   padding: 0;
@@ -821,8 +821,5 @@ img {
 }
 .intro--art.opening .invite-art{
   animation: openCard .9s ease forwards;
-}
-@media (min-aspect-ratio: 3/4){
-  .invite-art__image{ object-fit: contain; }
 }
 
