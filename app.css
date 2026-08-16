@@ -196,134 +196,177 @@ button{ font:inherit; cursor:pointer; }
 }
 
 /* =========================================================
-   SCREEN 2 — enter the wedding, tap the seal
+   SCREEN 2 & 3 — Gate screens (attend question + guest login)
    ========================================================= */
-.welcome-reveal{
+.gate-screen{
   position:fixed;
   inset:0;
-  z-index:999;
+  z-index:998;
   display:grid;
   place-items:center;
-  overflow:hidden;
-  background:#ead9c4;
+  overflow-y:auto;
+  padding:24px;
+  background:
+    radial-gradient(120% 60% at 50% 0%, #f7efe4, transparent 55%),
+    linear-gradient(180deg,#f0dfc6,#e6d2b6);
+  animation:gateIn .6s cubic-bezier(.2,.8,.3,1) both;
 }
-.welcome-reveal.exit{
-  animation:welcomeExit .8s cubic-bezier(.4,0,.2,1) forwards;
+.gate-screen.exit{
+  animation:gateExit .7s cubic-bezier(.4,0,.2,1) forwards;
 }
-@keyframes welcomeExit{
-  to{ opacity:0; filter:blur(8px); transform:scale(1.04); visibility:hidden; }
-}
-
-.welcome-invite{
-  position:relative;
-  width:min(100vw,520px);
-  height:100dvh;
-  display:grid;
-  place-items:center;
-}
-.welcome-invite-art{
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  user-select:none;
-  -webkit-user-drag:none;
-  animation:welcomeFadeIn .9s ease both;
-}
-@keyframes welcomeFadeIn{
-  from{ opacity:0; transform:scale(1.03); filter:blur(6px); }
+@keyframes gateIn{
+  from{ opacity:0; transform:translateY(20px) scale(.97); filter:blur(6px); }
   to{ opacity:1; transform:none; filter:none; }
 }
+@keyframes gateExit{
+  to{ opacity:0; transform:scale(1.04); filter:blur(8px); visibility:hidden; }
+}
 
-/* tap hint */
-.welcome-tap-hint{
-  position:absolute;
-  bottom:max(22px, env(safe-area-inset-bottom));
-  left:0;
-  right:0;
-  margin:0;
+.gate-card{
+  width:min(92vw,460px);
+  padding:40px 28px 32px;
   text-align:center;
-  font-size:.7rem;
-  letter-spacing:.22em;
-  color:#5c4a30;
-  text-shadow:0 1px 0 rgba(255,250,238,.8);
-  animation:tapPulse 1.4s ease-in-out infinite;
-  z-index:5;
+  border-radius:24px;
+  background:rgba(255,255,255,.72);
+  border:1px solid rgba(255,255,255,.9);
+  backdrop-filter:blur(22px);
+  box-shadow:0 25px 70px rgba(70,43,17,.15);
+  animation:cardRise .7s .15s cubic-bezier(.2,.7,.2,1) both;
 }
-@keyframes tapPulse{
-  0%,100%{ opacity:.55; }
-  50%{ opacity:1; }
+@keyframes cardRise{
+  from{ opacity:0; transform:translateY(30px) scale(.96); }
+  to{ opacity:1; transform:none; }
 }
 
-/* seal hotspot over the S&J seal in the image */
-.welcome-seal-hotspot{
-  position:absolute;
-  top:50%;
-  left:50%;
-  width:min(40vw,190px);
-  height:min(40vw,190px);
-  transform:translate(-50%,-40%);
+.gate-card--form{ padding:36px 28px 28px; }
+
+.gate-seal{
+  width:72px;
+  height:72px;
+  margin:0 auto 14px;
+  animation:sealFloat 2.8s ease-in-out infinite;
+}
+.gate-seal img{ width:100%; height:100%; object-fit:contain; }
+
+.gate-eyebrow{
+  margin:0;
+  font-size:.7rem;
+  font-weight:600;
+  letter-spacing:.22em;
+  color:var(--muted);
+}
+.gate-title{
+  margin:6px 0 4px;
+  font-family:"Cormorant Garamond",Georgia,serif;
+  font-size:clamp(1.8rem,6vw,2.4rem);
+  font-weight:600;
+  color:var(--ink);
+}
+.gate-sub{
+  margin:0 0 4px;
+  font-size:.82rem;
+  color:var(--muted);
+  line-height:1.5;
+}
+
+.gate-buttons{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  margin-top:18px;
+}
+.gate-btn{
+  padding:15px 24px;
   border:0;
-  padding:0;
-  border-radius:50%;
-  background:transparent;
+  border-radius:999px;
+  font-size:.78rem;
+  font-weight:700;
+  letter-spacing:.12em;
   cursor:pointer;
-  z-index:5;
+  transition:transform .2s ease, box-shadow .2s ease;
   -webkit-tap-highlight-color:transparent;
 }
-.welcome-seal-hotspot::before{
-  content:"";
-  position:absolute;
-  inset:-8%;
-  border-radius:50%;
-  box-shadow:0 0 0 0 rgba(202,153,78,.34);
-  animation:sealRipple 2s infinite;
+.gate-btn:active{ transform:scale(.97); }
+.gate-btn--yes{
+  background:linear-gradient(135deg,#c79c48,#8a6220);
+  color:#fff7e4;
+  box-shadow:0 12px 30px rgba(105,71,22,.32);
 }
-.welcome-seal-hotspot:focus-visible{ outline:2px solid rgba(255,236,200,.9); outline-offset:6px; }
-.welcome-seal-hotspot:active{ transform:translate(-50%,-40%) scale(.96); }
-.welcome-reveal.breaking .welcome-seal-hotspot{ animation:sealPress .45s cubic-bezier(.2,.8,.3,1); }
-.welcome-reveal.breaking .welcome-seal-hotspot::before{ animation:none; box-shadow:none; }
-
-/* split that tears the seal */
-.welcome-seal-split{
-  position:absolute;
-  left:50%;
-  top:50%;
-  width:6px;
-  height:0;
-  transform:translate(-50%,-50%) rotate(8deg);
-  background:linear-gradient(180deg,transparent,#fff3d6 18%,#ffe6ae 50%,#fff3d6 82%,transparent);
-  filter:drop-shadow(0 0 14px rgba(255,205,120,.95));
-  opacity:0;
-  border-radius:6px;
-  z-index:6;
-  will-change:height,opacity;
+.gate-btn--no{
+  background:rgba(255,255,255,.7);
+  color:var(--muted);
+  border:1px solid rgba(169,124,44,.25);
 }
-.welcome-reveal.breaking .welcome-seal-split{ opacity:1; animation:sealSplit .5s cubic-bezier(.2,.8,.3,1) forwards; }
-
-.welcome-seal-burst{
-  position:absolute;
-  inset:0;
-  pointer-events:none;
+.gate-btn--browse{
+  background:transparent;
+  color:var(--gold);
+  font-size:.72rem;
+  padding:12px 20px;
+  border:1px solid rgba(169,124,44,.3);
+}
+.gate-btn--submit{
+  margin-top:18px;
+  background:linear-gradient(135deg,#c79c48,#8a6220);
+  color:#fff7e4;
+  box-shadow:0 12px 30px rgba(105,71,22,.32);
 }
 
-/* burst particles triggered on the welcome screen too */
-.welcome-reveal.breaking .shard{
-  animation:shardFly var(--dur,.9s) cubic-bezier(.15,.7,.3,1) forwards;
-  animation-delay:var(--delay,0s);
+.gate-decline{
+  margin-top:16px;
+  font-size:.85rem;
+  color:var(--muted);
+  line-height:1.6;
+  animation:fadeUp .5s ease both;
 }
-.welcome-reveal.breaking .dust{
-  animation:dustFly var(--dur,1s) ease-out forwards;
-  animation-delay:var(--delay,0s);
+@keyframes fadeUp{
+  from{ opacity:0; transform:translateY(10px); }
+  to{ opacity:1; transform:none; }
+}
+
+/* guest login form */
+.gate-form{
+  text-align:left;
+  margin-top:18px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+.gate-error{
+  color:#b03a2e;
+  font-size:.8rem;
+  margin:0;
+  min-height:1em;
+}
+.gate-form .field{
+  display:block;
+  font-size:.72rem;
+  font-weight:600;
+  letter-spacing:.1em;
+  color:var(--muted);
+  text-transform:uppercase;
+}
+.gate-form .field input,
+.gate-form .field select{
+  display:block;
+  width:100%;
+  margin-top:6px;
+  padding:13px 14px;
+  border:1px solid rgba(169,124,44,.25);
+  border-radius:12px;
+  background:rgba(255,255,255,.85);
+  font-size:.9rem;
+  color:var(--ink);
+  font-family:inherit;
+}
+.gate-form .field input:focus,
+.gate-form .field select:focus{
+  outline:0;
+  border-color:var(--gold);
+  box-shadow:0 0 0 3px rgba(169,124,44,.12);
 }
 
 @media(prefers-reduced-motion:reduce){
-  .welcome-invite-art,
-  .welcome-seal-hotspot,
-  .welcome-seal-split,
-  .welcome-tap-hint,
-  .welcome-reveal .shard,
-  .welcome-reveal .dust{ animation-duration:.01s; animation-delay:0s; transition-duration:.01s; }
-  .welcome-seal-hotspot::before{ animation:none; }
+  .gate-screen,
+  .gate-card,
+  .gate-seal{ animation-duration:.01s; animation-delay:0s; transition-duration:.01s; }
 }

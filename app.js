@@ -40,44 +40,124 @@ function buildBurst(hostId){
   }
 }
 buildBurst('sealBurst');
-buildBurst('welcomeSealBurst');
 
 const opening = $('#opening');
 const sealButton = $('#sealButton');
 const landingFrame = $('#landingFrame');
-const welcomeReveal = $('#welcomeReveal');
-const welcomeSealButton = $('#welcomeSealButton');
+const attendScreen = $('#attendScreen');
+const guestLoginScreen = $('#guestLoginScreen');
+const app = $('#app');
 
-function enterApp(){
-  welcomeReveal.classList.add('exit');
-  setTimeout(() => {
-    welcomeReveal.classList.add('hidden');
-    opening.classList.add('hidden');
-    $('#app').classList.remove('hidden');
-    document.body.classList.remove('locked');
-    window.scrollTo({ top: 0, behavior: 'instant' });
-  }, 700);
+/* ---- Guest session helpers ---- */
+function getGuest(){ return JSON.parse(sessionStorage.getItem('sj_guest') || 'null'); }
+function setGuest(g){ sessionStorage.setItem('sj_guest', JSON.stringify(g)); }
+function clearGuest(){ sessionStorage.removeItem('sj_guest'); }
+function isAdmin(){ return sessionStorage.getItem('sj_admin_auth') === '1'; }
+
+/* ---- Show a gate screen with transition ---- */
+function showGate(screen){
+  [attendScreen, guestLoginScreen].forEach(s => s?.classList.add('hidden'));
+  screen.classList.remove('hidden', 'exit');
+  void screen.offsetWidth;
+}
+function hideGate(screen){
+  screen.classList.add('exit');
+  setTimeout(() => screen.classList.add('hidden'), 650);
 }
 
+/* ---- Enter the main app ---- */
+function enterApp(){
+  opening.classList.add('hidden');
+  attendScreen?.classList.add('hidden');
+  guestLoginScreen?.classList.add('hidden');
+  app.classList.remove('hidden');
+  document.body.classList.remove('locked');
+  window.scrollTo({ top: 0, behavior: 'instant' });
+  updateGuestUI();
+}
+
+/* ---- Seal break on landing page ---- */
 sealButton?.addEventListener('click', () => {
   if (opening.classList.contains('breaking')) return;
   opening.classList.add('breaking');
   sealButton.disabled = true;
 
+  // landing fades out, then attendance question appears
   setTimeout(() => opening.classList.add('opening-envelope'), 900);
   setTimeout(() => {
-    landingFrame.classList.add('hidden');
-    welcomeReveal.classList.remove('hidden');
+    opening.classList.add('hidden');
+    showGate(attendScreen);
   }, 1550);
 });
 
-welcomeSealButton?.addEventListener('click', () => {
-  if (welcomeReveal.classList.contains('breaking')) return;
-  welcomeReveal.classList.add('breaking');
-  welcomeSealButton.disabled = true;
-
-  setTimeout(enterApp, 1200);
+/* ---- Attendance question ---- */
+$('#attendYes')?.addEventListener('click', () => {
+  hideGate(attendScreen);
+  setTimeout(() => showGate(guestLoginScreen), 650);
 });
+
+$('#attendNo')?.addEventListener('click', () => {
+  $('#attendDecline')?.classList.remove('hidden');
+  $('#attendBrowse')?.classList.remove('hidden');
+});
+
+$('#attendBrowse')?.addEventListener('click', () => {
+  hideGate(attendScreen);
+  setTimeout(enterApp, 650);
+});
+
+/* ---- Guest login form ---- */
+$('#guestLoginForm')?.addEventListener('submit', async e => {
+  e.preventDefault();
+  const err = $('#guestLoginError');
+  const name = $('#guestName').value.trim();
+  const phone = $('#guestPhone').value.trim();
+  const email = $('#guestEmail').value.trim();
+  const relation = $('#guestRelation').value;
+
+  if (!name || !phone || !email || !relation){
+    if (err) err.textContent = 'Please fill in all fields.';
+    return;
+  }
+
+  const guest = { name, phone, email, relation, attending:true, checkedInAt:new Date().toISOString() };
+
+  // save to Firebase if available
+  try {
+    if (typeof addGuest === 'function'){
+      const id = await addGuest(guest);
+      guest.id = id;
+    }
+  } catch(ferr){ console.warn('Firebase guest save failed:', ferr); }
+
+  setGuest(guest);
+  if (err) err.textContent = '';
+  hideGate(guestLoginScreen);
+  setTimeout(enterApp, 650);
+});
+
+/* ---- If returning guest, skip gates ---- */
+function checkReturningGuest(){
+  const guest = getGuest();
+  if (guest){
+    opening.classList.add('hidden');
+    enterApp();
+    return true;
+  }
+  return false;
+}
+
+/* ---- Update UI based on guest session ---- */
+function updateGuestUI(){
+  const guest = getGuest();
+  // show guest name in home hero
+  if (guest){
+    const hero = document.querySelector('.home-eyebrow');
+    if (hero) hero.textContent = `WELCOME, ${guest.name.toUpperCase()}`;
+  }
+}
+
+checkReturningGuest();
 
 $('#enterFromHome')?.addEventListener('click', () => switchView('story'));
 
@@ -86,7 +166,8 @@ $('#enterFromHome')?.addEventListener('click', () => switchView('story'));
    --------------------------------------------------------- */
 const SUBVIEW_TAB = {
   guestbook:'more', memories:'more', rsvp:'more', voicemsg:'more', videomsg:'more',
-  admin:'more', adminlogin:'more', approvals:'more', voiceAdmin:'more', videoAdmin:'more', rsvpAdmin:'more'
+  admin:'more', adminlogin:'more', approvals:'more', voiceAdmin:'more', videoAdmin:'more',
+  rsvpAdmin:'more', guestlist:'more'
 };
 function switchView(name){
   const tabName = SUBVIEW_TAB[name] || name;

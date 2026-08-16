@@ -43,21 +43,67 @@
       <span id="sealBurst" class="seal-burst"></span>
     </button>
   </div>
+</div>
 
-  <!-- ==========================================================
-       SCREEN 2 — enter the wedding, tap the seal
-       ========================================================== -->
-  <div id="welcomeReveal" class="welcome-reveal hidden">
-    <div class="welcome-invite">
-      <img src="assets/official-landing-page.jpg" class="welcome-invite-art"
-           alt="You are cordially invited to the wedding of Samuel and Josephine. Tap the seal to open." />
-      <button id="welcomeSealButton" class="welcome-seal-hotspot" type="button"
-              aria-label="Tap the wax seal to open the wedding app">
-        <span class="welcome-seal-split"></span>
-        <span id="welcomeSealBurst" class="welcome-seal-burst"></span>
-      </button>
-      <p class="welcome-tap-hint">TAP THE SEAL TO OPEN</p>
+<!-- ============================================================
+     SCREEN 2 — Will you attend?
+     ============================================================ -->
+<div id="attendScreen" class="gate-screen hidden">
+  <div class="gate-card">
+    <div class="gate-seal">
+      <img src="assets/seal-pressed-320.png" alt="S&J seal" />
     </div>
+    <p class="gate-eyebrow">SAM &amp; JOSSY</p>
+    <h1 class="gate-title">Will you join us?</h1>
+    <p class="gate-sub">January 9, 2027 &middot; We would love to celebrate with you</p>
+    <div class="divider"><span></span><i>&#10084;</i><span></span></div>
+    <div class="gate-buttons">
+      <button id="attendYes" class="gate-btn gate-btn--yes" type="button">YES, I'LL BE THERE</button>
+      <button id="attendNo" class="gate-btn gate-btn--no" type="button">CAN'T MAKE IT</button>
+    </div>
+    <p id="attendDecline" class="gate-decline hidden">We'll miss you! Thank you for letting us know. You can still explore our wedding app below.</p>
+    <button id="attendBrowse" class="gate-btn gate-btn--browse hidden" type="button">EXPLORE ANYWAY &#10095;</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     SCREEN 3 — Guest login (name, phone, email, relation)
+     ============================================================ -->
+<div id="guestLoginScreen" class="gate-screen hidden">
+  <div class="gate-card gate-card--form">
+    <div class="gate-seal">
+      <img src="assets/seal-pressed-320.png" alt="S&J seal" />
+    </div>
+    <p class="gate-eyebrow">GUEST CHECK-IN</p>
+    <h1 class="gate-title">Tell us about you</h1>
+    <p class="gate-sub">So we can personalize your experience</p>
+    <div class="divider"><span></span><i>&#10084;</i><span></span></div>
+
+    <form id="guestLoginForm" class="gate-form">
+      <label class="field">Full Name
+        <input id="guestName" type="text" name="name" required placeholder="Enter your full name" autocomplete="name" />
+      </label>
+      <label class="field">Phone Number
+        <input id="guestPhone" type="tel" name="phone" required placeholder="e.g. +1 234 567 890" autocomplete="tel" />
+      </label>
+      <label class="field">Email Address
+        <input id="guestEmail" type="email" name="email" required placeholder="you@example.com" autocomplete="email" />
+      </label>
+      <label class="field">Your Relationship / Invited By
+        <select id="guestRelation" name="relation" required>
+          <option value="" disabled selected>Select who invited you</option>
+          <option value="Sam's Family">Sam's Family</option>
+          <option value="Jossy's Family">Jossy's Family</option>
+          <option value="Sam's Friend">Sam's Friend</option>
+          <option value="Jossy's Friend">Jossy's Friend</option>
+          <option value="Colleague">Colleague</option>
+          <option value="Church Family">Church Family</option>
+          <option value="Other">Other</option>
+        </select>
+      </label>
+      <p id="guestLoginError" class="gate-error"></p>
+      <button type="submit" class="gate-btn gate-btn--submit">ENTER THE WEDDING &#10095;</button>
+    </form>
   </div>
 </div>
 
@@ -581,6 +627,10 @@
 
     <div class="admin-stats" id="adminStats">
       <div class="admin-stat">
+        <span class="admin-stat-label">Guests</span>
+        <strong id="statGuests" class="admin-stat-num">0</strong>
+      </div>
+      <div class="admin-stat">
         <span class="admin-stat-label">Pending</span>
         <strong id="statPending" class="admin-stat-num">0</strong>
       </div>
@@ -589,12 +639,17 @@
         <strong id="statApproved" class="admin-stat-num">0</strong>
       </div>
       <div class="admin-stat">
-        <span class="admin-stat-label">Total</span>
-        <strong id="statTotal" class="admin-stat-num">0</strong>
+        <span class="admin-stat-label">RSVPs</span>
+        <strong id="statRsvps" class="admin-stat-num">0</strong>
       </div>
     </div>
 
     <div class="menu-list">
+      <button class="menu-item" data-goto="guestlist" type="button">
+        <span class="menu-icon menu-icon--gold">&#128101;</span>
+        <span class="menu-text"><strong>Guest List</strong><small>All checked-in guests</small></span>
+        <span class="menu-chev">&#10095;</span>
+      </button>
       <button class="menu-item" data-goto="approvals" type="button">
         <span class="menu-icon menu-icon--gold">&#128338;</span>
         <span class="menu-text"><strong>Pending Approvals</strong><small>Review and approve submissions</small></span>
@@ -610,19 +665,9 @@
         <span class="menu-text"><strong>Photos &amp; Videos</strong><small>Shared memories</small></span>
         <span class="menu-chev">&#10095;</span>
       </button>
-      <button class="menu-item" data-goto="voiceAdmin" type="button">
-        <span class="menu-icon menu-icon--gold">&#127908;</span>
-        <span class="menu-text"><strong>Voice Messages</strong><small>Recorded audio messages</small></span>
-        <span class="menu-chev">&#10095;</span>
-      </button>
-      <button class="menu-item" data-goto="videoAdmin" type="button">
-        <span class="menu-icon menu-icon--gold">&#127909;</span>
-        <span class="menu-text"><strong>Video Messages</strong><small>Recorded video messages</small></span>
-        <span class="menu-chev">&#10095;</span>
-      </button>
       <button class="menu-item" data-goto="rsvpAdmin" type="button">
         <span class="menu-icon menu-icon--gold">&#9993;</span>
-        <span class="menu-text"><strong>RSVPs</strong><small>Responses collected on this device</small></span>
+        <span class="menu-text"><strong>RSVPs</strong><small>All RSVP responses</small></span>
         <span class="menu-chev">&#10095;</span>
       </button>
       <button class="menu-item" id="adminLogout" type="button">
@@ -631,6 +676,26 @@
         <span class="menu-chev">&#10095;</span>
       </button>
     </div>
+  </section>
+
+  <!-- ---------- Guest List (Admin) ---------- -->
+  <section class="view hidden" data-view="guestlist">
+    <button class="back-link" data-goto="admin" type="button">&#10094; Back</button>
+    <h1 class="page-title page-title--serif">Guest List</h1>
+    <div class="divider"><span></span><i>&#10084;</i><span></span></div>
+    <p class="page-sub">All guests who checked in</p>
+    <div id="guestListContainer" class="aq-list"></div>
+    <p id="guestListEmpty" class="page-sub">No guests have checked in yet.</p>
+  </section>
+
+  <!-- ---------- RSVP Admin ---------- -->
+  <section class="view hidden" data-view="rsvpAdmin">
+    <button class="back-link" data-goto="admin" type="button">&#10094; Back</button>
+    <h1 class="page-title page-title--serif">RSVP Responses</h1>
+    <div class="divider"><span></span><i>&#10084;</i><span></span></div>
+    <p class="page-sub">All RSVP submissions</p>
+    <div id="rsvpAdminList" class="aq-list"></div>
+    <p id="rsvpAdminEmpty" class="page-sub">No RSVPs yet.</p>
   </section>
 
   <!-- ---------- Approval Queue ---------- -->

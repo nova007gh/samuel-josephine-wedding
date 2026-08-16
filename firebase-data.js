@@ -141,6 +141,38 @@ function onRsvps(callback){
   });
 }
 
+/* ---------- Guests (check-in system) ---------- */
+const guestsRef = () => db.collection('guests');
+
+async function addGuest(guest){
+  const doc = guestsRef().doc();
+  const data = {
+    id: doc.id,
+    name: guest.name,
+    phone: guest.phone,
+    email: guest.email,
+    relation: guest.relation,
+    attending: guest.attending !== false,
+    checkedInAt: tsField()
+  };
+  await doc.set(data);
+  return data.id;
+}
+
+function onGuests(callback){
+  return guestsRef().orderBy('checkedInAt', 'desc').onSnapshot(snapshot => {
+    callback(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
+  });
+}
+
+async function deleteGuest(id){
+  await guestsRef().doc(id).delete();
+}
+
+async function updateGuest(id, data){
+  await guestsRef().doc(id).update(data);
+}
+
 /* ---------- subscriptions registry ---------- */
 const unsubscribers = new Set();
 

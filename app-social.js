@@ -500,6 +500,14 @@ function checkAdminAuth(){
   const params = new URLSearchParams(window.location.search);
   const target = params.get('view') || (params.has('admin') ? 'admin' : null);
   if (target === 'admin'){
+    // skip the seal/gates and go straight to admin
+    const opening = document.getElementById('opening');
+    const attendScreen = document.getElementById('attendScreen');
+    const guestLoginScreen = document.getElementById('guestLoginScreen');
+    const app = document.getElementById('app');
+    [opening, attendScreen, guestLoginScreen].forEach(el => el?.classList.add('hidden'));
+    app?.classList.remove('hidden');
+    document.body.classList.remove('locked');
     if (isAdminAuthenticated()) switchView('admin');
     else switchView('adminlogin');
   }
@@ -527,6 +535,8 @@ document.querySelector('[data-goto="adminlogin"]')?.addEventListener('click', ()
    ========================================================= */
 let adminMemories = [];
 let adminGuestbook = [];
+let adminGuests = [];
+let adminRsvps = [];
 
 function allSubmissions(){
   const mems = (adminMemories || []).map(m => ({ ...m, kind: m.kind || 'photo', type: m.type || 'image/jpeg' }));
@@ -538,11 +548,11 @@ function updateAdminStats(){
   const items = allSubmissions();
   const pending = items.filter(i => i.status !== 'approved').length;
   const approved = items.filter(i => i.status === 'approved').length;
-  const total = items.length;
   const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
   set('statPending', pending);
   set('statApproved', approved);
-  set('statTotal', total);
+  set('statGuests', adminGuests.length);
+  set('statRsvps', adminRsvps.length);
 }
 
 function aqFilterMatches(item, filter){
@@ -570,11 +580,11 @@ function renderApprovalQueue(){
     let media = '';
     if (item.kind === 'guestbook'){
       media = `<p><b>${escapeHTML(item.name)}</b> &mdash; ${escapeHTML(item.message)}</p>`;
-    } else if (item.type.startsWith('image/')){
+    } else if (item.type && item.type.startsWith('image/') && item.mediaUrl){
       media = `<img class="aq-media" src="${item.mediaUrl}" alt="">`;
-    } else if (item.type.startsWith('video/')){
+    } else if (item.type && item.type.startsWith('video/') && item.mediaUrl){
       media = `<video class="aq-media" controls playsinline src="${item.mediaUrl}"></video>`;
-    } else if (item.type.startsWith('audio/')){
+    } else if (item.type && item.type.startsWith('audio/') && item.mediaUrl){
       media = `<audio controls src="${item.mediaUrl}"></audio>`;
     }
     const by = item.guestName || item.name || 'Guest';
@@ -591,6 +601,54 @@ function renderApprovalQueue(){
     card.querySelector('.aq-reject').addEventListener('click', async e => {
       await removeSubmission(e.target);
     });
+    list.appendChild(card);
+  }
+}
+
+function renderGuestList(){
+  const list = document.getElementById('guestListContainer');
+  const empty = document.getElementById('guestListEmpty');
+  if (!list) return;
+  list.innerHTML = '';
+  empty.classList.toggle('hidden', adminGuests.length > 0);
+
+  for (const g of adminGuests){
+    const card = document.createElement('article');
+    card.className = 'aq-card';
+    const checkedIn = g.checkedInAt ? timeAgo(g.checkedInAt) : '';
+    card.innerHTML = `
+      <p><b>${escapeHTML(g.name)}</b></p>
+      <small>${escapeHTML(g.relation || '')} &middot; ${escapeHTML(g.phone || '')} &middot; ${escapeHTML(g.email || '')}</small>
+      <small>Checked in ${checkedIn}</small>
+      <div class="aq-actions">
+        <button class="aq-reject" data-id="${g.id}" type="button">REMOVE</button>
+      </div>`;
+    card.querySelector('.aq-reject').addEventListener('click', async () => {
+      if (!confirm('Remove this guest?')) return;
+      await deleteGuest(g.id);
+    });
+    list.appendChild(card);
+  }
+}
+
+function renderRsvpAdmin(){
+  const list = document.getElementById('rsvpAdminList');
+  const empty = document.getElementById('rsvpAdminEmpty');
+  if (!list) return;
+  list.innerHTML = '';
+  empty.classList.toggle('hidden', adminRsvps.length > 0);
+
+  for (const r of adminRsvps){
+    const card = document.createElement('article');
+    card.className = 'aq-card';
+    const submitted = r.submittedAt ? timeAgo(r.submittedAt) : '';
+    const attending = r.attending === 'yes' ? 'Attending' : r.attending === 'no' ? 'Not Attending' : (r.attending || '');
+    const plusOne = r.plusOne ? `+${r.plusOne}` : '';
+    card.innerHTML = `
+      <p><b>${escapeHTML(r.name || 'Guest')}</b> ${plusOne ? `<span class="gb-badge gb-badge--approved">${plusOne}</span>` : ''}</p>
+      <small>${escapeHTML(attending)} &middot; ${escapeHTML(r.phone || '')} &middot; ${escapeHTML(r.email || '')}</small>
+      ${r.message ? `<p class="gb-msg">${escapeHTML(r.message)}</p>` : ''}
+      <small>Submitted ${submitted}</small>`;
     list.appendChild(card);
   }
 }
@@ -613,8 +671,16 @@ async function removeSubmission(btn){
 function startAdminListeners(){
   onMemories(items => { adminMemories = items; updateAdminStats(); renderApprovalQueue(); });
   onGuestbook(items => { adminGuestbook = items; updateAdminStats(); renderApprovalQueue(); });
+  onGuests(items => { adminGuests = items; updateAdminStats(); renderGuestList(); });
+  onRsvps(items => { adminRsvps = items; updateAdminStats(); renderRsvpAdmin(); });
 }
 startAdminListeners();
+
+// admin logout
+document.getElementById('adminLogout')?.addEventListener('click', () => {
+  sessionStorage.removeItem('sj_admin_auth');
+  switchView('home');
+});
 
 // expose helpers for admin
 document.querySelectorAll('#aqFilters .chip').forEach(chip => {
