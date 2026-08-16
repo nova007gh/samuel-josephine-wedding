@@ -760,3 +760,142 @@ img {
   object-fit: cover;
   border-radius: 20px;
 }
+
+/* =========================================================
+   Intro invitation card — matches reference mockup
+   ========================================================= */
+.intro .paper{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 7vh;
+  padding-bottom: 5vh;
+}
+.intro .eyebrow{
+  color: #6d5023;
+  font-family: "Cormorant Garamond", serif;
+  font-size: .78rem;
+  letter-spacing: .38em;
+  margin: 0;
+}
+.intro .eyebrow--soft{
+  margin-top: 6px;
+  color: #8a6a3d;
+  letter-spacing: .3em;
+  font-style: italic;
+  font-size: .82rem;
+  opacity: .9;
+}
+.couple-names{
+  margin: 22px 0 6px;
+  font-weight: 400;
+  text-align: center;
+  line-height: 1;
+}
+.couple-names .name{
+  display: block;
+  font-family: "Parisienne", cursive;
+  font-size: clamp(3.2rem, 12vw, 5.4rem);
+  color: #8c651e;
+  line-height: 1;
+  text-shadow: 0 2px 3px rgba(140,101,30,.15);
+}
+.couple-names small{
+  display: block;
+  font-family: "Cormorant Garamond", serif;
+  font-size: .82rem;
+  letter-spacing: .32em;
+  color: #6d5023;
+  margin: 6px 0 14px;
+}
+.couple-names .amp{
+  display: block;
+  font-family: "Parisienne", cursive;
+  font-weight: 400;
+  font-size: clamp(2.4rem, 7vw, 3.4rem);
+  color: #9e772d;
+  margin: 4px 0 8px;
+  line-height: 1;
+}
+
+/* Envelope + seal cluster */
+.envelope{
+  position: relative;
+  width: min(88%, 460px);
+  margin: 26px auto 8px;
+  padding: 34px 0 46px;
+  display: grid;
+  place-items: center;
+}
+.envelope-flap{
+  position: absolute;
+  top: 0;
+  width: 55%;
+  height: 100%;
+  background: linear-gradient(135deg, #f3e2c4 0%, #e9d1a8 55%, #d4b380 100%);
+  box-shadow:
+    inset 0 6px 12px rgba(255,240,208,.55),
+    inset 0 -8px 12px rgba(120,80,32,.15);
+  pointer-events: none;
+}
+.envelope-flap--left{
+  left: -6%;
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+  border-top-left-radius: 12px;
+}
+.envelope-flap--right{
+  right: -6%;
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+  border-top-right-radius: 12px;
+}
+.envelope-glow{
+  position: absolute;
+  inset: 20% 15% 15% 15%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,224,166,.9), rgba(255,214,140,.35) 45%, transparent 70%);
+  filter: blur(6px);
+  pointer-events: none;
+}
+.envelope .seal-button{
+  position: relative;
+  z-index: 2;
+}
+
+/* Heart divider row */
+.tap-heart-row{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: min(70%, 260px);
+  margin: 8px auto 0;
+}
+.tap-heart-row .tap-line{
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(140,101,30,.55), transparent);
+}
+.tap-heart{
+  color: #a87c2c;
+  font-size: 1rem;
+  text-shadow: 0 1px 0 rgba(255,235,200,.7);
+}
+
+.intro .tap{
+  margin-top: 6px;
+  font-family: "Cormorant Garamond", serif;
+  letter-spacing: .34em;
+  font-size: .86rem;
+  color: #6d5023;
+}
+
+/* Hide legacy elements if they still exist elsewhere */
+.intro .floral-divider,
+.intro .hashtag{ display: none !important; }
+
+/* Small screens tighten */
+@media(max-width:520px){
+  .intro .paper{ padding-top: 5vh; }
+  .envelope{ padding: 20px 0 34px; }
+  .couple-names small{ font-size: .72rem; letter-spacing: .28em; }
+}
