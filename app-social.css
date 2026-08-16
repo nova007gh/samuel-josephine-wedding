@@ -498,3 +498,69 @@
   border-right:1px solid rgba(169,124,44,.2);
 }
 .rsvp-submit{ margin-top:20px; }
+
+/* =========================================================
+   Admin dashboard
+   ========================================================= */
+.admin-stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  margin:16px 0 0;
+  padding:14px;
+  border-radius:18px;
+  background:rgba(255,255,255,.82);
+  border:1px solid rgba(169,124,44,.16);
+  box-shadow:0 10px 26px rgba(112,78,26,.08);
+}
+.admin-stat{
+  display:grid;
+  place-items:center;
+  gap:4px;
+  padding:10px 0;
+  text-align:center;
+}
+.admin-stat + .admin-stat{ border-left:1px solid rgba(169,124,44,.18); }
+.admin-stat-label{ font-size:.64rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#8b7355; }
+.admin-stat-num{ font-family:"Cormorant Garamond",Georgia,serif; font-size:1.9rem; color:var(--gold-deep); }
+
+.aq-list{ display:grid; gap:12px; margin:16px 0 0; }
+.aq-card{
+  display:grid;
+  gap:10px;
+  padding:12px;
+  border-radius:16px;
+  background:rgba(255,255,255,.82);
+  border:1px solid rgba(169,124,44,.16);
+  box-shadow:0 8px 20px rgba(112,78,26,.08);
+}
+.aq-card .aq-media{ width:100%; max-height:160px; object-fit:cover; border-radius:12px; }
+.aq-card audio{ width:100%; }
+.aq-card p{ margin:0; font-size:.82rem; color:#5f4d33; }
+.aq-card small{ display:block; margin-top:2px; font-size:.7rem; color:#8b7355; }
+.aq-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:4px;
+}
+.aq-approve{
+  padding:12px;
+  border:0;
+  border-radius:12px;
+  background:linear-gradient(#6b9e5b,#4f7a42);
+  color:#f2fff2;
+  font-size:.78rem;
+  font-weight:700;
+  letter-spacing:.08em;
+}
+.aq-reject{
+  padding:12px;
+  border:0;
+  border-radius:12px;
+  background:linear-gradient(#c44d45,#9b2e27);
+  color:#fff7f4;
+  font-size:.78rem;
+  font-weight:700;
+  letter-spacing:.08em;
+}

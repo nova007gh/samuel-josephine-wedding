@@ -519,6 +519,123 @@ document.getElementById('shareTypeVideoMsg')?.addEventListener('click', async ()
   await startCamera();
 });
 
+/* =========================================================
+   Admin dashboard
+   ========================================================= */
+function allSubmissions(){
+  return Promise.all([getMemories(), gbAll()]).then(([mems, gbs]) => [
+    ...mems.map(m => ({ ...m, kind: m.kind || 'photo', type: m.type || 'image/jpeg' })),
+    ...gbs.map(g => ({ ...g, kind: 'guestbook', type: 'guestbook' }))
+  ]);
+}
+
+async function updateAdminStats(){
+  const items = await allSubmissions();
+  const pending = items.filter(i => i.status !== 'approved').length;
+  const approved = items.filter(i => i.status === 'approved').length;
+  const total = items.length;
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  set('statPending', pending);
+  set('statApproved', approved);
+  set('statTotal', total);
+}
+
+function aqFilterMatches(item, filter){
+  if (filter === 'all') return true;
+  if (filter === 'guestbook') return item.kind === 'guestbook';
+  if (filter === 'photo') return item.type?.startsWith('image/') || item.kind === 'photo' || item.kind === 'selfie';
+  if (filter === 'video') return item.type?.startsWith('video/') || item.kind === 'videomsg' || item.kind === 'video';
+  if (filter === 'voice') return item.type?.startsWith('audio/') || item.kind === 'voice';
+  return true;
+}
+
+async function renderApprovalQueue(){
+  const list = document.getElementById('aqList');
+  const empty = document.getElementById('aqEmpty');
+  if (!list) return;
+
+  const filter = document.querySelector('#aqFilters .chip.active')?.dataset.aqFilter || 'all';
+  const items = (await allSubmissions()).filter(i => i.status !== 'approved' && aqFilterMatches(i, filter));
+  list.innerHTML = '';
+  empty.classList.toggle('hidden', items.length > 0);
+
+  for (const item of items){
+    const card = document.createElement('article');
+    card.className = 'aq-card';
+    let media = '';
+    if (item.kind === 'guestbook'){
+      const avatar = item.selfie ? `<img class="aq-card" src="${URL.createObjectURL(item.selfie)}" alt="">` : '';
+      media = `<p><b>${escapeHTML(item.name)}</b> &mdash; ${escapeHTML(item.message)}</p>`;
+    } else if (item.type.startsWith('image/')){
+      const url = URL.createObjectURL(item.blob);
+      media = `<img class="aq-media" src="${url}" alt="">`;
+    } else if (item.type.startsWith('video/')){
+      const url = URL.createObjectURL(item.blob);
+      media = `<video class="aq-media" controls playsinline src="${url}"></video>`;
+    } else if (item.type.startsWith('audio/')){
+      const url = URL.createObjectURL(item.blob);
+      media = `<audio controls src="${url}"></audio>`;
+    }
+    const by = item.guestName || item.name || 'Guest';
+    card.innerHTML = `
+      ${media}
+      <small>${escapeHTML(by)} &middot; ${timeAgo(item.createdAt)}</small>
+      <div class="aq-actions">
+        <button class="aq-approve" data-id="${item.id}" data-kind="${item.kind}" type="button">APPROVE</button>
+        <button class="aq-reject" data-id="${item.id}" data-kind="${item.kind}" type="button">REJECT</button>
+      </div>`;
+    card.querySelector('.aq-approve').addEventListener('click', async e => {
+      await updateStatus(e.target, 'approved');
+      await Promise.all([renderApprovalQueue(), updateAdminStats(), renderGuestBook(), renderGallery()]);
+    });
+    card.querySelector('.aq-reject').addEventListener('click', async e => {
+      await removeSubmission(e.target);
+      await Promise.all([renderApprovalQueue(), updateAdminStats(), renderGuestBook(), renderGallery()]);
+    });
+    list.appendChild(card);
+  }
+}
+
+async function updateStatus(btn, status){
+  const kind = btn.dataset.kind;
+  const id = Number(btn.dataset.id);
+  if (kind === 'guestbook'){
+    const all = await gbAll();
+    const item = all.find(i => i.id === id);
+    if (item){ item.status = status; await gbUpdate(item); }
+  } else {
+    const all = await getMemories();
+    const item = all.find(i => i.id === id);
+    if (item){ item.status = status; await updateMemory(item); }
+  }
+}
+
+async function removeSubmission(btn){
+  const kind = btn.dataset.kind;
+  const id = Number(btn.dataset.id);
+  if (kind === 'guestbook') await deleteMemoryGB(id);
+  else await deleteMemory(id);
+}
+
+// expose helpers for admin
+document.querySelectorAll('#aqFilters .chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('#aqFilters .chip').forEach(c => c.classList.toggle('active', c === chip));
+    renderApprovalQueue();
+  });
+});
+
+document.querySelector('[data-goto="admin"]')?.addEventListener('click', () => updateAdminStats());
+document.querySelector('[data-goto="approvals"]')?.addEventListener('click', () => renderApprovalQueue());
+
+// Refresh stats when a view is shown
+const _origSwitchView = switchView;
+switchView = async function(name){
+  _origSwitchView(name);
+  if (name === 'admin') await updateAdminStats();
+  if (name === 'approvals') await renderApprovalQueue();
+};
+
 function teardownRecorders(){
   stopVoice(true);
   stopVideoMsg(true);

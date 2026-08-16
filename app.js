@@ -76,7 +76,10 @@ $('#enterFromHome')?.addEventListener('click', () => switchView('story'));
 /* ---------------------------------------------------------
    Tab navigation
    --------------------------------------------------------- */
-const SUBVIEW_TAB = { guestbook:'more', memories:'more', rsvp:'more', voicemsg:'more', videomsg:'more' };
+const SUBVIEW_TAB = {
+  guestbook:'more', memories:'more', rsvp:'more', voicemsg:'more', videomsg:'more',
+  admin:'more', approvals:'more', voiceAdmin:'more', videoAdmin:'more', rsvpAdmin:'more'
+};
 function switchView(name){
   const tabName = SUBVIEW_TAB[name] || name;
   $$('.view').forEach(v => v.classList.toggle('hidden', v.dataset.view !== name));

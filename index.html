@@ -347,6 +347,11 @@
         <span class="menu-text"><strong>RSVP</strong><small>Kindly respond before Dec 01, 2026</small></span>
         <span class="menu-chev">&#10095;</span>
       </button>
+      <button class="menu-item" data-goto="admin" type="button">
+        <span class="menu-icon menu-icon--gold">&#128100;</span>
+        <span class="menu-text"><strong>Admin Dashboard</strong><small>Samuel &amp; Josephine only</small></span>
+        <span class="menu-chev">&#10095;</span>
+      </button>
     </div>
 
     <div class="more-actions">
@@ -555,6 +560,86 @@
       <button class="map-button rsvp-submit" type="submit">SUBMIT RSVP</button>
       <p id="rsvpStatus" class="upload-status"></p>
     </form>
+  </section>
+
+  <!-- ---------- Admin Dashboard ---------- -->
+  <section class="view hidden" data-view="admin">
+    <button class="back-link" data-goto="more" type="button">&#10094; Back</button>
+    <h1 class="page-title page-title--serif">Admin Dashboard</h1>
+    <div class="divider"><span></span><i>&#10084;</i><span></span></div>
+    <p class="page-sub">Welcome, Samuel &amp; Josephine</p>
+
+    <div class="admin-stats" id="adminStats">
+      <div class="admin-stat">
+        <span class="admin-stat-label">Pending</span>
+        <strong id="statPending" class="admin-stat-num">0</strong>
+      </div>
+      <div class="admin-stat">
+        <span class="admin-stat-label">Approved</span>
+        <strong id="statApproved" class="admin-stat-num">0</strong>
+      </div>
+      <div class="admin-stat">
+        <span class="admin-stat-label">Total</span>
+        <strong id="statTotal" class="admin-stat-num">0</strong>
+      </div>
+    </div>
+
+    <div class="menu-list">
+      <button class="menu-item" data-goto="approvals" type="button">
+        <span class="menu-icon menu-icon--gold">&#128338;</span>
+        <span class="menu-text"><strong>Pending Approvals</strong><small>Review and approve submissions</small></span>
+        <span class="menu-chev">&#10095;</span>
+      </button>
+      <button class="menu-item" data-goto="guestbook" type="button">
+        <span class="menu-icon menu-icon--gold">&#128172;</span>
+        <span class="menu-text"><strong>Guest Book</strong><small>All guest messages</small></span>
+        <span class="menu-chev">&#10095;</span>
+      </button>
+      <button class="menu-item" data-goto="gallery" type="button">
+        <span class="menu-icon menu-icon--gold">&#128247;</span>
+        <span class="menu-text"><strong>Photos &amp; Videos</strong><small>Shared memories</small></span>
+        <span class="menu-chev">&#10095;</span>
+      </button>
+      <button class="menu-item" data-goto="voiceAdmin" type="button">
+        <span class="menu-icon menu-icon--gold">&#127908;</span>
+        <span class="menu-text"><strong>Voice Messages</strong><small>Recorded audio messages</small></span>
+        <span class="menu-chev">&#10095;</span>
+      </button>
+      <button class="menu-item" data-goto="videoAdmin" type="button">
+        <span class="menu-icon menu-icon--gold">&#127909;</span>
+        <span class="menu-text"><strong>Video Messages</strong><small>Recorded video messages</small></span>
+        <span class="menu-chev">&#10095;</span>
+      </button>
+      <button class="menu-item" data-goto="rsvpAdmin" type="button">
+        <span class="menu-icon menu-icon--gold">&#9993;</span>
+        <span class="menu-text"><strong>RSVPs</strong><small>Responses collected on this device</small></span>
+        <span class="menu-chev">&#10095;</span>
+      </button>
+      <button class="menu-item" id="adminLogout" type="button">
+        <span class="menu-icon menu-icon--gold">&#10162;</span>
+        <span class="menu-text"><strong>Log Out</strong><small>Exit admin view</small></span>
+        <span class="menu-chev">&#10095;</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ---------- Approval Queue ---------- -->
+  <section class="view hidden" data-view="approvals">
+    <button class="back-link" data-goto="admin" type="button">&#10094; Back</button>
+    <h1 class="page-title page-title--serif">Approval Queue</h1>
+    <div class="divider"><span></span><i>&#10084;</i><span></span></div>
+    <p class="page-sub">Review and approve user submissions</p>
+
+    <div class="chips chips--center" id="aqFilters">
+      <button class="chip active" data-aq-filter="all">All</button>
+      <button class="chip" data-aq-filter="photo">Photos</button>
+      <button class="chip" data-aq-filter="voice">Voice</button>
+      <button class="chip" data-aq-filter="video">Video</button>
+      <button class="chip" data-aq-filter="guestbook">Guest Book</button>
+    </div>
+
+    <div id="aqList" class="aq-list"></div>
+    <p id="aqEmpty" class="page-sub">No pending submissions. Great job!</p>
   </section>
 
   <!-- ---------- Bottom tab bar ---------- -->

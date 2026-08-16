@@ -57,6 +57,24 @@ async function deleteMemory(id){
     tx.onerror = () => reject(tx.error);
   });
 }
+async function updateMemory(record){
+  const db = await openMemoryDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE, 'readwrite');
+    tx.objectStore(STORE).put(record);
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
+  });
+}
+async function deleteMemoryGB(id){
+  const db = await openMemoryDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(GB_STORE, 'readwrite');
+    tx.objectStore(GB_STORE).delete(id);
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
+  });
+}
 
 const SETTINGS_DB = 'SJWeddingSettings';
 const SETTINGS_STORE = 'kv';
