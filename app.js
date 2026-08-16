@@ -41,22 +41,20 @@ function buildBurst(){
 }
 buildBurst();
 
-const opening = $('#sealIntro');
-const sealButton = $('#breakSealButton');
+const opening = $('#opening');
+const sealButton = $('#sealButton');
+const landingFrame = $('#landingFrame');
 const welcomeReveal = $('#welcomeReveal');
 const enterWedding = $('#enterWedding');
 
 sealButton?.addEventListener('click', () => {
-  if (opening.classList.contains('is-breaking')) return;
-  opening.classList.add('is-breaking');
+  if (opening.classList.contains('breaking')) return;
+  opening.classList.add('breaking');
   sealButton.disabled = true;
 
+  setTimeout(() => opening.classList.add('opening-envelope'), 900);
   setTimeout(() => {
-    opening.classList.add('is-opening');
-    setTimeout(() => opening.classList.add('hidden'), 900);
-  }, 1000);
-
-  setTimeout(() => {
+    landingFrame.classList.add('hidden');
     welcomeReveal.classList.remove('hidden');
     void welcomeReveal.offsetWidth;
     welcomeReveal.classList.add('showing');
@@ -73,7 +71,7 @@ sealButton?.addEventListener('click', () => {
         enterWedding.classList.add('show');
       }, 1900);
     }, 450);
-  }, 900);
+  }, 1550);
 });
 
 /* ---------------------------------------------------------

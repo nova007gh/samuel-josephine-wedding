@@ -30,36 +30,19 @@
 <!-- ============================================================
      SCREEN 1 — invitation, tap the seal
      ============================================================ -->
-<div id="sealIntro" class="seal-intro">
-  <div class="seal-scene">
-    <div class="seal-glow"></div>
+<div id="opening" class="opening">
+  <div id="landingFrame" class="landing-frame">
+    <picture>
+      <source srcset="assets/official-landing-4k.webp" type="image/webp">
+      <img src="assets/official-landing-page.jpg" class="landing-art"
+           alt="You are cordially invited to the wedding of Samuel Nana Yaw Obeng and Josephine Abena Owusua Appiah. Tap the seal to open." />
+    </picture>
 
-    <button
-      id="breakSealButton"
-      class="seal-button"
-      aria-label="Tap the wax seal to open the wedding invitation"
-      type="button"
-    >
-      <img
-        src="assets/seal-pressed-320.png"
-        alt="S&J Wedding Seal"
-        class="seal-image"
-      />
-      <span class="crack crack-1"></span>
-      <span class="crack crack-2"></span>
-      <span class="crack crack-3"></span>
-      <span class="crack crack-4"></span>
-      <span class="fragment fragment-1"></span>
-      <span class="fragment fragment-2"></span>
-      <span class="fragment fragment-3"></span>
-      <span class="fragment fragment-4"></span>
-      <span class="fragment fragment-5"></span>
-      <span class="fragment fragment-6"></span>
+    <button id="sealButton" class="seal-hotspot" aria-label="Tap the wax seal to open the invitation" type="button">
+      <span class="seal-split"></span>
+      <span id="sealBurst" class="seal-burst"></span>
     </button>
-
-    <p class="tap-label">TAP THE SEAL TO OPEN</p>
   </div>
-</div>
 
   <!-- ==========================================================
        SCREEN 2 — welcome to our forever
