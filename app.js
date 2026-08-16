@@ -147,10 +147,45 @@ setInterval(updateCountdown, 1000);
    Music toggle
    --------------------------------------------------------- */
 const music = $('#backgroundMusic');
+let currentSongUrl = null;
+
+async function loadSong(){
+  try {
+    const blob = await kvGet('weddingSong');
+    const label = await kvGet('weddingSongLabel');
+    if (blob && music){
+      if (currentSongUrl) URL.revokeObjectURL(currentSongUrl);
+      currentSongUrl = URL.createObjectURL(blob);
+      music.src = currentSongUrl;
+      music.load();
+      const labelEl = document.getElementById('songLabel');
+      if (labelEl) labelEl.textContent = label || 'Song loaded';
+      const toggle = document.getElementById('musicToggle');
+      if (toggle) toggle.classList.add('has-song');
+    }
+  } catch(err){ console.warn(err); }
+}
+loadSong();
+
+async function saveSong(file){
+  try {
+    await kvSet('weddingSong', file);
+    await kvSet('weddingSongLabel', file.name);
+    await loadSong();
+    if (music && music.paused === false){ music.play().catch(() => {}); }
+  } catch(err){ console.warn(err); }
+}
+
+document.getElementById('songUpload')?.addEventListener('change', e => {
+  const file = e.target.files?.[0];
+  if (file && file.type.startsWith('audio/')) saveSong(file);
+  e.target.value = '';
+});
+
 $('#musicToggle')?.addEventListener('click', async e => {
   const btn = e.currentTarget;
-  if (!music || !music.getAttribute('src')) {
-    btn.classList.toggle('is-on');
+  if (!music || !music.src) {
+    alert('Upload a wedding song from the More menu first.');
     return;
   }
   if (music.paused) {

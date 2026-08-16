@@ -90,23 +90,10 @@
 
   <!-- ---------- SCREEN 3 — Home ---------- -->
   <section class="view" data-view="home">
-    <h1 class="home-welcome">Welcome</h1>
-    <div class="divider"><span></span><i>&#10084;</i><span></span></div>
-    <p class="home-happy">WE'RE SO HAPPY YOU'RE HERE!</p>
-    <div class="divider divider--ornate"><span></span><i>&#10022;</i><span></span></div>
-    <h2 class="home-names">Sam &amp; Jossy</h2>
-    <p class="home-tag">OUR FOREVER STARTS HERE</p>
-
-    <div class="bigday">
-      <p class="bigday-label">THE BIG DAY</p>
-      <p class="bigday-date">09 | JAN | 2027</p>
-      <div class="divider"><span></span><i>&#10084;</i><span></span></div>
-      <div class="countdown">
-        <div><strong id="days">0</strong><span>DAYS</span></div>
-        <div><strong id="hours">00</strong><span>HRS</span></div>
-        <div><strong id="minutes">00</strong><span>MINS</span></div>
-        <div><strong id="seconds">00</strong><span>SECS</span></div>
-      </div>
+    <div class="home-hero">
+      <p class="home-eyebrow">WELCOME TO OUR FOREVER</p>
+      <h1 class="home-names">Sam &amp; Jossy</h1>
+      <p class="home-tag">OUR FOREVER STARTS HERE</p>
     </div>
 
     <figure class="couple-photo">
@@ -118,6 +105,17 @@
       </label>
       <figcaption class="couple-caption"><span>&#10084;</span> #AlwaysAndForever <span>&#10084;</span></figcaption>
     </figure>
+
+    <div class="bigday">
+      <p class="bigday-label">THE BIG DAY</p>
+      <p class="bigday-date">09 <b>|</b> JAN <b>|</b> 2027</p>
+      <div class="countdown">
+        <div><strong id="days">0</strong><span>DAYS</span></div>
+        <div><strong id="hours">00</strong><span>HRS</span></div>
+        <div><strong id="minutes">00</strong><span>MINS</span></div>
+        <div><strong id="seconds">00</strong><span>SECS</span></div>
+      </div>
+    </div>
 
     <button id="enterFromHome" class="enter-wide" type="button">
       ENTER OUR WEDDING <span aria-hidden="true">&#10095;</span>
@@ -356,6 +354,12 @@
         <span class="menu-text"><strong>Admin Dashboard</strong><small>Samuel &amp; Josephine only</small></span>
         <span class="menu-chev">&#10095;</span>
       </button>
+      <label class="menu-item" for="songUpload">
+        <span class="menu-icon menu-icon--purple">&#9835;</span>
+        <span class="menu-text"><strong>Choose Wedding Song</strong><small id="songLabel">Tap to upload your song</small></span>
+        <span class="menu-chev">&#10095;</span>
+        <input id="songUpload" type="file" accept="audio/*" class="hidden" />
+      </label>
     </div>
 
     <div class="more-actions">

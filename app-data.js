@@ -108,6 +108,15 @@ async function kvGet(key){
     r.onerror = () => rej(r.error);
   });
 }
+async function kvRemove(key){
+  const db = await openSettingsDB();
+  return new Promise((res, rej) => {
+    const tx = db.transaction(SETTINGS_STORE, 'readwrite');
+    tx.objectStore(SETTINGS_STORE).delete(key);
+    tx.oncomplete = res;
+    tx.onerror = () => rej(tx.error);
+  });
+}
 
 function escapeHTML(value=''){
   return String(value).replace(/[&<>"']/g, c => ({
