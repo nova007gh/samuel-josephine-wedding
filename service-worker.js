@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v30-home-music';
+const CACHE = 'sj-wedding-v31-firebase-backend';
 const ASSETS = [
   './',
   './index.html',
@@ -9,6 +9,8 @@ const ASSETS = [
   './app.js',
   './app-data.js',
   './app-social.js',
+  './firebase-config.js',
+  './firebase-data.js',
   './app-social.css',
   './manifest.webmanifest',
   './assets/official-landing-page.jpg',

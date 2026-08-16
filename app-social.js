@@ -35,7 +35,8 @@ document.querySelectorAll('.sheet').forEach(sheet => {
 });
 
 function timeAgo(ts){
-  const s = Math.floor((Date.now() - ts) / 1000);
+  const ms = toMillis(ts);
+  const s = Math.floor((Date.now() - ms) / 1000);
   if (s < 60) return 'just now';
   const m = Math.floor(s / 60);
   if (m < 60) return `${m} min${m > 1 ? 's' : ''} ago`;
@@ -46,55 +47,24 @@ function timeAgo(ts){
 }
 
 /* =========================================================
-   Guest book — storage
+   Guest book — storage lives in firebase-data.js
    ========================================================= */
-async function gbAdd(record){
-  const db = await openMemoryDB();
-  return new Promise((res, rej) => {
-    const tx = db.transaction(GB_STORE, 'readwrite');
-    tx.objectStore(GB_STORE).add(record);
-    tx.oncomplete = res;
-    tx.onerror = () => rej(tx.error);
-  });
-}
-async function gbAll(){
-  const db = await openMemoryDB();
-  return new Promise((res, rej) => {
-    const tx = db.transaction(GB_STORE, 'readonly');
-    const r = tx.objectStore(GB_STORE).getAll();
-    r.onsuccess = () => res(r.result.sort((a,b) => b.createdAt - a.createdAt));
-    r.onerror = () => rej(r.error);
-  });
-}
-async function gbUpdate(record){
-  const db = await openMemoryDB();
-  return new Promise((res, rej) => {
-    const tx = db.transaction(GB_STORE, 'readwrite');
-    tx.objectStore(GB_STORE).put(record);
-    tx.oncomplete = res;
-    tx.onerror = () => rej(tx.error);
-  });
-}
 
 /* =========================================================
    Guest book — render
    ========================================================= */
 let gbFilter = 'all';
-const gbObjectUrls = new Set();
 
 function gbInitials(name){
   return name.trim().split(/\s+/).slice(0,2).map(w => w[0].toUpperCase()).join('');
 }
 
-async function renderGuestBook(){
+function renderGuestBook(all){
+  all = all || [];
   const list = document.getElementById('gbList');
   const empty = document.getElementById('gbEmpty');
   if (!list) return;
 
-  gbObjectUrls.forEach(URL.revokeObjectURL);
-  gbObjectUrls.clear();
-
-  const all = await gbAll();
   const counts = {
     all: all.length,
     pending: all.filter(m => m.status === 'pending').length,
@@ -111,10 +81,8 @@ async function renderGuestBook(){
 
   for (const item of items){
     let avatar;
-    if (item.selfie){
-      const url = URL.createObjectURL(item.selfie);
-      gbObjectUrls.add(url);
-      avatar = `<img class="gb-avatar" src="${url}" alt="">`;
+    if (item.selfieUrl){
+      avatar = `<img class="gb-avatar" src="${item.selfieUrl}" alt="">`;
     } else {
       avatar = `<span class="gb-avatar gb-avatar--initials">${escapeHTML(gbInitials(item.name))}</span>`;
     }
@@ -189,15 +157,15 @@ document.getElementById('gbForm')?.addEventListener('submit', async e => {
     status: 'pending',
     likes: 0,
     liked: false,
-    replies: [],
-    createdAt: Date.now()
+    replies: []
   });
   form.reset();
   closeSheet('gbModal');
-  await renderGuestBook();
 });
 
-renderGuestBook().catch(console.error);
+if (typeof onGuestbook === 'function'){
+  onGuestbook(renderGuestBook);
+}
 
 /* =========================================================
    Share memories — files go through a details sheet
@@ -255,14 +223,12 @@ document.getElementById('shareForm')?.addEventListener('submit', async e => {
     type: pendingShare.type || 'application/octet-stream',
     name: `${pendingShare.kind}-${Date.now()}`,
     size: pendingShare.blob.size,
-    blob: pendingShare.blob,
-    createdAt: Date.now()
+    blob: pendingShare.blob
   });
   pendingShare = null;
   e.target.reset();
   closeSheet('shareModal');
   teardownRecorders();
-  await renderGallery();
   switchView('gallery');
 });
 
@@ -522,15 +488,17 @@ document.getElementById('shareTypeVideoMsg')?.addEventListener('click', async ()
 /* =========================================================
    Admin dashboard
    ========================================================= */
+let adminMemories = [];
+let adminGuestbook = [];
+
 function allSubmissions(){
-  return Promise.all([getMemories(), gbAll()]).then(([mems, gbs]) => [
-    ...mems.map(m => ({ ...m, kind: m.kind || 'photo', type: m.type || 'image/jpeg' })),
-    ...gbs.map(g => ({ ...g, kind: 'guestbook', type: 'guestbook' }))
-  ]);
+  const mems = (adminMemories || []).map(m => ({ ...m, kind: m.kind || 'photo', type: m.type || 'image/jpeg' }));
+  const gbs = (adminGuestbook || []).map(g => ({ ...g, kind: 'guestbook', type: 'guestbook' }));
+  return [...mems, ...gbs];
 }
 
-async function updateAdminStats(){
-  const items = await allSubmissions();
+function updateAdminStats(){
+  const items = allSubmissions();
   const pending = items.filter(i => i.status !== 'approved').length;
   const approved = items.filter(i => i.status === 'approved').length;
   const total = items.length;
@@ -549,13 +517,13 @@ function aqFilterMatches(item, filter){
   return true;
 }
 
-async function renderApprovalQueue(){
+function renderApprovalQueue(){
   const list = document.getElementById('aqList');
   const empty = document.getElementById('aqEmpty');
   if (!list) return;
 
   const filter = document.querySelector('#aqFilters .chip.active')?.dataset.aqFilter || 'all';
-  const items = (await allSubmissions()).filter(i => i.status !== 'approved' && aqFilterMatches(i, filter));
+  const items = allSubmissions().filter(i => i.status !== 'approved' && aqFilterMatches(i, filter));
   list.innerHTML = '';
   empty.classList.toggle('hidden', items.length > 0);
 
@@ -564,17 +532,13 @@ async function renderApprovalQueue(){
     card.className = 'aq-card';
     let media = '';
     if (item.kind === 'guestbook'){
-      const avatar = item.selfie ? `<img class="aq-card" src="${URL.createObjectURL(item.selfie)}" alt="">` : '';
       media = `<p><b>${escapeHTML(item.name)}</b> &mdash; ${escapeHTML(item.message)}</p>`;
     } else if (item.type.startsWith('image/')){
-      const url = URL.createObjectURL(item.blob);
-      media = `<img class="aq-media" src="${url}" alt="">`;
+      media = `<img class="aq-media" src="${item.mediaUrl}" alt="">`;
     } else if (item.type.startsWith('video/')){
-      const url = URL.createObjectURL(item.blob);
-      media = `<video class="aq-media" controls playsinline src="${url}"></video>`;
+      media = `<video class="aq-media" controls playsinline src="${item.mediaUrl}"></video>`;
     } else if (item.type.startsWith('audio/')){
-      const url = URL.createObjectURL(item.blob);
-      media = `<audio controls src="${url}"></audio>`;
+      media = `<audio controls src="${item.mediaUrl}"></audio>`;
     }
     const by = item.guestName || item.name || 'Guest';
     card.innerHTML = `
@@ -586,11 +550,9 @@ async function renderApprovalQueue(){
       </div>`;
     card.querySelector('.aq-approve').addEventListener('click', async e => {
       await updateStatus(e.target, 'approved');
-      await Promise.all([renderApprovalQueue(), updateAdminStats(), renderGuestBook(), renderGallery()]);
     });
     card.querySelector('.aq-reject').addEventListener('click', async e => {
       await removeSubmission(e.target);
-      await Promise.all([renderApprovalQueue(), updateAdminStats(), renderGuestBook(), renderGallery()]);
     });
     list.appendChild(card);
   }
@@ -598,24 +560,24 @@ async function renderApprovalQueue(){
 
 async function updateStatus(btn, status){
   const kind = btn.dataset.kind;
-  const id = Number(btn.dataset.id);
-  if (kind === 'guestbook'){
-    const all = await gbAll();
-    const item = all.find(i => i.id === id);
-    if (item){ item.status = status; await gbUpdate(item); }
-  } else {
-    const all = await getMemories();
-    const item = all.find(i => i.id === id);
-    if (item){ item.status = status; await updateMemory(item); }
-  }
+  const id = btn.dataset.id;
+  if (kind === 'guestbook') await gbUpdate({ id, status });
+  else await updateMemory({ id, status });
 }
 
 async function removeSubmission(btn){
   const kind = btn.dataset.kind;
-  const id = Number(btn.dataset.id);
+  const id = btn.dataset.id;
   if (kind === 'guestbook') await deleteMemoryGB(id);
   else await deleteMemory(id);
 }
+
+// admin real-time listeners
+function startAdminListeners(){
+  onMemories(items => { adminMemories = items; updateAdminStats(); renderApprovalQueue(); });
+  onGuestbook(items => { adminGuestbook = items; updateAdminStats(); renderApprovalQueue(); });
+}
+startAdminListeners();
 
 // expose helpers for admin
 document.querySelectorAll('#aqFilters .chip').forEach(chip => {
@@ -624,17 +586,6 @@ document.querySelectorAll('#aqFilters .chip').forEach(chip => {
     renderApprovalQueue();
   });
 });
-
-document.querySelector('[data-goto="admin"]')?.addEventListener('click', () => updateAdminStats());
-document.querySelector('[data-goto="approvals"]')?.addEventListener('click', () => renderApprovalQueue());
-
-// Refresh stats when a view is shown
-const _origSwitchView = switchView;
-switchView = async function(name){
-  _origSwitchView(name);
-  if (name === 'admin') await updateAdminStats();
-  if (name === 'approvals') await renderApprovalQueue();
-};
 
 function teardownRecorders(){
   stopVoice(true);

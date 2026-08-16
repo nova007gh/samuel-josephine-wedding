@@ -1,80 +1,9 @@
 'use strict';
 
 /* =========================================================
-   IndexedDB — memory vault + key/value settings
+   Firebase data layer is in firebase-data.js
+   This file keeps gallery rendering, local settings, RSVP, etc.
    ========================================================= */
-const DB_NAME = 'SJWeddingMemories';
-const DB_VERSION = 2;
-const STORE = 'memories';
-const GB_STORE = 'guestbook';
-
-function openMemoryDB(){
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-    request.onupgradeneeded = () => {
-      const db = request.result;
-      if (!db.objectStoreNames.contains(STORE)) {
-        const store = db.createObjectStore(STORE, { keyPath:'id', autoIncrement:true });
-        store.createIndex('category', 'category', { unique:false });
-        store.createIndex('createdAt', 'createdAt', { unique:false });
-      }
-      if (!db.objectStoreNames.contains(GB_STORE)) {
-        const gb = db.createObjectStore(GB_STORE, { keyPath:'id', autoIncrement:true });
-        gb.createIndex('createdAt', 'createdAt', { unique:false });
-      }
-    };
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
-}
-
-async function addMemory(record){
-  const db = await openMemoryDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE, 'readwrite');
-    tx.objectStore(STORE).add(record);
-    tx.oncomplete = resolve;
-    tx.onerror = () => reject(tx.error);
-  });
-}
-
-async function getMemories(){
-  const db = await openMemoryDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE, 'readonly');
-    const request = tx.objectStore(STORE).getAll();
-    request.onsuccess = () => resolve(request.result.sort((a,b) => b.createdAt - a.createdAt));
-    request.onerror = () => reject(request.error);
-  });
-}
-
-async function deleteMemory(id){
-  const db = await openMemoryDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE, 'readwrite');
-    tx.objectStore(STORE).delete(id);
-    tx.oncomplete = resolve;
-    tx.onerror = () => reject(tx.error);
-  });
-}
-async function updateMemory(record){
-  const db = await openMemoryDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE, 'readwrite');
-    tx.objectStore(STORE).put(record);
-    tx.oncomplete = resolve;
-    tx.onerror = () => reject(tx.error);
-  });
-}
-async function deleteMemoryGB(id){
-  const db = await openMemoryDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(GB_STORE, 'readwrite');
-    tx.objectStore(GB_STORE).delete(id);
-    tx.oncomplete = resolve;
-    tx.onerror = () => reject(tx.error);
-  });
-}
 
 const SETTINGS_DB = 'SJWeddingSettings';
 const SETTINGS_STORE = 'kv';
@@ -149,17 +78,13 @@ const SEED_MEMORIES = [
 ];
 
 let activeGalleryFilter = 'all';
-const objectUrls = new Set();
 
-async function renderGallery(){
+function renderGallery(memories){
   const grid = document.getElementById('galleryGrid');
   const empty = document.getElementById('galleryEmpty');
   if (!grid || !empty) return;
 
-  objectUrls.forEach(URL.revokeObjectURL);
-  objectUrls.clear();
-
-  const uploaded = (await getMemories()).map(m => ({ ...m, seeded:false }));
+  const uploaded = (memories || []).map(m => ({ ...m, seeded:false }));
   const seeded = SEED_MEMORIES.map(m => ({ ...m, type:'image/jpeg', seeded:true }));
   const all = [...uploaded, ...seeded];
   const items = activeGalleryFilter === 'all'
@@ -170,11 +95,7 @@ async function renderGallery(){
   empty.classList.toggle('hidden', items.length > 0);
 
   for (const item of items){
-    let url = item.src;
-    if (!item.seeded){
-      url = URL.createObjectURL(item.blob);
-      objectUrls.add(url);
-    }
+    let url = item.src || item.mediaUrl;
 
     const card = document.createElement('article');
     card.className = 'mem-card';
@@ -207,8 +128,7 @@ async function renderGallery(){
   grid.querySelectorAll('.mem-del').forEach(btn => {
     btn.addEventListener('click', async () => {
       if (!confirm('Remove this memory?')) return;
-      await deleteMemory(Number(btn.dataset.id));
-      renderGallery();
+      await deleteMemory(btn.dataset.id);
     });
   });
 }
@@ -233,15 +153,13 @@ document.getElementById('memoryFiles')?.addEventListener('change', async event =
       type: file.type || 'application/octet-stream',
       name: file.name,
       size: file.size,
-      blob: file,
-      createdAt: Date.now() + i
+      blob: file
     });
   }
 
   status.textContent = `${files.length} ${files.length === 1 ? 'memory' : 'memories'} saved.`;
   event.target.value = '';
   captionEl.value = '';
-  await renderGallery();
   setTimeout(() => status.classList.add('hidden'), 2400);
 });
 
@@ -253,7 +171,9 @@ document.querySelectorAll('.chip').forEach(chip => {
   });
 });
 
-renderGallery().catch(console.error);
+if (typeof onMemories === 'function'){
+  onMemories(renderGallery);
+}
 
 /* =========================================================
    Lightbox
@@ -341,10 +261,8 @@ rsvpForm?.addEventListener('submit', async e => {
   const submitBtn = rsvpForm.querySelector('[type="submit"]');
   const data = Object.fromEntries(new FormData(rsvpForm).entries());
 
-  // always keep a local backup on this device
-  const saved = JSON.parse(localStorage.getItem('sj_rsvps') || '[]');
-  saved.push({ ...data, submittedAt:new Date().toISOString() });
-  localStorage.setItem('sj_rsvps', JSON.stringify(saved));
+  // also save to Firebase for the couple's records
+  try { await addRsvp(data); } catch(err){ console.warn('RSVP backup failed:', err); }
 
   submitBtn.disabled = true;
   status.textContent = 'Sending your RSVP…';
