@@ -854,54 +854,115 @@ img {
 .opening.breaking .spark3{ animation: sealSpark3 .55s .1s forwards; }
 .opening.opening-envelope .landing-frame{ animation: openInvite .8s ease forwards; }
 
-/* welcome reveal */
+/* welcome reveal — matches the invitation artwork */
 .welcome-reveal{
   position: absolute;
   inset: 0;
   display: grid;
   place-items: center;
   padding: 20px;
+  background:
+    linear-gradient(rgba(232,216,190,.55), rgba(223,203,172,.65)),
+    url("./assets/official-landing-page.jpg") center / cover no-repeat;
+}
+.welcome-reveal::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  backdrop-filter: blur(9px);
+  pointer-events: none;
 }
 .welcome-card{
+  position: relative;
   width: min(92vw, 520px);
-  padding: 42px 28px;
-  border-radius: 30px;
+  padding: 46px 30px 40px;
+  border-radius: 26px;
   text-align: center;
-  background: rgba(249,240,227,.9);
-  border: 1px solid rgba(255,255,255,.72);
-  backdrop-filter: blur(18px);
-  box-shadow: 0 18px 60px rgba(63,41,16,.16);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255,250,240,.96), rgba(246,235,217,.94) 60%),
+    #f4e9d7;
+  border: 1px solid rgba(184,145,86,.42);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.85),
+    inset 0 0 0 6px rgba(255,255,255,.35),
+    0 26px 70px rgba(63,41,16,.28);
   animation: welcomeIn .8s ease both;
 }
-.welcome-seal{ width: 130px; border-radius: 50%; }
+.welcome-card::after{
+  content: "";
+  position: absolute;
+  inset: 12px;
+  border: 1px solid rgba(178,138,78,.32);
+  border-radius: 18px;
+  pointer-events: none;
+}
+.welcome-seal{
+  width: 132px;
+  height: 132px;
+  object-fit: contain;
+  margin-bottom: 6px;
+  filter: drop-shadow(0 10px 22px rgba(94,63,26,.32));
+}
 .welcome-eyebrow{
+  margin: 6px 0 2px;
+  font-family: "Montserrat", sans-serif;
   font-size: .68rem;
-  letter-spacing: .28em;
+  font-weight: 500;
+  letter-spacing: .3em;
   text-transform: uppercase;
-  color: #7d5c2b;
+  color: #8a6a34;
 }
 .welcome-card h1{
-  font: 400 clamp(2.8rem, 8vw, 4.8rem) "Cormorant Garamond", Georgia, serif;
-  margin: .5rem 0;
-  color: #4a3a24;
+  font-family: "Parisienne", "Cormorant Garamond", Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(2.6rem, 9vw, 3.9rem);
+  line-height: 1.15;
+  margin: 10px 0 6px;
+  color: #9b7431;
+  text-shadow: 0 1px 0 rgba(255,248,233,.9);
 }
 .welcome-script{
   font-family: "Cormorant Garamond", Georgia, serif;
   font-style: italic;
-  color: #8c6528;
-  font-size: 1.3rem;
+  color: #7d6136;
+  font-size: 1.18rem;
+  margin: 0 0 6px;
+}
+.welcome-rule{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: min(70%, 240px);
+  margin: 14px auto 4px;
+}
+.welcome-rule span{
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(155,116,49,.7), transparent);
+}
+.welcome-rule i{
+  color: #a9803c;
+  font-style: normal;
+  font-size: .8rem;
 }
 .welcome-button{
-  margin-top: 18px;
+  margin-top: 20px;
   display: inline-block;
   border: 1px solid #b98a37;
-  background: #17130f;
+  background: linear-gradient(#20180f, #17130f);
   color: #ebca89;
-  padding: 14px 25px;
+  padding: 15px 30px;
   border-radius: 999px;
-  letter-spacing: .1em;
-  font-size: .72rem;
+  letter-spacing: .18em;
+  font-family: "Montserrat", sans-serif;
+  font-size: .7rem;
   cursor: pointer;
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+.welcome-button:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(88,58,20,.32);
 }
 .opening.exit{ animation: openingExit .65s ease forwards; }
 
