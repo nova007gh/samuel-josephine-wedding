@@ -21,7 +21,7 @@
 }
 
 *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-html{ -webkit-text-size-adjust:100%; }
+html{ -webkit-text-size-adjust:100%; overflow-x:hidden; }
 body{
   margin:0;
   background:var(--paper);
@@ -214,25 +214,27 @@ button{ font:inherit; cursor:pointer; }
 }
 .env-screen.exit{ animation:gateExit .7s cubic-bezier(.4,0,.2,1) forwards; }
 
-/* embossed foliage in the corners of the envelope paper */
+/* embossed foliage in the corners of the envelope paper.
+   The sprig art has an opaque cream background, so `darken` drops the
+   backdrop and leaves only the linework. */
 .env-screen::before,
 .env-screen::after{
   content:"";
   position:absolute;
-  width:min(48vw,230px);
-  height:min(48vw,230px);
+  width:min(46vw,210px);
+  height:min(46vw,210px);
   pointer-events:none;
   background:url('assets/leaf-sprig.png') no-repeat center / contain;
-  opacity:.34;
-  filter:saturate(.25) brightness(1.12);
+  mix-blend-mode:darken;
+  opacity:.5;
 }
-.env-screen::before{ top:-14px; left:-26px; transform:rotate(-16deg); }
-.env-screen::after{ bottom:-14px; right:-26px; transform:scaleX(-1) rotate(-16deg); }
+.env-screen::before{ top:0; left:0; transform:rotate(-12deg); }
+.env-screen::after{ bottom:0; right:0; transform:scaleX(-1) rotate(-12deg); }
 
 .env-stage{
   position:relative;
   z-index:2;
-  width:min(94vw,430px);
+  width:min(100%,404px);
   display:flex;
   flex-direction:column;
   align-items:center;
@@ -340,29 +342,28 @@ button{ font:inherit; cursor:pointer; }
   animation:fadeUp .8s .45s ease both;
 }
 .env-flap{
-  height:0;
-  border-left:calc(min(94vw,430px) / 2) solid transparent;
-  border-right:calc(min(94vw,430px) / 2) solid transparent;
-  border-top:96px solid #f0e0c8;
+  width:100%;
+  height:96px;
+  background:linear-gradient(180deg,#f4e6d1,#ecdcc0);
+  clip-path:polygon(0 0, 50% 100%, 100% 0);
   filter:drop-shadow(0 6px 10px rgba(120,84,32,.16));
 }
 .env-front{
   position:relative;
-  margin-top:-96px;
-  padding:64px 0 30px;
+  margin-top:-48px;
+  padding:48px 0 30px;
   display:grid;
   place-items:center;
   background:linear-gradient(180deg,#f4e6d1,#eddcc0);
   border-radius:0 0 10px 10px;
   box-shadow:0 20px 44px rgba(96,64,22,.2);
-  clip-path:polygon(0 0, 50% 46%, 100% 0, 100% 100%, 0 100%);
 }
 .env-monogram{
   width:112px;
   height:112px;
-  opacity:.5;
-  filter:grayscale(.45) brightness(1.1) contrast(.9);
-  mix-blend-mode:multiply;
+  opacity:.55;
+  mix-blend-mode:darken;
+  filter:contrast(.92) brightness(1.05);
 }
 .env-monogram img{ width:100%; height:100%; object-fit:contain; }
 
