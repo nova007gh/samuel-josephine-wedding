@@ -46,7 +46,55 @@
 </div>
 
 <!-- ============================================================
-     SCREEN 2 — Will you attend?
+     SCREEN 2 — Welcome to our forever (envelope opens)
+     ============================================================ -->
+<div id="welcomeScreen" class="env-screen hidden">
+  <div class="env-stage">
+
+    <!-- the inner invitation card sliding out of the envelope -->
+    <div class="env-card">
+      <div class="env-card-inner">
+        <p class="env-welcome">WELCOME TO</p>
+        <p class="env-forever">OUR FOREVER</p>
+
+        <div class="env-rule"><span></span><i>&#10084;</i><span></span></div>
+
+        <h1 class="env-names">
+          <span class="env-name">Sam</span>
+          <span class="env-amp">&amp;</span>
+          <span class="env-name">Jossy</span>
+        </h1>
+
+        <div class="env-flourish">
+          <span class="env-swirl env-swirl--l"></span>
+          <i>&#10084;</i>
+          <span class="env-swirl env-swirl--r"></span>
+        </div>
+
+        <p class="env-hash">#AlwaysAndForever</p>
+      </div>
+    </div>
+
+    <!-- envelope body with the embossed S&J monogram -->
+    <div class="env-body">
+      <div class="env-flap"></div>
+      <div class="env-front">
+        <div class="env-monogram">
+          <img src="assets/seal-pressed-320.png" alt="S&amp;J monogram" />
+        </div>
+      </div>
+    </div>
+
+    <button id="enterWedding" class="env-btn" type="button">
+      ENTER OUR WEDDING <span aria-hidden="true">&#10095;</span>
+    </button>
+
+    <span class="env-chevron" aria-hidden="true">&#8964;</span>
+  </div>
+</div>
+
+<!-- ============================================================
+     SCREEN 3 — Will you attend?
      ============================================================ -->
 <div id="attendScreen" class="gate-screen hidden">
   <div class="gate-card">
@@ -115,32 +163,39 @@
 
   <header class="app-header">
     <button class="app-brand" data-goto="home" type="button" aria-label="Home">
-      <img src="assets/seal-pressed-320.png" alt="S&amp;J seal" />
+      <span class="brand-mark">S<i>&amp;</i>J</span>
     </button>
-    <button id="musicToggle" class="icon-button" aria-label="Toggle background music">&#9835;</button>
+    <div class="header-actions">
+      <button id="musicToggle" class="icon-button" aria-label="Toggle background music">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg>
+      </button>
+      <button id="menuToggle" class="icon-button icon-button--plain hidden" data-goto="more" type="button" aria-label="Open menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </div>
   </header>
 
   <!-- ---------- SCREEN 3 — Home ---------- -->
   <section class="view" data-view="home">
     <div class="home-hero">
-      <p class="home-eyebrow">WELCOME TO OUR FOREVER</p>
-      <h1 class="home-names">Sam &amp; Jossy</h1>
+      <h1 class="home-welcome">Welcome</h1>
+      <span class="home-heart">&#10084;</span>
+      <p class="home-eyebrow">WE'RE SO HAPPY YOU'RE HERE!</p>
+
+      <div class="env-flourish home-flourish">
+        <span class="env-swirl env-swirl--l"></span>
+        <i>&#10084;</i>
+        <span class="env-swirl env-swirl--r"></span>
+      </div>
+
+      <p class="home-names">Sam &amp; Jossy</p>
       <p class="home-tag">OUR FOREVER STARTS HERE</p>
     </div>
-
-    <figure class="couple-photo">
-      <img id="couplePhoto" class="hidden" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="" />
-      <label id="couplePlaceholder" class="photo-placeholder">
-        <strong>Sam &amp; Jossy</strong>
-        <span>TAP TO ADD YOUR PHOTO</span>
-        <input id="couplePhotoFile" type="file" accept="image/*" class="hidden" />
-      </label>
-      <figcaption class="couple-caption"><span>&#10084;</span> #AlwaysAndForever <span>&#10084;</span></figcaption>
-    </figure>
 
     <div class="bigday">
       <p class="bigday-label">THE BIG DAY</p>
       <p class="bigday-date">09 <b>|</b> JAN <b>|</b> 2027</p>
+      <span class="bigday-heart">&#10084;</span>
       <div class="countdown">
         <div><strong id="days">0</strong><span>DAYS</span></div>
         <div><strong id="hours">00</strong><span>HRS</span></div>
@@ -149,8 +204,21 @@
       </div>
     </div>
 
+    <figure class="couple-photo">
+      <img id="couplePhoto" src="assets/couple-home.jpg" alt="Sam and Jossy" />
+      <label id="couplePlaceholder" class="photo-placeholder hidden">
+        <strong>Sam &amp; Jossy</strong>
+        <span>TAP TO ADD YOUR PHOTO</span>
+        <input id="couplePhotoFile" type="file" accept="image/*" class="hidden" />
+      </label>
+      <figcaption class="couple-caption">
+        <span class="couple-hash">#AlwaysAndForever</span>
+        <span class="couple-heart">&#10084;</span>
+      </figcaption>
+    </figure>
+
     <button id="enterFromHome" class="enter-wide" type="button">
-      EXPLORE OUR STORY <span aria-hidden="true">&#10095;</span>
+      ENTER OUR WEDDING <span aria-hidden="true">&#10095;</span>
     </button>
   </section>
 
@@ -274,17 +342,53 @@
   <section class="view hidden" data-view="gallery">
     <h1 class="page-title">Gallery</h1>
     <div class="divider"><span></span><i>&#10084;</i><span></span></div>
-    <p class="page-sub">Every picture tells a piece of our story.</p>
+    <p class="page-sub">A collection of our favorite moments,<br>memories and milestones.</p>
 
-    <div class="upload-card">
-      <label class="field">Category
+    <div class="chips chips--scroll" id="galleryChips">
+      <button class="chip active" data-kind="all">All</button>
+      <button class="chip" data-kind="photos">Photos</button>
+      <button class="chip" data-kind="videos">Videos</button>
+      <button class="chip" data-kind="selfies">Selfies</button>
+      <button class="chip" data-kind="voice">Voice</button>
+      <button class="chip" data-kind="messages">Messages</button>
+    </div>
+
+    <!-- category cards (default gallery landing) -->
+    <div id="galleryCats" class="cat-grid"></div>
+
+    <!-- media grid, shown when a category or type filter is open -->
+    <div id="galleryDetail" class="hidden">
+      <button id="galleryBack" class="back-link" type="button">&#10094; All albums</button>
+      <h2 id="galleryDetailTitle" class="cat-detail-title"></h2>
+      <div id="galleryGrid" class="mem-grid"></div>
+      <p id="galleryEmpty" class="page-sub">No memories in this album yet.</p>
+    </div>
+
+    <!-- share your moments -->
+    <div class="share-bar">
+      <span class="share-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17.5 18.5a4 4 0 0 0-.6-7.96A6 6 0 0 0 5.2 11.4a3.6 3.6 0 0 0 .4 7.1"/><path d="M12 20v-8M9 14.5 12 11.5l3 3"/></svg>
+      </span>
+      <span class="share-text">
+        <strong>Share Your Moments</strong>
+        <small>Upload your photos and videos and be part of our story.</small>
+      </span>
+      <button id="shareUploadBtn" class="share-btn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M12 16V4M8 8l4-4 4 4"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+        Upload
+      </button>
+    </div>
+
+    <!-- upload panel, revealed by the Upload button -->
+    <div id="uploadPanel" class="upload-card hidden">
+      <label class="field">Album
         <select id="memoryCategory">
-          <option value="sam-childhood">Sam &mdash; Childhood</option>
-          <option value="jossy-childhood">Jossy &mdash; Childhood</option>
+          <option value="childhood">Childhood</option>
           <option value="adulthood">Adulthood</option>
           <option value="first-together">First Together</option>
-          <option value="engagement">Proposal &amp; Engagement</option>
-          <option value="favorite-moments">Favorite Moments</option>
+          <option value="engagement">Engagement</option>
+          <option value="wedding-photos">Wedding Photos</option>
+          <option value="wedding-videos">Wedding Videos</option>
         </select>
       </label>
       <label class="field">Caption
@@ -296,19 +400,6 @@
       </label>
       <p id="uploadStatus" class="upload-status hidden"></p>
     </div>
-
-    <div class="chips">
-      <button class="chip active" data-filter="all">All</button>
-      <button class="chip" data-filter="sam-childhood">Sam</button>
-      <button class="chip" data-filter="jossy-childhood">Jossy</button>
-      <button class="chip" data-filter="adulthood">Adulthood</button>
-      <button class="chip" data-filter="first-together">First Together</button>
-      <button class="chip" data-filter="engagement">Engagement</button>
-      <button class="chip" data-filter="favorite-moments">Favorites</button>
-    </div>
-
-    <div id="galleryGrid" class="mem-grid"></div>
-    <p id="galleryEmpty" class="page-sub">Your memories will appear here.</p>
   </section>
 
   <!-- ---------- SCREEN 5 — Event Details ---------- -->
@@ -773,12 +864,14 @@
     <label class="field">Caption (optional)
       <input name="shareCaption" type="text" placeholder="A little note about this memory" />
     </label>
-    <label class="field">Category
+    <label class="field">Album
       <select name="shareCategory">
-        <option value="favorite-moments">Favorite Moments</option>
+        <option value="wedding-photos">Wedding Photos</option>
+        <option value="wedding-videos">Wedding Videos</option>
         <option value="first-together">First Together</option>
-        <option value="engagement">Proposal &amp; Engagement</option>
+        <option value="engagement">Engagement</option>
         <option value="adulthood">Adulthood</option>
+        <option value="childhood">Childhood</option>
       </select>
     </label>
     <div class="sheet-actions">

@@ -45,6 +45,7 @@ const opening = $('#opening');
 const sealButton = $('#sealButton');
 const landingFrame = $('#landingFrame');
 const attendScreen = $('#attendScreen');
+const welcomeScreen = $('#welcomeScreen');
 const guestLoginScreen = $('#guestLoginScreen');
 const app = $('#app');
 
@@ -56,7 +57,7 @@ function isAdmin(){ return sessionStorage.getItem('sj_admin_auth') === '1'; }
 
 /* ---- Show a gate screen with transition ---- */
 function showGate(screen){
-  [attendScreen, guestLoginScreen].forEach(s => s?.classList.add('hidden'));
+  [welcomeScreen, attendScreen, guestLoginScreen].forEach(s => s?.classList.add('hidden'));
   screen.classList.remove('hidden', 'exit');
   void screen.offsetWidth;
 }
@@ -68,6 +69,7 @@ function hideGate(screen){
 /* ---- Enter the main app ---- */
 function enterApp(){
   opening.classList.add('hidden');
+  welcomeScreen?.classList.add('hidden');
   attendScreen?.classList.add('hidden');
   guestLoginScreen?.classList.add('hidden');
   app.classList.remove('hidden');
@@ -82,12 +84,18 @@ sealButton?.addEventListener('click', () => {
   opening.classList.add('breaking');
   sealButton.disabled = true;
 
-  // landing fades out, then attendance question appears
+  // landing fades out, then the envelope welcome screen appears
   setTimeout(() => opening.classList.add('opening-envelope'), 900);
   setTimeout(() => {
     opening.classList.add('hidden');
-    showGate(attendScreen);
+    showGate(welcomeScreen);
   }, 1550);
+});
+
+/* ---- Welcome screen -> attendance question ---- */
+$('#enterWedding')?.addEventListener('click', () => {
+  hideGate(welcomeScreen);
+  setTimeout(() => showGate(attendScreen), 650);
 });
 
 /* ---- Attendance question ---- */
@@ -110,6 +118,7 @@ $('#attendBrowse')?.addEventListener('click', () => {
 $('#guestLoginForm')?.addEventListener('submit', async e => {
   e.preventDefault();
   const err = $('#guestLoginError');
+  const submitBtn = e.target.querySelector('button[type="submit"]');
   const name = $('#guestName').value.trim();
   const phone = $('#guestPhone').value.trim();
   const email = $('#guestEmail').value.trim();
@@ -122,13 +131,26 @@ $('#guestLoginForm')?.addEventListener('submit', async e => {
 
   const guest = { name, phone, email, relation, attending:true, checkedInAt:new Date().toISOString() };
 
-  // save to Firebase if available
+  // Show loading state on the button
+  if (submitBtn){
+    submitBtn.disabled = true;
+    submitBtn.dataset.label = submitBtn.innerHTML;
+    submitBtn.innerHTML = 'Opening your experience…';
+  }
+
+  // Save to Firebase if available, but never let it block the form.
+  // A hanging Firestore promise (offline / network / rules) would otherwise
+  // freeze the check-in forever.
   try {
     if (typeof addGuest === 'function'){
-      const id = await addGuest(guest);
-      guest.id = id;
+      const savePromise = addGuest(guest);
+      const timeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Firebase save timeout')), 4000)
+      );
+      const id = await Promise.race([savePromise, timeout]);
+      if (id) guest.id = id;
     }
-  } catch(ferr){ console.warn('Firebase guest save failed:', ferr); }
+  } catch(ferr){ console.warn('Firebase guest save skipped:', ferr); }
 
   setGuest(guest);
   if (err) err.textContent = '';
@@ -173,6 +195,12 @@ function switchView(name){
   const tabName = SUBVIEW_TAB[name] || name;
   $$('.view').forEach(v => v.classList.toggle('hidden', v.dataset.view !== name));
   $$('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tabName));
+
+  // Home shows the music control; every other screen shows the menu button
+  const onHome = name === 'home';
+  $('#musicToggle')?.classList.toggle('hidden', !onHome);
+  $('#menuToggle')?.classList.toggle('hidden', onHome);
+
   window.scrollTo({ top: 0, behavior: 'instant' });
 }
 $$('.tab').forEach(tab => tab.addEventListener('click', () => switchView(tab.dataset.tab)));

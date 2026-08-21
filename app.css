@@ -197,7 +197,215 @@ button{ font:inherit; cursor:pointer; }
 }
 
 /* =========================================================
-   SCREEN 2 & 3 — Gate screens (attend question + guest login)
+   SCREEN 2 — Welcome to our forever (envelope)
+   ========================================================= */
+.env-screen{
+  position:fixed;
+  inset:0;
+  z-index:999;
+  overflow-y:auto;
+  display:grid;
+  place-items:center;
+  padding:22px 18px calc(22px + env(safe-area-inset-bottom));
+  background:
+    radial-gradient(115% 55% at 50% 0%, #f6ebdb, transparent 60%),
+    linear-gradient(170deg,#f3e6d3 0%,#ecdcc4 55%,#e6d3b8 100%);
+  animation:gateIn .7s cubic-bezier(.2,.8,.3,1) both;
+}
+.env-screen.exit{ animation:gateExit .7s cubic-bezier(.4,0,.2,1) forwards; }
+
+/* embossed foliage in the corners of the envelope paper */
+.env-screen::before,
+.env-screen::after{
+  content:"";
+  position:absolute;
+  width:min(48vw,230px);
+  height:min(48vw,230px);
+  pointer-events:none;
+  background:url('assets/leaf-sprig.png') no-repeat center / contain;
+  opacity:.34;
+  filter:saturate(.25) brightness(1.12);
+}
+.env-screen::before{ top:-14px; left:-26px; transform:rotate(-16deg); }
+.env-screen::after{ bottom:-14px; right:-26px; transform:scaleX(-1) rotate(-16deg); }
+
+.env-stage{
+  position:relative;
+  z-index:2;
+  width:min(94vw,430px);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+/* ---- inner invitation card ---- */
+.env-card{
+  width:100%;
+  padding:6px;
+  border-radius:6px;
+  background:linear-gradient(165deg,#fffaf2,#faf0e0);
+  box-shadow:0 22px 48px rgba(96,64,22,.22), 0 2px 0 rgba(255,255,255,.9) inset;
+  animation:envCardRise .95s .2s cubic-bezier(.2,.8,.25,1) both;
+}
+@keyframes envCardRise{
+  from{ opacity:0; transform:translateY(56px) scale(.96); }
+  to{ opacity:1; transform:none; }
+}
+.env-card-inner{
+  padding:34px 22px 30px;
+  text-align:center;
+  border:1px solid rgba(169,124,44,.34);
+  border-radius:3px;
+}
+
+.env-welcome,
+.env-forever{
+  margin:0;
+  font-weight:700;
+  letter-spacing:.2em;
+  color:#43331d;
+}
+.env-welcome{ font-size:clamp(.82rem,3.6vw,1rem); }
+.env-forever{ margin-top:7px; font-size:clamp(1.05rem,4.8vw,1.35rem); }
+
+/* thin rule with a gold heart */
+.env-rule{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  margin:16px auto 6px;
+  max-width:78%;
+}
+.env-rule span{ flex:1; height:1px; background:rgba(169,124,44,.4); }
+.env-rule i{ font-style:normal; font-size:1.05rem; color:#c2952f; }
+
+/* the big gold script names */
+.env-names{
+  margin:4px 0 0;
+  font-family:"Parisienne",cursive;
+  font-weight:400;
+  line-height:.98;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:2px;
+}
+.env-name,
+.env-amp{
+  background:linear-gradient(180deg,#d9ae52 0%,#b8862c 45%,#8d6318 100%);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+  -webkit-text-fill-color:transparent;
+  text-shadow:0 1px 0 rgba(255,252,244,.5);
+}
+.env-name{ font-size:clamp(3.4rem,17vw,5.2rem); }
+.env-amp{ font-size:clamp(2rem,9vw,2.8rem); line-height:1; }
+
+/* ornate swirl + heart under the names */
+.env-flourish{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  margin:14px 0 0;
+}
+.env-flourish i{ font-style:normal; font-size:1rem; color:#c2952f; }
+.env-swirl{
+  width:52px;
+  height:10px;
+  background:
+    radial-gradient(circle at 12% 50%, rgba(169,124,44,.85) 1.6px, transparent 1.9px),
+    radial-gradient(circle at 88% 50%, rgba(169,124,44,.85) 1.6px, transparent 1.9px),
+    linear-gradient(rgba(169,124,44,.55),rgba(169,124,44,.55)) center / 100% 1px no-repeat;
+}
+.env-swirl--l{ border-radius:0 0 40px 0; }
+.env-swirl--r{ border-radius:0 0 0 40px; }
+
+.env-hash{
+  margin:12px 0 0;
+  font-family:"Cormorant Garamond",Georgia,serif;
+  font-style:italic;
+  font-size:1rem;
+  letter-spacing:.03em;
+  color:#8a6f43;
+}
+
+/* ---- envelope body under the card ---- */
+.env-body{
+  position:relative;
+  width:100%;
+  margin-top:-10px;
+  animation:fadeUp .8s .45s ease both;
+}
+.env-flap{
+  height:0;
+  border-left:calc(min(94vw,430px) / 2) solid transparent;
+  border-right:calc(min(94vw,430px) / 2) solid transparent;
+  border-top:96px solid #f0e0c8;
+  filter:drop-shadow(0 6px 10px rgba(120,84,32,.16));
+}
+.env-front{
+  position:relative;
+  margin-top:-96px;
+  padding:64px 0 30px;
+  display:grid;
+  place-items:center;
+  background:linear-gradient(180deg,#f4e6d1,#eddcc0);
+  border-radius:0 0 10px 10px;
+  box-shadow:0 20px 44px rgba(96,64,22,.2);
+  clip-path:polygon(0 0, 50% 46%, 100% 0, 100% 100%, 0 100%);
+}
+.env-monogram{
+  width:112px;
+  height:112px;
+  opacity:.5;
+  filter:grayscale(.45) brightness(1.1) contrast(.9);
+  mix-blend-mode:multiply;
+}
+.env-monogram img{ width:100%; height:100%; object-fit:contain; }
+
+/* ---- gold pill CTA ---- */
+.env-btn{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:14px;
+  width:min(88%,340px);
+  margin:22px 0 0;
+  padding:17px 26px;
+  border:1px solid #6d4d15;
+  border-radius:999px;
+  background:linear-gradient(180deg,#a8802c 0%,#7d5a1c 52%,#5f4413 100%);
+  color:#fdf3dd;
+  font-size:.86rem;
+  font-weight:600;
+  letter-spacing:.14em;
+  box-shadow:0 14px 30px rgba(84,56,14,.4), inset 0 1px 0 rgba(255,232,180,.4);
+  transition:transform .2s ease, box-shadow .2s ease;
+  animation:fadeUp .7s .65s ease both;
+}
+.env-btn:active{ transform:scale(.975); box-shadow:0 8px 18px rgba(84,56,14,.42); }
+
+.env-chevron{
+  margin-top:14px;
+  font-size:1.5rem;
+  line-height:1;
+  color:rgba(140,102,44,.6);
+  animation:envBob 1.9s ease-in-out infinite;
+}
+@keyframes envBob{
+  0%,100%{ transform:translateY(0); opacity:.55; }
+  50%{ transform:translateY(6px); opacity:.95; }
+}
+
+@media(prefers-reduced-motion:reduce){
+  .env-screen,.env-card,.env-body,.env-btn,.env-chevron{ animation:none; }
+}
+
+/* =========================================================
+   SCREEN 3 & 4 — Gate screens (attend question + guest login)
    ========================================================= */
 .gate-screen{
   position:fixed;

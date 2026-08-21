@@ -56,37 +56,113 @@ function escapeHTML(value=''){
 /* =========================================================
    Gallery
    ========================================================= */
-const CATEGORY_LABELS = {
-  'sam-childhood':'Sam — Childhood',
-  'jossy-childhood':'Jossy — Childhood',
-  'adulthood':'Adulthood',
-  'first-together':'First Together',
-  'engagement':'Proposal & Engagement',
-  'favorite-moments':'Favorite Moments'
-};
+/* albums shown as cover cards on the gallery landing */
+const GALLERY_ALBUMS = [
+  { id:'childhood',      label:'Childhood',      cover:'assets/story/sam-childhood.jpg' },
+  { id:'adulthood',      label:'Adulthood',      cover:'assets/story/sam-adult.jpg' },
+  { id:'first-together', label:'First Together', cover:'assets/story/facetime.jpg' },
+  { id:'engagement',     label:'Engagement',     cover:'assets/story/proposal.jpg' },
+  { id:'wedding-photos', label:'Wedding Photos', cover:'assets/couple-home.jpg' },
+  { id:'wedding-videos', label:'Wedding Videos', cover:'assets/story/now.jpg' }
+];
+
+const CATEGORY_LABELS = Object.fromEntries(GALLERY_ALBUMS.map(a => [a.id, a.label]));
 
 /* built-in memories shown alongside guest uploads */
 const SEED_MEMORIES = [
-  { src:'assets/story/sam-childhood.jpg',   category:'sam-childhood',    caption:'Little Sam with big dreams.' },
-  { src:'assets/story/jossy-childhood.jpg', category:'jossy-childhood',  caption:'Sweet Jossy, full of joy.' },
-  { src:'assets/story/sam-adult.jpg',       category:'adulthood',        caption:'Sam, becoming who he is today.' },
-  { src:'assets/story/jossy-adult.jpg',     category:'adulthood',        caption:'Jossy, radiant as ever.' },
-  { src:'assets/story/facetime.jpg',        category:'first-together',   caption:'Late-night FaceTime calls across the ocean.' },
-  { src:'assets/story/proposal.jpg',        category:'engagement',       caption:'She said YES! Accra, on her birthday.' },
-  { src:'assets/story/now.jpg',             category:'favorite-moments', caption:'Engaged and forever.' },
-  { src:'assets/couple-home.jpg',           category:'favorite-moments', caption:'#AlwaysAndForever' }
+  { src:'assets/story/sam-childhood.jpg',   category:'childhood',      caption:'Little Sam with big dreams.' },
+  { src:'assets/story/jossy-childhood.jpg', category:'childhood',      caption:'Sweet Jossy, full of joy.' },
+  { src:'assets/story/sam-adult.jpg',       category:'adulthood',      caption:'Sam, becoming who he is today.' },
+  { src:'assets/story/jossy-adult.jpg',     category:'adulthood',      caption:'Jossy, radiant as ever.' },
+  { src:'assets/story/facetime.jpg',        category:'first-together', caption:'Late-night FaceTime calls across the ocean.' },
+  { src:'assets/story/now.jpg',             category:'first-together', caption:'Together at last.' },
+  { src:'assets/story/proposal.jpg',        category:'engagement',     caption:'She said YES! Accra, on her birthday.' },
+  { src:'assets/couple-home.jpg',           category:'engagement',     caption:'#AlwaysAndForever' }
 ];
 
-let activeGalleryFilter = 'all';
+let activeGalleryFilter = 'all';   // album id, or 'all'
+let activeGalleryKind = 'all';     // all | photos | videos | selfies | voice | messages
+let latestMemories = [];
+
+/* does an item match the active media-type chip? */
+function matchesKind(item){
+  const t = item.type || '';
+  switch (activeGalleryKind){
+    case 'photos':   return t.startsWith('image/');
+    case 'videos':   return t.startsWith('video/');
+    case 'voice':    return t.startsWith('audio/');
+    case 'selfies':  return item.kind === 'selfie';
+    case 'messages': return item.kind === 'message';
+    default:         return true;
+  }
+}
+
+function allGalleryItems(){
+  const uploaded = latestMemories.map(m => ({ ...m, seeded:false }));
+  const seeded = SEED_MEMORIES.map(m => ({ ...m, type:'image/jpeg', seeded:true }));
+  return [...uploaded, ...seeded];
+}
+
+/* ---- album cover cards ---- */
+function renderAlbums(){
+  const host = document.getElementById('galleryCats');
+  if (!host) return;
+  const items = allGalleryItems().filter(matchesKind);
+
+  host.innerHTML = GALLERY_ALBUMS.map(album => {
+    const count = items.filter(m => m.category === album.id).length;
+    const cover = items.find(m => m.category === album.id && (m.src || m.mediaUrl) &&
+      !(m.type || '').startsWith('video/') && !(m.type || '').startsWith('audio/'));
+    const src = (cover && (cover.src || cover.mediaUrl)) || album.cover;
+    return `
+      <button class="cat-card" data-album="${album.id}" type="button">
+        <span class="cat-thumb"><img loading="lazy" decoding="async" src="${src}" alt="${escapeHTML(album.label)}"></span>
+        <span class="cat-name">${escapeHTML(album.label)}</span>
+        <span class="cat-count">${count}</span>
+      </button>`;
+  }).join('');
+
+  host.querySelectorAll('.cat-card').forEach(card => {
+    card.addEventListener('click', () => openAlbum(card.dataset.album));
+  });
+}
+
+function openAlbum(id){
+  activeGalleryFilter = id;
+  document.getElementById('galleryCats')?.classList.add('hidden');
+  document.getElementById('galleryDetail')?.classList.remove('hidden');
+  const title = document.getElementById('galleryDetailTitle');
+  if (title) title.textContent = CATEGORY_LABELS[id] || 'Memories';
+  renderGallery();
+  window.scrollTo({ top: 0, behavior: 'instant' });
+}
+
+function closeAlbum(){
+  activeGalleryFilter = 'all';
+  document.getElementById('galleryDetail')?.classList.add('hidden');
+  document.getElementById('galleryCats')?.classList.remove('hidden');
+  renderAlbums();
+}
+
+document.getElementById('galleryBack')?.addEventListener('click', closeAlbum);
+
+document.getElementById('shareUploadBtn')?.addEventListener('click', () => {
+  const panel = document.getElementById('uploadPanel');
+  panel?.classList.toggle('hidden');
+  if (panel && !panel.classList.contains('hidden')){
+    panel.scrollIntoView({ behavior:'smooth', block:'center' });
+  }
+});
 
 function renderGallery(memories){
+  if (Array.isArray(memories)) latestMemories = memories;
+  renderAlbums();
+
   const grid = document.getElementById('galleryGrid');
   const empty = document.getElementById('galleryEmpty');
   if (!grid || !empty) return;
 
-  const uploaded = (memories || []).map(m => ({ ...m, seeded:false }));
-  const seeded = SEED_MEMORIES.map(m => ({ ...m, type:'image/jpeg', seeded:true }));
-  const all = [...uploaded, ...seeded];
+  const all = allGalleryItems().filter(matchesKind);
   const items = activeGalleryFilter === 'all'
     ? all
     : all.filter(m => m.category === activeGalleryFilter);
@@ -163,13 +239,16 @@ document.getElementById('memoryFiles')?.addEventListener('change', async event =
   setTimeout(() => status.classList.add('hidden'), 2400);
 });
 
-document.querySelectorAll('.chip').forEach(chip => {
+document.querySelectorAll('#galleryChips .chip').forEach(chip => {
   chip.addEventListener('click', () => {
-    activeGalleryFilter = chip.dataset.filter;
-    document.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c === chip));
+    activeGalleryKind = chip.dataset.kind;
+    document.querySelectorAll('#galleryChips .chip')
+      .forEach(c => c.classList.toggle('active', c === chip));
     renderGallery();
   });
 });
+
+renderAlbums();
 
 if (typeof onMemories === 'function'){
   onMemories(renderGallery);

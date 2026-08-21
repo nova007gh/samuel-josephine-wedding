@@ -49,13 +49,21 @@
   background:transparent;
   cursor:pointer;
 }
-.app-brand img{
-  height:38px;
-  width:auto;
-  border-radius:50%;
-  object-fit:cover;
-  box-shadow:0 4px 12px rgba(112,78,26,.2);
+.brand-mark{
+  font-family:"Cormorant Garamond",Georgia,serif;
+  font-size:1.55rem;
+  font-weight:600;
+  letter-spacing:.02em;
+  line-height:1;
+  color:#6b5222;
 }
+.brand-mark i{
+  font-style:normal;
+  font-size:1.2rem;
+  color:var(--gold);
+  margin:0 1px;
+}
+.header-actions{ display:flex; align-items:center; gap:10px; }
 .icon-button{
   width:40px;
   height:40px;
@@ -67,6 +75,13 @@
   color:var(--gold-deep);
   font-size:1rem;
 }
+.icon-button svg{ width:19px; height:19px; stroke-width:1.7; }
+.icon-button--plain{
+  border-color:transparent;
+  background:transparent;
+  color:#6b5222;
+}
+.icon-button--plain svg{ width:23px; height:23px; stroke-width:1.9; }
 .icon-button.has-song{ position:relative; }
 .icon-button.has-song::after{
   content:"";
@@ -115,35 +130,56 @@
    SCREEN 3 — Home
    ========================================================= */
 .home-hero{
-  margin:6px 0 0;
-  padding:16px 10px 14px;
+  position:relative;
+  z-index:2;
+  margin:10px 0 0;
+  padding:4px 10px 6px;
   text-align:center;
-  background:rgba(255,255,255,.72);
-  border:1px solid rgba(169,124,44,.16);
-  border-radius:18px;
-  box-shadow:0 12px 32px rgba(112,78,26,.1);
   animation:fadeUp .55s .05s ease both;
+}
+.home-welcome{
+  margin:0;
+  font-family:"Parisienne",cursive;
+  font-weight:400;
+  font-size:clamp(3rem,13vw,4rem);
+  line-height:1.05;
+  background:linear-gradient(180deg,#d3a54c,#a97c2c 55%,#87611c);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+  -webkit-text-fill-color:transparent;
+}
+.home-heart{
+  display:block;
+  margin:2px 0 8px;
+  font-size:1rem;
+  color:#c2952f;
 }
 .home-eyebrow{
   margin:0;
-  font-size:.72rem;
+  font-size:.74rem;
   font-weight:700;
-  letter-spacing:.16em;
-  color:#8b7355;
+  letter-spacing:.15em;
+  color:#8a6b39;
 }
+.home-flourish{ margin:12px 0 6px; }
 .home-names{
-  margin:6px 0 0;
+  margin:2px 0 0;
   font-family:"Parisienne",cursive;
-  font-size:clamp(2.8rem,12vw,3.6rem);
-  color:var(--gold);
-  text-shadow:0 1px 0 rgba(255,250,238,.9);
+  font-size:clamp(2.9rem,13vw,3.8rem);
+  line-height:1.08;
+  background:linear-gradient(180deg,#d3a54c,#a97c2c 55%,#87611c);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+  -webkit-text-fill-color:transparent;
 }
 .home-tag{
-  margin:4px 0 0;
-  font-size:.7rem;
-  font-weight:600;
-  letter-spacing:.16em;
-  color:#7a6340;
+  margin:8px 0 0;
+  font-size:.72rem;
+  font-weight:700;
+  letter-spacing:.17em;
+  color:#8a6b39;
 }
 
 /* countdown card */
@@ -168,13 +204,19 @@
   color:#f2dcae;
 }
 .bigday-date{
-  margin:8px 0 12px;
+  margin:8px 0 6px;
   font-family:"Cormorant Garamond",Georgia,serif;
-  font-size:1.8rem;
+  font-size:1.9rem;
   letter-spacing:.06em;
   color:#fff6e3;
 }
 .bigday-date b{ font-weight:400; color:#e8cf99; margin:0 6px; }
+.bigday-heart{
+  display:block;
+  margin:0 0 4px;
+  font-size:.9rem;
+  color:#f0d49a;
+}
 .countdown{
   display:grid;
   grid-template-columns:repeat(4,1fr);
@@ -220,21 +262,39 @@
   animation:fadeUp .55s .2s ease both;
 }
 .couple-photo img{ width:100%; height:100%; object-fit:cover; }
-.couple-photo .couple-caption{
+.couple-photo::after{
+  content:"";
   position:absolute;
   left:0;
   right:0;
-  bottom:12px;
+  bottom:0;
+  height:38%;
+  pointer-events:none;
+  background:linear-gradient(transparent,rgba(74,48,14,.42));
+}
+.couple-photo .couple-caption{
+  position:absolute;
+  z-index:2;
+  left:0;
+  right:0;
+  bottom:14px;
   display:flex;
+  flex-direction:column;
   align-items:center;
-  justify-content:center;
-  gap:8px;
+  gap:3px;
   text-align:center;
+}
+.couple-hash{
   font-family:"Cormorant Garamond",Georgia,serif;
   font-style:italic;
-  font-size:1rem;
+  font-size:1.15rem;
   color:#fff6e6;
-  text-shadow:0 2px 10px rgba(60,38,10,.6);
+  text-shadow:0 2px 10px rgba(60,38,10,.7);
+}
+.couple-heart{
+  font-size:.9rem;
+  color:#e8bf6c;
+  text-shadow:0 2px 8px rgba(60,38,10,.6);
 }
 .photo-placeholder{
   width:100%;

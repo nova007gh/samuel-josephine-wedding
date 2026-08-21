@@ -90,6 +90,100 @@
   color:#fdf2dc;
 }
 
+/* =========================================================
+   Gallery — album cover cards
+   ========================================================= */
+.cat-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:14px;
+  margin:18px 0 0;
+}
+.cat-card{
+  display:flex;
+  flex-direction:column;
+  padding:6px 6px 12px;
+  border:1px solid rgba(169,124,44,.18);
+  border-radius:16px;
+  background:rgba(255,255,255,.86);
+  box-shadow:0 10px 24px rgba(112,78,26,.1);
+  text-align:center;
+  transition:transform .2s ease, box-shadow .2s ease;
+}
+.cat-card:active{ transform:scale(.98); box-shadow:0 6px 16px rgba(112,78,26,.14); }
+.cat-thumb{
+  display:block;
+  border-radius:12px;
+  overflow:hidden;
+  aspect-ratio:4/3;
+  background:linear-gradient(140deg,#e8d7bd,#d9c3a2);
+}
+.cat-thumb img{ width:100%; height:100%; object-fit:cover; }
+.cat-name{
+  margin-top:10px;
+  font-size:.86rem;
+  font-weight:600;
+  color:#4a3a24;
+}
+.cat-count{
+  margin-top:2px;
+  font-size:.82rem;
+  color:#9b8560;
+}
+.cat-detail-title{
+  margin:6px 0 0;
+  text-align:center;
+  font-family:"Cormorant Garamond",Georgia,serif;
+  font-size:1.5rem;
+  font-weight:600;
+  color:#5a4626;
+}
+
+/* ---------- share your moments ---------- */
+.share-bar{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  align-items:center;
+  gap:12px;
+  margin:20px 0 0;
+  padding:14px 14px;
+  border-radius:16px;
+  background:rgba(255,255,255,.86);
+  border:1px solid rgba(169,124,44,.18);
+  box-shadow:0 10px 24px rgba(112,78,26,.1);
+}
+.share-icon{
+  display:grid;
+  place-items:center;
+  width:36px;
+  height:36px;
+  color:var(--gold-deep);
+}
+.share-icon svg{ width:26px; height:26px; stroke-width:1.6; }
+.share-text{ display:flex; flex-direction:column; gap:2px; min-width:0; }
+.share-text strong{ font-size:.86rem; font-weight:600; color:#4a3a24; }
+.share-text small{ font-size:.7rem; line-height:1.4; color:#8b7355; }
+.share-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  padding:11px 16px;
+  border:1px solid #c79c48;
+  border-radius:10px;
+  background:linear-gradient(#b98c33,#8a6220);
+  color:#fff7e4;
+  font-size:.78rem;
+  font-weight:600;
+  white-space:nowrap;
+  box-shadow:0 8px 18px rgba(105,71,22,.26);
+}
+.share-btn svg{ width:15px; height:15px; stroke-width:2; }
+.share-btn:active{ transform:scale(.97); }
+
+@media(max-width:360px){
+  .share-text small{ display:none; }
+}
+
 .mem-grid{
   display:grid;
   grid-template-columns:repeat(2,1fr);
