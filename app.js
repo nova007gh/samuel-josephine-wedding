@@ -3,44 +3,6 @@
 const $ = sel => document.querySelector(sel);
 const $$ = sel => [...document.querySelectorAll(sel)];
 
-/* ---------------------------------------------------------
-   Seal break, shards and dust
-   --------------------------------------------------------- */
-function buildBurst(hostId){
-  const host = $('#' + hostId);
-  if (!host) return;
-
-  const shards = 18;
-  for (let i = 0; i < shards; i++){
-    const angle = (Math.PI * 2 * i) / shards + (Math.random() - .5) * .35;
-    const dist = 90 + Math.random() * 130;
-    const el = document.createElement('span');
-    el.className = 'shard';
-    el.style.setProperty('--tx', `${Math.cos(angle) * dist}px`);
-    el.style.setProperty('--ty', `${Math.sin(angle) * dist - 30}px`);
-    el.style.setProperty('--rot', `${(Math.random() * 720 - 360).toFixed(0)}deg`);
-    el.style.setProperty('--sz', `${8 + Math.random() * 16}px`);
-    el.style.setProperty('--dur', `${.75 + Math.random() * .5}s`);
-    el.style.setProperty('--delay', `${(Math.random() * .12).toFixed(2)}s`);
-    host.appendChild(el);
-  }
-
-  const motes = 26;
-  for (let i = 0; i < motes; i++){
-    const angle = Math.random() * Math.PI * 2;
-    const dist = 60 + Math.random() * 170;
-    const el = document.createElement('span');
-    el.className = 'dust';
-    el.style.setProperty('--tx', `${Math.cos(angle) * dist}px`);
-    el.style.setProperty('--ty', `${Math.sin(angle) * dist - 40}px`);
-    el.style.setProperty('--sz', `${3 + Math.random() * 5}px`);
-    el.style.setProperty('--dur', `${.8 + Math.random() * .6}s`);
-    el.style.setProperty('--delay', `${(Math.random() * .2).toFixed(2)}s`);
-    host.appendChild(el);
-  }
-}
-buildBurst('sealBurst');
-
 const opening = $('#opening');
 const sealButton = $('#sealButton');
 const landingFrame = $('#landingFrame');

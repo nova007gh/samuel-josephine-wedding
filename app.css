@@ -58,14 +58,14 @@ button{ font:inherit; cursor:pointer; }
   z-index:1000;
   display:grid;
   place-items:center;
-  background:#ead9c4;
+  background:#e7d5bf;
   overflow:hidden;
 }
 .landing-frame{
   position:relative;
   height:100dvh;
   max-width:100vw;
-  aspect-ratio:934/1545;
+  aspect-ratio:910/1600;
   animation:landingIn 1.1s ease both;
 }
 .landing-frame picture,
@@ -75,8 +75,8 @@ button{ font:inherit; cursor:pointer; }
 .seal-hotspot{
   position:absolute;
   left:50%;
-  top:70.25%;
-  width:28.8%;
+  top:57%;
+  width:44%;
   aspect-ratio:1;
   transform:translate(-50%,-50%);
   border:0;
@@ -84,11 +84,11 @@ button{ font:inherit; cursor:pointer; }
   border-radius:50%;
   background:transparent;
   z-index:5;
+  cursor:pointer;
 }
-.seal-hotspot::before{
-  content:"";
+.seal-hotspot .seal-ripple{
   position:absolute;
-  inset:-7%;
+  inset:-8%;
   border-radius:50%;
   box-shadow:0 0 0 0 rgba(202,153,78,.34);
   animation:sealRipple 2s infinite;
@@ -96,69 +96,7 @@ button{ font:inherit; cursor:pointer; }
 .seal-hotspot:focus-visible{ outline:2px solid rgba(255,236,200,.9); outline-offset:6px; }
 .seal-hotspot:active{ transform:translate(-50%,-50%) scale(.96); }
 .opening.breaking .seal-hotspot{ animation:sealPress .45s cubic-bezier(.2,.8,.3,1); }
-.opening.breaking .seal-hotspot::before{ animation:none; box-shadow:none; }
-
-/* the split that tears the wax apart */
-.seal-split{
-  position:absolute;
-  left:50%;
-  top:50%;
-  width:6px;
-  height:0;
-  transform:translate(-50%,-50%) rotate(8deg);
-  background:linear-gradient(180deg,transparent,#fff3d6 18%,#ffe6ae 50%,#fff3d6 82%,transparent);
-  filter:drop-shadow(0 0 14px rgba(255,205,120,.95));
-  opacity:0;
-  border-radius:6px;
-  z-index:6;
-  will-change:height,opacity;
-}
-.opening.breaking .seal-split{ opacity:1; animation:sealSplit .5s cubic-bezier(.2,.8,.3,1) forwards; }
-
-.seal-burst{
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-}
-
-/* gold shards flung from the seal */
-.shard{
-  position:absolute;
-  left:50%;
-  top:50%;
-  width:var(--sz,14px);
-  height:var(--sz,14px);
-  margin:calc(var(--sz,14px) / -2);
-  background:linear-gradient(135deg,#f7e3ad,#d8ae5c 45%,#a97c2c);
-  clip-path:polygon(50% 0%,100% 38%,82% 100%,18% 100%,0% 38%);
-  opacity:0;
-  z-index:6;
-  filter:drop-shadow(0 3px 6px rgba(105,70,20,.4));
-  will-change:transform,opacity;
-}
-.opening.breaking .shard{
-  animation:shardFly var(--dur,.9s) cubic-bezier(.15,.7,.3,1) forwards;
-  animation-delay:var(--delay,0s);
-}
-
-/* fine gold dust */
-.dust{
-  position:absolute;
-  left:50%;
-  top:50%;
-  width:var(--sz,5px);
-  height:var(--sz,5px);
-  margin:calc(var(--sz,5px) / -2);
-  border-radius:50%;
-  background:radial-gradient(circle,#fff4d4,#e0b968);
-  opacity:0;
-  z-index:6;
-  will-change:transform,opacity;
-}
-.opening.breaking .dust{
-  animation:dustFly var(--dur,1s) ease-out forwards;
-  animation-delay:var(--delay,0s);
-}
+.opening.breaking .seal-hotspot .seal-ripple{ animation:none; box-shadow:none; }
 
 .opening.opening-envelope .landing-frame{ animation:openInvite .65s ease forwards; }
 .opening.opening-envelope{ animation:openingExit .65s ease forwards; }
@@ -174,26 +112,12 @@ button{ font:inherit; cursor:pointer; }
   35%{ transform:translate(-50%,-50%) scale(.92); }
   100%{ transform:translate(-50%,-50%) scale(1); }
 }
-@keyframes sealSplit{ to{ height:82%; } }
-@keyframes shardFly{
-  0%{ opacity:0; transform:translate(0,0) rotate(0deg) scale(.4); }
-  12%{ opacity:1; }
-  100%{
-    opacity:0;
-    transform:translate(var(--tx,60px),var(--ty,-70px)) rotate(var(--rot,180deg)) scale(1);
-  }
-}
-@keyframes dustFly{
-  0%{ opacity:0; transform:translate(0,0) scale(.3); }
-  15%{ opacity:1; }
-  100%{ opacity:0; transform:translate(var(--tx,40px),var(--ty,-60px)) scale(1.1); }
-}
 @keyframes openInvite{ to{ opacity:0; transform:scale(1.08); filter:blur(7px); } }
 @keyframes openingExit{ to{ opacity:0; filter:blur(7px); transform:scale(1.02); } }
 
 @media(max-width:520px){
   .landing-frame{ width:100vw; height:auto; max-height:100dvh; }
-  .landing-art{ object-fit:contain; background:#ead9c4; }
+  .landing-art{ object-fit:contain; background:#e7d5bf; }
 }
 
 /* =========================================================
