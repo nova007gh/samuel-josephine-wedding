@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v41-envelope-3d';
+const CACHE = 'sj-wedding-v42-mockup-style-pass';
 const ASSETS = [
   './',
   './index.html',
