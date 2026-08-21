@@ -275,14 +275,14 @@ button{ font:inherit; cursor:pointer; }
    from the initial (hidden inside) to the default. */
 .env-card{
   position:absolute;
-  left:4px;
-  right:4px;
+  left:4%;
+  right:4%;
   bottom:20px;
-  padding:6px;
-  border-radius:6px;
+  padding:8px;
+  border-radius:8px;
   background:linear-gradient(165deg,#fffaf2,#faf0e0);
-  box-shadow:0 12px 30px rgba(96,64,22,.15);
-  z-index:2;
+  box-shadow:0 14px 32px rgba(96,64,22,.18);
+  z-index:4;
   transform:translateY(-25%);
   opacity:1;
   animation:envCardSlide 1s .9s cubic-bezier(.2,.8,.25,1) backwards;
@@ -294,21 +294,22 @@ button{ font:inherit; cursor:pointer; }
 }
 
 .env-card-inner{
-  padding:30px 22px 26px;
+  padding:32px 24px 28px;
   text-align:center;
-  border:1px solid rgba(169,124,44,.34);
-  border-radius:3px;
+  border:1px solid rgba(169,124,44,.38);
+  border-radius:4px;
 }
 
 .env-welcome,
 .env-forever{
   margin:0;
+  font-family:"Cormorant Garamond",Georgia,serif;
   font-weight:700;
-  letter-spacing:.2em;
-  color:#43331d;
+  letter-spacing:.18em;
+  color:#4a3a24;
 }
-.env-welcome{ font-size:clamp(.82rem,3.6vw,1rem); }
-.env-forever{ margin-top:7px; font-size:clamp(1.05rem,4.8vw,1.35rem); }
+.env-welcome{ font-size:clamp(.74rem,3.4vw,.95rem); }
+.env-forever{ margin-top:8px; font-size:clamp(1.1rem,5vw,1.45rem); }
 
 /* thin rule with a gold heart */
 .env-rule{
@@ -316,22 +317,22 @@ button{ font:inherit; cursor:pointer; }
   align-items:center;
   justify-content:center;
   gap:12px;
-  margin:16px auto 6px;
-  max-width:78%;
+  margin:18px auto 10px;
+  max-width:72%;
 }
-.env-rule span{ flex:1; height:1px; background:rgba(169,124,44,.4); }
-.env-rule i{ font-style:normal; font-size:1.05rem; color:#c2952f; }
+.env-rule span{ flex:1; height:1px; background:rgba(169,124,44,.35); }
+.env-rule i{ font-style:normal; font-size:.9rem; color:#c2952f; }
 
 /* the big gold script names */
 .env-names{
   margin:4px 0 0;
   font-family:"Parisienne",cursive;
   font-weight:400;
-  line-height:.98;
+  line-height:1;
   display:flex;
   flex-direction:column;
   align-items:center;
-  gap:2px;
+  gap:0;
 }
 .env-name,
 .env-amp{
@@ -342,8 +343,8 @@ button{ font:inherit; cursor:pointer; }
   -webkit-text-fill-color:transparent;
   text-shadow:0 1px 0 rgba(255,252,244,.5);
 }
-.env-name{ font-size:clamp(3.4rem,17vw,5.2rem); }
-.env-amp{ font-size:clamp(2rem,9vw,2.8rem); line-height:1; }
+.env-name{ font-size:clamp(3.2rem,16vw,5rem); }
+.env-amp{ font-size:clamp(1.8rem,8vw,2.6rem); line-height:.9; }
 
 /* ornate swirl + heart under the names */
 .env-flourish{
@@ -351,12 +352,12 @@ button{ font:inherit; cursor:pointer; }
   align-items:center;
   justify-content:center;
   gap:10px;
-  margin:14px 0 0;
+  margin:12px 0 0;
 }
-.env-flourish i{ font-style:normal; font-size:1rem; color:#c2952f; }
+.env-flourish i{ font-style:normal; font-size:.9rem; color:#c2952f; }
 .env-swirl{
-  width:52px;
-  height:10px;
+  width:46px;
+  height:9px;
   background:
     radial-gradient(circle at 12% 50%, rgba(169,124,44,.85) 1.6px, transparent 1.9px),
     radial-gradient(circle at 88% 50%, rgba(169,124,44,.85) 1.6px, transparent 1.9px),
@@ -366,17 +367,16 @@ button{ font:inherit; cursor:pointer; }
 .env-swirl--r{ border-radius:0 0 0 40px; }
 
 .env-hash{
-  margin:12px 0 0;
+  margin:14px 0 0;
   font-family:"Cormorant Garamond",Georgia,serif;
   font-style:italic;
-  font-size:1rem;
+  font-size:.92rem;
   letter-spacing:.03em;
-  color:#8a6f43;
+  color:#7a6140;
 }
 
 /* ---- envelope front panel ----
-   Solid rectangle at the bottom, z-index above the card so the
-   card appears to emerge from behind it. */
+   Solid rectangle at the bottom, the card rises in front of it. */
 .env-front{
   position:absolute;
   left:0;
@@ -389,9 +389,6 @@ button{ font:inherit; cursor:pointer; }
   border-radius:0 0 8px 8px;
   box-shadow:0 -2px 8px rgba(120,84,32,.08), 0 16px 36px rgba(96,64,22,.18);
   z-index:3;
-  /* the top edge of the front panel is the "pocket opening" —
-     give it a subtle inner shadow so it looks like the card slides
-     out of a slot */
 }
 .env-front::before{
   content:"";
@@ -414,7 +411,7 @@ button{ font:inherit; cursor:pointer; }
 
 /* ---- the flap ----
    Starts as a triangle pointing down (closed), then rotates
-   back on the X axis to "open" the envelope. */
+   back on the X axis to "open" the envelope. Kept behind the card. */
 .env-flap{
   position:absolute;
   left:0;
@@ -425,7 +422,7 @@ button{ font:inherit; cursor:pointer; }
   clip-path:polygon(0 0, 50% 100%, 100% 0);
   filter:drop-shadow(0 4px 8px rgba(120,84,32,.14));
   transform-origin:top center;
-  z-index:4;
+  z-index:2;
   /* default = open; animation runs from closed */
   transform:rotateX(180deg);
   animation:envFlapOpen .6s .3s cubic-bezier(.4,0,.2,1) backwards;
@@ -435,7 +432,7 @@ button{ font:inherit; cursor:pointer; }
   100%{ transform:rotateX(180deg); }
 }
 
-/* ---- gold pill CTA ---- */
+/* ---- dark brown pill CTA ---- */
 .env-btn{
   display:flex;
   align-items:center;
@@ -444,33 +441,36 @@ button{ font:inherit; cursor:pointer; }
   width:min(88%,340px);
   margin:22px 0 0;
   padding:17px 26px;
-  border:1px solid #6d4d15;
+  border:1px solid #5a4112;
   border-radius:999px;
-  background:linear-gradient(180deg,#a8802c 0%,#7d5a1c 52%,#5f4413 100%);
-  color:#fdf3dd;
-  font-size:.86rem;
+  background:linear-gradient(180deg,#4f3812,#2f2110);
+  color:#e8cf99;
+  font-size:.82rem;
   font-weight:600;
   letter-spacing:.14em;
-  box-shadow:0 14px 30px rgba(84,56,14,.4), inset 0 1px 0 rgba(255,232,180,.4);
+  box-shadow:0 12px 26px rgba(40,28,10,.45), inset 0 1px 0 rgba(255,232,180,.15);
   transition:transform .2s ease, box-shadow .2s ease;
   opacity:1;
   animation:fadeUp .7s 1.8s ease backwards;
 }
-.env-btn:active{ transform:scale(.975); box-shadow:0 8px 18px rgba(84,56,14,.42); }
+.env-btn:active{ transform:scale(.975); box-shadow:0 8px 16px rgba(40,28,10,.5); }
 
 .env-chevron{
-  margin-top:14px;
+  margin-top:12px;
   font-size:1.5rem;
   line-height:1;
-  color:rgba(140,102,44,.6);
+  color:rgba(120,86,40,.7);
   opacity:.6;
   animation:envChevronIn .5s 2.2s ease backwards, envBob 1.9s 2.7s ease-in-out infinite;
 }
+.env-chevron::after{
+  content:"\00BB";
+  display:inline-block;
+  transform:rotate(90deg) scaleX(.6);
+  font-size:1.2rem;
+}
 @keyframes envChevronIn{ from{ opacity:0; } to{ opacity:.6; } }
 @keyframes envBob{
-  0%,100%{ transform:translateY(0); opacity:.55; }
-  50%{ transform:translateY(6px); opacity:.95; }
-}
   0%,100%{ transform:translateY(0); opacity:.55; }
   50%{ transform:translateY(6px); opacity:.95; }
 }

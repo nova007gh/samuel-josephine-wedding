@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v42-mockup-style-pass';
+const CACHE = 'sj-wedding-v43-welcome-zfix';
 const ASSETS = [
   './',
   './index.html',
