@@ -48,51 +48,38 @@
 <div id="welcomeScreen" class="env-screen hidden">
   <div class="env-stage">
 
-    <!-- the envelope: card is hidden inside, flap opens, card slides out -->
-    <div class="env-wrap">
-      <!-- envelope back panel (behind everything) -->
-      <div class="env-back"></div>
+    <!-- the invitation card, standing tall out of the envelope -->
+    <div class="env-card">
+      <div class="env-card-inner">
+        <p class="env-welcome">WELCOME TO</p>
+        <p class="env-forever">OUR FOREVER</p>
 
-      <!-- the invitation card, starts tucked inside the envelope -->
-      <div class="env-card">
-        <div class="env-card-inner">
-          <p class="env-welcome">WELCOME TO</p>
-          <p class="env-forever">OUR FOREVER</p>
+        <div class="env-rule"><span></span><i>&#10084;</i><span></span></div>
 
-          <div class="env-rule"><span></span><i>&#10084;</i><span></span></div>
+        <h1 class="env-names">
+          <span class="env-name">Sam</span>
+          <span class="env-amp">&amp;</span>
+          <span class="env-name">Jossy</span>
+        </h1>
 
-          <h1 class="env-names">
-            <span class="env-name">Sam</span>
-            <span class="env-amp">&amp;</span>
-            <span class="env-name">Jossy</span>
-          </h1>
+        <div class="env-rule env-rule--bottom"><span></span><i>&#10084;</i><span></span></div>
 
-          <div class="env-flourish">
-            <span class="env-swirl env-swirl--l"></span>
-            <i>&#10084;</i>
-            <span class="env-swirl env-swirl--r"></span>
-          </div>
-
-          <p class="env-hash">#AlwaysAndForever</p>
-        </div>
+        <p class="env-hash">#AlwaysAndForever</p>
       </div>
-
-      <!-- envelope front panel (in front of card, so card emerges from behind it) -->
-      <div class="env-front">
-        <div class="env-monogram">
-          <img src="assets/seal-pressed-320.png" alt="S&amp;J monogram" />
-        </div>
-      </div>
-
-      <!-- the flap, starts closed (pointing down), opens (rotates back) -->
-      <div class="env-flap"></div>
     </div>
 
-    <button id="enterWedding" class="env-btn" type="button">
-      ENTER OUR WEDDING <span aria-hidden="true">&#10095;</span>
-    </button>
+    <!-- the open envelope pocket the card sits in -->
+    <div class="env-pocket">
+      <div class="env-monogram">
+        <img src="assets/seal-pressed-320.png" alt="S&amp;J wax seal" />
+      </div>
 
-    <span class="env-chevron" aria-hidden="true"></span>
+      <button id="enterWedding" class="env-btn" type="button">
+        ENTER OUR WEDDING <span aria-hidden="true">&#10095;</span>
+      </button>
+
+      <span class="env-chevron" aria-hidden="true"></span>
+    </div>
   </div>
 </div>
 

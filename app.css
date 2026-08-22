@@ -127,15 +127,10 @@ button{ font:inherit; cursor:pointer; }
   position:fixed;
   inset:0;
   z-index:999;
-  overflow-y:auto;
+  overflow:hidden;
   display:flex;
-  flex-direction:column;
   justify-content:center;
-  align-items:center;
-  padding:20px 18px calc(20px + env(safe-area-inset-bottom));
-  background:
-    radial-gradient(115% 55% at 50% 0%, #f6ebdb, transparent 60%),
-    linear-gradient(170deg,#f3e6d3 0%,#ecdcc4 55%,#e6d3b8 100%);
+  background:linear-gradient(180deg,#f6ecdb 0%,#efdfc4 45%,#e7d2ae 75%,#e0c69c 100%);
   animation:gateIn .7s cubic-bezier(.2,.8,.3,1) both;
 }
 .env-screen.exit{ animation:gateExit .7s cubic-bezier(.4,0,.2,1) forwards; }
@@ -160,68 +155,38 @@ button{ font:inherit; cursor:pointer; }
 .env-stage{
   position:relative;
   z-index:2;
-  width:min(100%,404px);
+  width:100%;
+  max-width:520px;
   display:flex;
   flex-direction:column;
   align-items:center;
-  /* reserve space above the envelope for the card that rises out of it */
-  padding-top:380px;
+  padding-top:5vh;
 }
 
-/* ---- the envelope wrapper ----
-   Layering (z-index):
-     env-back    1   behind everything
-     env-card    2   slides up from inside
-     env-front   3   solid front panel, hides card's lower edge
-     env-flap    4   triangular flap, opens first
---------------------------------------------------------- */
-.env-wrap{
-  position:relative;
-  width:100%;
-  /* total visible envelope height (front + flap area) */
-  height:200px;
-  margin:0 auto;
-  perspective:800px;
-}
-
-/* envelope back — full rectangle behind everything */
-.env-back{
-  position:absolute;
-  inset:0;
-  border-radius:8px;
-  background:linear-gradient(180deg,#f0e0c8,#e8d5b8);
-  box-shadow:0 16px 40px rgba(96,64,22,.18);
-  z-index:1;
-}
-
-/* the invitation card — starts tucked inside, slides up.
-   Default state = final (card above envelope). Animation runs
-   from the initial (hidden inside) to the default. */
+/* the invitation card — tall, standing out of the envelope pocket */
 .env-card{
-  position:absolute;
-  left:4%;
-  right:4%;
-  bottom:20px;
-  padding:8px;
-  border-radius:8px;
-  background:linear-gradient(165deg,#fffaf2,#faf0e0);
-  box-shadow:0 14px 32px rgba(96,64,22,.18);
-  z-index:4;
-  transform:translateY(-25%);
-  opacity:1;
-  animation:envCardSlide 1s .9s cubic-bezier(.2,.8,.25,1) backwards;
+  position:relative;
+  z-index:1;
+  width:min(84%,400px);
+  height:62vh;
+  min-height:430px;
+  padding:9px;
+  border-radius:4px;
+  background:linear-gradient(170deg,#fffdf6,#fbf2e0);
+  box-shadow:0 20px 50px rgba(96,64,22,.22);
+  animation:envCardIn .9s .15s cubic-bezier(.2,.8,.25,1) backwards;
 }
-@keyframes envCardSlide{
-  0%{ transform:translateY(85%); opacity:0; }
-  15%{ opacity:1; }
-  100%{ transform:translateY(-25%); opacity:1; }
+@keyframes envCardIn{
+  from{ opacity:0; transform:translateY(26px); }
+  to{ opacity:1; transform:none; }
 }
 
 .env-card-inner{
-  padding:32px 24px 28px;
+  height:100%;
+  padding:6.5vh 22px 0;
   text-align:center;
-  border:1px solid rgba(169,124,44,.38);
-  border-radius:4px;
+  border:1px solid rgba(169,124,44,.4);
+  border-radius:2px;
 }
 
 .env-welcome,
@@ -241,11 +206,12 @@ button{ font:inherit; cursor:pointer; }
   align-items:center;
   justify-content:center;
   gap:12px;
-  margin:18px auto 10px;
-  max-width:72%;
+  margin:3.2vh auto 1.6vh;
+  max-width:82%;
 }
 .env-rule span{ flex:1; height:1px; background:rgba(169,124,44,.35); }
 .env-rule i{ font-style:normal; font-size:.9rem; color:#c2952f; }
+.env-rule--bottom{ margin:2.6vh auto 1.2vh; }
 
 /* the big gold script names */
 .env-names{
@@ -299,93 +265,71 @@ button{ font:inherit; cursor:pointer; }
   color:#7a6140;
 }
 
-/* ---- envelope front panel ----
-   Solid rectangle at the bottom, the card rises in front of it. */
-.env-front{
-  position:absolute;
-  left:0;
-  right:0;
-  bottom:0;
-  height:130px;
-  display:grid;
-  place-items:center;
-  background:linear-gradient(180deg,#f4e6d1,#ecdcc0);
-  border-radius:0 0 8px 8px;
-  box-shadow:0 -2px 8px rgba(120,84,32,.08), 0 16px 36px rgba(96,64,22,.18);
-  z-index:3;
+/* ---- the open envelope pocket ----
+   Full-width panel below the card with a V opening cut into the
+   top edge, so the card looks tucked into the envelope. */
+.env-pocket{
+  position:relative;
+  z-index:2;
+  width:100%;
+  flex:1;
+  min-height:37vh;
+  margin-top:-5vh;
+  clip-path:polygon(0 0, 50% 12%, 100% 0, 100% 100%, 0 100%);
+  background:linear-gradient(180deg,#eed9b6 0%,#e7d0a8 55%,#dfc498 100%);
+  animation:envPocketIn .8s .1s ease backwards;
 }
-.env-front::before{
-  content:"";
-  position:absolute;
-  left:0;
-  right:0;
-  top:0;
-  height:6px;
-  background:linear-gradient(180deg,rgba(120,84,32,.12),transparent);
-  border-radius:8px 8px 0 0;
+@keyframes envPocketIn{
+  from{ opacity:0; }
+  to{ opacity:1; }
 }
 .env-monogram{
-  width:96px;
-  height:96px;
-  opacity:.5;
-  mix-blend-mode:darken;
-  filter:contrast(.92) brightness(1.05);
+  position:absolute;
+  left:50%;
+  top:40%;
+  transform:translate(-50%,-50%);
+  width:112px;
+  height:112px;
+  mix-blend-mode:multiply;
+  filter:contrast(.95) brightness(1.03);
 }
 .env-monogram img{ width:100%; height:100%; object-fit:contain; }
 
-/* ---- the flap ----
-   Starts as a triangle pointing down (closed), then rotates
-   back on the X axis to "open" the envelope. Kept behind the card. */
-.env-flap{
-  position:absolute;
-  left:0;
-  right:0;
-  top:0;
-  height:80px;
-  background:linear-gradient(180deg,#f6ead6,#eeddc4);
-  clip-path:polygon(0 0, 50% 100%, 100% 0);
-  filter:drop-shadow(0 4px 8px rgba(120,84,32,.14));
-  transform-origin:top center;
-  z-index:2;
-  /* default = open; animation runs from closed */
-  transform:rotateX(180deg);
-  animation:envFlapOpen .6s .3s cubic-bezier(.4,0,.2,1) backwards;
-}
-@keyframes envFlapOpen{
-  0%{ transform:rotateX(0deg); }
-  100%{ transform:rotateX(180deg); }
-}
-
-/* ---- dark brown pill CTA ---- */
+/* ---- gold pill CTA ---- */
 .env-btn{
+  position:absolute;
+  left:50%;
+  top:72%;
+  transform:translate(-50%,-50%);
   display:flex;
   align-items:center;
   justify-content:center;
   gap:14px;
-  width:min(88%,340px);
-  margin:22px 0 0;
-  padding:17px 26px;
-  border:1px solid #5a4112;
+  width:min(72%,320px);
+  padding:16px 26px;
+  border:1px solid rgba(255,244,214,.5);
   border-radius:999px;
-  background:linear-gradient(180deg,#4f3812,#2f2110);
-  color:#e8cf99;
-  font-size:.82rem;
-  font-weight:600;
+  background:linear-gradient(180deg,#d2a94f,#a3782a);
+  color:#fff8e6;
+  font-size:.8rem;
+  font-weight:700;
   letter-spacing:.14em;
-  box-shadow:0 12px 26px rgba(40,28,10,.45), inset 0 1px 0 rgba(255,232,180,.15);
+  box-shadow:0 12px 26px rgba(105,71,22,.35), inset 0 1px 0 rgba(255,240,200,.45);
   transition:transform .2s ease, box-shadow .2s ease;
-  opacity:1;
-  animation:fadeUp .7s 1.8s ease backwards;
+  animation:fadeUp .7s 1s ease backwards;
 }
-.env-btn:active{ transform:scale(.975); box-shadow:0 8px 16px rgba(40,28,10,.5); }
+.env-btn:active{ transform:translate(-50%,-50%) scale(.975); box-shadow:0 8px 16px rgba(105,71,22,.4); }
 
 .env-chevron{
-  margin-top:12px;
+  position:absolute;
+  left:50%;
+  bottom:2.4vh;
+  transform:translateX(-50%);
   font-size:1.5rem;
   line-height:1;
   color:rgba(120,86,40,.7);
   opacity:.6;
-  animation:envChevronIn .5s 2.2s ease backwards, envBob 1.9s 2.7s ease-in-out infinite;
+  animation:envChevronIn .5s 1.6s ease backwards, envBob 1.9s 2.1s ease-in-out infinite;
 }
 .env-chevron::after{
   content:"\00BB";
@@ -395,12 +339,12 @@ button{ font:inherit; cursor:pointer; }
 }
 @keyframes envChevronIn{ from{ opacity:0; } to{ opacity:.6; } }
 @keyframes envBob{
-  0%,100%{ transform:translateY(0); opacity:.55; }
-  50%{ transform:translateY(6px); opacity:.95; }
+  0%,100%{ transform:translateX(-50%) translateY(0); opacity:.55; }
+  50%{ transform:translateX(-50%) translateY(6px); opacity:.95; }
 }
 
 @media(prefers-reduced-motion:reduce){
-  .env-screen,.env-card,.env-flap,.env-btn,.env-chevron{ animation:none; }
+  .env-screen,.env-card,.env-pocket,.env-btn,.env-chevron{ animation:none; }
 }
 
 /* =========================================================
