@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v45-gallery-refresh';
+const CACHE = 'sj-wedding-v46-landing-cachebust';
 const ASSETS = [
   './',
   './index.html',
@@ -13,7 +13,7 @@ const ASSETS = [
   './firebase-config.js',
   './firebase-data.js',
   './manifest.webmanifest',
-  './assets/landing-invite.jpg',
+  './assets/landing-invite-v2.jpg',
   './assets/seal-pressed-320.png',
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png',
