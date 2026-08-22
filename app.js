@@ -58,10 +58,28 @@ sealButton?.addEventListener('click', () => {
   }, 1550);
 });
 
-/* ---- Welcome screen -> attendance question ---- */
+/* ---- Welcome screen: tap seal to burst, then continue ---- */
+const envSeal = $('#envSeal');
+const envPocket = document.querySelector('.env-pocket');
+
+function burstEnvSeal(){
+  if (envSeal?.classList.contains('bursting')) return;
+  envSeal?.classList.add('bursting');
+  envSeal.disabled = true;
+  envPocket?.classList.add('broken');
+
+  // after the burst animation, fade out the welcome screen
+  setTimeout(() => {
+    hideGate(welcomeScreen);
+    setTimeout(() => showGate(attendScreen), 650);
+  }, 700);
+}
+
+envSeal?.addEventListener('click', burstEnvSeal);
+
+/* ---- Welcome screen -> attendance question (button fallback) ---- */
 $('#enterWedding')?.addEventListener('click', () => {
-  hideGate(welcomeScreen);
-  setTimeout(() => showGate(attendScreen), 650);
+  burstEnvSeal();
 });
 
 /* ---- Attendance question ---- */

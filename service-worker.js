@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v53-welcome-refined';
+const CACHE = 'sj-wedding-v54-seal-burst-envelope';
 const ASSETS = [
   './',
   './index.html',
