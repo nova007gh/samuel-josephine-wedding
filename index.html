@@ -48,7 +48,7 @@
 <div id="welcomeScreen" class="env-screen hidden">
   <div class="env-stage">
 
-    <!-- the invitation card, standing tall out of the envelope -->
+    <!-- the invitation card -->
     <div class="env-card">
       <div class="env-card-inner">
         <p class="env-welcome">WELCOME TO</p>
@@ -68,21 +68,21 @@
       </div>
     </div>
 
-    <!-- the open envelope pocket the card sits in -->
+    <!-- the envelope pocket with V notch -->
     <div class="env-pocket">
-      <button id="envSeal" class="env-monogram" type="button" aria-label="Tap the seal to open the envelope">
-        <img src="assets/seal-embossed.svg" alt="S&amp;J embossed monogram" />
-        <span class="env-seal-burst" aria-hidden="true"></span>
-      </button>
-
-      <p class="env-tap-hint">TAP THE SEAL TO OPEN</p>
-
-      <button id="enterWedding" class="env-btn" type="button">
-        ENTER OUR WEDDING <span aria-hidden="true">&#10095;</span>
-      </button>
-
-      <span class="env-chevron" aria-hidden="true"></span>
+      <div class="env-pocket-notch"></div>
     </div>
+
+    <!-- clickable seal (outside the clipped pocket so it's always tappable) -->
+    <button id="envSeal" class="env-seal" type="button" aria-label="Tap the seal to open the envelope">
+      <img src="assets/seal-embossed.svg" alt="S&amp;J embossed monogram" />
+    </button>
+
+    <!-- tap hint -->
+    <p class="env-tap-hint">TAP THE SEAL TO OPEN</p>
+
+    <!-- down chevron -->
+    <span class="env-chevron" aria-hidden="true"></span>
   </div>
 </div>
 
