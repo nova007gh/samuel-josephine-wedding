@@ -145,6 +145,24 @@
   line-height:1.5;
   color:#5f4d33;
 }
+.divider{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  margin:10px auto 0;
+  max-width:120px;
+}
+.divider span{
+  flex:1;
+  height:1px;
+  background:rgba(169,124,44,.35);
+}
+.divider i{
+  font-style:normal;
+  font-size:.7rem;
+  color:var(--gold);
+}
 
 /* =========================================================
    SCREEN 3 — Home

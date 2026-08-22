@@ -1,25 +1,23 @@
 
-const CACHE = 'sj-wedding-v44-landing-mockup';
+const CACHE = 'sj-wedding-v45-gallery-refresh';
 const ASSETS = [
   './',
   './index.html',
   './app.css',
   './app-views.css',
   './app-forms.css',
+  './app-social.css',
   './app.js',
   './app-data.js',
   './app-social.js',
   './firebase-config.js',
   './firebase-data.js',
-  './app-social.css',
   './manifest.webmanifest',
-  './assets/official-landing-page.jpg',
-  './assets/official-landing-4k.webp',
+  './assets/landing-invite.jpg',
   './assets/seal-pressed-320.png',
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png',
   './assets/couple-home.jpg',
-  './assets/floral-top.jpg',
   './assets/leaf-sprig.png',
   './assets/story/sam-childhood.jpg',
   './assets/story/jossy-childhood.jpg',
