@@ -179,7 +179,7 @@
   margin:0;
   font-family:"Parisienne",cursive;
   font-weight:400;
-  font-size:clamp(3rem,13vw,4rem);
+  font-size:clamp(3.2rem,14vw,4.2rem);
   line-height:1.05;
   background:linear-gradient(180deg,#d3a54c,#a97c2c 55%,#87611c);
   -webkit-background-clip:text;
@@ -187,33 +187,77 @@
   color:transparent;
   -webkit-text-fill-color:transparent;
 }
-.home-heart{
-  display:block;
-  margin:2px 0 8px;
-  font-size:1rem;
+.home-rule{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  margin:4px auto 6px;
+  max-width:100px;
+}
+.home-rule span{
+  flex:1;
+  height:1px;
+  background:rgba(169,124,44,.35);
+}
+.home-rule i{
+  font-style:normal;
+  font-size:.7rem;
   color:#c2952f;
 }
 .home-eyebrow{
   margin:0;
-  font-size:.74rem;
+  font-size:.72rem;
   font-weight:700;
   letter-spacing:.15em;
   color:#8a6b39;
 }
-.home-flourish{ margin:12px 0 6px; }
+.home-flourish{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  margin:10px 0 4px;
+}
+.home-flourish i{
+  font-style:normal;
+  font-size:.75rem;
+  color:#c2952f;
+}
+.home-swirl{
+  width:46px;
+  height:9px;
+  background:
+    radial-gradient(circle at 12% 50%, rgba(169,124,44,.85) 1.6px, transparent 1.9px),
+    radial-gradient(circle at 88% 50%, rgba(169,124,44,.85) 1.6px, transparent 1.9px),
+    linear-gradient(rgba(169,124,44,.55),rgba(169,124,44,.55)) center / 100% 1px no-repeat;
+}
+.home-swirl--l{ border-radius:0 0 40px 0; }
+.home-swirl--r{ border-radius:0 0 0 40px; }
 .home-names{
-  margin:2px 0 0;
+  margin:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  line-height:1.05;
+}
+.home-name,
+.home-amp{
   font-family:"Parisienne",cursive;
-  font-size:clamp(2.9rem,13vw,3.8rem);
-  line-height:1.08;
   background:linear-gradient(180deg,#d3a54c,#a97c2c 55%,#87611c);
   -webkit-background-clip:text;
   background-clip:text;
   color:transparent;
   -webkit-text-fill-color:transparent;
 }
+.home-name{ font-size:clamp(3.2rem,14vw,4.6rem); }
+.home-amp{
+  font-size:clamp(2.4rem,10vw,3.6rem);
+  line-height:.8;
+  margin:-4px 0 -2px;
+}
 .home-tag{
-  margin:8px 0 0;
+  margin:6px 0 0;
   font-size:.72rem;
   font-weight:700;
   letter-spacing:.17em;
@@ -259,11 +303,10 @@
   display:grid;
   grid-template-columns:repeat(4,1fr);
   align-items:center;
-  gap:4px;
-  padding-top:8px;
-  border-top:1px solid rgba(212,178,110,.35);
+  margin:4px 0 0;
 }
 .countdown div{ position:relative; padding:4px 0; }
+.countdown div:not(:last-child){ border-right:1px solid rgba(212,178,110,.35); }
 .countdown strong{
   display:block;
   font-family:"Cormorant Garamond",Georgia,serif;
@@ -353,18 +396,19 @@
   justify-content:center;
   gap:12px;
   width:100%;
-  margin:16px 0 0;
+  margin:18px 0 0;
   padding:16px;
-  border:1px solid rgba(180,142,72,.5);
+  border:1.5px solid #c79c48;
   border-radius:999px;
-  background:linear-gradient(#fdf7ec,#f4e7d2);
-  color:#6d5426;
+  background:linear-gradient(#fffdf9,#f9f1e4);
+  color:#9d7527;
   font-size:.82rem;
   font-weight:600;
   letter-spacing:.14em;
-  box-shadow:0 10px 24px rgba(112,78,26,.16);
+  box-shadow:0 10px 24px rgba(112,78,26,.12), inset 0 1px 0 rgba(255,255,255,.8);
   animation:fadeUp .55s .45s ease both;
 }
+.enter-wide span{ font-size:.9rem; }
 
 /* =========================================================
    SCREEN 4 — Our Story

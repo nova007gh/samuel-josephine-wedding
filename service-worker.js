@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v46-landing-cachebust';
+const CACHE = 'sj-wedding-v47-home-mockup';
 const ASSETS = [
   './',
   './index.html',
