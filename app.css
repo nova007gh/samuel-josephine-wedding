@@ -281,26 +281,27 @@ button{ font:inherit; cursor:pointer; }
   z-index:2;
   width:100%;
   flex:1;
-  min-height:37vh;
-  margin-top:-5vh;
-  clip-path:polygon(0 0, 50% 12%, 100% 0, 100% 100%, 0 100%);
-  background:linear-gradient(180deg,#eed9b6 0%,#e7d0a8 55%,#dfc498 100%);
+  min-height:38vh;
+  margin-top:-4vh;
+  clip-path:polygon(0 0, 42% 0, 50% 11%, 58% 0, 100% 0, 100% 100%, 0 100%);
+  background:
+    radial-gradient(90% 40% at 50% 0%, rgba(255,252,244,.35), transparent 60%),
+    linear-gradient(180deg,#eee1c8 0%,#e7d4a8 50%,#ddc293 100%);
   animation:envPocketIn .7s .1s ease backwards;
 }
-/* soft shading along the V opening for depth */
-.env-pocket::before{
+/* side-flap shading for a realistic open envelope */
+.env-pocket::before,
+.env-pocket::after{
   content:"";
   position:absolute;
-  left:0;
-  right:0;
   top:0;
-  height:16%;
+  width:50%;
+  height:28%;
   pointer-events:none;
-  background:
-    linear-gradient(115deg, rgba(120,84,32,.16), transparent 34%),
-    linear-gradient(-115deg, rgba(120,84,32,.16), transparent 34%),
-    linear-gradient(180deg, rgba(120,84,32,.1), transparent 70%);
+  background:linear-gradient(180deg, rgba(120,84,32,.14), transparent);
 }
+.env-pocket::before{ left:0; clip-path:polygon(0 0, 100% 0, 0 100%); }
+.env-pocket::after{ right:0; clip-path:polygon(0 0, 100% 0, 100% 100%); }
 @keyframes envPocketIn{
   from{ opacity:0; transform:translateY(6vh); }
   to{ opacity:1; transform:none; }
@@ -308,12 +309,12 @@ button{ font:inherit; cursor:pointer; }
 .env-monogram{
   position:absolute;
   left:50%;
-  top:40%;
+  top:42%;
   transform:translate(-50%,-50%);
-  width:118px;
-  height:118px;
-  filter:drop-shadow(0 10px 18px rgba(96,64,22,.35));
-  animation:sealPop .65s 1.5s cubic-bezier(.3,1.6,.4,1) backwards;
+  width:136px;
+  height:136px;
+  filter:drop-shadow(0 8px 16px rgba(96,64,22,.28));
+  animation:sealPop .65s 1.55s cubic-bezier(.3,1.6,.4,1) backwards;
 }
 .env-monogram img{ width:100%; height:100%; object-fit:contain; }
 @keyframes sealPop{
@@ -333,14 +334,14 @@ button{ font:inherit; cursor:pointer; }
   gap:14px;
   width:min(72%,320px);
   padding:16px 26px;
-  border:1px solid rgba(255,244,214,.5);
+  border:1px solid #3f2510;
   border-radius:999px;
-  background:linear-gradient(180deg,#d2a94f,#a3782a);
+  background:linear-gradient(180deg,#52321b,#2c1a0b 55%,#1e1005);
   color:#fff8e6;
   font-size:.8rem;
   font-weight:700;
   letter-spacing:.14em;
-  box-shadow:0 12px 26px rgba(105,71,22,.35), inset 0 1px 0 rgba(255,240,200,.45);
+  box-shadow:0 12px 26px rgba(30,20,8,.45), inset 0 1px 0 rgba(255,230,190,.15);
   transition:transform .2s ease, box-shadow .2s ease;
   animation:envBtnIn .7s 2s ease backwards;
 }
@@ -353,7 +354,7 @@ button{ font:inherit; cursor:pointer; }
 .env-chevron{
   position:absolute;
   left:50%;
-  bottom:2.4vh;
+  bottom:2.2vh;
   transform:translateX(-50%);
   font-size:1.5rem;
   line-height:1;
@@ -362,9 +363,10 @@ button{ font:inherit; cursor:pointer; }
   animation:envChevronIn .5s 2.5s ease backwards, envBob 1.9s 3s ease-in-out infinite;
 }
 .env-chevron::after{
-  content:"\00BB";
+  content:"\00BB\00BB";
   display:inline-block;
-  transform:rotate(90deg) scaleX(.6);
+  letter-spacing:.1em;
+  transform:rotate(90deg) scaleX(.65);
   font-size:1.2rem;
 }
 @keyframes envChevronIn{ from{ opacity:0; } to{ opacity:.6; } }
