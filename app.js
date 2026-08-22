@@ -60,27 +60,24 @@ sealButton?.addEventListener('click', () => {
 
 /* ---- Welcome screen: tap seal to burst, then continue ---- */
 const envSeal = $('#envSeal');
-const envPocket = document.querySelector('.env-pocket');
 
 function burstEnvSeal(){
-  if (envSeal?.classList.contains('bursting')) return;
-  envSeal?.classList.add('bursting');
+  if (!envSeal || envSeal.classList.contains('bursting')) return;
+  envSeal.classList.add('bursting');
   envSeal.disabled = true;
-  envPocket?.classList.add('broken');
 
-  // after the burst animation, fade out the welcome screen
+  // hide tap hint
+  const hint = document.querySelector('.env-tap-hint');
+  if (hint) hint.style.opacity = '0';
+
+  // after the burst animation, fade out and go to attendance question
   setTimeout(() => {
     hideGate(welcomeScreen);
     setTimeout(() => showGate(attendScreen), 650);
-  }, 700);
+  }, 800);
 }
 
 envSeal?.addEventListener('click', burstEnvSeal);
-
-/* ---- Welcome screen -> attendance question (button fallback) ---- */
-$('#enterWedding')?.addEventListener('click', () => {
-  burstEnvSeal();
-});
 
 /* ---- Attendance question ---- */
 $('#attendYes')?.addEventListener('click', () => {

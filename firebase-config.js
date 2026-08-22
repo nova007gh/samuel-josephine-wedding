@@ -1,6 +1,7 @@
 'use strict';
 
-const ADMIN_PASSWORD = 'SJ2027!';
+const ADMIN_EMAIL = 'sny@wedding.com';
+const ADMIN_PASSWORD = 'sam&jossy@2027';
 
 const firebaseConfig = {
   apiKey: "AIzaSyD3f9DX63UNykrP_2h2jecOGsG6LO1kApA",

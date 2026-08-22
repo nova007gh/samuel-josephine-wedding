@@ -68,12 +68,7 @@
       </div>
     </div>
 
-    <!-- the envelope pocket with V notch -->
-    <div class="env-pocket">
-      <div class="env-pocket-notch"></div>
-    </div>
-
-    <!-- clickable seal (outside the clipped pocket so it's always tappable) -->
+    <!-- clickable seal -->
     <button id="envSeal" class="env-seal" type="button" aria-label="Tap the seal to open the envelope">
       <img src="assets/seal-embossed.svg" alt="S&amp;J embossed monogram" />
     </button>
@@ -705,6 +700,9 @@
     <p class="page-sub">Samuel &amp; Josephine only</p>
 
     <form id="adminLoginForm" class="rsvp-form">
+      <label class="field">Email
+        <input id="adminEmail" type="email" placeholder="sny@wedding.com" required />
+      </label>
       <label class="field">Password
         <input id="adminPassword" type="password" placeholder="Enter admin password" required />
       </label>

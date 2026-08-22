@@ -489,6 +489,7 @@ document.getElementById('shareTypeVideoMsg')?.addEventListener('click', async ()
    Admin login
    ========================================================= */
 const adminLoginForm = document.getElementById('adminLoginForm');
+const adminEmail = document.getElementById('adminEmail');
 const adminPassword = document.getElementById('adminPassword');
 const adminLoginError = document.getElementById('adminLoginError');
 
@@ -516,12 +517,13 @@ checkAdminAuth();
 
 adminLoginForm?.addEventListener('submit', e => {
   e.preventDefault();
-  const value = adminPassword?.value || '';
-  if (value === ADMIN_PASSWORD){
+  const email = (adminEmail?.value || '').trim().toLowerCase();
+  const pass = adminPassword?.value || '';
+  if (email === ADMIN_EMAIL.toLowerCase() && pass === ADMIN_PASSWORD){
     sessionStorage.setItem('sj_admin_auth', '1');
     switchView('admin');
   } else {
-    adminLoginError.textContent = 'Incorrect password. Please try again.';
+    adminLoginError.textContent = 'Incorrect email or password. Please try again.';
     adminPassword?.select();
   }
 });
