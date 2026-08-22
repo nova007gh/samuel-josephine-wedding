@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v48-always-open-invite';
+const CACHE = 'sj-wedding-v49-correct-landing';
 const ASSETS = [
   './',
   './index.html',
@@ -13,7 +13,8 @@ const ASSETS = [
   './firebase-config.js',
   './firebase-data.js',
   './manifest.webmanifest',
-  './assets/landing-invite-v2.jpg',
+  './assets/official-landing-page.jpg',
+  './assets/seal-burst.jpg',
   './assets/seal-pressed-320.png',
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png',

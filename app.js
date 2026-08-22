@@ -46,6 +46,10 @@ sealButton?.addEventListener('click', () => {
   opening.classList.add('breaking');
   sealButton.disabled = true;
 
+  // swap in the cracked-seal artwork for the burst moment
+  const art = $('#landingArt');
+  if (art) art.src = 'assets/seal-burst.jpg';
+
   // landing fades out, then the envelope welcome screen appears
   setTimeout(() => opening.classList.add('opening-envelope'), 900);
   setTimeout(() => {

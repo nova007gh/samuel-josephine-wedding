@@ -65,7 +65,7 @@ button{ font:inherit; cursor:pointer; }
   position:relative;
   height:100dvh;
   max-width:100vw;
-  aspect-ratio:910/1600;
+  aspect-ratio:934/1545;
   animation:landingIn 1.1s ease both;
 }
 .landing-frame picture,
@@ -75,8 +75,8 @@ button{ font:inherit; cursor:pointer; }
 .seal-hotspot{
   position:absolute;
   left:50%;
-  top:57%;
-  width:44%;
+  top:66%;
+  width:40%;
   aspect-ratio:1;
   transform:translate(-50%,-50%);
   border:0;
