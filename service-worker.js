@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v47-home-mockup';
+const CACHE = 'sj-wedding-v48-always-open-invite';
 const ASSETS = [
   './',
   './index.html',

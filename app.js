@@ -120,17 +120,6 @@ $('#guestLoginForm')?.addEventListener('submit', async e => {
   setTimeout(enterApp, 650);
 });
 
-/* ---- If returning guest, skip gates ---- */
-function checkReturningGuest(){
-  const guest = getGuest();
-  if (guest){
-    opening.classList.add('hidden');
-    enterApp();
-    return true;
-  }
-  return false;
-}
-
 /* ---- Update UI based on guest session ---- */
 function updateGuestUI(){
   const guest = getGuest();
@@ -140,8 +129,6 @@ function updateGuestUI(){
     if (hero) hero.textContent = `WELCOME, ${guest.name.toUpperCase()}`;
   }
 }
-
-checkReturningGuest();
 
 $('#enterFromHome')?.addEventListener('click', () => switchView('story'));
 
