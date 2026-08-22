@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v50-welcome-photo-match';
+const CACHE = 'sj-wedding-v52-story-styling';
 const ASSETS = [
   './',
   './index.html',
@@ -16,6 +16,7 @@ const ASSETS = [
   './assets/official-landing-page.jpg',
   './assets/seal-burst.jpg',
   './assets/seal-pressed-320.png',
+  './assets/seal-transparent-320.png',
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png',
   './assets/couple-home.jpg',

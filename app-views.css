@@ -453,36 +453,36 @@
   display:grid;
   grid-template-columns:1fr 42px 1fr;
   align-items:center;
-  margin-bottom:18px;
+  margin-bottom:22px;
 }
 .tl-node{
-  width:36px;
-  height:36px;
+  width:38px;
+  height:38px;
   margin:0 auto;
   display:grid;
   place-items:center;
   border-radius:50%;
   background:#fffbf4;
-  border:1px solid rgba(169,124,44,.4);
-  box-shadow:0 4px 12px rgba(112,78,26,.16);
-  font-size:.98rem;
+  border:1.5px solid rgba(169,124,44,.45);
+  box-shadow:0 4px 14px rgba(112,78,26,.18);
+  font-size:1rem;
 }
 .tl-card{
-  padding:14px 15px;
+  padding:15px 16px;
   border-radius:18px;
-  background:rgba(255,255,255,.9);
-  border:1px solid rgba(169,124,44,.14);
-  box-shadow:0 10px 22px rgba(112,78,26,.1);
+  background:rgba(255,255,255,.94);
+  border:1px solid rgba(169,124,44,.2);
+  box-shadow:0 10px 24px rgba(112,78,26,.12);
 }
 .tl-card h4{
   margin:0 0 5px;
-  font-size:.84rem;
+  font-size:.86rem;
   font-weight:700;
   color:#4a3a24;
 }
 .tl-card p{
   margin:0;
-  font-size:.76rem;
+  font-size:.78rem;
   line-height:1.5;
   color:#6d5a3d;
 }
@@ -490,6 +490,12 @@
   display:grid;
   place-items:center;
   text-align:center;
+  width:74px;
+  padding:8px 4px;
+  border-radius:12px;
+  background:#fffbf4;
+  border:1px solid rgba(169,124,44,.3);
+  box-shadow:0 6px 14px rgba(112,78,26,.12);
   font-family:"Cormorant Garamond",Georgia,serif;
   color:var(--gold-deep);
   line-height:1.05;
@@ -508,7 +514,7 @@
   letter-spacing:.1em;
   color:#9b7b46;
 }
-.tl-date b:first-child{ font-size:.82rem; font-weight:700; letter-spacing:.14em; }
+.tl-date b:first-child{ font-size:.78rem; font-weight:700; letter-spacing:.12em; }
 .tl-photo{
   border-radius:14px;
   overflow:hidden;
