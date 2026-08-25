@@ -250,54 +250,84 @@ button{ font:inherit; cursor:pointer; }
   width:100%;
   height:100%;
   object-fit:contain;
-  transition:opacity .4s ease, transform .4s ease;
+  transition:opacity .5s ease, transform .5s ease;
 }
 .env-seal:active{ transform:scale(.92); }
-.env-seal.bursting img{ opacity:0; transform:scale(1.4) rotate(15deg); }
+.env-seal.bursting img{ opacity:0; transform:scale(1.5) rotate(20deg); }
 
-/* burst flash */
+/* burst flash — gold radial explosion */
 .env-seal.bursting::before{
+  content:"";
+  position:absolute;
+  inset:-30%;
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(255,245,210,1) 0%, rgba(220,170,60,.7) 30%, rgba(180,120,30,.3) 55%, transparent 70%);
+  animation:sealBurst .7s ease-out forwards;
+}
+@keyframes sealBurst{
+  0%{ opacity:1; transform:scale(.5); }
+  40%{ opacity:1; transform:scale(1.6); }
+  100%{ opacity:0; transform:scale(3); }
+}
+
+/* crack lines radiating from center */
+.env-seal.bursting::after{
   content:"";
   position:absolute;
   inset:-20%;
   border-radius:50%;
-  background:radial-gradient(circle, rgba(255,240,200,.95) 0%, rgba(212,165,70,.5) 35%, transparent 65%);
-  animation:sealBurst .6s ease-out forwards;
-}
-@keyframes sealBurst{
-  0%{ opacity:1; transform:scale(.6); }
-  50%{ opacity:1; transform:scale(1.5); }
-  100%{ opacity:0; transform:scale(2.5); }
-}
-
-/* crack lines */
-.env-seal.bursting::after{
-  content:"";
-  position:absolute;
-  inset:-15%;
-  border-radius:50%;
   background:
     conic-gradient(from 0deg,
-      transparent 0deg, rgba(140,100,40,.6) 1.5deg, transparent 3deg,
-      transparent 45deg, rgba(140,100,40,.6) 46.5deg, transparent 48deg,
-      transparent 90deg, rgba(140,100,40,.6) 91.5deg, transparent 93deg,
-      transparent 135deg, rgba(140,100,40,.6) 136.5deg, transparent 138deg,
-      transparent 180deg, rgba(140,100,40,.6) 181.5deg, transparent 183deg,
-      transparent 225deg, rgba(140,100,40,.6) 226.5deg, transparent 228deg,
-      transparent 270deg, rgba(140,100,40,.6) 271.5deg, transparent 273deg,
-      transparent 315deg, rgba(140,100,40,.6) 316.5deg, transparent 318deg,
+      transparent 0deg, rgba(140,100,40,.7) 1.5deg, transparent 3deg,
+      transparent 45deg, rgba(140,100,40,.7) 46.5deg, transparent 48deg,
+      transparent 90deg, rgba(140,100,40,.7) 91.5deg, transparent 93deg,
+      transparent 135deg, rgba(140,100,40,.7) 136.5deg, transparent 138deg,
+      transparent 180deg, rgba(140,100,40,.7) 181.5deg, transparent 183deg,
+      transparent 225deg, rgba(140,100,40,.7) 226.5deg, transparent 228deg,
+      transparent 270deg, rgba(140,100,40,.7) 271.5deg, transparent 273deg,
+      transparent 315deg, rgba(140,100,40,.7) 316.5deg, transparent 318deg,
       transparent 360deg);
-  animation:crackOut .5s ease-out forwards;
+  animation:crackOut .6s ease-out forwards;
 }
 @keyframes crackOut{
-  0%{ opacity:0; transform:scale(.4); }
-  50%{ opacity:1; }
-  100%{ opacity:0; transform:scale(2); }
+  0%{ opacity:0; transform:scale(.3); }
+  40%{ opacity:1; }
+  100%{ opacity:0; transform:scale(2.5); }
 }
 
 @keyframes sealPop{
   0%{ opacity:0; transform:scale(.3); }
   100%{ opacity:1; transform:scale(1); }
+}
+
+/* card shake on seal break */
+.env-card.shaking{
+  animation:cardShake .5s ease-out;
+}
+@keyframes cardShake{
+  0%,100%{ transform:translateX(0); }
+  10%{ transform:translateX(-6px) rotate(-.5deg); }
+  20%{ transform:translateX(6px) rotate(.5deg); }
+  30%{ transform:translateX(-4px) rotate(-.3deg); }
+  40%{ transform:translateX(4px) rotate(.3deg); }
+  50%{ transform:translateX(-2px); }
+  60%{ transform:translateX(2px); }
+  70%{ transform:translateX(-1px); }
+}
+
+/* full-screen white flash on seal break */
+.seal-flash{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  background:radial-gradient(circle at 50% 50%, rgba(255,250,230,.95), rgba(255,240,200,.7) 40%, transparent 70%);
+  pointer-events:none;
+  animation:sealFlash .6s ease-out forwards;
+}
+@keyframes sealFlash{
+  0%{ opacity:0; }
+  30%{ opacity:1; }
+  100%{ opacity:0; }
 }
 
 /* ---- tap hint ---- */
@@ -334,7 +364,7 @@ button{ font:inherit; cursor:pointer; }
 }
 
 @media(prefers-reduced-motion:reduce){
-  .env-screen,.env-card,.env-card-inner > *,.env-seal,.env-tap-hint,.env-chevron{ animation:none; }
+  .env-screen,.env-card,.env-card-inner > *,.env-seal,.env-tap-hint,.env-chevron,.env-card.shaking,.seal-flash{ animation:none; }
 }
 
 /* =========================================================

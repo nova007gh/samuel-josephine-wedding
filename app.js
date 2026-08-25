@@ -66,15 +66,31 @@ function burstEnvSeal(){
   envSeal.classList.add('bursting');
   envSeal.disabled = true;
 
-  // hide tap hint
+  // hide tap hint + chevron immediately
   const hint = document.querySelector('.env-tap-hint');
+  const chevron = document.querySelector('.env-chevron');
   if (hint) hint.style.opacity = '0';
+  if (chevron) chevron.style.opacity = '0';
 
-  // after the burst animation, fade out and go to attendance question
+  // shake the card for impact
+  const card = document.querySelector('.env-card');
+  if (card) card.classList.add('shaking');
+
+  // Phase 1: seal cracks and bursts (0-700ms)
+  // Phase 2: white flash overlay (500-1000ms)
+  // Phase 3: welcome screen fades out (1200ms)
+  // Phase 4: attend screen appears (1850ms)
+  setTimeout(() => {
+    // add white flash
+    const flash = document.createElement('div');
+    flash.className = 'seal-flash';
+    document.querySelector('.env-screen')?.appendChild(flash);
+  }, 500);
+
   setTimeout(() => {
     hideGate(welcomeScreen);
     setTimeout(() => showGate(attendScreen), 650);
-  }, 800);
+  }, 1200);
 }
 
 envSeal?.addEventListener('click', burstEnvSeal);
