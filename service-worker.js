@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v59-sw-js-css-network-first';
+const CACHE = 'sj-wedding-v60-welcome-bg-image';
 const ASSETS = [
   './',
   './index.html',
@@ -14,6 +14,7 @@ const ASSETS = [
   './firebase-data.js',
   './manifest.webmanifest',
   './assets/official-landing-page.jpg',
+  './assets/welcome-bg.jpg',
   './assets/seal-burst.jpg',
   './assets/seal-pressed-320.png',
   './assets/seal-transparent-320.png',

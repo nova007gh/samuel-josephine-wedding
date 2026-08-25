@@ -132,10 +132,28 @@ button{ font:inherit; cursor:pointer; }
   display:flex;
   justify-content:center;
   align-items:flex-start;
-  background:linear-gradient(180deg,#f6ecdb 0%,#efdfc4 45%,#e7d2ae 75%,#e0c69c 100%);
   animation:gateIn .7s cubic-bezier(.2,.8,.3,1) both;
 }
 .env-screen.exit{ animation:gateExit .7s cubic-bezier(.4,0,.2,1) forwards; }
+
+/* full-screen background image */
+.env-bg{
+  position:fixed;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  z-index:0;
+  pointer-events:none;
+}
+/* dark overlay so text is readable over the photo */
+.env-overlay{
+  position:fixed;
+  inset:0;
+  z-index:1;
+  background:linear-gradient(180deg, rgba(30,20,8,.45) 0%, rgba(30,20,8,.25) 40%, rgba(30,20,8,.55) 100%);
+  pointer-events:none;
+}
 
 .env-stage{
   position:relative;
@@ -156,8 +174,9 @@ button{ font:inherit; cursor:pointer; }
   max-width:380px;
   padding:9px;
   border-radius:6px;
-  background:linear-gradient(170deg,#fffdf6,#fbf2e0);
-  box-shadow:0 16px 40px rgba(96,64,22,.2);
+  background:linear-gradient(170deg, rgba(255,253,246,.95), rgba(251,242,224,.92));
+  backdrop-filter:blur(4px);
+  box-shadow:0 16px 40px rgba(0,0,0,.3);
   animation:envCardRise 1s .3s cubic-bezier(.2,.8,.25,1) backwards;
 }
 @keyframes envCardRise{
@@ -336,7 +355,8 @@ button{ font:inherit; cursor:pointer; }
   font-size:.68rem;
   font-weight:700;
   letter-spacing:.2em;
-  color:rgba(90,66,30,.55);
+  color:rgba(255,240,210,.7);
+  text-shadow:0 1px 4px rgba(0,0,0,.5);
   animation:tapHintPulse 2s 2.3s ease-in-out infinite;
 }
 @keyframes tapHintPulse{
@@ -349,7 +369,8 @@ button{ font:inherit; cursor:pointer; }
   margin-top:2vh;
   font-size:1.2rem;
   line-height:1;
-  color:rgba(120,86,40,.5);
+  color:rgba(255,240,210,.5);
+  text-shadow:0 1px 4px rgba(0,0,0,.5);
   animation:envBob 1.8s 2.5s ease-in-out infinite;
 }
 .env-chevron::after{
