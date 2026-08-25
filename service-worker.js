@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v58-seal-burst-dramatic';
+const CACHE = 'sj-wedding-v59-sw-js-css-network-first';
 const ASSETS = [
   './',
   './index.html',
@@ -47,8 +47,13 @@ self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
 
-  // Network-first for HTML so users always get the latest UI
-  if (event.request.mode === 'navigate' || url.pathname.endsWith('.html') || url.pathname === '/' || url.pathname === './'){
+  // Network-first for HTML, JS, and CSS so users always get the latest code
+  if (event.request.mode === 'navigate' ||
+      url.pathname.endsWith('.html') ||
+      url.pathname.endsWith('.js') ||
+      url.pathname.endsWith('.css') ||
+      url.pathname === '/' ||
+      url.pathname === './'){
     event.respondWith(
       fetch(event.request).then(response => {
         const copy = response.clone();
@@ -59,7 +64,7 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Cache-first for everything else (CSS, JS, images, fonts)
+  // Cache-first for images, fonts, and other static assets
   event.respondWith(
     caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
       const copy = response.clone();
