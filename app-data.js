@@ -98,7 +98,10 @@ function matchesKind(item){
 }
 
 function allGalleryItems(){
-  const uploaded = latestMemories.map(m => ({ ...m, seeded:false }));
+  // Only show approved memories to users; seed memories are always visible
+  const uploaded = latestMemories
+    .filter(m => m.status === 'approved')
+    .map(m => ({ ...m, seeded:false }));
   const seeded = SEED_MEMORIES.map(m => ({ ...m, type:'image/jpeg', seeded:true }));
   return [...uploaded, ...seeded];
 }
@@ -229,14 +232,16 @@ document.getElementById('memoryFiles')?.addEventListener('change', async event =
       type: file.type || 'application/octet-stream',
       name: file.name,
       size: file.size,
-      blob: file
+      blob: file,
+      status: 'pending',
+      guestName: getGuest()?.name || ''
     });
   }
 
-  status.textContent = `${files.length} ${files.length === 1 ? 'memory' : 'memories'} saved.`;
+  status.textContent = `${files.length} ${files.length === 1 ? 'memory' : 'memories'} saved. Pending approval — Samuel & Jossy will review shortly.`;
   event.target.value = '';
   captionEl.value = '';
-  setTimeout(() => status.classList.add('hidden'), 2400);
+  setTimeout(() => status.classList.add('hidden'), 4000);
 });
 
 document.querySelectorAll('#galleryChips .chip').forEach(chip => {

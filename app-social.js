@@ -65,17 +65,21 @@ function renderGuestBook(all){
   const empty = document.getElementById('gbEmpty');
   if (!list) return;
 
+  // Only show approved entries to users
+  const approved = all.filter(m => m.status === 'approved');
+
   const counts = {
-    all: all.length,
+    all: approved.length,
     pending: all.filter(m => m.status === 'pending').length,
-    approved: all.filter(m => m.status === 'approved').length
+    approved: approved.length
   };
   document.querySelectorAll('[data-gb-filter]').forEach(chip => {
     const key = chip.dataset.gbFilter;
     chip.textContent = `${key[0].toUpperCase() + key.slice(1)} (${counts[key]})`;
   });
 
-  const items = gbFilter === 'all' ? all : all.filter(m => m.status === gbFilter);
+  // Users only see approved entries
+  const items = approved;
   list.innerHTML = '';
   empty.classList.toggle('hidden', items.length > 0);
 
@@ -161,6 +165,7 @@ document.getElementById('gbForm')?.addEventListener('submit', async e => {
   });
   form.reset();
   closeSheet('gbModal');
+  alert('Your message has been submitted and is pending approval. Thank you!');
 });
 
 if (typeof onGuestbook === 'function'){
@@ -229,6 +234,7 @@ document.getElementById('shareForm')?.addEventListener('submit', async e => {
   e.target.reset();
   closeSheet('shareModal');
   teardownRecorders();
+  alert('Your memory has been submitted and is pending approval. Thank you for sharing!');
   switchView('gallery');
 });
 

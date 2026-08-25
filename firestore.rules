@@ -1,0 +1,37 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Guests can check themselves in
+    match /guests/{id} {
+      allow read: if true;   // admin dashboard reads
+      allow create: if true; // guest check-in
+      allow delete: if true; // admin removes
+      allow update: if true;
+    }
+
+    // Memories (photos, videos, voice) — anyone can upload, admin approves
+    match /memories/{id} {
+      allow read: if true;   // gallery + admin dashboard
+      allow create: if true; // guest uploads
+      allow update: if true; // admin approves/rejects
+      allow delete: if true; // admin removes
+    }
+
+    // Guestbook entries — anyone can post, admin approves
+    match /guestbook/{id} {
+      allow read: if true;   // guestbook + admin dashboard
+      allow create: if true; // guest posts
+      allow update: if true; // admin approves + likes/replies
+      allow delete: if true; // admin removes
+    }
+
+    // RSVPs — anyone can submit, admin reads
+    match /rsvps/{id} {
+      allow read: if true;   // admin dashboard
+      allow create: if true; // guest RSVP
+      allow delete: if true;
+      allow update: if true;
+    }
+  }
+}
