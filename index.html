@@ -45,41 +45,18 @@
 <!-- ============================================================
      SCREEN 2 — Welcome to our forever (envelope opens)
      ============================================================ -->
-<div id="welcomeScreen" class="env-screen hidden">
-  <img class="env-bg" src="assets/welcome-bg.jpg" alt="" />
-  <div class="env-overlay"></div>
-  <div class="env-stage">
+<div id="welcomeScreen" class="invitation-screen hidden">
+  <div class="invitation" id="invitation">
+    <img src="assets/welcome-bg.jpg" class="invitation-image" alt="Samuel and Josephine Wedding Invitation" />
 
-    <!-- the invitation card -->
-    <div class="env-card">
-      <div class="env-card-inner">
-        <p class="env-welcome">WELCOME TO</p>
-        <p class="env-forever">OUR FOREVER</p>
-
-        <div class="env-rule"><span></span><i>&#10084;</i><span></span></div>
-
-        <h1 class="env-names">
-          <span class="env-name">Sam</span>
-          <span class="env-amp">&amp;</span>
-          <span class="env-name">Jossy</span>
-        </h1>
-
-        <div class="env-rule env-rule--bottom"><span></span><i>&#10084;</i><span></span></div>
-
-        <p class="env-hash">#AlwaysAndForever</p>
-      </div>
+    <div class="seal-hit-area" id="sealHitArea" aria-label="Tap seal to open" role="button" tabindex="0">
+      <canvas id="sealCanvas"></canvas>
+      <div class="seal-flash"></div>
     </div>
 
-    <!-- clickable seal -->
-    <button id="envSeal" class="env-seal" type="button" aria-label="Tap the seal to open the envelope">
-      <img src="assets/seal-embossed.svg" alt="S&amp;J embossed monogram" />
-    </button>
+    <canvas id="particleCanvas"></canvas>
 
-    <!-- tap hint -->
-    <p class="env-tap-hint">TAP THE SEAL TO OPEN</p>
-
-    <!-- down chevron -->
-    <span class="env-chevron" aria-hidden="true"></span>
+    <p class="invitation-tap-hint">TAP THE SEAL TO OPEN</p>
   </div>
 </div>
 

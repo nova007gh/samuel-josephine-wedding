@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v60-welcome-bg-image';
+const CACHE = 'sj-wedding-v61-canvas-seal-break';
 const ASSETS = [
   './',
   './index.html',

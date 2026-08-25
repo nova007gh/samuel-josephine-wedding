@@ -55,45 +55,247 @@ sealButton?.addEventListener('click', () => {
   setTimeout(() => {
     opening.classList.add('hidden');
     showGate(welcomeScreen);
+    // canvases need to resize after the screen is visible
+    setTimeout(initSealCanvases, 100);
   }, 1550);
 });
 
-/* ---- Welcome screen: tap seal to burst, then continue ---- */
-const envSeal = $('#envSeal');
+/* ---- Welcome screen: canvas seal break ---- */
+const invitation = document.getElementById('invitation');
+const sealHitArea = document.getElementById('sealHitArea');
+const sealCanvas = document.getElementById('sealCanvas');
+const particleCanvas = document.getElementById('particleCanvas');
 
-function burstEnvSeal(){
-  if (!envSeal || envSeal.classList.contains('bursting')) return;
-  envSeal.classList.add('bursting');
-  envSeal.disabled = true;
+let sealCtx = null, particleCtx = null;
+let fragments = [], particles = [];
+let sealBreaking = false, sealAnimFrame = null;
 
-  // hide tap hint + chevron immediately
-  const hint = document.querySelector('.env-tap-hint');
-  const chevron = document.querySelector('.env-chevron');
-  if (hint) hint.style.opacity = '0';
-  if (chevron) chevron.style.opacity = '0';
+/* Seal crop from the 740x1600 invitation image.
+   Scaled from the original 592x1280 reference (x1.25). */
+const SEAL_CROP = { x:90, y:603, width:560, height:560 };
 
-  // shake the card for impact
-  const card = document.querySelector('.env-card');
-  if (card) card.classList.add('shaking');
-
-  // Phase 1: seal cracks and bursts (0-700ms)
-  // Phase 2: white flash overlay (500-1000ms)
-  // Phase 3: welcome screen fades out (1200ms)
-  // Phase 4: attend screen appears (1850ms)
-  setTimeout(() => {
-    // add white flash
-    const flash = document.createElement('div');
-    flash.className = 'seal-flash';
-    document.querySelector('.env-screen')?.appendChild(flash);
-  }, 500);
-
-  setTimeout(() => {
-    hideGate(welcomeScreen);
-    setTimeout(() => showGate(attendScreen), 650);
-  }, 1200);
+function initSealCanvases(){
+  if (!sealHitArea || !invitation || !sealCanvas || !particleCanvas) return;
+  sealCtx = sealCanvas.getContext('2d');
+  particleCtx = particleCanvas.getContext('2d');
+  resizeSealCanvases();
 }
 
-envSeal?.addEventListener('click', burstEnvSeal);
+function resizeSealCanvases(){
+  if (!sealCtx || !sealHitArea || !invitation) return;
+  const sealRect = sealHitArea.getBoundingClientRect();
+  const invRect = invitation.getBoundingClientRect();
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+  sealCanvas.width = sealRect.width * dpr;
+  sealCanvas.height = sealRect.height * dpr;
+  sealCanvas.style.width = sealRect.width + 'px';
+  sealCanvas.style.height = sealRect.height + 'px';
+
+  particleCanvas.width = invRect.width * dpr;
+  particleCanvas.height = invRect.height * dpr;
+  particleCanvas.style.width = invRect.width + 'px';
+  particleCanvas.style.height = invRect.height + 'px';
+
+  sealCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  particleCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  if (!sealBreaking) drawWholeSeal();
+}
+
+function drawWholeSeal(){
+  if (!sealCtx || !sealHitArea) return;
+  const rect = sealHitArea.getBoundingClientRect();
+  const img = document.querySelector('.invitation-image');
+  if (!img || !img.complete) return;
+
+  sealCtx.clearRect(0, 0, rect.width, rect.height);
+  sealCtx.save();
+  sealCtx.beginPath();
+  sealCtx.arc(rect.width/2, rect.height/2, Math.min(rect.width, rect.height)/2, 0, Math.PI*2);
+  sealCtx.clip();
+  sealCtx.drawImage(img, SEAL_CROP.x, SEAL_CROP.y, SEAL_CROP.width, SEAL_CROP.height, 0, 0, rect.width, rect.height);
+  sealCtx.restore();
+}
+
+function createSealFragments(){
+  fragments = [];
+  if (!sealHitArea) return;
+  const rect = sealHitArea.getBoundingClientRect();
+  const cols = 7, rows = 7;
+  const pw = rect.width / cols, ph = rect.height / rows;
+  const cx = rect.width / 2, cy = rect.height / 2;
+
+  for (let row = 0; row < rows; row++){
+    for (let col = 0; col < cols; col++){
+      const x = col * pw, y = row * ph;
+      const pcx = x + pw/2, pcy = y + ph/2;
+      const dx = pcx - cx, dy = pcy - cy;
+      const dist = Math.hypot(dx, dy);
+      if (dist > rect.width * 0.51) continue;
+
+      const dir = Math.atan2(dy, dx) + (Math.random() - 0.5) * 0.8;
+      const speed = 3.5 + Math.random() * 8;
+
+      fragments.push({
+        sx: SEAL_CROP.x + (col/cols) * SEAL_CROP.width,
+        sy: SEAL_CROP.y + (row/rows) * SEAL_CROP.height,
+        sw: SEAL_CROP.width / cols,
+        sh: SEAL_CROP.height / rows,
+        x, y,
+        width: pw + 1, height: ph + 1,
+        vx: Math.cos(dir) * speed,
+        vy: Math.sin(dir) * speed - Math.random() * 3,
+        rotation: 0,
+        rotationSpeed: (Math.random() - 0.5) * 0.3,
+        scale: 1, opacity: 1,
+        gravity: 0.18 + Math.random() * 0.12,
+        delay: Math.random() * 130
+      });
+    }
+  }
+}
+
+function createGoldParticles(){
+  particles = [];
+  if (!sealHitArea || !invitation) return;
+  const sealRect = sealHitArea.getBoundingClientRect();
+  const invRect = invitation.getBoundingClientRect();
+  const cx = sealRect.left - invRect.left + sealRect.width / 2;
+  const cy = sealRect.top - invRect.top + sealRect.height / 2;
+
+  for (let i = 0; i < 95; i++){
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 1.5 + Math.random() * 8;
+    particles.push({
+      x: cx, y: cy,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      gravity: 0.08 + Math.random() * 0.08,
+      size: 1 + Math.random() * 4,
+      life: 1,
+      decay: 0.012 + Math.random() * 0.018
+    });
+  }
+}
+
+function drawGoldParticles(){
+  if (!particleCtx || !invitation) return;
+  const rect = invitation.getBoundingClientRect();
+  particleCtx.clearRect(0, 0, rect.width, rect.height);
+
+  particles.forEach(p => {
+    p.vy += p.gravity;
+    p.x += p.vx;
+    p.y += p.vy;
+    p.life -= p.decay;
+    if (p.life <= 0) return;
+
+    particleCtx.save();
+    particleCtx.globalAlpha = p.life;
+    particleCtx.fillStyle = Math.random() > 0.5 ? '#f7d77c' : '#b88128';
+    particleCtx.shadowBlur = 10;
+    particleCtx.shadowColor = '#ffd977';
+    particleCtx.beginPath();
+    particleCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    particleCtx.fill();
+    particleCtx.restore();
+  });
+  particles = particles.filter(p => p.life > 0);
+}
+
+function drawSealFragments(elapsed){
+  if (!sealCtx || !sealHitArea) return;
+  const rect = sealHitArea.getBoundingClientRect();
+  const img = document.querySelector('.invitation-image');
+  if (!img) return;
+
+  sealCtx.clearRect(0, 0, rect.width, rect.height);
+
+  fragments.forEach(piece => {
+    if (elapsed < piece.delay){
+      sealCtx.drawImage(img, piece.sx, piece.sy, piece.sw, piece.sh, piece.x, piece.y, piece.width, piece.height);
+      return;
+    }
+
+    piece.vy += piece.gravity;
+    piece.x += piece.vx;
+    piece.y += piece.vy;
+    piece.rotation += piece.rotationSpeed;
+    piece.scale *= 0.997;
+    piece.opacity -= 0.009;
+    if (piece.opacity <= 0) return;
+
+    sealCtx.save();
+    sealCtx.globalAlpha = Math.max(piece.opacity, 0);
+    sealCtx.translate(piece.x + piece.width/2, piece.y + piece.height/2);
+    sealCtx.rotate(piece.rotation);
+    const scaleX = piece.scale * (0.7 + Math.abs(Math.cos(piece.rotation)) * 0.3);
+    sealCtx.scale(scaleX, piece.scale);
+    sealCtx.drawImage(img, piece.sx, piece.sy, piece.sw, piece.sh, -piece.width/2, -piece.height/2, piece.width, piece.height);
+    sealCtx.strokeStyle = 'rgba(255,220,140,0.55)';
+    sealCtx.lineWidth = 0.8;
+    sealCtx.strokeRect(-piece.width/2, -piece.height/2, piece.width, piece.height);
+    sealCtx.restore();
+  });
+}
+
+function animateSealBreak(startTime){
+  const now = performance.now();
+  const elapsed = now - startTime;
+  drawSealFragments(elapsed);
+  drawGoldParticles();
+
+  if (elapsed < 1800 || particles.length){
+    sealAnimFrame = requestAnimationFrame(() => animateSealBreak(startTime));
+  } else {
+    if (sealCanvas) sealCanvas.style.opacity = '0';
+    setTimeout(() => openInvitation(), 150);
+  }
+}
+
+function breakSeal(){
+  if (sealBreaking) return;
+  sealBreaking = true;
+  if (sealHitArea) sealHitArea.disabled = true;
+
+  createSealFragments();
+  createGoldParticles();
+
+  sealHitArea?.classList.add('breaking');
+  invitation?.classList.add('shake');
+  invitation?.classList.add('broken');
+
+  if ('vibrate' in navigator){
+    try { navigator.vibrate([35, 20, 50]); } catch(e){}
+  }
+
+  const startTime = performance.now();
+  animateSealBreak(startTime);
+
+  setTimeout(() => invitation?.classList.remove('shake'), 400);
+}
+
+function openInvitation(){
+  hideGate(welcomeScreen);
+  setTimeout(() => showGate(attendScreen), 650);
+}
+
+sealHitArea?.addEventListener('click', breakSeal);
+sealHitArea?.addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); breakSeal(); }
+});
+
+window.addEventListener('resize', () => {
+  if (!sealBreaking) resizeSealCanvases();
+});
+
+/* init canvases when image loads or on DOM ready */
+const invitationImg = document.querySelector('.invitation-image');
+if (invitationImg){
+  if (invitationImg.complete) initSealCanvases();
+  else invitationImg.addEventListener('load', initSealCanvases);
+}
 
 /* ---- Attendance question ---- */
 $('#attendYes')?.addEventListener('click', () => {
