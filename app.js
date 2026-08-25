@@ -278,6 +278,7 @@ function drawSealFragments(elapsed){
 }
 
 function animateSealBreak(timestamp){
+  if (!sealIsBreaking) return;
   if (sealAnimationStart === null) sealAnimationStart = timestamp;
   const elapsed = timestamp - sealAnimationStart;
 
@@ -289,14 +290,26 @@ function animateSealBreak(timestamp){
     return;
   }
 
+  finishSealBreak();
+}
+
+function finishSealBreak(){
+  if (!sealIsBreaking) return;
+  if (sealAnimationFrame) cancelAnimationFrame(sealAnimationFrame);
+  if (sealBreakFallbackTimer) clearTimeout(sealBreakFallbackTimer);
+  sealAnimationFrame = null;
+  sealBreakFallbackTimer = null;
+
   sealCtx?.clearRect(0, 0, sealCanvas.width, sealCanvas.height);
   particleCtx?.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
   if (sealCanvas) sealCanvas.style.opacity = '0';
 
   openInvitation();
+  sealIsBreaking = false;
 }
 
 /* The page advances ONLY because the guest intentionally tapped the seal. */
+let sealBreakFallbackTimer = null;
 function breakWeddingSeal(){
   if (sealIsBreaking) return;
   sealIsBreaking = true;
@@ -313,6 +326,8 @@ function breakWeddingSeal(){
 
   sealAnimationStart = null;
   sealAnimationFrame = requestAnimationFrame(animateSealBreak);
+  // Fallback for browsers that throttle/pause rAF (low-power, PIP, hidden iframes).
+  sealBreakFallbackTimer = setTimeout(finishSealBreak, SEAL_ANIMATION_DURATION + 600);
 }
 
 function openInvitation(){
