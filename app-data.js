@@ -234,7 +234,7 @@ document.getElementById('memoryFiles')?.addEventListener('change', async event =
       size: file.size,
       blob: file,
       status: 'pending',
-      guestName: getGuest()?.name || ''
+      guestName: (typeof getGuest === 'function' ? getGuest()?.name : '') || ''
     });
   }
 
@@ -345,8 +345,19 @@ rsvpForm?.addEventListener('submit', async e => {
   const submitBtn = rsvpForm.querySelector('[type="submit"]');
   const data = Object.fromEntries(new FormData(rsvpForm).entries());
 
+  // normalize field names for the admin dashboard
+  const rsvpRecord = {
+    name: data.fullName || '',
+    email: data.email || '',
+    phone: data.phone || '',
+    attending: data.attendance || '',
+    plusOne: Number(data.guestCount) > 1 ? Number(data.guestCount) - 1 : 0,
+    guestCount: Number(data.guestCount) || 1,
+    message: data.message || ''
+  };
+
   // also save to Firebase for the couple's records
-  try { await addRsvp(data); } catch(err){ console.warn('RSVP backup failed:', err); }
+  try { await addRsvp(rsvpRecord); } catch(err){ console.warn('RSVP backup failed:', err); }
 
   submitBtn.disabled = true;
   status.textContent = 'Sending your RSVP…';

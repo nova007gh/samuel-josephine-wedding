@@ -650,11 +650,15 @@ function renderRsvpAdmin(){
     const card = document.createElement('article');
     card.className = 'aq-card';
     const submitted = r.submittedAt ? timeAgo(r.submittedAt) : '';
-    const attending = r.attending === 'yes' ? 'Attending' : r.attending === 'no' ? 'Not Attending' : (r.attending || '');
+    const att = r.attending || '';
+    const attending = att === 'yes' || att === 'Joyfully accept' ? 'Attending'
+      : att === 'no' || att === 'Regretfully decline' ? 'Not Attending'
+      : att;
     const plusOne = r.plusOne ? `+${r.plusOne}` : '';
+    const guestCount = r.guestCount && Number(r.guestCount) > 1 ? ` (${r.guestCount} guests)` : '';
     card.innerHTML = `
       <p><b>${escapeHTML(r.name || 'Guest')}</b> ${plusOne ? `<span class="gb-badge gb-badge--approved">${plusOne}</span>` : ''}</p>
-      <small>${escapeHTML(attending)} &middot; ${escapeHTML(r.phone || '')} &middot; ${escapeHTML(r.email || '')}</small>
+      <small>${escapeHTML(attending)}${guestCount} &middot; ${escapeHTML(r.phone || '—')} &middot; ${escapeHTML(r.email || '—')}</small>
       ${r.message ? `<p class="gb-msg">${escapeHTML(r.message)}</p>` : ''}
       <small>Submitted ${submitted}</small>`;
     list.appendChild(card);

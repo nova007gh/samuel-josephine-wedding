@@ -650,6 +650,12 @@
       <label class="field">Name(s)
         <input name="fullName" type="text" required placeholder="Enter your name" />
       </label>
+      <label class="field">Email
+        <input name="email" type="email" placeholder="Your email (optional)" />
+      </label>
+      <label class="field">Phone
+        <input name="phone" type="tel" placeholder="Your phone (optional)" />
+      </label>
 
       <p class="field-label">Will you attend?</p>
       <div class="attend-toggle" id="attendToggle">
@@ -665,6 +671,10 @@
         <button type="button" id="guestPlus" aria-label="More guests">&#43;</button>
       </div>
       <input type="hidden" name="guestCount" value="1" />
+
+      <label class="field">Message for the couple (optional)
+        <textarea name="message" rows="3" placeholder="Share your wishes or a song request"></textarea>
+      </label>
 
       <button class="map-button rsvp-submit" type="submit">SUBMIT RSVP</button>
       <p id="rsvpStatus" class="upload-status"></p>

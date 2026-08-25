@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v61-canvas-seal-break';
+const CACHE = 'sj-wedding-v62-rsvp-fields-fix';
 const ASSETS = [
   './',
   './index.html',
