@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v63-enter-screen-flow';
+const CACHE = 'sj-wedding-v64-enter-wedding-fix';
 const ASSETS = [
   './',
   './index.html',

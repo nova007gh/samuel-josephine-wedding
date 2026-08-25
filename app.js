@@ -346,8 +346,8 @@ initializeWelcomePage();
 
 /* ---- Screen 3: "ENTER OUR WEDDING" ---- */
 const enterWeddingBtn = $('#enterWeddingBtn');
-enterWeddingBtn?.addEventListener('click', () => {
-  if (enterWeddingBtn.disabled) return;
+function handleEnterWedding(){
+  if (!enterWeddingBtn || enterWeddingBtn.disabled) return;
   enterWeddingBtn.disabled = true;
   document.querySelector('.invitation--welcome2')?.classList.add('is-entering');
   if (typeof navigator.vibrate === 'function'){
@@ -357,7 +357,9 @@ enterWeddingBtn?.addEventListener('click', () => {
     hideGate(welcome2Screen);
     setTimeout(() => showGate(attendScreen), 650);
   }, 260);
-});
+}
+window.handleEnterWedding = handleEnterWedding;
+enterWeddingBtn?.addEventListener('click', handleEnterWedding);
 
 /* ---- Attendance question ---- */
 const attendActions = $('#attendActions');
