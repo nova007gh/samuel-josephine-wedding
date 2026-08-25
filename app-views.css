@@ -124,6 +124,20 @@
   to{ opacity:1; transform:none; }
 }
 
+/* scroll reveal */
+.reveal{
+  opacity:0;
+  transform:translateY(24px);
+  transition:opacity .6s ease, transform .6s ease;
+}
+.reveal.revealed{
+  opacity:1;
+  transform:none;
+}
+@media(prefers-reduced-motion:reduce){
+  .reveal{ opacity:1; transform:none; transition:none; }
+}
+
 /* page titles */
 .page-title{
   margin:6px 0 0;
@@ -714,12 +728,54 @@
   font-size:.6rem;
   font-weight:600;
   letter-spacing:.03em;
+  transition:color .2s ease;
 }
-.tab svg{ width:26px; height:26px; stroke-width:1.7; }
+.tab svg{ width:26px; height:26px; stroke-width:1.7; transition:transform .2s ease; }
 .tab.active{ color:var(--gold-deep); }
-.tab.active svg{ fill:currentColor; }
+.tab.active svg{ fill:currentColor; transform:translateY(-1px); }
+.tab:active svg{ transform:scale(.9); }
 
 @media(min-width:760px){
-  .app{ max-width:520px; margin:0 auto; box-shadow:0 0 60px rgba(96,63,22,.14); }
+  .app{
+    max-width:520px;
+    margin:0 auto;
+    box-shadow:0 0 60px rgba(96,63,22,.14);
+    min-height:100dvh;
+    border-left:1px solid rgba(169,124,44,.1);
+    border-right:1px solid rgba(169,124,44,.1);
+  }
   .tabbar{ max-width:520px; left:50%; transform:translateX(-50%); }
+  .app-header{ max-width:520px; }
+}
+
+/* =========================================================
+   Desktop app frame — phone-like centered shell on large screens
+   ========================================================= */
+@media(min-width:900px){
+  body{ background:linear-gradient(135deg,#e8d5b8,#d9c3a2); }
+  .app{
+    max-width:480px;
+    margin:24px auto;
+    border-radius:32px;
+    overflow:hidden;
+    border:1px solid rgba(169,124,44,.2);
+    box-shadow:0 30px 80px rgba(70,43,17,.22),
+               0 0 0 8px rgba(255,255,255,.4);
+    min-height:calc(100dvh - 48px);
+  }
+  .tabbar{
+    max-width:480px;
+    left:50%;
+    transform:translateX(-50%);
+    border-radius:0 0 32px 32px;
+  }
+  .app-header{
+    max-width:480px;
+    border-radius:32px 32px 0 0;
+  }
+  /* gate screens also centered on desktop */
+  .gate-screen{ padding:48px 24px; }
+  .gate-card{ max-width:440px; }
+  .invitation-screen{ padding:24px; }
+  .invitation{ max-height:calc(100dvh - 48px); border-radius:20px; }
 }

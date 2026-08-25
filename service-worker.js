@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v65-seal-raf-fallback';
+const CACHE = 'sj-wedding-v66-refined-flow';
 const ASSETS = [
   './',
   './index.html',

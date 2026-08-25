@@ -43,10 +43,10 @@ function enterApp(){
 }
 
 /* ---- Seal break on landing page ---- */
-sealButton?.addEventListener('click', () => {
+function handleSealButtonClick(){
   if (opening.classList.contains('breaking')) return;
   opening.classList.add('breaking');
-  sealButton.disabled = true;
+  if (sealButton) sealButton.disabled = true;
 
   // swap in the cracked-seal artwork for the burst moment
   const art = $('#landingArt');
@@ -60,7 +60,12 @@ sealButton?.addEventListener('click', () => {
     // canvases can only be measured once the screen is visible
     requestAnimationFrame(() => requestAnimationFrame(resizeWeddingCanvases));
   }, 1550);
-});
+}
+sealButton?.addEventListener('click', handleSealButtonClick);
+sealButton?.addEventListener('touchstart', e => {
+  e.preventDefault();
+  handleSealButtonClick();
+}, { passive:false });
 
 /* =========================================================
    SCREEN 2 — Canvas wax seal shatter
@@ -336,6 +341,10 @@ function openInvitation(){
 }
 
 sealHitArea?.addEventListener('click', breakWeddingSeal);
+sealHitArea?.addEventListener('touchstart', e => {
+  e.preventDefault();
+  breakWeddingSeal();
+}, { passive:false });
 sealHitArea?.addEventListener('keydown', e => {
   if (e.key === 'Enter' || e.key === ' '){
     e.preventDefault();
@@ -361,9 +370,11 @@ initializeWelcomePage();
 
 /* ---- Screen 3: "ENTER OUR WEDDING" ---- */
 const enterWeddingBtn = $('#enterWeddingBtn');
+let enterWeddingFired = false;
 function handleEnterWedding(){
-  if (!enterWeddingBtn || enterWeddingBtn.disabled) return;
-  enterWeddingBtn.disabled = true;
+  if (enterWeddingFired) return;
+  enterWeddingFired = true;
+  if (enterWeddingBtn) enterWeddingBtn.disabled = true;
   document.querySelector('.invitation--welcome2')?.classList.add('is-entering');
   if (typeof navigator.vibrate === 'function'){
     try { navigator.vibrate(25); } catch(e){}
@@ -375,6 +386,11 @@ function handleEnterWedding(){
 }
 window.handleEnterWedding = handleEnterWedding;
 enterWeddingBtn?.addEventListener('click', handleEnterWedding);
+// touchstart fallback — some mobile browsers drop click on transparent buttons
+enterWeddingBtn?.addEventListener('touchstart', e => {
+  e.preventDefault();
+  handleEnterWedding();
+}, { passive:false });
 
 /* ---- Attendance question ---- */
 const attendActions = $('#attendActions');
@@ -456,7 +472,11 @@ function updateGuestUI(){
   }
 }
 
-$('#enterFromHome')?.addEventListener('click', () => switchView('story'));
+$('#enterFromHome')?.addEventListener('click', () => {
+  // Smooth scroll to the countdown section
+  const bigday = document.querySelector('.bigday');
+  if (bigday) bigday.scrollIntoView({ behavior:'smooth', block:'center' });
+});
 
 /* ---------------------------------------------------------
    Tab navigation
