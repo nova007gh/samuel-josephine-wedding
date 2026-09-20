@@ -200,6 +200,8 @@ document.getElementById('gbForm')?.addEventListener('submit', async e => {
 let unsubGuestbook = null;
 function subscribeGuestbook(){
   unsubGuestbook?.();
+  unsubGuestbook = null;
+  if (typeof onAllGuestbook !== 'function' || typeof onGuestbook !== 'function') return;
   unsubGuestbook = isAdmin() ? onAllGuestbook(renderGuestBook) : onGuestbook(renderGuestBook);
 }
 subscribeGuestbook();
