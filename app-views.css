@@ -269,16 +269,16 @@
 }
 .home-name{
   font-size:clamp(3.2rem,14vw,4.6rem);
-  /* S/J caps and the y descender extend past the line box — pad the paint
-     box and pull the margins back so layout spacing stays identical */
-  padding:.16em .14em .2em;
-  margin:-.16em 0 -.2em;
+  /* S/J caps and the y descender extend far past the line box — pad the
+     paint box generously and pull the margins back so spacing is kept */
+  padding:.3em .22em .26em;
+  margin:-.3em 0 -.26em;
 }
 .home-amp{
   font-size:clamp(2.4rem,10vw,3.6rem);
   line-height:1;
-  padding:.12em .06em;
-  margin:-.16em 0 -.14em;
+  padding:.16em .08em;
+  margin:-.18em 0 -.16em;
 }
 .home-tag{
   margin:6px 0 0;

@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v75-script-glyph-fix';
+const CACHE = 'sj-wedding-v76-swash-room';
 const ASSETS = [
   './',
   './index.html',
