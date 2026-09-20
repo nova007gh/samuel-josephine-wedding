@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v73-entry-fix';
+const CACHE = 'sj-wedding-v74-guest-persist';
 const ASSETS = [
   './',
   './index.html',
@@ -14,6 +14,7 @@ const ASSETS = [
   './manifest.webmanifest',
   './assets/official-landing-page.jpg',
   './assets/welcome-bg.jpg',
+  './assets/attend-bg.jpg',
   './assets/seal-burst.jpg',
   './assets/seal-pressed-320.png',
   './assets/seal-transparent-320.png',

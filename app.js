@@ -13,8 +13,8 @@ const guestLoginScreen = $('#guestLoginScreen');
 const app = $('#app');
 
 /* ---- Guest session helpers ---- */
-function getGuest(){ return JSON.parse(sessionStorage.getItem('sj_guest') || 'null'); }
-function setGuest(g){ sessionStorage.setItem('sj_guest', JSON.stringify(g)); }
+function getGuest(){ return JSON.parse(localStorage.getItem('sj_guest') || 'null'); }
+function setGuest(g){ localStorage.setItem('sj_guest', JSON.stringify(g)); }
 function clearGuest(){ sessionStorage.removeItem('sj_guest'); }
 
 let adminSignedIn = false;
@@ -451,19 +451,18 @@ $('#guestLoginForm')?.addEventListener('submit', async e => {
     submitBtn.innerHTML = 'Opening your experience…';
   }
 
-  // Save to Firebase if available, but never let it block the form.
-  // A hanging Firestore promise (offline / network / rules) would otherwise
-  // freeze the check-in forever.
+  // Save to the server, but never let it block the form.
+  // A hanging request (offline / network) would otherwise freeze check-in.
   try {
     if (typeof addGuest === 'function'){
       const savePromise = addGuest(guest);
       const timeout = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Firebase save timeout')), 4000)
+        setTimeout(() => reject(new Error('Guest save timeout')), 4000)
       );
       const id = await Promise.race([savePromise, timeout]);
       if (id) guest.id = id;
     }
-  } catch(ferr){ console.warn('Firebase guest save skipped:', ferr); }
+  } catch(ferr){ console.warn('Guest save skipped:', ferr); }
 
   setGuest(guest);
   if (err) err.textContent = '';

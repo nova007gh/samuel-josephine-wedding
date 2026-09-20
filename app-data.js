@@ -1,8 +1,8 @@
 'use strict';
 
 /* =========================================================
-   Firebase data layer is in firebase-data.js
-   This file keeps gallery rendering, local settings, RSVP, etc.
+   Server data layer is in api-data.js
+   This file keeps gallery rendering, site settings, RSVP, etc.
    ========================================================= */
 
 const SETTINGS_DB = 'SJWeddingSettings';
