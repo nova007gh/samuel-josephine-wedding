@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v74-guest-persist';
+const CACHE = 'sj-wedding-v75-script-glyph-fix';
 const ASSETS = [
   './',
   './index.html',
