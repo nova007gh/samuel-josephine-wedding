@@ -587,6 +587,7 @@ onAdminAuth(signedIn => {
   const wasSignedIn = adminSignedIn;
   adminSignedIn = signedIn;
   document.body.classList.toggle('is-admin', signedIn);
+  document.getElementById('songMenuItem')?.classList.toggle('hidden', !signedIn);
 
   if (signedIn) startAdminListeners();
   else stopAdminListeners();

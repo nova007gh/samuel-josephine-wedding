@@ -322,12 +322,8 @@ function showCouplePhoto(has){
 
 (async () => {
   try {
-    const blob = await kvGet('welcomePhoto');
-    if (blob && couplePhoto){
-      couplePhoto.src = URL.createObjectURL(blob);
-    } else if (couplePhoto){
-      couplePhoto.src = 'assets/couple-home.jpg';
-    }
+    const settings = await getSettings();
+    couplePhoto.src = settings.couplePhotoUrl || 'assets/couple-home.jpg';
     showCouplePhoto(true);
   } catch(err){
     console.warn(err);
@@ -336,16 +332,22 @@ function showCouplePhoto(has){
   }
 })();
 
-/* tap the photo itself to swap in a new one */
-couplePhoto?.addEventListener('click', () => couplePhotoFile?.click());
+/* only the couple (admin) can change the photo — it is shared for all guests */
+couplePhoto?.addEventListener('click', () => { if (isAdmin()) couplePhotoFile?.click(); });
+couplePlaceholder?.addEventListener('click', e => { if (!isAdmin()) e.preventDefault(); });
 
 couplePhotoFile?.addEventListener('change', async e => {
   const file = e.target.files?.[0];
-  if (!file) return;
-  await kvSet('welcomePhoto', file);
-  couplePhoto.src = URL.createObjectURL(file);
-  showCouplePhoto(true);
   e.target.value = '';
+  if (!file || !isAdmin()) return;
+  try {
+    const res = await uploadSitePhoto(file);
+    couplePhoto.src = res.url;
+    showCouplePhoto(true);
+  } catch(err){
+    console.warn('Photo update failed:', err);
+    alert('Could not update the photo. Are you still signed in as admin?');
+  }
 });
 
 /* =========================================================

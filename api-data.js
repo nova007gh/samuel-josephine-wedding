@@ -183,6 +183,24 @@ async function updateGuest(id, data){
   await api(`/admin/guests/${encodeURIComponent(id)}`, { method: 'PATCH', body: data, admin: true });
 }
 
+/* ---------- Site settings (couple photo, wedding song) ---------- */
+async function getSettings(){
+  return await api('/settings');
+}
+
+async function uploadSitePhoto(file){
+  const fd = new FormData();
+  fd.append('file', file, file.name || 'photo');
+  return await api('/admin/settings/photo', { method: 'POST', form: fd, admin: true });
+}
+
+async function uploadSiteSong(file, label){
+  const fd = new FormData();
+  fd.append('file', file, file.name || 'song');
+  if (label) fd.append('label', label);
+  return await api('/admin/settings/song', { method: 'POST', form: fd, admin: true });
+}
+
 /* ---------- Admin auth ---------- */
 async function adminSignIn(email, password){
   const res = await api('/admin/login', { method: 'POST', body: { email, password } });

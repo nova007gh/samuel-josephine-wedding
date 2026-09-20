@@ -550,30 +550,32 @@ let currentSongUrl = null;
 
 async function loadSong(){
   try {
-    const blob = await kvGet('weddingSong');
-    const label = await kvGet('weddingSongLabel');
-    if (blob && music){
-      if (currentSongUrl) URL.revokeObjectURL(currentSongUrl);
-      currentSongUrl = URL.createObjectURL(blob);
+    const settings = await getSettings();
+    if (settings.songUrl && music){
+      currentSongUrl = settings.songUrl;
       music.src = currentSongUrl;
       music.load();
       const labelEl = document.getElementById('songLabel');
-      if (labelEl) labelEl.textContent = label || 'Song loaded';
+      if (labelEl) labelEl.textContent = settings.songLabel || 'Song loaded';
       const toggle = document.getElementById('musicToggle');
       if (toggle) toggle.classList.add('has-song');
     }
   } catch(err){ console.warn(err); }
 }
-// kvGet lives in app-data.js, which loads after this file
+// getSettings lives in api-data.js, which loads before this file
 window.addEventListener('DOMContentLoaded', loadSong);
 
+/* only the couple (admin) can change the song — it plays for all guests */
 async function saveSong(file){
+  if (!isAdmin()) return;
   try {
-    await kvSet('weddingSong', file);
-    await kvSet('weddingSongLabel', file.name);
+    await uploadSiteSong(file, file.name);
     await loadSong();
     if (music && music.paused === false){ music.play().catch(() => {}); }
-  } catch(err){ console.warn(err); }
+  } catch(err){
+    console.warn('Song upload failed:', err);
+    alert('Could not upload the song. Are you still signed in as admin?');
+  }
 }
 
 document.getElementById('songUpload')?.addEventListener('change', e => {

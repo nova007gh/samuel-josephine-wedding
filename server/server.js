@@ -60,6 +60,10 @@ CREATE TABLE IF NOT EXISTS sessions (
   token TEXT PRIMARY KEY,
   createdAt INTEGER
 );
+CREATE TABLE IF NOT EXISTS settings (
+  key TEXT PRIMARY KEY,
+  value TEXT
+);
 `);
 
 /* ---------- helpers ---------- */
@@ -323,6 +327,36 @@ app.delete('/api/admin/memories/:id', requireAdmin, (req, res) => {
   db.prepare(`DELETE FROM memories WHERE id = ?`).run(req.params.id);
   if (row) unlinkUpload(row.mediaUrl);
   res.json({ ok: true });
+});
+
+/* ---------- site settings (couple photo, wedding song) ---------- */
+app.get('/api/settings', (req, res) => {
+  const out = {};
+  for (const row of db.prepare('SELECT key, value FROM settings').all()) out[row.key] = row.value;
+  res.json(out);
+});
+
+/* admin swaps a site asset; the previous file is removed to save disk */
+function setSettingFile(res, file, key, extra){
+  const prev = db.prepare('SELECT value FROM settings WHERE key = ?').get(key);
+  const url = `/uploads/${file.filename}`;
+  const stmt = db.prepare('INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value');
+  stmt.run(key, url);
+  for (const [k, v] of Object.entries(extra || {})) stmt.run(k, v);
+  if (prev && prev.value && prev.value !== url) unlinkUpload(prev.value);
+  res.json({ url, ...(extra || {}) });
+}
+
+app.post('/api/admin/settings/photo', requireAdmin, upload.single('file'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'An image file is required.' });
+  if (!/^image\//.test(req.file.mimetype)) return res.status(400).json({ error: 'Photo must be an image.' });
+  setSettingFile(res, req.file, 'couplePhotoUrl');
+});
+
+app.post('/api/admin/settings/song', requireAdmin, upload.single('file'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'An audio file is required.' });
+  if (!/^audio\//.test(req.file.mimetype)) return res.status(400).json({ error: 'Song must be an audio file.' });
+  setSettingFile(res, req.file, 'songUrl', { songLabel: str(req.body.label, 200) || req.file.originalname || '' });
 });
 
 /* ---------- admin: guests & rsvps ---------- */
