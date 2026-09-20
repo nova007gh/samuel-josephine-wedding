@@ -31,7 +31,7 @@
      ============================================================ -->
 <div id="opening" class="opening">
   <div id="landingFrame" class="landing-frame">
-    <img id="landingArt" src="assets/official-landing-page.jpg" class="landing-art"
+    <img id="landingArt" src="assets/official-landing-page.jpg" data-site-photo="landing" class="landing-art"
          alt="You are cordially invited to the wedding of Samuel Nana Yaw Obeng and Josephine Abena Owusua Appiah. Tap the S&amp;J seal to open." />
 
     <button id="sealButton" class="seal-hotspot" aria-label="Tap the wax seal to open the invitation" type="button">
@@ -45,7 +45,7 @@
      ============================================================ -->
 <div id="welcomeScreen" class="invitation-screen hidden">
   <div class="invitation" id="invitation">
-    <img id="welcomeImage" src="assets/welcome-bg.jpg" class="invitation-image"
+    <img id="welcomeImage" src="assets/welcome-bg.jpg" data-site-photo="welcome" class="invitation-image"
          alt="Samuel and Josephine wedding invitation. Tap the S&amp;J seal to open." draggable="false" />
 
     <div class="seal-hit-area" id="sealHitArea" role="button" tabindex="0"
@@ -72,7 +72,7 @@
      ============================================================ -->
 <div id="welcome2Screen" class="invitation-screen hidden">
   <div class="invitation invitation--welcome2">
-    <img src="assets/attend-bg.jpg" class="invitation-image"
+    <img src="assets/attend-bg.jpg" data-site-photo="attend" class="invitation-image"
          alt="Welcome to our forever. Samuel and Josephine. Enter our wedding." draggable="false" />
     <button id="enterWeddingBtn" class="enter-hotspot" type="button"
             aria-label="Enter our wedding" onclick="handleEnterWedding()"></button>
@@ -203,7 +203,7 @@
     </div>
 
     <figure class="couple-photo">
-      <img id="couplePhoto" src="assets/couple-home.jpg" alt="Sam and Jossy" />
+        <img id="couplePhoto" src="assets/couple-home.jpg" data-site-photo="couple" alt="Sam and Jossy" />
       <label id="couplePlaceholder" class="photo-placeholder hidden">
         <strong>Sam &amp; Jossy</strong>
         <span>TAP TO ADD YOUR PHOTO</span>
@@ -238,7 +238,7 @@
         <div class="tl-row">
           <div class="tl-pair">
             <div class="tl-date"><span>APR</span><b>12</b><span>1996</span></div>
-            <div class="tl-photo"><img src="assets/story/sam-childhood.jpg" alt="Sam as a child" loading="lazy"></div>
+            <div class="tl-photo"><img src="assets/story/sam-childhood.jpg" data-site-photo="sam-childhood" alt="Sam as a child" loading="lazy"></div>
           </div>
           <span class="tl-node">&#128118;</span>
           <div class="tl-card">
@@ -254,7 +254,7 @@
           </div>
           <span class="tl-node">&#128131;</span>
           <div class="tl-pair tl-pair--rev">
-            <div class="tl-photo"><img src="assets/story/jossy-childhood.jpg" alt="Jossy as a child" loading="lazy"></div>
+            <div class="tl-photo"><img src="assets/story/jossy-childhood.jpg" data-site-photo="jossy-childhood" alt="Jossy as a child" loading="lazy"></div>
             <div class="tl-date"><span>APR</span><b>18</b><span>1997</span></div>
           </div>
         </div>
@@ -262,7 +262,7 @@
         <div class="tl-row">
           <div class="tl-pair">
             <div class="tl-date"><span>MAY</span><b>20</b><span>2018</span></div>
-            <div class="tl-photo"><img src="assets/story/sam-adult.jpg" alt="Sam as an adult" loading="lazy"></div>
+            <div class="tl-photo"><img src="assets/story/sam-adult.jpg" data-site-photo="sam-adult" alt="Sam as an adult" loading="lazy"></div>
           </div>
           <span class="tl-node">&#127891;</span>
           <div class="tl-card">
@@ -278,7 +278,7 @@
           </div>
           <span class="tl-node">&#128172;</span>
           <div class="tl-pair tl-pair--rev">
-            <div class="tl-photo"><img src="assets/story/jossy-adult.jpg" alt="Jossy as an adult" loading="lazy"></div>
+            <div class="tl-photo"><img src="assets/story/jossy-adult.jpg" data-site-photo="jossy-adult" alt="Jossy as an adult" loading="lazy"></div>
             <div class="tl-date"><span>JUN</span><b>10</b><span>2019</span></div>
           </div>
         </div>
@@ -286,7 +286,7 @@
         <div class="tl-row">
           <div class="tl-pair">
             <div class="tl-date"><span>JUN</span><b>13</b><span>2019</span></div>
-            <div class="tl-photo"><img src="assets/story/facetime.jpg" alt="Sam and Jossy on FaceTime" loading="lazy"></div>
+            <div class="tl-photo"><img src="assets/story/facetime.jpg" data-site-photo="facetime" alt="Sam and Jossy on FaceTime" loading="lazy"></div>
           </div>
           <span class="tl-node">&#9992;</span>
           <div class="tl-card">
@@ -302,7 +302,7 @@
           </div>
           <span class="tl-node">&#128141;</span>
           <div class="tl-pair tl-pair--rev">
-            <div class="tl-photo"><img src="assets/story/proposal.jpg" alt="The birthday proposal in Accra" loading="lazy"></div>
+            <div class="tl-photo"><img src="assets/story/proposal.jpg" data-site-photo="proposal" alt="The birthday proposal in Accra" loading="lazy"></div>
             <div class="tl-date"><span>OCT</span><b>10</b><span>2019</span></div>
           </div>
         </div>
@@ -310,7 +310,7 @@
         <div class="tl-row">
           <div class="tl-pair">
             <div class="tl-date"><b>NOW</b><span>&#10084;</span></div>
-            <div class="tl-photo"><img src="assets/story/now.jpg" alt="Sam and Jossy engaged" loading="lazy"></div>
+            <div class="tl-photo"><img src="assets/story/now.jpg" data-site-photo="now" alt="Sam and Jossy engaged" loading="lazy"></div>
           </div>
           <span class="tl-node">&#128149;</span>
           <div class="tl-card">
@@ -580,7 +580,7 @@
 
     <div class="rec-page-card">
       <div class="couple-circle">
-        <img src="assets/couple-home.jpg" alt="Sam and Jossy" />
+        <img src="assets/couple-home.jpg" data-site-photo="couple" alt="Sam and Jossy" />
         <span class="couple-circle-heart">&#10084;</span>
       </div>
       <label class="field">Your Name
@@ -614,7 +614,7 @@
 
     <div class="rec-page-card">
       <div class="couple-circle">
-        <img src="assets/couple-home.jpg" alt="Sam and Jossy" />
+        <img src="assets/couple-home.jpg" data-site-photo="couple" alt="Sam and Jossy" />
         <span class="couple-circle-heart">&#10084;</span>
       </div>
       <label class="field">Your Name
@@ -750,6 +750,17 @@
         <strong id="statRsvps" class="admin-stat-num">0</strong>
       </div>
     </div>
+
+    <h2 class="settings-heading">Site Settings</h2>
+    <p class="page-sub">Photos &amp; song shown to every guest — only you can change them</p>
+    <div id="settingsGrid" class="aq-list settings-grid"></div>
+    <article class="aq-card settings-song">
+      <p><b>&#9835; Wedding Song</b></p>
+      <small id="songSettingLabel">No song uploaded yet</small>
+      <div class="aq-actions"><button id="songChangeBtn" class="aq-approve" type="button">CHANGE SONG</button></div>
+    </article>
+    <input id="sitePhotoInput" type="file" accept="image/*" class="hidden" />
+    <input id="songFileInput" type="file" accept="audio/*" class="hidden" />
 
     <div class="menu-list">
       <button class="menu-item" data-goto="guestlist" type="button">

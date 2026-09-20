@@ -188,10 +188,10 @@ async function getSettings(){
   return await api('/settings');
 }
 
-async function uploadSitePhoto(file){
+async function uploadSitePhoto(file, slot = 'couple'){
   const fd = new FormData();
   fd.append('file', file, file.name || 'photo');
-  return await api('/admin/settings/photo', { method: 'POST', form: fd, admin: true });
+  return await api(`/admin/settings/photo/${encodeURIComponent(slot)}`, { method: 'POST', form: fd, admin: true });
 }
 
 async function uploadSiteSong(file, label){

@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v71-admin-site-settings';
+const CACHE = 'sj-wedding-v72-site-photos';
 const ASSETS = [
   './',
   './index.html',

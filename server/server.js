@@ -347,10 +347,19 @@ function setSettingFile(res, file, key, extra){
   res.json({ url, ...(extra || {}) });
 }
 
-app.post('/api/admin/settings/photo', requireAdmin, upload.single('file'), (req, res) => {
+const PHOTO_SLOTS = new Set([
+  'couple', 'landing', 'welcome', 'attend',
+  'sam-childhood', 'jossy-childhood', 'sam-adult', 'jossy-adult',
+  'facetime', 'proposal', 'now'
+]);
+
+app.post('/api/admin/settings/photo/:slot?', requireAdmin, upload.single('file'), (req, res) => {
+  const slot = req.params.slot || 'couple';
+  if (!PHOTO_SLOTS.has(slot)) return res.status(400).json({ error: 'Unknown photo slot.' });
   if (!req.file) return res.status(400).json({ error: 'An image file is required.' });
   if (!/^image\//.test(req.file.mimetype)) return res.status(400).json({ error: 'Photo must be an image.' });
-  setSettingFile(res, req.file, 'couplePhotoUrl');
+  const key = slot === 'couple' ? 'couplePhotoUrl' : `photo:${slot}`;
+  setSettingFile(res, req.file, key);
 });
 
 app.post('/api/admin/settings/song', requireAdmin, upload.single('file'), (req, res) => {

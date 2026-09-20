@@ -58,26 +58,26 @@ function escapeHTML(value=''){
    ========================================================= */
 /* albums shown as cover cards on the gallery landing */
 const GALLERY_ALBUMS = [
-  { id:'childhood',      label:'Childhood',      cover:'assets/story/sam-childhood.jpg' },
-  { id:'adulthood',      label:'Adulthood',      cover:'assets/story/sam-adult.jpg' },
-  { id:'first-together', label:'First Together', cover:'assets/story/facetime.jpg' },
-  { id:'engagement',     label:'Engagement',     cover:'assets/story/proposal.jpg' },
-  { id:'wedding-photos', label:'Wedding Photos', cover:'assets/couple-home.jpg' },
-  { id:'wedding-videos', label:'Wedding Videos', cover:'assets/story/now.jpg' }
+  { id:'childhood',      label:'Childhood',      cover:'assets/story/sam-childhood.jpg', photoKey:'sam-childhood' },
+  { id:'adulthood',      label:'Adulthood',      cover:'assets/story/sam-adult.jpg',     photoKey:'sam-adult' },
+  { id:'first-together', label:'First Together', cover:'assets/story/facetime.jpg',      photoKey:'facetime' },
+  { id:'engagement',     label:'Engagement',     cover:'assets/story/proposal.jpg',      photoKey:'proposal' },
+  { id:'wedding-photos', label:'Wedding Photos', cover:'assets/couple-home.jpg',         photoKey:'couple' },
+  { id:'wedding-videos', label:'Wedding Videos', cover:'assets/story/now.jpg',           photoKey:'now' }
 ];
 
 const CATEGORY_LABELS = Object.fromEntries(GALLERY_ALBUMS.map(a => [a.id, a.label]));
 
 /* built-in memories shown alongside guest uploads */
 const SEED_MEMORIES = [
-  { src:'assets/story/sam-childhood.jpg',   category:'childhood',      caption:'Little Sam with big dreams.' },
-  { src:'assets/story/jossy-childhood.jpg', category:'childhood',      caption:'Sweet Jossy, full of joy.' },
-  { src:'assets/story/sam-adult.jpg',       category:'adulthood',      caption:'Sam, becoming who he is today.' },
-  { src:'assets/story/jossy-adult.jpg',     category:'adulthood',      caption:'Jossy, radiant as ever.' },
-  { src:'assets/story/facetime.jpg',        category:'first-together', caption:'Late-night FaceTime calls across the ocean.' },
-  { src:'assets/story/now.jpg',             category:'first-together', caption:'Together at last.' },
-  { src:'assets/story/proposal.jpg',        category:'engagement',     caption:'She said YES! Accra, on her birthday.' },
-  { src:'assets/couple-home.jpg',           category:'engagement',     caption:'#AlwaysAndForever' }
+  { src:'assets/story/sam-childhood.jpg',   photoKey:'sam-childhood',   category:'childhood',      caption:'Little Sam with big dreams.' },
+  { src:'assets/story/jossy-childhood.jpg', photoKey:'jossy-childhood', category:'childhood',      caption:'Sweet Jossy, full of joy.' },
+  { src:'assets/story/sam-adult.jpg',       photoKey:'sam-adult',       category:'adulthood',      caption:'Sam, becoming who he is today.' },
+  { src:'assets/story/jossy-adult.jpg',     photoKey:'jossy-adult',     category:'adulthood',      caption:'Jossy, radiant as ever.' },
+  { src:'assets/story/facetime.jpg',        photoKey:'facetime',        category:'first-together', caption:'Late-night FaceTime calls across the ocean.' },
+  { src:'assets/story/now.jpg',             photoKey:'now',             category:'first-together', caption:'Together at last.' },
+  { src:'assets/story/proposal.jpg',        photoKey:'proposal',        category:'engagement',     caption:'She said YES! Accra, on her birthday.' },
+  { src:'assets/couple-home.jpg',           photoKey:'couple',          category:'engagement',     caption:'#AlwaysAndForever' }
 ];
 
 let activeGalleryFilter = 'all';   // album id, or 'all'
@@ -102,7 +102,7 @@ function allGalleryItems(){
   const uploaded = latestMemories
     .filter(m => m.status === 'approved')
     .map(m => ({ ...m, seeded:false }));
-  const seeded = SEED_MEMORIES.map(m => ({ ...m, type:'image/jpeg', seeded:true }));
+  const seeded = SEED_MEMORIES.map(m => ({ ...m, src: sitePhoto(m.photoKey, m.src), type:'image/jpeg', seeded:true }));
   return [...uploaded, ...seeded];
 }
 
@@ -116,7 +116,7 @@ function renderAlbums(){
     const count = items.filter(m => m.category === album.id).length;
     const cover = items.find(m => m.category === album.id && (m.src || m.mediaUrl) &&
       !(m.type || '').startsWith('video/') && !(m.type || '').startsWith('audio/'));
-    const src = (cover && (cover.src || cover.mediaUrl)) || album.cover;
+    const src = (cover && (cover.src || cover.mediaUrl)) || sitePhoto(album.photoKey, album.cover);
     return `
       <button class="cat-card" data-album="${album.id}" type="button">
         <span class="cat-thumb"><img loading="lazy" decoding="async" src="${src}" alt="${escapeHTML(album.label)}"></span>
@@ -309,8 +309,38 @@ document.querySelectorAll('.tl-photo img').forEach(img => {
 });
 
 /* =========================================================
-   Home couple photo
+   Site settings — couple photo & story photos live on the server.
+   Admin changes them from the dashboard; every guest sees the result.
    ========================================================= */
+const SITE_PHOTO_SLOTS = [
+  { slot:'couple',          label:'Couple Photo (Home)',   def:'assets/couple-home.jpg' },
+  { slot:'landing',         label:'Landing Page Art',      def:'assets/official-landing-page.jpg' },
+  { slot:'welcome',         label:'Welcome Background',    def:'assets/welcome-bg.jpg' },
+  { slot:'attend',          label:'Enter Screen Art',      def:'assets/attend-bg.jpg' },
+  { slot:'sam-childhood',   label:'Sam — Childhood',       def:'assets/story/sam-childhood.jpg' },
+  { slot:'jossy-childhood', label:'Jossy — Childhood',     def:'assets/story/jossy-childhood.jpg' },
+  { slot:'sam-adult',       label:'Sam — Adult',           def:'assets/story/sam-adult.jpg' },
+  { slot:'jossy-adult',     label:'Jossy — Adult',         def:'assets/story/jossy-adult.jpg' },
+  { slot:'facetime',        label:'FaceTime',              def:'assets/story/facetime.jpg' },
+  { slot:'proposal',        label:'The Proposal',          def:'assets/story/proposal.jpg' },
+  { slot:'now',             label:'Engaged Now',           def:'assets/story/now.jpg' }
+];
+const SLOT_DEFS = Object.fromEntries(SITE_PHOTO_SLOTS.map(s => [s.slot, s.def]));
+
+let siteSettings = {};
+
+function sitePhoto(slot, fallback){
+  if (!slot) return fallback;
+  const key = slot === 'couple' ? 'couplePhotoUrl' : `photo:${slot}`;
+  return siteSettings[key] || fallback;
+}
+
+function applySitePhotos(){
+  document.querySelectorAll('[data-site-photo]').forEach(img => {
+    img.src = sitePhoto(img.dataset.sitePhoto, SLOT_DEFS[img.dataset.sitePhoto] || img.getAttribute('src'));
+  });
+}
+
 const couplePhoto = document.getElementById('couplePhoto');
 const couplePhotoFile = document.getElementById('couplePhotoFile');
 const couplePlaceholder = document.getElementById('couplePlaceholder');
@@ -322,31 +352,99 @@ function showCouplePhoto(has){
 
 (async () => {
   try {
-    const settings = await getSettings();
-    couplePhoto.src = settings.couplePhotoUrl || 'assets/couple-home.jpg';
-    showCouplePhoto(true);
+    siteSettings = await getSettings();
   } catch(err){
-    console.warn(err);
-    if (couplePhoto) couplePhoto.src = 'assets/couple-home.jpg';
-    showCouplePhoto(true);
+    console.warn('Site settings unavailable:', err);
+    siteSettings = {};
   }
+  applySitePhotos();
+  if (couplePhoto) couplePhoto.src = sitePhoto('couple', 'assets/couple-home.jpg');
+  showCouplePhoto(true);
+  renderAlbums();
+  renderGallery();
+  renderSiteSettings();
 })();
 
 /* only the couple (admin) can change the photo — it is shared for all guests */
 couplePhoto?.addEventListener('click', () => { if (isAdmin()) couplePhotoFile?.click(); });
 couplePlaceholder?.addEventListener('click', e => { if (!isAdmin()) e.preventDefault(); });
 
+async function saveSitePhoto(file, slot){
+  const res = await uploadSitePhoto(file, slot);
+  siteSettings[slot === 'couple' ? 'couplePhotoUrl' : `photo:${slot}`] = res.url;
+  applySitePhotos();
+  if (couplePhoto) couplePhoto.src = sitePhoto('couple', 'assets/couple-home.jpg');
+  renderAlbums();
+  renderGallery();
+  renderSiteSettings();
+}
+
 couplePhotoFile?.addEventListener('change', async e => {
   const file = e.target.files?.[0];
   e.target.value = '';
   if (!file || !isAdmin()) return;
-  try {
-    const res = await uploadSitePhoto(file);
-    couplePhoto.src = res.url;
-    showCouplePhoto(true);
-  } catch(err){
+  try { await saveSitePhoto(file, 'couple'); }
+  catch(err){
     console.warn('Photo update failed:', err);
     alert('Could not update the photo. Are you still signed in as admin?');
+  }
+});
+
+/* ---------- Admin dashboard: Site Settings ---------- */
+let pendingPhotoSlot = 'couple';
+const sitePhotoInput = document.getElementById('sitePhotoInput');
+const songFileInput = document.getElementById('songFileInput');
+
+function renderSiteSettings(){
+  const grid = document.getElementById('settingsGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  for (const s of SITE_PHOTO_SLOTS){
+    const card = document.createElement('article');
+    card.className = 'aq-card';
+    card.innerHTML = `
+      <img class="aq-media" src="${sitePhoto(s.slot, s.def)}" alt="${escapeHTML(s.label)}">
+      <small>${escapeHTML(s.label)}</small>
+      <div class="aq-actions"><button class="aq-approve" type="button">CHANGE</button></div>`;
+    card.querySelector('button').addEventListener('click', () => {
+      pendingPhotoSlot = s.slot;
+      sitePhotoInput?.click();
+    });
+    grid.appendChild(card);
+  }
+  const label = document.getElementById('songSettingLabel');
+  if (label) label.textContent = siteSettings.songLabel || 'No song uploaded yet';
+}
+renderSiteSettings();
+
+sitePhotoInput?.addEventListener('change', async e => {
+  const file = e.target.files?.[0];
+  e.target.value = '';
+  if (!file || !isAdmin()) return;
+  try { await saveSitePhoto(file, pendingPhotoSlot); }
+  catch(err){
+    console.warn('Photo update failed:', err);
+    alert('Could not update the photo. Are you still signed in as admin?');
+  }
+});
+
+document.getElementById('songChangeBtn')?.addEventListener('click', () => {
+  if (isAdmin()) songFileInput?.click();
+});
+
+songFileInput?.addEventListener('change', async e => {
+  const file = e.target.files?.[0];
+  e.target.value = '';
+  if (!file || !isAdmin()) return;
+  try {
+    const res = await uploadSiteSong(file, file.name);
+    siteSettings.songUrl = res.url;
+    siteSettings.songLabel = res.songLabel || file.name;
+    renderSiteSettings();
+    if (typeof loadSong === 'function') loadSong();
+  } catch(err){
+    console.warn('Song upload failed:', err);
+    alert('Could not upload the song. Are you still signed in as admin?');
   }
 });
 
