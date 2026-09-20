@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v67-secure-admin';
+const CACHE = 'sj-wedding-v68-same-origin-sw';
 const ASSETS = [
   './',
   './index.html',
@@ -47,6 +47,8 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
+  // Leave Firebase, Google CDN and every other origin to the browser
+  if (url.origin !== self.location.origin) return;
 
   // Network-first for HTML, JS, and CSS so users always get the latest code
   if (event.request.mode === 'navigate' ||
@@ -57,8 +59,10 @@ self.addEventListener('fetch', event => {
       url.pathname === './'){
     event.respondWith(
       fetch(event.request).then(response => {
-        const copy = response.clone();
-        caches.open(CACHE).then(cache => cache.put(event.request, copy));
+        if (response.ok){
+          const copy = response.clone();
+          caches.open(CACHE).then(cache => cache.put(event.request, copy));
+        }
         return response;
       }).catch(() => caches.match(event.request).then(c => c || caches.match('./index.html')))
     );
@@ -68,9 +72,11 @@ self.addEventListener('fetch', event => {
   // Cache-first for images, fonts, and other static assets
   event.respondWith(
     caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
-      const copy = response.clone();
-      caches.open(CACHE).then(cache => cache.put(event.request, copy));
+      if (response.ok){
+        const copy = response.clone();
+        caches.open(CACHE).then(cache => cache.put(event.request, copy));
+      }
       return response;
-    }).catch(() => caches.match('./index.html')))
+    }))
   );
 });

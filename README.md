@@ -33,7 +33,7 @@ Guests can only create submissions and read approved content; everything else ne
 2. **Authentication → Users → Add user** → create the admin account (this is the login for the in-app Admin dashboard).
 3. **Authentication → Settings → Authorized domains** → add `snybena.com` and `www.snybena.com`.
 4. **Firestore → Rules** → paste `firestore.rules` and publish.
-5. **Storage → Rules** → paste `storage.rules` and publish.
+5. **Storage** → click **Get started** if the bucket has not been created yet (uploads 404 until it exists), then **Rules** → paste `storage.rules` and publish.
 
 Or, with the Firebase CLI: `firebase deploy --only firestore:rules,storage`.
 
