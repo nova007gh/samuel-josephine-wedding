@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v66-refined-flow';
+const CACHE = 'sj-wedding-v67-secure-admin';
 const ASSETS = [
   './',
   './index.html',

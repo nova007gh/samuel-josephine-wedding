@@ -14,6 +14,23 @@ function tsField(){
   return firebase.firestore.FieldValue.serverTimestamp();
 }
 
+function docsOf(snapshot){
+  return snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
+function newestFirst(field){
+  return (a, b) => toMillis(b[field]) - toMillis(a[field]);
+}
+
+/* Guests only ever see approved content. Filtering on a single field keeps
+   the query on Firestore's automatic index (no composite index needed), so
+   ordering happens client-side. */
+function onApproved(ref, callback){
+  return ref().where('status', '==', 'approved').onSnapshot(snapshot => {
+    callback(docsOf(snapshot).sort(newestFirst('createdAt')));
+  }, err => console.warn('Live feed unavailable:', err));
+}
+
 /* ---------- Memories (shared media) ---------- */
 const memoriesRef = () => db.collection('memories');
 
@@ -48,22 +65,14 @@ async function addMemory(record){
   return data;
 }
 
-function getMemories(){
-  return new Promise((resolve, reject) => {
-    const unsubscribe = memoriesRef()
-      .orderBy('createdAt', 'desc')
-      .onSnapshot({ includeMetadataChanges: false }, snapshot => {
-        resolve(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
-      }, reject);
-    // cleanup after first result to avoid leaks? We want real-time, but here we promise once
-    setTimeout(unsubscribe, 0);
-  });
+function onMemories(callback){
+  return onApproved(memoriesRef, callback);
 }
 
-function onMemories(callback){
+function onAllMemories(callback){
   return memoriesRef().orderBy('createdAt', 'desc').onSnapshot(snapshot => {
-    callback(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
-  });
+    callback(docsOf(snapshot));
+  }, err => console.warn('Admin memories feed failed:', err));
 }
 
 async function deleteMemory(id){
@@ -87,9 +96,8 @@ async function gbAdd(record){
     name: record.name,
     message: record.message,
     status: record.status || 'pending',
-    likes: record.likes || 0,
-    liked: record.liked || false,
-    replies: record.replies || [],
+    likes: 0,
+    replies: [],
     selfieUrl,
     createdAt: tsField()
   };
@@ -97,26 +105,32 @@ async function gbAdd(record){
   return data;
 }
 
-function gbAll(){
-  return new Promise((resolve, reject) => {
-    const unsubscribe = guestbookRef()
-      .orderBy('createdAt', 'desc')
-      .onSnapshot(snapshot => {
-        resolve(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
-      }, reject);
-    setTimeout(unsubscribe, 0);
-  });
+function onGuestbook(callback){
+  return onApproved(guestbookRef, callback);
 }
 
-function onGuestbook(callback){
+function onAllGuestbook(callback){
   return guestbookRef().orderBy('createdAt', 'desc').onSnapshot(snapshot => {
-    callback(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
-  });
+    callback(docsOf(snapshot));
+  }, err => console.warn('Admin guestbook feed failed:', err));
 }
 
 async function gbUpdate(record){
   const { id, ...data } = record;
   await guestbookRef().doc(id).update(data);
+}
+
+/* Guests may only touch likes/replies; the rules reject anything else. */
+async function gbLike(id, delta){
+  await guestbookRef().doc(id).update({
+    likes: firebase.firestore.FieldValue.increment(delta)
+  });
+}
+
+async function gbReply(id, reply){
+  await guestbookRef().doc(id).update({
+    replies: firebase.firestore.FieldValue.arrayUnion(reply)
+  });
 }
 
 async function deleteMemoryGB(id){
@@ -137,8 +151,8 @@ async function addRsvp(data){
 
 function onRsvps(callback){
   return rsvpsRef().orderBy('submittedAt', 'desc').onSnapshot(snapshot => {
-    callback(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
-  });
+    callback(docsOf(snapshot));
+  }, err => console.warn('Admin RSVP feed failed:', err));
 }
 
 /* ---------- Guests (check-in system) ---------- */
@@ -161,8 +175,8 @@ async function addGuest(guest){
 
 function onGuests(callback){
   return guestsRef().orderBy('checkedInAt', 'desc').onSnapshot(snapshot => {
-    callback(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
-  });
+    callback(docsOf(snapshot));
+  }, err => console.warn('Admin guest feed failed:', err));
 }
 
 async function deleteGuest(id){
@@ -173,15 +187,15 @@ async function updateGuest(id, data){
   await guestsRef().doc(id).update(data);
 }
 
-/* ---------- subscriptions registry ---------- */
-const unsubscribers = new Set();
-
-function registerUnsub(unsub){
-  unsubscribers.add(unsub);
-  return unsub;
+/* ---------- Admin auth ---------- */
+function adminSignIn(email, password){
+  return auth.signInWithEmailAndPassword(email, password);
 }
 
-function cleanupSubs(){
-  unsubscribers.forEach(fn => fn());
-  unsubscribers.clear();
+function adminSignOut(){
+  return auth.signOut();
+}
+
+function onAdminAuth(callback){
+  return auth.onAuthStateChanged(user => callback(!!user));
 }

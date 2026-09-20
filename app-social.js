@@ -54,32 +54,44 @@ function timeAgo(ts){
    Guest book — render
    ========================================================= */
 let gbFilter = 'all';
+let latestGuestbook = [];
 
 function gbInitials(name){
   return name.trim().split(/\s+/).slice(0,2).map(w => w[0].toUpperCase()).join('');
 }
 
+/* likes are remembered per device so a guest can't like twice */
+const LIKED_KEY = 'sj_gb_liked';
+function likedSet(){
+  try { return new Set(JSON.parse(localStorage.getItem(LIKED_KEY) || '[]')); }
+  catch { return new Set(); }
+}
+function saveLiked(set){ localStorage.setItem(LIKED_KEY, JSON.stringify([...set])); }
+
 function renderGuestBook(all){
-  all = all || [];
+  if (Array.isArray(all)) latestGuestbook = all;
+  all = latestGuestbook;
   const list = document.getElementById('gbList');
   const empty = document.getElementById('gbEmpty');
   if (!list) return;
 
-  // Only show approved entries to users
-  const approved = all.filter(m => m.status === 'approved');
+  const admin = isAdmin();
+  document.getElementById('gbFilters')?.classList.toggle('hidden', !admin);
 
   const counts = {
-    all: approved.length,
-    pending: all.filter(m => m.status === 'pending').length,
-    approved: approved.length
+    all: all.length,
+    pending: all.filter(m => m.status !== 'approved').length,
+    approved: all.filter(m => m.status === 'approved').length
   };
   document.querySelectorAll('[data-gb-filter]').forEach(chip => {
     const key = chip.dataset.gbFilter;
     chip.textContent = `${key[0].toUpperCase() + key.slice(1)} (${counts[key]})`;
   });
 
-  // Users only see approved entries
-  const items = approved;
+  const items = !admin || gbFilter === 'all' ? all
+    : gbFilter === 'approved' ? all.filter(m => m.status === 'approved')
+    : all.filter(m => m.status !== 'approved');
+  const liked = likedSet();
   list.innerHTML = '';
   empty.classList.toggle('hidden', items.length > 0);
 
@@ -95,6 +107,8 @@ function renderGuestBook(all){
     card.className = 'gb-card';
     const replies = (item.replies || []).map(r =>
       `<p class="gb-reply"><b>${escapeHTML(r.name)}:</b> ${escapeHTML(r.text)}</p>`).join('');
+    const isLiked = liked.has(item.id);
+    const approved = item.status === 'approved';
 
     card.innerHTML = `
       <div class="gb-head">
@@ -103,13 +117,15 @@ function renderGuestBook(all){
           <strong>${escapeHTML(item.name)}</strong>
           <small>${timeAgo(item.createdAt)}</small>
         </div>
-        <span class="gb-badge gb-badge--${item.status}">${item.status === 'approved' ? 'Approved' : 'Pending'}</span>
+        ${admin ? `<span class="gb-badge gb-badge--${approved ? 'approved' : 'pending'}">${approved ? 'Approved' : 'Pending'}</span>` : ''}
       </div>
       <p class="gb-msg">${escapeHTML(item.message)}</p>
       ${replies ? `<div class="gb-replies">${replies}</div>` : ''}
       <div class="gb-actions">
-        <button class="gb-like${item.liked ? ' liked' : ''}" type="button">&#10084; Like <b>${item.likes || 0}</b></button>
+        <button class="gb-like${isLiked ? ' liked' : ''}" type="button">&#10084; Like <b>${item.likes || 0}</b></button>
         <button class="gb-replybtn" type="button">&#128172; Reply</button>
+        ${admin && !approved ? `<button class="gb-approve aq-approve" type="button">Approve</button>` : ''}
+        ${admin ? `<button class="gb-delete aq-reject" type="button">Delete</button>` : ''}
       </div>
       <form class="gb-replyform hidden">
         <input name="replyName" type="text" required placeholder="Your name" />
@@ -118,10 +134,12 @@ function renderGuestBook(all){
       </form>`;
 
     card.querySelector('.gb-like').addEventListener('click', async () => {
-      item.liked = !item.liked;
-      item.likes = Math.max(0, (item.likes || 0) + (item.liked ? 1 : -1));
-      await gbUpdate(item);
-      renderGuestBook();
+      const set = likedSet();
+      const nowLiked = !set.has(item.id);
+      if (nowLiked) set.add(item.id); else set.delete(item.id);
+      saveLiked(set);
+      try { await gbLike(item.id, nowLiked ? 1 : -1); }
+      catch(err){ console.warn('Like failed:', err); }
     });
     card.querySelector('.gb-replybtn').addEventListener('click', () => {
       card.querySelector('.gb-replyform').classList.toggle('hidden');
@@ -129,10 +147,14 @@ function renderGuestBook(all){
     card.querySelector('.gb-replyform').addEventListener('submit', async e => {
       e.preventDefault();
       const fd = new FormData(e.target);
-      item.replies = item.replies || [];
-      item.replies.push({ name: fd.get('replyName').trim(), text: fd.get('replyText').trim() });
-      await gbUpdate(item);
-      renderGuestBook();
+      const reply = { name: fd.get('replyName').trim(), text: fd.get('replyText').trim() };
+      if (!reply.name || !reply.text) return;
+      try { await gbReply(item.id, reply); e.target.reset(); }
+      catch(err){ console.warn('Reply failed:', err); alert('Could not send your reply. Please try again.'); }
+    });
+    card.querySelector('.gb-approve')?.addEventListener('click', () => gbUpdate({ id: item.id, status: 'approved' }));
+    card.querySelector('.gb-delete')?.addEventListener('click', async () => {
+      if (confirm('Delete this message?')) await deleteMemoryGB(item.id);
     });
 
     list.appendChild(card);
@@ -154,23 +176,33 @@ document.getElementById('gbForm')?.addEventListener('submit', async e => {
   const form = e.target;
   const fd = new FormData(form);
   const selfie = fd.get('gbSelfie');
-  await gbAdd({
-    name: fd.get('gbName').trim(),
-    message: fd.get('gbMessage').trim(),
-    selfie: selfie && selfie.size ? selfie : null,
-    status: 'pending',
-    likes: 0,
-    liked: false,
-    replies: []
-  });
-  form.reset();
-  closeSheet('gbModal');
-  alert('Your message has been submitted and is pending approval. Thank you!');
+  const submitBtn = form.querySelector('[type="submit"]');
+  if (submitBtn) submitBtn.disabled = true;
+  try {
+    await gbAdd({
+      name: fd.get('gbName').trim(),
+      message: fd.get('gbMessage').trim(),
+      selfie: selfie && selfie.size ? selfie : null,
+      status: 'pending'
+    });
+    form.reset();
+    closeSheet('gbModal');
+    alert('Your message has been submitted and is pending approval. Thank you!');
+  } catch(err){
+    console.warn('Guestbook submit failed:', err);
+    alert('Sorry, your message could not be sent. Please check your connection and try again.');
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
+  }
 });
 
-if (typeof onGuestbook === 'function'){
-  onGuestbook(renderGuestBook);
+/* Guests get the approved feed; admins get everything (swapped on login). */
+let unsubGuestbook = null;
+function subscribeGuestbook(){
+  unsubGuestbook?.();
+  unsubGuestbook = isAdmin() ? onAllGuestbook(renderGuestBook) : onGuestbook(renderGuestBook);
 }
+subscribeGuestbook();
 
 /* =========================================================
    Share memories — files go through a details sheet
@@ -219,23 +251,32 @@ document.getElementById('shareForm')?.addEventListener('submit', async e => {
   e.preventDefault();
   if (!pendingShare) return;
   const fd = new FormData(e.target);
-  await addMemory({
-    category: fd.get('shareCategory'),
-    caption: fd.get('shareCaption').trim(),
-    guestName: fd.get('shareName').trim(),
-    kind: pendingShare.kind,
-    status: 'pending',
-    type: pendingShare.type || 'application/octet-stream',
-    name: `${pendingShare.kind}-${Date.now()}`,
-    size: pendingShare.blob.size,
-    blob: pendingShare.blob
-  });
-  pendingShare = null;
-  e.target.reset();
-  closeSheet('shareModal');
-  teardownRecorders();
-  alert('Your memory has been submitted and is pending approval. Thank you for sharing!');
-  switchView('gallery');
+  const submitBtn = e.target.querySelector('[type="submit"]');
+  if (submitBtn){ submitBtn.disabled = true; submitBtn.dataset.label = submitBtn.textContent; submitBtn.textContent = 'Uploading…'; }
+  try {
+    await addMemory({
+      category: fd.get('shareCategory'),
+      caption: fd.get('shareCaption').trim(),
+      guestName: fd.get('shareName').trim(),
+      kind: pendingShare.kind,
+      status: 'pending',
+      type: pendingShare.type || 'application/octet-stream',
+      name: `${pendingShare.kind}-${Date.now()}`,
+      size: pendingShare.blob.size,
+      blob: pendingShare.blob
+    });
+    pendingShare = null;
+    e.target.reset();
+    closeSheet('shareModal');
+    teardownRecorders();
+    alert('Your memory has been submitted and is pending approval. Thank you for sharing!');
+    switchView('gallery');
+  } catch(err){
+    console.warn('Memory upload failed:', err);
+    alert('Sorry, the upload failed. Please check your connection and try again.');
+  } finally {
+    if (submitBtn){ submitBtn.disabled = false; submitBtn.textContent = submitBtn.dataset.label || 'Submit'; }
+  }
 });
 
 /* =========================================================
@@ -499,43 +540,61 @@ const adminEmail = document.getElementById('adminEmail');
 const adminPassword = document.getElementById('adminPassword');
 const adminLoginError = document.getElementById('adminLoginError');
 
-function isAdminAuthenticated(){
-  return sessionStorage.getItem('sj_admin_auth') === '1';
-}
-
-function checkAdminAuth(){
+const wantsAdminDeepLink = (() => {
   const params = new URLSearchParams(window.location.search);
-  const target = params.get('view') || (params.has('admin') ? 'admin' : null);
-  if (target === 'admin'){
-    // skip the seal/gates and go straight to admin
-    const opening = document.getElementById('opening');
-    const attendScreen = document.getElementById('attendScreen');
-    const guestLoginScreen = document.getElementById('guestLoginScreen');
-    const app = document.getElementById('app');
-    [opening, attendScreen, guestLoginScreen].forEach(el => el?.classList.add('hidden'));
-    app?.classList.remove('hidden');
-    document.body.classList.remove('locked');
-    if (isAdminAuthenticated()) switchView('admin');
-    else switchView('adminlogin');
-  }
-}
-checkAdminAuth();
+  return params.get('view') === 'admin' || params.has('admin');
+})();
 
-adminLoginForm?.addEventListener('submit', e => {
+if (wantsAdminDeepLink){
+  // skip the seal/gates and go straight to the admin area
+  enterApp();
+  switchView('adminlogin');
+}
+
+const ADMIN_LOGIN_MESSAGES = {
+  'auth/invalid-credential': 'Incorrect email or password. Please try again.',
+  'auth/wrong-password': 'Incorrect email or password. Please try again.',
+  'auth/user-not-found': 'Incorrect email or password. Please try again.',
+  'auth/invalid-email': 'Please enter a valid email address.',
+  'auth/too-many-requests': 'Too many attempts. Please wait a moment and try again.',
+  'auth/network-request-failed': 'No connection. Please check your network and try again.',
+  'auth/operation-not-allowed': 'Admin sign-in is not enabled yet for this project.',
+  'auth/configuration-not-found': 'Admin sign-in is not enabled yet for this project.'
+};
+
+adminLoginForm?.addEventListener('submit', async e => {
   e.preventDefault();
-  const email = (adminEmail?.value || '').trim().toLowerCase();
+  const email = (adminEmail?.value || '').trim();
   const pass = adminPassword?.value || '';
-  if (email === ADMIN_EMAIL.toLowerCase() && pass === ADMIN_PASSWORD){
-    sessionStorage.setItem('sj_admin_auth', '1');
-    switchView('admin');
-  } else {
-    adminLoginError.textContent = 'Incorrect email or password. Please try again.';
+  const submitBtn = adminLoginForm.querySelector('[type="submit"]');
+  adminLoginError.textContent = '';
+  if (submitBtn) submitBtn.disabled = true;
+  try {
+    await adminSignIn(email, pass);
+    adminLoginForm.reset();
+  } catch(err){
+    adminLoginError.textContent = ADMIN_LOGIN_MESSAGES[err.code] || 'Sign-in failed. Please try again.';
     adminPassword?.select();
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
   }
 });
 
-document.querySelector('[data-goto="adminlogin"]')?.addEventListener('click', () => {
-  if (isAdminAuthenticated()) switchView('admin');
+/* auth state drives everything admin-related */
+onAdminAuth(signedIn => {
+  const wasSignedIn = adminSignedIn;
+  adminSignedIn = signedIn;
+  document.body.classList.toggle('is-admin', signedIn);
+
+  if (signedIn) startAdminListeners();
+  else stopAdminListeners();
+
+  subscribeGuestbook();
+  if (typeof renderGallery === 'function') renderGallery();
+
+  const current = document.querySelector('.view:not(.hidden)')?.dataset.view;
+  if (signedIn && current === 'adminlogin') switchView('admin');
+  if (!signedIn && wasSignedIn && ADMIN_VIEWS.has(current)) switchView('home');
 });
 
 /* =========================================================
@@ -668,29 +727,52 @@ function renderRsvpAdmin(){
 async function updateStatus(btn, status){
   const kind = btn.dataset.kind;
   const id = btn.dataset.id;
-  if (kind === 'guestbook') await gbUpdate({ id, status });
-  else await updateMemory({ id, status });
+  btn.disabled = true;
+  try {
+    if (kind === 'guestbook') await gbUpdate({ id, status });
+    else await updateMemory({ id, status });
+  } catch(err){
+    console.warn('Approve failed:', err);
+    alert('Could not update this item. Are you still signed in?');
+    btn.disabled = false;
+  }
 }
 
 async function removeSubmission(btn){
   const kind = btn.dataset.kind;
   const id = btn.dataset.id;
-  if (kind === 'guestbook') await deleteMemoryGB(id);
-  else await deleteMemory(id);
+  btn.disabled = true;
+  try {
+    if (kind === 'guestbook') await deleteMemoryGB(id);
+    else await deleteMemory(id);
+  } catch(err){
+    console.warn('Reject failed:', err);
+    alert('Could not remove this item. Are you still signed in?');
+    btn.disabled = false;
+  }
 }
 
-// admin real-time listeners
+// admin real-time listeners — only while an admin is signed in
+let adminUnsubs = [];
 function startAdminListeners(){
-  onMemories(items => { adminMemories = items; updateAdminStats(); renderApprovalQueue(); });
-  onGuestbook(items => { adminGuestbook = items; updateAdminStats(); renderApprovalQueue(); });
-  onGuests(items => { adminGuests = items; updateAdminStats(); renderGuestList(); });
-  onRsvps(items => { adminRsvps = items; updateAdminStats(); renderRsvpAdmin(); });
+  stopAdminListeners();
+  adminUnsubs = [
+    onAllMemories(items => { adminMemories = items; updateAdminStats(); renderApprovalQueue(); }),
+    onAllGuestbook(items => { adminGuestbook = items; updateAdminStats(); renderApprovalQueue(); }),
+    onGuests(items => { adminGuests = items; updateAdminStats(); renderGuestList(); }),
+    onRsvps(items => { adminRsvps = items; updateAdminStats(); renderRsvpAdmin(); })
+  ];
 }
-startAdminListeners();
+function stopAdminListeners(){
+  adminUnsubs.forEach(fn => fn());
+  adminUnsubs = [];
+  adminMemories = []; adminGuestbook = []; adminGuests = []; adminRsvps = [];
+  updateAdminStats(); renderApprovalQueue(); renderGuestList(); renderRsvpAdmin();
+}
 
 // admin logout
-document.getElementById('adminLogout')?.addEventListener('click', () => {
-  sessionStorage.removeItem('sj_admin_auth');
+document.getElementById('adminLogout')?.addEventListener('click', async () => {
+  await adminSignOut();
   switchView('home');
 });
 

@@ -1,8 +1,5 @@
 'use strict';
 
-const ADMIN_EMAIL = 'sny@wedding.com';
-const ADMIN_PASSWORD = 'sam&jossy@2027';
-
 const firebaseConfig = {
   apiKey: "AIzaSyD3f9DX63UNykrP_2h2jecOGsG6LO1kApA",
   authDomain: "wedding-4db15.firebaseapp.com",
@@ -16,6 +13,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const storage = firebase.storage();
+const auth = firebase.auth();
 
 db.enablePersistence({ synchronizeTabs: true }).catch(err => {
   if (err.code !== 'failed-precondition' && err.code !== 'unimplemented'){

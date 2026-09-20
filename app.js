@@ -16,7 +16,9 @@ const app = $('#app');
 function getGuest(){ return JSON.parse(sessionStorage.getItem('sj_guest') || 'null'); }
 function setGuest(g){ sessionStorage.setItem('sj_guest', JSON.stringify(g)); }
 function clearGuest(){ sessionStorage.removeItem('sj_guest'); }
-function isAdmin(){ return sessionStorage.getItem('sj_admin_auth') === '1'; }
+
+let adminSignedIn = false;
+function isAdmin(){ return adminSignedIn; }
 
 /* ---- Show a gate screen with transition ---- */
 function showGate(screen){
@@ -483,10 +485,11 @@ $('#enterFromHome')?.addEventListener('click', () => {
    --------------------------------------------------------- */
 const SUBVIEW_TAB = {
   guestbook:'more', memories:'more', rsvp:'more', voicemsg:'more', videomsg:'more',
-  admin:'more', adminlogin:'more', approvals:'more', voiceAdmin:'more', videoAdmin:'more',
-  rsvpAdmin:'more', guestlist:'more'
+  admin:'more', adminlogin:'more', approvals:'more', rsvpAdmin:'more', guestlist:'more'
 };
+const ADMIN_VIEWS = new Set(['admin', 'approvals', 'rsvpAdmin', 'guestlist']);
 function switchView(name){
+  if (ADMIN_VIEWS.has(name) && !isAdmin()) name = 'adminlogin';
   const tabName = SUBVIEW_TAB[name] || name;
   $$('.view').forEach(v => v.classList.toggle('hidden', v.dataset.view !== name));
   $$('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tabName));
@@ -561,7 +564,8 @@ async function loadSong(){
     }
   } catch(err){ console.warn(err); }
 }
-loadSong();
+// kvGet lives in app-data.js, which loads after this file
+window.addEventListener('DOMContentLoaded', loadSong);
 
 async function saveSong(file){
   try {

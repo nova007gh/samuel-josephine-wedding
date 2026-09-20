@@ -2,36 +2,60 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Guests can check themselves in
+    // Admins are the only Firebase Auth users (email/password, created in the console).
+    function isAdmin(){
+      return request.auth != null;
+    }
+
+    function isStr(field, max){
+      return request.resource.data[field] is string
+        && request.resource.data[field].size() <= max;
+    }
+
+    // ---- Guests (check-in) : create-only for the public
     match /guests/{id} {
-      allow read: if true;   // admin dashboard reads
-      allow create: if true; // guest check-in
-      allow delete: if true; // admin removes
-      allow update: if true;
+      allow read, update, delete: if isAdmin();
+      allow create: if isStr('name', 120)
+        && request.resource.data.keys().hasOnly(
+             ['id','name','phone','email','relation','attending','checkedInAt']);
     }
 
-    // Memories (photos, videos, voice) — anyone can upload, admin approves
+    // ---- Memories (photos / video / audio)
     match /memories/{id} {
-      allow read: if true;   // gallery + admin dashboard
-      allow create: if true; // guest uploads
-      allow update: if true; // admin approves/rejects
-      allow delete: if true; // admin removes
+      allow read: if isAdmin() || resource.data.status == 'approved';
+      allow create: if request.resource.data.status == 'pending'
+        && isStr('caption', 500) && isStr('guestName', 120)
+        && request.resource.data.keys().hasOnly(
+             ['id','category','caption','guestName','kind','status','type','name','size','mediaUrl','createdAt']);
+      allow update, delete: if isAdmin();
     }
 
-    // Guestbook entries — anyone can post, admin approves
+    // ---- Guest book
     match /guestbook/{id} {
-      allow read: if true;   // guestbook + admin dashboard
-      allow create: if true; // guest posts
-      allow update: if true; // admin approves + likes/replies
-      allow delete: if true; // admin removes
+      allow read: if isAdmin() || resource.data.status == 'approved';
+      allow create: if request.resource.data.status == 'pending'
+        && isStr('name', 120) && isStr('message', 2000)
+        && request.resource.data.keys().hasOnly(
+             ['id','name','message','status','likes','replies','selfieUrl','createdAt']);
+      // guests may only like / reply on approved entries
+      allow update: if isAdmin() || (
+        resource.data.status == 'approved'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes','replies'])
+        && request.resource.data.likes is int
+        && request.resource.data.likes >= 0
+        && request.resource.data.replies is list
+        && request.resource.data.replies.size() <= resource.data.replies.size() + 1
+        && request.resource.data.replies.size() <= 200
+      );
+      allow delete: if isAdmin();
     }
 
-    // RSVPs — anyone can submit, admin reads
+    // ---- RSVPs : create-only for the public
     match /rsvps/{id} {
-      allow read: if true;   // admin dashboard
-      allow create: if true; // guest RSVP
-      allow delete: if true;
-      allow update: if true;
+      allow read, update, delete: if isAdmin();
+      allow create: if isStr('name', 120) && isStr('message', 2000)
+        && request.resource.data.keys().hasOnly(
+             ['id','name','email','phone','attending','plusOne','guestCount','song','message','submittedAt']);
     }
   }
 }
