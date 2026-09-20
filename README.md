@@ -24,18 +24,14 @@ Then open:
 http://localhost:8080
 
 ## Production
-Live at https://snybena.com (nginx on the VPS, Let's Encrypt). Redeploy with `deploy-wedding` on the server after pushing to `main`.
+Live at https://snybena.com — fully self-hosted on the VPS, no external services.
 
-## Firebase setup (one-time, in the Firebase console for project `wedding-4db15`)
-Guests can only create submissions and read approved content; everything else needs an admin sign-in.
+- **Frontend**: static files in the repo root, served by nginx from `/var/www/snybena.com`. Redeploy with `deploy-wedding` on the server after pushing to `main`.
+- **Backend**: `server/` — a small Node.js + Express + SQLite API (`server/server.js`) running as the `wedding-api` systemd service on `127.0.0.1:3100`. nginx proxies `/api/` to it and serves uploaded media from `/uploads/`.
+- **Data**: SQLite at `/var/lib/wedding/wedding.db`; uploads at `/var/lib/wedding/uploads/`. Nightly backup to `/var/backups/wedding/` via cron.
+- **Admin**: password lives in `/opt/wedding-api/api.env` on the server (`ADMIN_PASSWORD`); sign in at `?view=admin`. Redeploy API changes with `deploy-wedding-api`.
 
-1. **Authentication → Sign-in method** → enable **Email/Password**.
-2. **Authentication → Users → Add user** → create the admin account (this is the login for the in-app Admin dashboard).
-3. **Authentication → Settings → Authorized domains** → add `snybena.com` and `www.snybena.com`.
-4. **Firestore Database** → **Create database** if none exists yet (production mode, any region; nothing saves until it exists), then **Rules** → paste `firestore.rules` and publish.
-5. **Storage** → click **Get started** if the bucket has not been created yet (uploads 404 until it exists), then **Rules** → paste `storage.rules` and publish.
-
-Or, with the Firebase CLI: `firebase deploy --only firestore:rules,storage`.
+Guests can create check-ins, RSVPs, guestbook messages and media uploads (all start as `pending` where moderation applies) and read approved content; everything else needs an admin sign-in. Feeds refresh every 15 seconds.
 
 
 ## New: Couple Story & Memory Vault
@@ -48,7 +44,4 @@ Or, with the Firebase CLI: `firebase deploy --only firestore:rules,storage`.
 - Add captions to each memory
 - Filter the gallery by life stage/category
 - Edit the couple's "How We Met" story directly in the web app
-- Media uses IndexedDB in the prototype, which is much better suited than localStorage for photos/videos
-
-### Production note
-The current upload gallery stores media on the device where it was uploaded. For a real public wedding site, connect the same UI to cloud object storage (e.g. Supabase Storage, Firebase Storage, S3/Cloudflare R2) and a database so guests see the same approved memories on every device.
+- Guest-uploaded media is stored on the server (`/var/lib/wedding/uploads/`) and moderated from the admin dashboard before it appears publicly

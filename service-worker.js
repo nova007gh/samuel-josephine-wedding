@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v69-bounded-writes';
+const CACHE = 'sj-wedding-v70-selfhosted-api';
 const ASSETS = [
   './',
   './index.html',
@@ -10,8 +10,7 @@ const ASSETS = [
   './app.js',
   './app-data.js',
   './app-social.js',
-  './firebase-config.js',
-  './firebase-data.js',
+  './api-data.js',
   './manifest.webmanifest',
   './assets/official-landing-page.jpg',
   './assets/welcome-bg.jpg',
@@ -47,8 +46,10 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
-  // Leave Firebase, Google CDN and every other origin to the browser
+  // Leave every other origin to the browser
   if (url.origin !== self.location.origin) return;
+  // API calls and uploaded media must never be cached
+  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/uploads/')) return;
 
   // Network-first for HTML, JS, and CSS so users always get the latest code
   if (event.request.mode === 'navigate' ||
