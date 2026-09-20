@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v78-guest-gate-login';
+const CACHE = 'sj-wedding-v79-jossy-descender';
 const ASSETS = [
   './',
   './index.html',

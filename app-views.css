@@ -274,6 +274,9 @@
   padding:.3em .22em .26em;
   margin:-.3em 0 -.26em;
 }
+/* the last name (Jossy) keeps its descender space so the y tail doesn't
+   paint over "OUR FOREVER STARTS HERE" below it */
+.home-name:last-child{ margin-bottom:0; }
 .home-amp{
   font-size:clamp(2.4rem,10vw,3.6rem);
   line-height:1;
