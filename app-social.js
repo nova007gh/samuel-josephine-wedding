@@ -179,12 +179,13 @@ document.getElementById('gbForm')?.addEventListener('submit', async e => {
   const submitBtn = form.querySelector('[type="submit"]');
   if (submitBtn) submitBtn.disabled = true;
   try {
-    await gbAdd({
+    const rec = await gbAdd({
       name: fd.get('gbName').trim(),
       message: fd.get('gbMessage').trim(),
       selfie: selfie && selfie.size ? selfie : null,
       status: 'pending'
     });
+    if (typeof rememberUpload === 'function') rememberUpload('guestbook', rec && rec.id);
     form.reset();
     closeSheet('gbModal');
     alert('Your message has been submitted and is pending approval. Thank you!');
@@ -256,7 +257,7 @@ document.getElementById('shareForm')?.addEventListener('submit', async e => {
   const submitBtn = e.target.querySelector('[type="submit"]');
   if (submitBtn){ submitBtn.disabled = true; submitBtn.dataset.label = submitBtn.textContent; submitBtn.textContent = 'Uploading…'; }
   try {
-    await addMemory({
+    const rec = await addMemory({
       category: fd.get('shareCategory'),
       caption: fd.get('shareCaption').trim(),
       guestName: fd.get('shareName').trim(),
@@ -267,10 +268,12 @@ document.getElementById('shareForm')?.addEventListener('submit', async e => {
       size: pendingShare.blob.size,
       blob: pendingShare.blob
     });
+    if (typeof rememberUpload === 'function') rememberUpload('memory', rec && rec.id);
     pendingShare = null;
     e.target.reset();
     closeSheet('shareModal');
     teardownRecorders();
+    renderMyUploads();
     alert('Your memory has been submitted and is pending approval. Thank you for sharing!');
     switchView('gallery');
   } catch(err){
@@ -820,3 +823,71 @@ function setGuests(n){
 }
 document.getElementById('guestMinus')?.addEventListener('click', () => setGuests(Number(guestInput.value) - 1));
 document.getElementById('guestPlus')?.addEventListener('click', () => setGuests(Number(guestInput.value) + 1));
+
+/* =========================================================
+   Your uploads — this device's submissions, editable while pending
+   ========================================================= */
+async function renderMyUploads(){
+  const list = document.getElementById('myUploads');
+  const empty = document.getElementById('myUploadsEmpty');
+  if (!list) return;
+  let items = [];
+  try { items = await fetchMyUploads(); }
+  catch(err){ console.warn('My uploads unavailable:', err); }
+  list.innerHTML = '';
+  empty?.classList.toggle('hidden', items.length > 0);
+
+  for (const item of items){
+    const card = document.createElement('article');
+    card.className = 'aq-card';
+    const pending = item.status !== 'approved';
+    const label = item._kind === 'guestbook' ? 'Guest book message'
+      : ({ photo:'Photo', video:'Video', selfie:'Selfie', voice:'Voice message', videomsg:'Video message' })[item.kind] || 'Memory';
+    const thumb = item._kind === 'memory' && item.mediaUrl && /^image\//.test(item.type || '')
+      ? `<img class="aq-media" src="${item.mediaUrl}" alt="">` : '';
+    card.innerHTML = `
+      ${thumb}
+      <p><b>${escapeHTML(label)}</b> <span class="gb-badge gb-badge--${pending ? 'pending' : 'approved'}">${pending ? 'Pending review' : 'Published'}</span></p>
+      <small>${escapeHTML(item.caption || item.message || item.guestName || '')}</small>
+      ${pending ? '<div class="aq-actions"><button class="aq-approve" type="button">EDIT</button></div>' : ''}`;
+    card.querySelector('button')?.addEventListener('click', async () => {
+      const isGb = item._kind === 'guestbook';
+      const current = isGb ? item.message : item.caption;
+      const next = prompt(isGb ? 'Edit your message:' : 'Edit the caption:', current || '');
+      if (next === null) return;
+      try {
+        await (isGb ? editMyGuestbook(item.id, { message: next }) : editMyMemory(item.id, { caption: next }));
+        renderMyUploads();
+      } catch(err){
+        alert(err.message || 'Could not update — it may already be published.');
+      }
+    });
+    list.appendChild(card);
+  }
+}
+
+document.querySelector('[data-goto="memories"]')?.addEventListener('click', renderMyUploads);
+renderMyUploads();
+
+/* =========================================================
+   Notifications — web push to every subscribed device
+   ========================================================= */
+const notifToggle = document.getElementById('notifToggle');
+const notifStatus = document.getElementById('notifStatus');
+
+async function refreshNotifLabel(){
+  if (!notifStatus) return;
+  if (typeof notificationsEnabled !== 'function') return;
+  const on = await notificationsEnabled();
+  notifStatus.textContent = on ? 'On — you will get updates on new memories' : 'Tap to get updates on new memories';
+}
+refreshNotifLabel();
+
+notifToggle?.addEventListener('click', async () => {
+  if (notifStatus) notifStatus.textContent = 'Enabling…';
+  const res = await enableNotifications();
+  if (notifStatus) notifStatus.textContent =
+    res === 'on' ? 'On — you will get updates on new memories'
+    : res === 'denied' ? 'Blocked — enable notifications in your browser settings'
+    : 'Notifications are not supported on this device';
+});

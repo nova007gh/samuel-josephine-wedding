@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v79-jossy-descender';
+const CACHE = 'sj-wedding-v80-wedding-details-push';
 const ASSETS = [
   './',
   './index.html',
@@ -80,5 +80,30 @@ self.addEventListener('fetch', event => {
       }
       return response;
     }))
+  );
+});
+
+/* ---------- push notifications ---------- */
+self.addEventListener('push', event => {
+  let data = {};
+  try { data = event.data ? event.data.json() : {}; } catch {}
+  event.waitUntil(
+    self.registration.showNotification(data.title || 'Sam & Jossy', {
+      body: data.body || 'Something new was shared',
+      icon: data.icon || '/assets/icons/icon-192.png',
+      badge: '/assets/icons/icon-192.png',
+      data: { url: data.url || '/' }
+    })
+  );
+});
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  const url = (event.notification.data && event.notification.data.url) || '/';
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+      for (const client of list) if ('focus' in client) return client.focus();
+      return clients.openWindow(url);
+    })
   );
 });

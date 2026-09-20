@@ -470,6 +470,8 @@ $('#guestLoginForm')?.addEventListener('submit', async e => {
   if (err) err.textContent = '';
   hideGate(guestLoginScreen);
   setTimeout(enterApp, 650);
+  // gesture context — good moment to offer notifications (fire & forget)
+  if (typeof enableNotifications === 'function') enableNotifications().catch(() => {});
 });
 
 /* ---- Update UI based on guest session ---- */
@@ -541,9 +543,14 @@ if (storyTextEl) storyTextEl.textContent = localStorage.getItem('sj_love_story')
 /* ---------------------------------------------------------
    Countdown to the wedding
    --------------------------------------------------------- */
-const WEDDING_DATE = new Date('2027-01-09T10:00:00+00:00');
+let weddingDateMs = Date.parse('2027-01-09T10:00:00');
+/* admin can retarget the countdown from Site Settings → Wedding Details */
+window.setWeddingDate = iso => {
+  const t = Date.parse(iso);
+  if (!Number.isNaN(t)) weddingDateMs = t;
+};
 function updateCountdown(){
-  const diff = Math.max(0, WEDDING_DATE - new Date());
+  const diff = Math.max(0, weddingDateMs - Date.now());
   const d = Math.floor(diff / 86400000);
   const h = Math.floor((diff % 86400000) / 3600000);
   const m = Math.floor((diff % 3600000) / 60000);
@@ -618,7 +625,10 @@ $('#musicToggle')?.addEventListener('click', async e => {
    Map link
    --------------------------------------------------------- */
 $('#viewMap')?.addEventListener('click', () => {
-  window.open('https://www.google.com/maps/search/?api=1&query=Accra%2C+Ghana', '_blank', 'noopener');
+  const det = window.weddingDetails || {};
+  const url = det.mapUrl ||
+    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(det.weddingVenue || 'Accra, Ghana')}`;
+  window.open(url, '_blank', 'noopener');
 });
 
 /* ---------------------------------------------------------

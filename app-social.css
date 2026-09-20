@@ -577,3 +577,39 @@
   font-weight:700;
   letter-spacing:.08em;
 }
+
+/* ---------- Wedding Details form (admin) ---------- */
+.settings-fields{
+  display:grid;
+  gap:10px;
+  margin:10px 0;
+  text-align:left;
+}
+.settings-fields .field input,
+.settings-fields textarea,
+.field textarea{
+  width:100%;
+  margin-top:4px;
+  padding:10px 12px;
+  border:1px solid rgba(169,124,44,.3);
+  border-radius:10px;
+  font:inherit;
+  font-size:.85rem;
+  background:rgba(255,255,255,.75);
+  color:#3d2c14;
+  box-sizing:border-box;
+}
+.wed-event-row{
+  display:grid;
+  grid-template-columns:88px 1fr;
+  gap:8px;
+}
+.wed-event-row input{
+  padding:10px 12px;
+  border:1px solid rgba(169,124,44,.3);
+  border-radius:10px;
+  font:inherit;
+  font-size:.85rem;
+  background:rgba(255,255,255,.75);
+  color:#3d2c14;
+}

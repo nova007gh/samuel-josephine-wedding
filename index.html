@@ -87,10 +87,10 @@
     <div class="mini-monogram" aria-hidden="true">
       <span>S</span><span class="mini-monogram__amp">&amp;</span><span>J</span>
     </div>
-    <p class="gate-eyebrow">SAMUEL &amp; JOSEPHINE</p>
+    <p class="gate-eyebrow" data-wed="formal">SAMUEL &amp; JOSEPHINE</p>
     <h1 class="gate-title">Will you join us?</h1>
     <div class="divider"><span></span><i>&#10084;</i><span></span></div>
-    <p class="gate-date">January 9, 2027</p>
+    <p class="gate-date" data-wed="dateLabel">January 9, 2027</p>
     <p class="gate-sub">We would love to celebrate our forever with you.</p>
     <div class="gate-buttons" id="attendActions">
       <button id="attendYes" class="gate-btn gate-btn--yes" type="button">YES, I'LL BE THERE</button>
@@ -183,16 +183,16 @@
       </div>
 
       <p class="home-names">
-        <span class="home-name">Sam</span>
+        <span class="home-name" data-wed="nameA">Sam</span>
         <span class="home-amp">&amp;</span>
-        <span class="home-name">Jossy</span>
+        <span class="home-name" data-wed="nameB">Jossy</span>
       </p>
-      <p class="home-tag">OUR FOREVER STARTS HERE</p>
+      <p class="home-tag" data-wed="tagline">OUR FOREVER STARTS HERE</p>
     </div>
 
     <div class="bigday">
       <p class="bigday-label">THE BIG DAY</p>
-      <p class="bigday-date">09 <b>|</b> JAN <b>|</b> 2027</p>
+      <p class="bigday-date" id="bigdayDate">09 <b>|</b> JAN <b>|</b> 2027</p>
       <span class="bigday-heart">&#10084;</span>
       <div class="countdown">
         <div><strong id="days">0</strong><span>DAYS</span></div>
@@ -210,7 +210,7 @@
         <input id="couplePhotoFile" type="file" accept="image/*" class="hidden" />
       </label>
       <figcaption class="couple-caption">
-        <span class="couple-hash">#AlwaysAndForever</span>
+        <span class="couple-hash" data-wed="hashtag">#AlwaysAndForever</span>
         <span class="couple-heart">&#10084;</span>
       </figcaption>
     </figure>
@@ -412,34 +412,36 @@
     <p class="page-sub">We can't wait to celebrate<br>this special day with you!</p>
 
     <div class="date-card">
-      <p class="month">JANUARY</p>
-      <p class="day">09</p>
-      <p class="year">2027</p>
+      <p class="month" data-wed="month">JANUARY</p>
+      <p class="day" data-wed="day">09</p>
+      <p class="year" data-wed="year">2027</p>
       <div class="divider"><span></span><i>&#10084;</i><span></span></div>
-      <p class="place">ACCRA, GHANA</p>
+      <p class="place" data-wed="venue">ACCRA, GHANA</p>
       <div class="divider"><span></span><i>&#10084;</i><span></span></div>
     </div>
 
     <div class="schedule">
-      <div class="sched-row">
-        <span class="sched-icon">&#9962;</span>
-        <span class="sched-time">10:00 AM</span>
-        <span class="sched-name">Traditional Wedding</span>
-      </div>
-      <div class="sched-row">
-        <span class="sched-icon">&#128141;</span>
-        <span class="sched-time">3:00 PM</span>
-        <span class="sched-name">White Wedding</span>
-      </div>
-      <div class="sched-row">
-        <span class="sched-icon">&#127867;</span>
-        <span class="sched-time">6:00 PM</span>
-        <span class="sched-name">Reception</span>
+      <div id="schedRows">
+        <div class="sched-row">
+          <span class="sched-icon">&#9962;</span>
+          <span class="sched-time">10:00 AM</span>
+          <span class="sched-name">Traditional Wedding</span>
+        </div>
+        <div class="sched-row">
+          <span class="sched-icon">&#128141;</span>
+          <span class="sched-time">3:00 PM</span>
+          <span class="sched-name">White Wedding</span>
+        </div>
+        <div class="sched-row">
+          <span class="sched-icon">&#127867;</span>
+          <span class="sched-time">6:00 PM</span>
+          <span class="sched-name">Reception</span>
+        </div>
       </div>
       <div class="sched-row">
         <span class="sched-icon">&#128205;</span>
         <span class="sched-time">VENUE</span>
-        <span class="sched-name">Accra, Ghana</span>
+        <span class="sched-name" data-wed="venue">Accra, Ghana</span>
       </div>
       <button id="viewMap" class="map-button" type="button">
         VIEW MAP <span aria-hidden="true">&#128506;</span>
@@ -448,7 +450,7 @@
 
     <div class="hash-bar">
       <span class="heart">&#10084;</span>
-      <span>#AlwaysAndForever</span>
+      <span data-wed="hashtag">#AlwaysAndForever</span>
       <span class="heart">&#10084;</span>
     </div>
   </section>
@@ -472,7 +474,12 @@
       </button>
       <button class="menu-item" data-goto="rsvp" type="button">
         <span class="menu-icon menu-icon--green">&#9993;</span>
-        <span class="menu-text"><strong>RSVP</strong><small>Kindly respond before Dec 01, 2026</small></span>
+        <span class="menu-text"><strong>RSVP</strong><small id="rsvpDeadlineText">Kindly respond before Dec 01, 2026</small></span>
+        <span class="menu-chev">&#10095;</span>
+      </button>
+      <button class="menu-item" id="notifToggle" type="button">
+        <span class="menu-icon menu-icon--gold">&#128276;</span>
+        <span class="menu-text"><strong>Notifications</strong><small id="notifStatus">Tap to get updates on new memories</small></span>
         <span class="menu-chev">&#10095;</span>
       </button>
       <button class="menu-item" data-goto="adminlogin" type="button">
@@ -495,7 +502,7 @@
 
     <div class="hash-bar">
       <span class="heart">&#10084;</span>
-      <span>#AlwaysAndForever</span>
+      <span data-wed="hashtag">#AlwaysAndForever</span>
       <span class="heart">&#10084;</span>
     </div>
   </section>
@@ -563,6 +570,10 @@
       <span class="notice-icon">&#128077;</span>
       <p>All submissions include your name and are reviewed before being published.</p>
     </div>
+
+    <h2 class="settings-heading">Your uploads</h2>
+    <div id="myUploads" class="aq-list"></div>
+    <p id="myUploadsEmpty" class="page-sub">Nothing submitted from this device yet.</p>
 
     <button class="menu-item menu-item--wide" data-goto="gallery" type="button">
       <span class="menu-icon menu-icon--gold">&#128101;</span>
@@ -761,6 +772,42 @@
     </article>
     <input id="sitePhotoInput" type="file" accept="image/*" class="hidden" />
     <input id="songFileInput" type="file" accept="audio/*" class="hidden" />
+
+    <h2 class="settings-heading">Wedding Details</h2>
+    <p class="page-sub">Names, date, venue &amp; schedule — reuse this app for any wedding</p>
+    <article class="aq-card">
+      <div class="settings-fields">
+        <label class="field">First name <input id="wedNameA" type="text" placeholder="Sam" /></label>
+        <label class="field">Second name <input id="wedNameB" type="text" placeholder="Jossy" /></label>
+        <label class="field">Formal names (gate card) <input id="wedFormal" type="text" placeholder="SAMUEL &amp; JOSEPHINE" /></label>
+        <label class="field">Wedding date &amp; time <input id="wedDate" type="datetime-local" /></label>
+        <label class="field">Venue / location <input id="wedVenue" type="text" placeholder="Accra, Ghana" /></label>
+        <label class="field">Map link (optional) <input id="wedMapUrl" type="url" placeholder="https://maps.google.com/…" /></label>
+        <label class="field">Hashtag <input id="wedHashtag" type="text" placeholder="#AlwaysAndForever" /></label>
+        <label class="field">Tagline <input id="wedTagline" type="text" placeholder="OUR FOREVER STARTS HERE" /></label>
+        <label class="field">RSVP deadline <input id="wedDeadline" type="text" placeholder="Dec 01, 2026" /></label>
+      </div>
+      <p><b>&#128347; Events</b></p>
+      <div class="settings-fields" id="wedEvents">
+        <div class="wed-event-row">
+          <input id="wedEv1Time" type="text" placeholder="10:00 AM" />
+          <input id="wedEv1Name" type="text" placeholder="Traditional Wedding" />
+        </div>
+        <div class="wed-event-row">
+          <input id="wedEv2Time" type="text" placeholder="3:00 PM" />
+          <input id="wedEv2Name" type="text" placeholder="White Wedding" />
+        </div>
+        <div class="wed-event-row">
+          <input id="wedEv3Time" type="text" placeholder="6:00 PM" />
+          <input id="wedEv3Name" type="text" placeholder="Reception" />
+        </div>
+      </div>
+      <label class="field">Love story text
+        <textarea id="wedStory" rows="4" placeholder="How you met…"></textarea>
+      </label>
+      <div class="aq-actions"><button id="wedSaveBtn" class="aq-approve" type="button">SAVE DETAILS</button></div>
+      <small id="wedSaveStatus"></small>
+    </article>
 
     <div class="menu-list">
       <button class="menu-item" data-goto="guestlist" type="button">

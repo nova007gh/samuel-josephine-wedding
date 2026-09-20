@@ -64,6 +64,10 @@ CREATE TABLE IF NOT EXISTS settings (
   key TEXT PRIMARY KEY,
   value TEXT
 );
+CREATE TABLE IF NOT EXISTS push_subs (
+  endpoint TEXT PRIMARY KEY,
+  p256dh TEXT, auth TEXT, createdAt INTEGER
+);
 `);
 
 /* ---------- helpers ---------- */
@@ -292,6 +296,8 @@ app.patch('/api/admin/guestbook/:id', requireAdmin, (req, res) => {
   db.prepare(`UPDATE guestbook SET status = ?, name = ?, message = ? WHERE id = ?`)
     .run(status, name, message, req.params.id);
   res.json({ ok: true });
+  if (status === 'approved' && row.status !== 'approved')
+    notifyAll('Guest Book', `${name} shared a message — tap to read it`);
 });
 
 app.delete('/api/admin/guestbook/:id', requireAdmin, (req, res) => {
@@ -314,6 +320,10 @@ app.patch('/api/admin/memories/:id', requireAdmin, (req, res) => {
   db.prepare(`UPDATE memories SET status = @status, caption = @caption, category = @category, guestName = @guestName WHERE id = @id`)
     .run({ ...next, id: req.params.id });
   res.json({ ok: true });
+  if (next.status === 'approved' && row.status !== 'approved'){
+    const what = { photo:'a photo', video:'a video', selfie:'a selfie', voice:'a voice message', videomsg:'a video message' }[row.kind] || 'a memory';
+    notifyAll('New memory published', `${next.guestName || 'A guest'} shared ${what} — tap to see it`);
+  }
 });
 
 function unlinkUpload(mediaUrl){
@@ -367,6 +377,117 @@ app.post('/api/admin/settings/song', requireAdmin, upload.single('file'), (req, 
   if (!/^audio\//.test(req.file.mimetype)) return res.status(400).json({ error: 'Song must be an audio file.' });
   setSettingFile(res, req.file, 'songUrl', { songLabel: str(req.body.label, 200) || req.file.originalname || '' });
 });
+
+/* ---------- admin: text settings (wedding details, reusable template) ---------- */
+const TEXT_SETTING_KEYS = new Set([
+  'weddingNameA', 'weddingNameB', 'weddingFormal',
+  'weddingDateISO', 'weddingDateLabel', 'weddingVenue', 'weddingHashtag',
+  'weddingTagline', 'rsvpDeadline', 'storyText', 'events', 'mapUrl'
+]);
+
+app.patch('/api/admin/settings', requireAdmin, (req, res) => {
+  const stmt = db.prepare(`INSERT INTO settings (key, value) VALUES (?, ?)
+                           ON CONFLICT(key) DO UPDATE SET value = excluded.value`);
+  let saved = 0;
+  for (const [k, v] of Object.entries(req.body || {})){
+    if (!TEXT_SETTING_KEYS.has(k)) continue;
+    stmt.run(k, str(v, 8000));
+    saved++;
+  }
+  res.json({ ok: true, saved });
+});
+
+/* ---------- guests: view & edit their own pending uploads ---------- */
+function lookupIds(body){
+  return Array.isArray(body && body.ids)
+    ? body.ids.slice(0, 50).map(i => str(i, 64)).filter(Boolean)
+    : [];
+}
+
+app.post('/api/memories/mine', publicWrite, (req, res) => {
+  const ids = lookupIds(req.body);
+  if (!ids.length) return res.json([]);
+  res.json(db.prepare(`SELECT * FROM memories WHERE id IN (${ids.map(() => '?').join(',')})`).all(...ids));
+});
+
+app.patch('/api/memories/:id', publicWrite, (req, res) => {
+  const row = db.prepare('SELECT * FROM memories WHERE id = ?').get(req.params.id);
+  if (!row) return res.status(404).json({ error: 'Not found.' });
+  if (row.status !== 'pending') return res.status(403).json({ error: 'Already published — only admin can edit it.' });
+  db.prepare('UPDATE memories SET caption = ?, guestName = ?, category = ? WHERE id = ?').run(
+    req.body.caption !== undefined ? str(req.body.caption, 500) : row.caption,
+    req.body.guestName !== undefined ? str(req.body.guestName, 120) : row.guestName,
+    req.body.category !== undefined ? str(req.body.category, 60) : row.category,
+    req.params.id
+  );
+  res.json({ ok: true });
+});
+
+app.post('/api/guestbook/mine', publicWrite, (req, res) => {
+  const ids = lookupIds(req.body);
+  if (!ids.length) return res.json([]);
+  res.json(db.prepare(`SELECT * FROM guestbook WHERE id IN (${ids.map(() => '?').join(',')})`).all(...ids).map(gbRow));
+});
+
+app.patch('/api/guestbook/:id', publicWrite, (req, res) => {
+  const row = db.prepare('SELECT * FROM guestbook WHERE id = ?').get(req.params.id);
+  if (!row) return res.status(404).json({ error: 'Not found.' });
+  if (row.status !== 'pending') return res.status(403).json({ error: 'Already published — only admin can edit it.' });
+  db.prepare('UPDATE guestbook SET name = ?, message = ? WHERE id = ?').run(
+    req.body.name !== undefined ? str(req.body.name, 120) : row.name,
+    req.body.message !== undefined ? str(req.body.message, 2000) : row.message,
+    req.params.id
+  );
+  res.json({ ok: true });
+});
+
+/* ---------- web push ---------- */
+let webpush = null;
+try { webpush = require('web-push'); } catch { console.warn('web-push not installed — notifications disabled'); }
+
+const VAPID_FILE = path.join(DATA_DIR, 'vapid.json');
+let vapid = null;
+if (webpush){
+  try {
+    vapid = JSON.parse(fs.readFileSync(VAPID_FILE, 'utf8'));
+  } catch {
+    vapid = webpush.generateVAPIDKeys();
+    fs.writeFileSync(VAPID_FILE, JSON.stringify(vapid));
+  }
+  webpush.setVapidDetails(`mailto:${ADMIN_EMAIL || 'admin@localhost'}`, vapid.publicKey, vapid.privateKey);
+}
+
+app.get('/api/push/vapid', (req, res) => {
+  if (!vapid) return res.status(503).json({ error: 'Push notifications are not configured.' });
+  res.json({ key: vapid.publicKey });
+});
+
+app.post('/api/push/subscribe', publicWrite, (req, res) => {
+  const s = req.body || {};
+  const endpoint = str(s.endpoint, 600);
+  const p256dh = str(s.keys && s.keys.p256dh, 300);
+  const auth = str(s.keys && s.keys.auth, 300);
+  if (!endpoint || !p256dh || !auth) return res.status(400).json({ error: 'Invalid subscription.' });
+  db.prepare(`INSERT INTO push_subs (endpoint, p256dh, auth, createdAt) VALUES (?, ?, ?, ?)
+              ON CONFLICT(endpoint) DO UPDATE SET p256dh = excluded.p256dh, auth = excluded.auth`)
+    .run(endpoint, p256dh, auth, now());
+  res.json({ ok: true });
+});
+
+/* notify every subscribed device; dead subscriptions are pruned */
+function notifyAll(title, body){
+  if (!webpush || !vapid) return;
+  const payload = JSON.stringify({ title, body, icon: '/assets/icons/icon-192.png', url: '/' });
+  for (const sub of db.prepare('SELECT * FROM push_subs').all()){
+    webpush.sendNotification(
+      { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+      payload
+    ).catch(err => {
+      if (err.statusCode === 404 || err.statusCode === 410)
+        db.prepare('DELETE FROM push_subs WHERE endpoint = ?').run(sub.endpoint);
+    });
+  }
+}
 
 /* ---------- admin: guests & rsvps ---------- */
 app.patch('/api/admin/guests/:id', requireAdmin, (req, res) => {

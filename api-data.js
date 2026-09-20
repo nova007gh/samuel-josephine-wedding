@@ -206,6 +206,79 @@ async function uploadSiteSong(file, label){
   return await api('/admin/settings/song', { method: 'POST', form: fd, admin: true });
 }
 
+async function patchSettings(fields){
+  return await api('/admin/settings', { method: 'PATCH', body: fields, admin: true });
+}
+
+/* ---------- guest's own uploads (edit while still pending) ---------- */
+const MY_UPLOADS_KEY = 'sj_my_uploads';
+function myUploadIds(){
+  try { return JSON.parse(localStorage.getItem(MY_UPLOADS_KEY) || '[]'); } catch { return []; }
+}
+function rememberUpload(kind, id){
+  if (!id) return;
+  const list = myUploadIds();
+  list.push({ kind, id });
+  localStorage.setItem(MY_UPLOADS_KEY, JSON.stringify(list.slice(-60)));
+}
+async function fetchMyUploads(){
+  const list = myUploadIds();
+  const memIds = list.filter(u => u.kind === 'memory').map(u => u.id);
+  const gbIds = list.filter(u => u.kind === 'guestbook').map(u => u.id);
+  const [mems, gbs] = await Promise.all([
+    memIds.length ? api('/memories/mine', { method:'POST', body:{ ids: memIds } }) : [],
+    gbIds.length ? api('/guestbook/mine', { method:'POST', body:{ ids: gbIds } }) : []
+  ]);
+  return [
+    ...mems.map(m => ({ ...m, _kind: 'memory' })),
+    ...gbs.map(g => ({ ...g, _kind: 'guestbook' }))
+  ].sort(newestFirst('createdAt'));
+}
+async function editMyMemory(id, data){
+  return await api(`/memories/${encodeURIComponent(id)}`, { method:'PATCH', body: data });
+}
+async function editMyGuestbook(id, data){
+  return await api(`/guestbook/${encodeURIComponent(id)}`, { method:'PATCH', body: data });
+}
+
+/* ---------- web push ---------- */
+function urlB64ToUint8Array(base64String){
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const raw = atob(base64);
+  return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+}
+
+async function subscribePush(){
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return false;
+  const { key } = await api('/push/vapid');
+  const reg = await navigator.serviceWorker.ready;
+  const sub = await reg.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey: urlB64ToUint8Array(key)
+  });
+  await api('/push/subscribe', { method:'POST', body: sub.toJSON() });
+  return true;
+}
+
+async function enableNotifications(){
+  if (!('Notification' in window)) return 'unsupported';
+  if (Notification.permission === 'denied') return 'denied';
+  if (Notification.permission !== 'granted' && await Notification.requestPermission() !== 'granted')
+    return 'denied';
+  try { return (await subscribePush()) ? 'on' : 'unsupported'; }
+  catch(err){ console.warn('Push subscribe failed:', err); return 'error'; }
+}
+
+async function notificationsEnabled(){
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return false;
+  if (Notification.permission !== 'granted') return false;
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    return !!(await reg.pushManager.getSubscription());
+  } catch { return false; }
+}
+
 /* ---------- Admin auth ---------- */
 async function adminSignIn(email, password){
   const res = await api('/admin/login', { method: 'POST', body: { email, password } });

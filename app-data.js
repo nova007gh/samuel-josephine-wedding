@@ -358,6 +358,8 @@ function showCouplePhoto(has){
     siteSettings = {};
   }
   applySitePhotos();
+  applyWeddingDetails();
+  fillWeddingForm();
   if (couplePhoto) couplePhoto.src = sitePhoto('couple', 'assets/couple-home.jpg');
   showCouplePhoto(true);
   renderAlbums();
@@ -392,6 +394,7 @@ couplePhotoFile?.addEventListener('change', async e => {
 
 /* ---------- Admin dashboard: Site Settings ---------- */
 let pendingPhotoSlot = 'couple';
+let pendingPhotoCard = null;
 const sitePhotoInput = document.getElementById('sitePhotoInput');
 const songFileInput = document.getElementById('songFileInput');
 
@@ -408,6 +411,7 @@ function renderSiteSettings(){
       <div class="aq-actions"><button class="aq-approve" type="button">CHANGE</button></div>`;
     card.querySelector('button').addEventListener('click', () => {
       pendingPhotoSlot = s.slot;
+      pendingPhotoCard = card;
       sitePhotoInput?.click();
     });
     grid.appendChild(card);
@@ -421,10 +425,20 @@ sitePhotoInput?.addEventListener('change', async e => {
   const file = e.target.files?.[0];
   e.target.value = '';
   if (!file || !isAdmin()) return;
+  // instant local preview + saving state while it uploads
+  const img = pendingPhotoCard?.querySelector('img');
+  const btn = pendingPhotoCard?.querySelector('button');
+  const prevSrc = img?.src;
+  if (img) img.src = URL.createObjectURL(file);
+  if (btn){ btn.disabled = true; btn.textContent = 'SAVING…'; }
   try { await saveSitePhoto(file, pendingPhotoSlot); }
   catch(err){
     console.warn('Photo update failed:', err);
+    if (img && prevSrc) img.src = prevSrc;
     alert('Could not update the photo. Are you still signed in as admin?');
+  } finally {
+    if (btn){ btn.disabled = false; btn.textContent = 'CHANGE'; }
+    pendingPhotoCard = null;
   }
 });
 
@@ -436,6 +450,8 @@ songFileInput?.addEventListener('change', async e => {
   const file = e.target.files?.[0];
   e.target.value = '';
   if (!file || !isAdmin()) return;
+  const btn = document.getElementById('songChangeBtn');
+  if (btn){ btn.disabled = true; btn.textContent = 'SAVING…'; }
   try {
     const res = await uploadSiteSong(file, file.name);
     siteSettings.songUrl = res.url;
@@ -445,12 +461,142 @@ songFileInput?.addEventListener('change', async e => {
   } catch(err){
     console.warn('Song upload failed:', err);
     alert('Could not upload the song. Are you still signed in as admin?');
+  } finally {
+    const btn = document.getElementById('songChangeBtn');
+    if (btn){ btn.disabled = false; btn.textContent = 'CHANGE SONG'; }
   }
 });
 
 /* =========================================================
-   RSVP
+   Wedding details — admin-editable text shown to every guest
+   (names, date, venue, hashtag, schedule, story, RSVP deadline)
    ========================================================= */
+const WED_DEFAULTS = {
+  weddingNameA: 'Sam',
+  weddingNameB: 'Jossy',
+  weddingFormal: 'SAMUEL & JOSEPHINE',
+  weddingDateISO: '2027-01-09T10:00',
+  weddingVenue: 'Accra, Ghana',
+  weddingHashtag: '#AlwaysAndForever',
+  weddingTagline: 'OUR FOREVER STARTS HERE',
+  rsvpDeadline: 'Dec 01, 2026',
+  storyText: '',
+  mapUrl: '',
+  events: '[{"icon":"⛪","time":"10:00 AM","name":"Traditional Wedding"},{"icon":"💍","time":"3:00 PM","name":"White Wedding"},{"icon":"🥂","time":"6:00 PM","name":"Reception"}]'
+};
+
+function wed(key){ return siteSettings[key] || WED_DEFAULTS[key] || ''; }
+
+function applyWeddingDetails(){
+  const det = {};
+  for (const k of Object.keys(WED_DEFAULTS)) det[k] = wed(k);
+  window.weddingDetails = det;
+
+  const d = new Date(det.weddingDateISO);
+  const valid = !Number.isNaN(d.getTime());
+  const MONTHS = ['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
+  const monthsShort = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  const dateLabel = valid
+    ? d.toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' })
+    : 'January 9, 2027';
+
+  document.querySelectorAll('[data-wed]').forEach(el => {
+    switch (el.dataset.wed){
+      case 'nameA':     el.textContent = det.weddingNameA; break;
+      case 'nameB':     el.textContent = det.weddingNameB; break;
+      case 'formal':    el.textContent = det.weddingFormal; break;
+      case 'tagline':   el.textContent = det.weddingTagline; break;
+      case 'dateLabel': el.textContent = dateLabel; break;
+      case 'venue':     el.textContent = det.weddingVenue.toUpperCase(); break;
+      case 'hashtag':   el.textContent = det.weddingHashtag; break;
+      case 'month':     el.textContent = valid ? MONTHS[d.getMonth()] : 'JANUARY'; break;
+      case 'day':       el.textContent = valid ? String(d.getDate()).padStart(2,'0') : '09'; break;
+      case 'year':      el.textContent = valid ? String(d.getFullYear()) : '2027'; break;
+    }
+  });
+
+  const bigday = document.getElementById('bigdayDate');
+  if (bigday && valid)
+    bigday.innerHTML = `${String(d.getDate()).padStart(2,'0')} <b>|</b> ${monthsShort[d.getMonth()]} <b>|</b> ${d.getFullYear()}`;
+
+  const deadline = document.getElementById('rsvpDeadlineText');
+  if (deadline) deadline.textContent = `Kindly respond before ${det.rsvpDeadline}`;
+
+  const story = document.getElementById('storyText');
+  if (story && det.storyText) story.textContent = det.storyText;
+
+  // schedule rows rebuilt from the events setting
+  const sched = document.getElementById('schedRows');
+  if (sched){
+    let events = [];
+    try { events = JSON.parse(det.events) || []; } catch {}
+    sched.innerHTML = events.map(ev => `
+      <div class="sched-row">
+        <span class="sched-icon">${ev.icon || '❤'}</span>
+        <span class="sched-time">${escapeHTML(ev.time || '')}</span>
+        <span class="sched-name">${escapeHTML(ev.name || '')}</span>
+      </div>`).join('');
+  }
+
+  if (valid && typeof window.setWeddingDate === 'function') window.setWeddingDate(det.weddingDateISO);
+}
+
+/* ---------- admin: Wedding Details form ---------- */
+const WED_INPUTS = {
+  wedNameA:'weddingNameA', wedNameB:'weddingNameB', wedFormal:'weddingFormal',
+  wedDate:'weddingDateISO', wedVenue:'weddingVenue', wedMapUrl:'mapUrl',
+  wedHashtag:'weddingHashtag', wedTagline:'weddingTagline',
+  wedDeadline:'rsvpDeadline', wedStory:'storyText'
+};
+const WED_EVENT_ICONS = ['⛪','💍','🥂'];
+
+function fillWeddingForm(){
+  for (const [id, key] of Object.entries(WED_INPUTS)){
+    const el = document.getElementById(id);
+    if (el) el.value = siteSettings[key] || (key === 'storyText' ? '' : WED_DEFAULTS[key] || '');
+  }
+  let events = [];
+  try { events = JSON.parse(wed('events')) || []; } catch {}
+  for (let i = 1; i <= 3; i++){
+    const t = document.getElementById(`wedEv${i}Time`);
+    const n = document.getElementById(`wedEv${i}Name`);
+    if (t) t.value = events[i-1]?.time || '';
+    if (n) n.value = events[i-1]?.name || '';
+  }
+}
+
+document.getElementById('wedSaveBtn')?.addEventListener('click', async e => {
+  if (!isAdmin()) return;
+  const btn = e.currentTarget;
+  const status = document.getElementById('wedSaveStatus');
+  const fields = {};
+  for (const [id, key] of Object.entries(WED_INPUTS)){
+    const el = document.getElementById(id);
+    if (el && el.value.trim()) fields[key] = el.value.trim();
+  }
+  const events = [1,2,3].map(i => ({
+    icon: WED_EVENT_ICONS[i-1],
+    time: document.getElementById(`wedEv${i}Time`)?.value.trim() || '',
+    name: document.getElementById(`wedEv${i}Name`)?.value.trim() || ''
+  })).filter(ev => ev.name || ev.time);
+  if (events.length) fields.events = JSON.stringify(events);
+
+  btn.disabled = true;
+  btn.textContent = 'SAVING…';
+  if (status) status.textContent = '';
+  try {
+    await patchSettings(fields);
+    Object.assign(siteSettings, fields);
+    applyWeddingDetails();
+    if (status) status.textContent = 'Saved — every guest now sees the new details.';
+  } catch(err){
+    console.warn('Details save failed:', err);
+    if (status) status.textContent = 'Save failed — are you still signed in?';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'SAVE DETAILS';
+  }
+});
 const RSVP_ENDPOINT = 'https://formsubmit.co/ajax/snyobeng@gmail.com';
 
 const rsvpForm = document.getElementById('rsvpForm');
@@ -516,18 +662,22 @@ rsvpForm?.addEventListener('submit', async e => {
    Add to calendar
    ========================================================= */
 function buildICS(){
+  const det = window.weddingDetails || {};
   const dt = d => d.toISOString().replace(/[-:]/g,'').split('.')[0] + 'Z';
-  const start = new Date('2027-01-09T10:00:00+00:00');
-  const end   = new Date('2027-01-09T22:00:00+00:00');
+  const start = new Date(det.weddingDateISO || '2027-01-09T10:00');
+  const end   = new Date(start.getTime() + 12 * 3600 * 1000);
+  let events = [];
+  try { events = JSON.parse(det.events || '[]'); } catch {}
+  const desc = events.map(ev => `${ev.name} ${ev.time}`).join(' / ');
   return [
     'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//S&J Wedding//EN','BEGIN:VEVENT',
-    `UID:sj-wedding-${Date.now()}@samuelandjosephine`,
+    `UID:sj-wedding-${Date.now()}@wedding`,
     `DTSTAMP:${dt(new Date())}`,
     `DTSTART:${dt(start)}`,
     `DTEND:${dt(end)}`,
-    'SUMMARY:Samuel & Josephine Wedding',
-    'DESCRIPTION:Traditional 10:00 AM / White Wedding 3:00 PM / Reception 6:00 PM. #AlwaysAndForever',
-    'LOCATION:Accra, Ghana',
+    `SUMMARY:${det.weddingFormal || 'Wedding'}`,
+    `DESCRIPTION:${[desc, det.weddingHashtag].filter(Boolean).join('. ')}`,
+    `LOCATION:${det.weddingVenue || ''}`,
     'END:VEVENT','END:VCALENDAR'
   ].join('\r\n');
 }
