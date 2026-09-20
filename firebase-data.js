@@ -10,6 +10,22 @@ function toMillis(ts){
   return Number(ts) || Date.now();
 }
 
+/* Bounded writes: when the backend is unreachable (offline, DB not yet
+   provisioned), the Firestore SDK retries forever and the promise never
+   settles. Race every write against a timeout so the UI can fail cleanly. */
+const WRITE_TIMEOUT_MS = 10000;
+
+function withTimeout(promise, ms){
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => {
+      const err = new Error('The request timed out. Check your connection and try again.');
+      err.code = 'deadline-exceeded';
+      reject(err);
+    }, ms || WRITE_TIMEOUT_MS))
+  ]);
+}
+
 function tsField(){
   return firebase.firestore.FieldValue.serverTimestamp();
 }
@@ -38,8 +54,8 @@ async function uploadMedia(file, id, folder){
   if (!file) return null;
   const path = `${folder}/${id}/${file.name || 'media'}`;
   const ref = storage.ref().child(path);
-  await ref.put(file);
-  return await ref.getDownloadURL();
+  await withTimeout(ref.put(file), 60000);
+  return await withTimeout(ref.getDownloadURL());
 }
 
 async function addMemory(record){
@@ -61,7 +77,7 @@ async function addMemory(record){
     mediaUrl,
     createdAt: tsField()
   };
-  await doc.set(data);
+  await withTimeout(doc.set(data));
   return data;
 }
 
@@ -76,12 +92,12 @@ function onAllMemories(callback){
 }
 
 async function deleteMemory(id){
-  await memoriesRef().doc(id).delete();
+  await withTimeout(memoriesRef().doc(id).delete());
 }
 
 async function updateMemory(record){
   const { id, ...data } = record;
-  await memoriesRef().doc(id).update(data);
+  await withTimeout(memoriesRef().doc(id).update(data));
 }
 
 /* ---------- Guest Book ---------- */
@@ -101,7 +117,7 @@ async function gbAdd(record){
     selfieUrl,
     createdAt: tsField()
   };
-  await doc.set(data);
+  await withTimeout(doc.set(data));
   return data;
 }
 
@@ -117,24 +133,24 @@ function onAllGuestbook(callback){
 
 async function gbUpdate(record){
   const { id, ...data } = record;
-  await guestbookRef().doc(id).update(data);
+  await withTimeout(guestbookRef().doc(id).update(data));
 }
 
 /* Guests may only touch likes/replies; the rules reject anything else. */
 async function gbLike(id, delta){
-  await guestbookRef().doc(id).update({
+  await withTimeout(guestbookRef().doc(id).update({
     likes: firebase.firestore.FieldValue.increment(delta)
-  });
+  }));
 }
 
 async function gbReply(id, reply){
-  await guestbookRef().doc(id).update({
+  await withTimeout(guestbookRef().doc(id).update({
     replies: firebase.firestore.FieldValue.arrayUnion(reply)
-  });
+  }));
 }
 
 async function deleteMemoryGB(id){
-  await guestbookRef().doc(id).delete();
+  await withTimeout(guestbookRef().doc(id).delete());
 }
 
 /* ---------- RSVPs ---------- */
@@ -142,11 +158,11 @@ const rsvpsRef = () => db.collection('rsvps');
 
 async function addRsvp(data){
   const doc = rsvpsRef().doc();
-  await doc.set({
+  await withTimeout(doc.set({
     id: doc.id,
     ...data,
     submittedAt: tsField()
-  });
+  }));
 }
 
 function onRsvps(callback){
@@ -169,7 +185,7 @@ async function addGuest(guest){
     attending: guest.attending !== false,
     checkedInAt: tsField()
   };
-  await doc.set(data);
+  await withTimeout(doc.set(data));
   return data.id;
 }
 
@@ -180,11 +196,11 @@ function onGuests(callback){
 }
 
 async function deleteGuest(id){
-  await guestsRef().doc(id).delete();
+  await withTimeout(guestsRef().doc(id).delete());
 }
 
 async function updateGuest(id, data){
-  await guestsRef().doc(id).update(data);
+  await withTimeout(guestsRef().doc(id).update(data));
 }
 
 /* ---------- Admin auth ---------- */

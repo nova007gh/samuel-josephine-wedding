@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v68-same-origin-sw';
+const CACHE = 'sj-wedding-v69-bounded-writes';
 const ASSETS = [
   './',
   './index.html',
@@ -58,7 +58,7 @@ self.addEventListener('fetch', event => {
       url.pathname === '/' ||
       url.pathname === './'){
     event.respondWith(
-      fetch(event.request).then(response => {
+      fetch(event.request, { cache: 'no-cache' }).then(response => {
         if (response.ok){
           const copy = response.clone();
           caches.open(CACHE).then(cache => cache.put(event.request, copy));
