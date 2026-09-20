@@ -54,13 +54,12 @@ function handleSealButtonClick(){
   const art = $('#landingArt');
   if (art) art.src = 'assets/seal-burst.jpg';
 
-  // landing fades out, then the envelope welcome screen appears
+  // landing fades out, then straight to the ENTER OUR WEDDING screen
+  // (the intermediate envelope seal-break screen was removed from the flow)
   setTimeout(() => opening.classList.add('opening-envelope'), 900);
   setTimeout(() => {
     opening.classList.add('hidden');
-    showGate(welcomeScreen);
-    // canvases can only be measured once the screen is visible
-    requestAnimationFrame(() => requestAnimationFrame(resizeWeddingCanvases));
+    showGate(welcome2Screen);
   }, 1550);
 }
 sealButton?.addEventListener('click', handleSealButtonClick);

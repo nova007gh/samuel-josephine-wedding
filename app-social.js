@@ -570,7 +570,11 @@ adminLoginForm?.addEventListener('submit', async e => {
   const pass = adminPassword?.value || '';
   const submitBtn = adminLoginForm.querySelector('[type="submit"]');
   adminLoginError.textContent = '';
-  if (submitBtn) submitBtn.disabled = true;
+  if (submitBtn){
+    submitBtn.disabled = true;
+    submitBtn.dataset.label = submitBtn.innerHTML;
+    submitBtn.innerHTML = 'SIGNING IN…';
+  }
   try {
     await adminSignIn(email, pass);
     adminLoginForm.reset();
@@ -578,7 +582,10 @@ adminLoginForm?.addEventListener('submit', async e => {
     adminLoginError.textContent = ADMIN_LOGIN_MESSAGES[err.code] || 'Sign-in failed. Please try again.';
     adminPassword?.select();
   } finally {
-    if (submitBtn) submitBtn.disabled = false;
+    if (submitBtn){
+      submitBtn.disabled = false;
+      if (submitBtn.dataset.label) submitBtn.innerHTML = submitBtn.dataset.label;
+    }
   }
 });
 
