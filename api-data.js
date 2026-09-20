@@ -44,16 +44,21 @@ async function api(path, opts = {}){
   if (body !== undefined && !form) headers['Content-Type'] = 'application/json';
 
   let res;
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), form ? 120000 : 15000);
   try {
     res = await fetch(API_BASE + path, {
       method,
       headers,
-      body: form || (body !== undefined ? JSON.stringify(body) : undefined)
+      body: form || (body !== undefined ? JSON.stringify(body) : undefined),
+      signal: ctrl.signal
     });
   } catch(e){
     const err = new Error('No connection. Please check your network and try again.');
     err.code = 'auth/network-request-failed';
     throw err;
+  } finally {
+    clearTimeout(timer);
   }
 
   let data = null;

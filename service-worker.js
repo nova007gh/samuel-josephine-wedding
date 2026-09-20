@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v77-direct-enter';
+const CACHE = 'sj-wedding-v78-guest-gate-login';
 const ASSETS = [
   './',
   './index.html',

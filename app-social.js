@@ -578,6 +578,7 @@ adminLoginForm?.addEventListener('submit', async e => {
   try {
     await adminSignIn(email, pass);
     adminLoginForm.reset();
+    switchView('admin'); // don't wait on the auth listener — go straight in
   } catch(err){
     adminLoginError.textContent = ADMIN_LOGIN_MESSAGES[err.code] || 'Sign-in failed. Please try again.';
     adminPassword?.select();

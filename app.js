@@ -404,7 +404,10 @@ welcome2Screen?.addEventListener('click', handleEnterWedding);
 const attendActions = $('#attendActions');
 const attendDeclinePanel = $('#attendDeclinePanel');
 
+let pendingAttending = true; // YES path vs explore-first path
+
 $('#attendYes')?.addEventListener('click', () => {
+  pendingAttending = true;
   hideGate(attendScreen);
   setTimeout(() => showGate(guestLoginScreen), 650);
 });
@@ -441,7 +444,7 @@ $('#guestLoginForm')?.addEventListener('submit', async e => {
     return;
   }
 
-  const guest = { name, phone, email, relation, attending:true, checkedInAt:new Date().toISOString() };
+  const guest = { name, phone, email, relation, attending:pendingAttending, checkedInAt:new Date().toISOString() };
 
   // Show loading state on the button
   if (submitBtn){
@@ -480,6 +483,13 @@ function updateGuestUI(){
 }
 
 $('#enterFromHome')?.addEventListener('click', () => {
+  // Guests who skipped check-in (chose "can't make it" → explore) get the
+  // details form first — we still want their name/phone/email on record.
+  if (!getGuest()){
+    pendingAttending = false;
+    showGate(guestLoginScreen);
+    return;
+  }
   // Smooth scroll to the countdown section
   const bigday = document.querySelector('.bigday');
   if (bigday) bigday.scrollIntoView({ behavior:'smooth', block:'center' });
