@@ -63,14 +63,16 @@ button{ font:inherit; cursor:pointer; }
 }
 .landing-frame{
   position:relative;
-  height:100dvh;
-  max-width:100vw;
+  /* fit inside the viewport in BOTH dimensions so the art is never cropped */
   aspect-ratio:934/1545;
+  height:min(100dvh, calc(100vw * 1545 / 934));
+  max-width:100vw;
+  cursor:pointer;
   animation:landingIn 1.1s ease both;
 }
 .landing-frame picture,
 .landing-art{ display:block; width:100%; height:100%; }
-.landing-art{ object-fit:cover; user-select:none; -webkit-user-drag:none; }
+.landing-art{ object-fit:contain; user-select:none; -webkit-user-drag:none; }
 
 .seal-hotspot{
   position:absolute;
@@ -147,9 +149,10 @@ button{ font:inherit; cursor:pointer; }
 
 .invitation{
   position:relative;
-  width:min(100vw, 592px);
+  /* width is capped so the derived height never exceeds the viewport —
+     keeps the artwork fully visible and the hotspots aligned */
   aspect-ratio:740 / 1600;
-  max-height:100dvh;
+  width:min(100vw, 592px, calc(100dvh * 740 / 1600));
   overflow:hidden;
   background:#d7bea0;
 }

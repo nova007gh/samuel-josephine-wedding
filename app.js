@@ -69,6 +69,10 @@ sealButton?.addEventListener('touchstart', e => {
   handleSealButtonClick();
 }, { passive:false });
 
+// the whole artwork opens the invitation — the seal position in the art
+// can change (admin can swap the image), so don't rely on the hotspot alone
+$('#landingFrame')?.addEventListener('click', handleSealButtonClick);
+
 /* =========================================================
    SCREEN 2 — Canvas wax seal shatter
    ========================================================= */
@@ -393,6 +397,9 @@ enterWeddingBtn?.addEventListener('touchstart', e => {
   e.preventDefault();
   handleEnterWedding();
 }, { passive:false });
+// the whole ENTER artwork advances — the painted button can shift if the
+// admin swaps the image, so the invisible hotspot can't strand a guest
+welcome2Screen?.addEventListener('click', handleEnterWedding);
 
 /* ---- Attendance question ---- */
 const attendActions = $('#attendActions');
