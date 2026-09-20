@@ -24,7 +24,18 @@ Then open:
 http://localhost:8080
 
 ## Production
-Host behind HTTPS. Connect RSVP submissions to a real database/API before public launch.
+Live at https://snybena.com (nginx on the VPS, Let's Encrypt). Redeploy with `deploy-wedding` on the server after pushing to `main`.
+
+## Firebase setup (one-time, in the Firebase console for project `wedding-4db15`)
+Guests can only create submissions and read approved content; everything else needs an admin sign-in.
+
+1. **Authentication → Sign-in method** → enable **Email/Password**.
+2. **Authentication → Users → Add user** → create the admin account (this is the login for the in-app Admin dashboard).
+3. **Authentication → Settings → Authorized domains** → add `snybena.com` and `www.snybena.com`.
+4. **Firestore Database** → **Create database** if none exists yet (production mode, any region; nothing saves until it exists), then **Rules** → paste `firestore.rules` and publish.
+5. **Storage** → click **Get started** if the bucket has not been created yet (uploads 404 until it exists), then **Rules** → paste `storage.rules` and publish.
+
+Or, with the Firebase CLI: `firebase deploy --only firestore:rules,storage`.
 
 
 ## New: Couple Story & Memory Vault

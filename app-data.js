@@ -194,7 +194,7 @@ function renderGallery(memories){
         <span class="mem-cat">${escapeHTML(CATEGORY_LABELS[item.category] || item.category)}</span>
         <p class="mem-cap">${escapeHTML(item.caption || 'A beautiful memory')}</p>
         ${byline}
-        ${item.seeded ? '' : `<button class="mem-del" data-id="${item.id}" type="button">Remove</button>`}
+        ${item.seeded || !isAdmin() ? '' : `<button class="mem-del" data-id="${item.id}" type="button">Remove</button>`}
       </div>`;
 
     if (!item.type.startsWith('video/') && !item.type.startsWith('audio/')){
@@ -207,7 +207,8 @@ function renderGallery(memories){
   grid.querySelectorAll('.mem-del').forEach(btn => {
     btn.addEventListener('click', async () => {
       if (!confirm('Remove this memory?')) return;
-      await deleteMemory(btn.dataset.id);
+      try { await deleteMemory(btn.dataset.id); }
+      catch(err){ console.warn('Delete failed:', err); alert('Could not remove this memory.'); }
     });
   });
 }
@@ -222,26 +223,40 @@ document.getElementById('memoryFiles')?.addEventListener('change', async event =
   const status = document.getElementById('uploadStatus');
 
   status.classList.remove('hidden');
+  event.target.disabled = true;
 
+  let saved = 0;
+  let failed = 0;
   for (let i = 0; i < files.length; i++){
     const file = files[i];
     status.textContent = `Saving ${i + 1} of ${files.length}…`;
-    await addMemory({
-      category,
-      caption: files.length === 1 ? caption : (caption ? `${caption} ${i + 1}` : ''),
-      type: file.type || 'application/octet-stream',
-      name: file.name,
-      size: file.size,
-      blob: file,
-      status: 'pending',
-      guestName: (typeof getGuest === 'function' ? getGuest()?.name : '') || ''
-    });
+    try {
+      await addMemory({
+        category,
+        caption: files.length === 1 ? caption : (caption ? `${caption} ${i + 1}` : ''),
+        type: file.type || 'application/octet-stream',
+        name: file.name,
+        size: file.size,
+        blob: file,
+        status: 'pending',
+        guestName: (typeof getGuest === 'function' ? getGuest()?.name : '') || ''
+      });
+      saved++;
+    } catch(err){
+      console.warn('Upload failed:', file.name, err);
+      failed++;
+    }
   }
 
-  status.textContent = `${files.length} ${files.length === 1 ? 'memory' : 'memories'} saved. Pending approval — Samuel & Jossy will review shortly.`;
+  event.target.disabled = false;
   event.target.value = '';
-  captionEl.value = '';
-  setTimeout(() => status.classList.add('hidden'), 4000);
+  if (failed && !saved){
+    status.textContent = 'Upload failed. Please check your connection and try again.';
+  } else {
+    captionEl.value = '';
+    status.textContent = `${saved} ${saved === 1 ? 'memory' : 'memories'} saved${failed ? ` (${failed} failed)` : ''}. Pending approval — Samuel & Jossy will review shortly.`;
+  }
+  setTimeout(() => status.classList.add('hidden'), 6000);
 });
 
 document.querySelectorAll('#galleryChips .chip').forEach(chip => {
@@ -353,14 +368,17 @@ rsvpForm?.addEventListener('submit', async e => {
     attending: data.attendance || '',
     plusOne: Number(data.guestCount) > 1 ? Number(data.guestCount) - 1 : 0,
     guestCount: Number(data.guestCount) || 1,
+    song: data.song || '',
     message: data.message || ''
   };
 
-  // also save to Firebase for the couple's records
-  try { await addRsvp(rsvpRecord); } catch(err){ console.warn('RSVP backup failed:', err); }
-
   submitBtn.disabled = true;
   status.textContent = 'Sending your RSVP…';
+
+  // Firestore is the record of truth; the email is a courtesy copy
+  let savedToDb = false;
+  try { await addRsvp(rsvpRecord); savedToDb = true; }
+  catch(err){ console.warn('RSVP save failed:', err); }
 
   try {
     const res = await fetch(RSVP_ENDPOINT, {
@@ -381,9 +399,14 @@ rsvpForm?.addEventListener('submit', async e => {
     status.textContent = 'Thank you! Your RSVP has been sent to Sam & Jossy. ❤';
     rsvpForm.reset();
   } catch(err){
-    console.warn('RSVP send failed:', err);
-    status.textContent =
-      'We could not reach the server, but your RSVP is saved on this device. Please try again when you are back online.';
+    console.warn('RSVP email failed:', err);
+    if (savedToDb){
+      status.textContent = 'Thank you! Your RSVP has been received by Sam & Jossy. ❤';
+      rsvpForm.reset();
+    } else {
+      status.textContent =
+        'We could not send your RSVP right now. Please check your connection and try again.';
+    }
   } finally {
     submitBtn.disabled = false;
   }

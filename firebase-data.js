@@ -10,8 +10,41 @@ function toMillis(ts){
   return Number(ts) || Date.now();
 }
 
+/* Bounded writes: when the backend is unreachable (offline, DB not yet
+   provisioned), the Firestore SDK retries forever and the promise never
+   settles. Race every write against a timeout so the UI can fail cleanly. */
+const WRITE_TIMEOUT_MS = 10000;
+
+function withTimeout(promise, ms){
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => {
+      const err = new Error('The request timed out. Check your connection and try again.');
+      err.code = 'deadline-exceeded';
+      reject(err);
+    }, ms || WRITE_TIMEOUT_MS))
+  ]);
+}
+
 function tsField(){
   return firebase.firestore.FieldValue.serverTimestamp();
+}
+
+function docsOf(snapshot){
+  return snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
+function newestFirst(field){
+  return (a, b) => toMillis(b[field]) - toMillis(a[field]);
+}
+
+/* Guests only ever see approved content. Filtering on a single field keeps
+   the query on Firestore's automatic index (no composite index needed), so
+   ordering happens client-side. */
+function onApproved(ref, callback){
+  return ref().where('status', '==', 'approved').onSnapshot(snapshot => {
+    callback(docsOf(snapshot).sort(newestFirst('createdAt')));
+  }, err => console.warn('Live feed unavailable:', err));
 }
 
 /* ---------- Memories (shared media) ---------- */
@@ -21,8 +54,8 @@ async function uploadMedia(file, id, folder){
   if (!file) return null;
   const path = `${folder}/${id}/${file.name || 'media'}`;
   const ref = storage.ref().child(path);
-  await ref.put(file);
-  return await ref.getDownloadURL();
+  await withTimeout(ref.put(file), 60000);
+  return await withTimeout(ref.getDownloadURL());
 }
 
 async function addMemory(record){
@@ -44,35 +77,27 @@ async function addMemory(record){
     mediaUrl,
     createdAt: tsField()
   };
-  await doc.set(data);
+  await withTimeout(doc.set(data));
   return data;
 }
 
-function getMemories(){
-  return new Promise((resolve, reject) => {
-    const unsubscribe = memoriesRef()
-      .orderBy('createdAt', 'desc')
-      .onSnapshot({ includeMetadataChanges: false }, snapshot => {
-        resolve(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
-      }, reject);
-    // cleanup after first result to avoid leaks? We want real-time, but here we promise once
-    setTimeout(unsubscribe, 0);
-  });
+function onMemories(callback){
+  return onApproved(memoriesRef, callback);
 }
 
-function onMemories(callback){
+function onAllMemories(callback){
   return memoriesRef().orderBy('createdAt', 'desc').onSnapshot(snapshot => {
-    callback(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
-  });
+    callback(docsOf(snapshot));
+  }, err => console.warn('Admin memories feed failed:', err));
 }
 
 async function deleteMemory(id){
-  await memoriesRef().doc(id).delete();
+  await withTimeout(memoriesRef().doc(id).delete());
 }
 
 async function updateMemory(record){
   const { id, ...data } = record;
-  await memoriesRef().doc(id).update(data);
+  await withTimeout(memoriesRef().doc(id).update(data));
 }
 
 /* ---------- Guest Book ---------- */
@@ -87,40 +112,45 @@ async function gbAdd(record){
     name: record.name,
     message: record.message,
     status: record.status || 'pending',
-    likes: record.likes || 0,
-    liked: record.liked || false,
-    replies: record.replies || [],
+    likes: 0,
+    replies: [],
     selfieUrl,
     createdAt: tsField()
   };
-  await doc.set(data);
+  await withTimeout(doc.set(data));
   return data;
 }
 
-function gbAll(){
-  return new Promise((resolve, reject) => {
-    const unsubscribe = guestbookRef()
-      .orderBy('createdAt', 'desc')
-      .onSnapshot(snapshot => {
-        resolve(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
-      }, reject);
-    setTimeout(unsubscribe, 0);
-  });
+function onGuestbook(callback){
+  return onApproved(guestbookRef, callback);
 }
 
-function onGuestbook(callback){
+function onAllGuestbook(callback){
   return guestbookRef().orderBy('createdAt', 'desc').onSnapshot(snapshot => {
-    callback(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
-  });
+    callback(docsOf(snapshot));
+  }, err => console.warn('Admin guestbook feed failed:', err));
 }
 
 async function gbUpdate(record){
   const { id, ...data } = record;
-  await guestbookRef().doc(id).update(data);
+  await withTimeout(guestbookRef().doc(id).update(data));
+}
+
+/* Guests may only touch likes/replies; the rules reject anything else. */
+async function gbLike(id, delta){
+  await withTimeout(guestbookRef().doc(id).update({
+    likes: firebase.firestore.FieldValue.increment(delta)
+  }));
+}
+
+async function gbReply(id, reply){
+  await withTimeout(guestbookRef().doc(id).update({
+    replies: firebase.firestore.FieldValue.arrayUnion(reply)
+  }));
 }
 
 async function deleteMemoryGB(id){
-  await guestbookRef().doc(id).delete();
+  await withTimeout(guestbookRef().doc(id).delete());
 }
 
 /* ---------- RSVPs ---------- */
@@ -128,17 +158,17 @@ const rsvpsRef = () => db.collection('rsvps');
 
 async function addRsvp(data){
   const doc = rsvpsRef().doc();
-  await doc.set({
+  await withTimeout(doc.set({
     id: doc.id,
     ...data,
     submittedAt: tsField()
-  });
+  }));
 }
 
 function onRsvps(callback){
   return rsvpsRef().orderBy('submittedAt', 'desc').onSnapshot(snapshot => {
-    callback(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
-  });
+    callback(docsOf(snapshot));
+  }, err => console.warn('Admin RSVP feed failed:', err));
 }
 
 /* ---------- Guests (check-in system) ---------- */
@@ -155,33 +185,33 @@ async function addGuest(guest){
     attending: guest.attending !== false,
     checkedInAt: tsField()
   };
-  await doc.set(data);
+  await withTimeout(doc.set(data));
   return data.id;
 }
 
 function onGuests(callback){
   return guestsRef().orderBy('checkedInAt', 'desc').onSnapshot(snapshot => {
-    callback(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
-  });
+    callback(docsOf(snapshot));
+  }, err => console.warn('Admin guest feed failed:', err));
 }
 
 async function deleteGuest(id){
-  await guestsRef().doc(id).delete();
+  await withTimeout(guestsRef().doc(id).delete());
 }
 
 async function updateGuest(id, data){
-  await guestsRef().doc(id).update(data);
+  await withTimeout(guestsRef().doc(id).update(data));
 }
 
-/* ---------- subscriptions registry ---------- */
-const unsubscribers = new Set();
-
-function registerUnsub(unsub){
-  unsubscribers.add(unsub);
-  return unsub;
+/* ---------- Admin auth ---------- */
+function adminSignIn(email, password){
+  return auth.signInWithEmailAndPassword(email, password);
 }
 
-function cleanupSubs(){
-  unsubscribers.forEach(fn => fn());
-  unsubscribers.clear();
+function adminSignOut(){
+  return auth.signOut();
+}
+
+function onAdminAuth(callback){
+  return auth.onAuthStateChanged(user => callback(!!user));
 }
