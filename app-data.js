@@ -171,6 +171,8 @@ document.getElementById('shareUploadBtn')?.addEventListener('click', () => {
   }
 });
 
+let galleryRenderKey = '';
+
 function renderGallery(memories){
   if (Array.isArray(memories)) latestMemories = memories;
   renderAlbums();
@@ -184,6 +186,16 @@ function renderGallery(memories){
     ? all
     : all.filter(m => m.category === activeGalleryFilter);
 
+  /* Rebuilding the grid destroys any <video>/<audio> mid-playback, so the
+     15s feed poll would cut playback off. Skip the rebuild when nothing
+     visible has changed, and never interrupt media that is playing. */
+  const key = activeGalleryFilter + '/' + activeGalleryKind + '#' +
+    items.map(m => (m.id || m.src) + ':' + (m.status || '') + ':' + (m.caption || '')).join('|');
+  if (key === galleryRenderKey && grid.children.length) return;
+  const playing = [...grid.querySelectorAll('video, audio')].some(el => !el.paused && !el.ended);
+  if (playing) return;
+  galleryRenderKey = key;
+
   grid.innerHTML = '';
   empty.classList.toggle('hidden', items.length > 0);
 
@@ -194,7 +206,10 @@ function renderGallery(memories){
     card.className = 'mem-card';
     let media;
     if (item.type.startsWith('video/')){
-      media = `<video controls playsinline preload="metadata" src="${url}"></video>`;
+      media = `<div class="mem-media">
+        <video controls playsinline preload="metadata" controlslist="nodownload" src="${url}"></video>
+        <button class="mem-expand" type="button" title="Watch full screen" aria-label="Watch full screen">&#9974;</button>
+      </div>`;
     } else if (item.type.startsWith('audio/')){
       media = `<div class="mem-audio"><span class="mem-audio-icon">&#127908;</span><audio controls preload="metadata" src="${url}"></audio></div>`;
     } else {
@@ -211,10 +226,14 @@ function renderGallery(memories){
         ${item.seeded || !isAdmin() ? '' : `<button class="mem-del" data-id="${item.id}" type="button">Remove</button>`}
       </div>`;
 
+    const label = item.caption || CATEGORY_LABELS[item.category] || '';
     if (!item.type.startsWith('video/') && !item.type.startsWith('audio/')){
-      card.querySelector('img').addEventListener('click', () =>
-        openLightbox(url, item.caption || CATEGORY_LABELS[item.category] || ''));
+      card.querySelector('img').addEventListener('click', () => openLightbox(url, label, item.type));
     }
+    card.querySelector('.mem-expand')?.addEventListener('click', () => {
+      card.querySelector('video')?.pause();
+      openLightbox(url, label, item.type);
+    });
     grid.appendChild(card);
   }
 
@@ -295,16 +314,22 @@ const lightbox = document.getElementById('lightbox');
 const lightboxBody = document.getElementById('lightboxBody');
 const lightboxCaption = document.getElementById('lightboxCaption');
 
-function openLightbox(src, caption=''){
+function openLightbox(src, caption='', type='image'){
   if (!lightbox) return;
-  lightboxBody.innerHTML = `<img src="${src}" alt="${escapeHTML(caption || 'Wedding photo')}">`;
+  lightboxBody.innerHTML = type.startsWith('video/')
+    ? `<video src="${src}" controls playsinline autoplay preload="metadata"></video>`
+    : type.startsWith('audio/')
+      ? `<audio src="${src}" controls autoplay preload="metadata"></audio>`
+      : `<img src="${src}" alt="${escapeHTML(caption || 'Wedding photo')}">`;
   lightboxCaption.textContent = caption;
   lightbox.classList.remove('hidden');
   document.body.classList.add('locked');
 }
 function closeLightbox(){
   lightbox?.classList.add('hidden');
-  lightboxBody.innerHTML = '';
+  /* stop playback before dropping the element so audio can't keep going */
+  lightboxBody?.querySelectorAll('video, audio').forEach(el => { el.pause(); el.removeAttribute('src'); });
+  if (lightboxBody) lightboxBody.innerHTML = '';
   document.body.classList.remove('locked');
 }
 document.getElementById('lightboxClose')?.addEventListener('click', closeLightbox);

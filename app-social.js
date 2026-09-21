@@ -54,6 +54,7 @@ function timeAgo(ts){
    Guest book — render
    ========================================================= */
 let gbFilter = 'all';
+let gbRenderKey = '';
 let latestGuestbook = [];
 
 function gbInitials(name){
@@ -92,6 +93,14 @@ function renderGuestBook(all){
     : gbFilter === 'approved' ? all.filter(m => m.status === 'approved')
     : all.filter(m => m.status !== 'approved');
   const liked = likedSet();
+
+  /* the feed polls every 15s — don't rebuild identical cards, which would
+     reset scroll position and any open reply box */
+  const key = items.map(i => [i.id, i.status, i.likes, (i.replies||[]).length, liked.has(i.id)].join(':')).join('|')
+    + '#' + gbFilter + (admin ? 'A' : 'G');
+  if (key === gbRenderKey && list.children.length) return;
+  gbRenderKey = key;
+
   list.innerHTML = '';
   empty.classList.toggle('hidden', items.length > 0);
 

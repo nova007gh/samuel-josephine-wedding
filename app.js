@@ -42,6 +42,26 @@ function enterApp(){
   document.body.classList.remove('locked');
   window.scrollTo({ top: 0, behavior: 'instant' });
   updateGuestUI();
+  try {
+    localStorage.setItem('sj_entered', '1');
+    /* baseline history entry, so the very first Back press lands on Home
+       inside the app rather than unloading the page */
+    if (!history.state) history.replaceState({ view:'home' }, '', '#home');
+  } catch {}
+}
+
+/* A guest who has already opened the invitation goes straight in on their
+   next visit — replaying the seal flow on every reload is jarring. */
+function hasEntered(){
+  try { return localStorage.getItem('sj_entered') === '1'; } catch { return false; }
+}
+if (hasEntered()){
+  document.addEventListener('DOMContentLoaded', () => {
+    if (!document.body.classList.contains('locked')) return;
+    enterApp();
+    const hash = (location.hash || '').replace('#', '');
+    if (hash && document.querySelector(`.view[data-view="${hash}"]`)) switchView(hash, true);
+  });
 }
 
 /* ---- Seal break on landing page ---- */
@@ -505,7 +525,11 @@ const SUBVIEW_TAB = {
   admin:'more', adminlogin:'more', approvals:'more', rsvpAdmin:'more', guestlist:'more'
 };
 const ADMIN_VIEWS = new Set(['admin', 'approvals', 'rsvpAdmin', 'guestlist']);
-function switchView(name){
+/* Views are pushed onto browser history so the device Back button moves
+   between screens instead of leaving the page — leaving would reload the
+   app and replay the invitation gates. */
+let currentView = 'home';
+function switchView(name, fromHistory = false){
   if (ADMIN_VIEWS.has(name) && !isAdmin()) name = 'adminlogin';
   /* signed-in admin entering an admin view: probe the session so an
      expired token drops immediately instead of showing empty feeds */
@@ -521,7 +545,22 @@ function switchView(name){
   $('#menuToggle')?.classList.toggle('hidden', onHome);
 
   window.scrollTo({ top: 0, behavior: 'instant' });
+
+  if (!fromHistory && name !== currentView){
+    try { history.pushState({ view: name }, '', '#' + name); } catch {}
+  }
+  currentView = name;
 }
+
+window.addEventListener('popstate', e => {
+  /* Back inside the app: go to the previous view, or fall back to Home so
+     the first Back press can never drop the guest out of the app. */
+  const target = (e.state && e.state.view) || 'home';
+  if (typeof closeLightbox === 'function') closeLightbox();
+  document.querySelectorAll('.sheet').forEach(s => s.classList.add('hidden'));
+  switchView(target, true);
+});
+
 $$('.tab').forEach(tab => tab.addEventListener('click', () => switchView(tab.dataset.tab)));
 
 /* ---------------------------------------------------------

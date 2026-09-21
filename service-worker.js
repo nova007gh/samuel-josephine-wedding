@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v85-media-albums';
+const CACHE = 'sj-wedding-v86-playback-history';
 const ASSETS = [
   './',
   './index.html',

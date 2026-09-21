@@ -200,12 +200,22 @@
   border:1px solid rgba(169,124,44,.16);
   box-shadow:0 8px 20px rgba(112,78,26,.1);
 }
-.mem-card img,
-.mem-card video{
+.mem-card img{
   width:100%;
   aspect-ratio:1/1;
   object-fit:cover;
   background:#e8d7bd;
+  /* thumbnails fade in as they decode instead of popping in */
+  animation:memFade .45s ease both;
+}
+@keyframes memFade{ from{ opacity:0; transform:scale(1.015); } to{ opacity:1; transform:none; } }
+/* contain, not cover: the whole video frame stays visible and un-cropped */
+.mem-card video{
+  display:block;
+  width:100%;
+  aspect-ratio:1/1;
+  object-fit:contain;
+  background:#1a1208;
 }
 .mem-meta{ padding:10px 11px 12px; }
 .mem-cat{
@@ -260,8 +270,30 @@
 .lightbox-body video{
   max-width:100%;
   max-height:calc(100dvh - 130px);
+  width:auto;
+  height:auto;
+  object-fit:contain;
   border-radius:12px;
   box-shadow:0 24px 60px rgba(0,0,0,.5);
+}
+.lightbox-body audio{ width:min(92vw,420px); }
+
+/* expand control on video thumbnails */
+.mem-media{ position:relative; }
+.mem-expand{
+  position:absolute;
+  top:8px;
+  right:8px;
+  display:grid;
+  place-items:center;
+  width:32px;
+  height:32px;
+  border:0;
+  border-radius:50%;
+  background:rgba(26,18,8,.62);
+  color:#f4e7cf;
+  font-size:.82rem;
+  backdrop-filter:blur(4px);
 }
 .lightbox-caption{
   margin:12px auto 0;
