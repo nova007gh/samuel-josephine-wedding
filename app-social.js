@@ -805,6 +805,26 @@ async function removeSubmission(btn){
   }
 }
 
+/* surface feed failures instead of leaving the dashboard silently empty */
+const adminFeedErrors = new Map();
+function reportAdminFeed(path, err){
+  if (err) adminFeedErrors.set(path, err.message || String(err));
+  else adminFeedErrors.delete(path);
+  const box = document.getElementById('adminFeedError');
+  if (!box) return;
+  if (!adminFeedErrors.size){ box.classList.add('hidden'); box.textContent = ''; return; }
+  box.classList.remove('hidden');
+  box.textContent = `Could not load: ${[...adminFeedErrors.keys()].join(', ')} — ${[...adminFeedErrors.values()][0]}`;
+}
+
+document.getElementById('adminRefresh')?.addEventListener('click', e => {
+  const btn = e.currentTarget;
+  btn.disabled = true;
+  btn.textContent = 'REFRESHING…';
+  startAdminListeners();
+  setTimeout(() => { btn.disabled = false; btn.textContent = 'REFRESH DATA'; }, 1500);
+});
+
 // admin real-time listeners — only while an admin is signed in
 let adminUnsubs = [];
 function startAdminListeners(){

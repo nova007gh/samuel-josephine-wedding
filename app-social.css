@@ -639,3 +639,20 @@
   font-weight:700;
   vertical-align:middle;
 }
+
+.admin-feed-error{
+  margin:10px auto;
+  max-width:520px;
+  padding:10px 14px;
+  border-radius:12px;
+  background:rgba(192,57,43,.1);
+  border:1px solid rgba(192,57,43,.35);
+  color:#96281b;
+  font-size:.78rem;
+  text-align:center;
+}
+.admin-refresh{
+  display:block;
+  margin:0 auto 14px;
+  max-width:200px;
+}

@@ -18,11 +18,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Parisienne&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="assets/official-landing-page.jpg" />
   <link rel="preload" as="image" href="assets/seal-pressed-320.png" />
-  <link rel="stylesheet" href="app.css?v=81" />
+  <link rel="stylesheet" href="app.css?v=83" />
 
-  <link rel="stylesheet" href="app-views.css?v=81" />
-  <link rel="stylesheet" href="app-forms.css?v=81" />
-  <link rel="stylesheet" href="app-social.css?v=81" />
+  <link rel="stylesheet" href="app-views.css?v=83" />
+  <link rel="stylesheet" href="app-forms.css?v=83" />
+  <link rel="stylesheet" href="app-social.css?v=83" />
 </head>
 <body class="locked">
 
@@ -749,6 +749,9 @@
     <div class="divider"><span></span><i>&#10084;</i><span></span></div>
     <p class="page-sub">Welcome, Samuel &amp; Josephine <span class="admin-mode-pill">ADMIN MODE</span></p>
 
+    <p id="adminFeedError" class="admin-feed-error hidden"></p>
+    <button id="adminRefresh" class="aq-approve admin-refresh" type="button">REFRESH DATA</button>
+
     <div class="admin-stats" id="adminStats">
       <div class="admin-stat">
         <span class="admin-stat-label">Guests</span>
@@ -976,16 +979,16 @@
 <script>
 /* one-time cache purge + SW refresh — guarantees every device loads fresh assets */
 try{
-  if (localStorage.getItem('sj_cache_reset') !== 'v81'){
-    localStorage.setItem('sj_cache_reset', 'v81');
+  if (localStorage.getItem('sj_cache_reset') !== 'v83'){
+    localStorage.setItem('sj_cache_reset', 'v83');
     if ('caches' in window) caches.keys().then(ks => Promise.all(ks.map(k => caches.delete(k))));
   }
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.update()));
 }catch(e){}
 </script>
-<script src="api-data.js?v=81"></script>
-<script src="app.js?v=81"></script>
-<script src="app-data.js?v=81"></script>
-<script src="app-social.js?v=81"></script>
+<script src="api-data.js?v=83"></script>
+<script src="app.js?v=83"></script>
+<script src="app-data.js?v=83"></script>
+<script src="app-social.js?v=83"></script>
 </body>
 </html>

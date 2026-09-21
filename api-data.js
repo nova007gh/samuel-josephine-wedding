@@ -84,8 +84,10 @@ function pollFeed(path, callback, admin){
     try {
       const rows = await api(path, { admin });
       callback(Array.isArray(rows) ? rows : []);
+      if (admin && typeof reportAdminFeed === 'function') reportAdminFeed(path, null);
     } catch(err){
       console.warn('Feed unavailable:', err.message || err);
+      if (admin && typeof reportAdminFeed === 'function') reportAdminFeed(path, err);
     }
   }
   tick();
