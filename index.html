@@ -747,7 +747,7 @@
     <button class="back-link" data-goto="more" type="button">&#10094; Back</button>
     <h1 class="page-title page-title--serif">Admin Dashboard</h1>
     <div class="divider"><span></span><i>&#10084;</i><span></span></div>
-    <p class="page-sub">Welcome, Samuel &amp; Josephine</p>
+    <p class="page-sub">Welcome, Samuel &amp; Josephine <span class="admin-mode-pill">ADMIN MODE</span></p>
 
     <div class="admin-stats" id="adminStats">
       <div class="admin-stat">
@@ -823,7 +823,7 @@
       </button>
       <button class="menu-item" data-goto="approvals" type="button">
         <span class="menu-icon menu-icon--gold">&#128338;</span>
-        <span class="menu-text"><strong>Pending Approvals</strong><small>Review and approve submissions</small></span>
+        <span class="menu-text"><strong>Pending Approvals <span id="pendingMenuBadge" class="pending-badge hidden"></span></strong><small>Review and approve submissions</small></span>
         <span class="menu-chev">&#10095;</span>
       </button>
       <button class="menu-item" data-goto="guestbook" type="button">
@@ -973,6 +973,16 @@
 </div>
 
 <audio id="backgroundMusic" loop preload="none"></audio>
+<script>
+/* one-time cache purge + SW refresh — guarantees every device loads fresh assets */
+try{
+  if (localStorage.getItem('sj_cache_reset') !== 'v81'){
+    localStorage.setItem('sj_cache_reset', 'v81');
+    if ('caches' in window) caches.keys().then(ks => Promise.all(ks.map(k => caches.delete(k))));
+  }
+  if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.update()));
+}catch(e){}
+</script>
 <script src="api-data.js?v=81"></script>
 <script src="app.js?v=81"></script>
 <script src="app-data.js?v=81"></script>

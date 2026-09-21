@@ -507,6 +507,10 @@ const SUBVIEW_TAB = {
 const ADMIN_VIEWS = new Set(['admin', 'approvals', 'rsvpAdmin', 'guestlist']);
 function switchView(name){
   if (ADMIN_VIEWS.has(name) && !isAdmin()) name = 'adminlogin';
+  /* signed-in admin entering an admin view: probe the session so an
+     expired token drops immediately instead of showing empty feeds */
+  if (ADMIN_VIEWS.has(name) && isAdmin() && typeof api === 'function')
+    api('/admin/guests', { admin: true }).catch(() => {});
   const tabName = SUBVIEW_TAB[name] || name;
   $$('.view').forEach(v => v.classList.toggle('hidden', v.dataset.view !== name));
   $$('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tabName));

@@ -21,13 +21,13 @@ function newestFirst(field){
 }
 
 /* ---------- admin session ---------- */
-let adminToken = sessionStorage.getItem(ADMIN_TOKEN_KEY) || null;
+let adminToken = localStorage.getItem(ADMIN_TOKEN_KEY) || null;
 const authListeners = [];
 
 function setAdminToken(token){
   adminToken = token || null;
-  if (adminToken) sessionStorage.setItem(ADMIN_TOKEN_KEY, adminToken);
-  else sessionStorage.removeItem(ADMIN_TOKEN_KEY);
+  if (adminToken) localStorage.setItem(ADMIN_TOKEN_KEY, adminToken);
+  else localStorage.removeItem(ADMIN_TOKEN_KEY);
   authListeners.forEach(cb => { try { cb(!!adminToken); } catch(err){ console.warn(err); } });
 }
 

@@ -640,6 +640,11 @@ function updateAdminStats(){
   set('statApproved', approved);
   set('statGuests', adminGuests.length);
   set('statRsvps', adminRsvps.length);
+  const badge = document.getElementById('pendingMenuBadge');
+  if (badge){
+    badge.textContent = pending > 0 ? pending : '';
+    badge.classList.toggle('hidden', pending === 0);
+  }
 }
 
 function aqFilterMatches(item, filter){
@@ -708,12 +713,21 @@ function renderGuestList(){
     card.className = 'aq-card';
     const checkedIn = g.checkedInAt ? timeAgo(g.checkedInAt) : '';
     card.innerHTML = `
-      <p><b>${escapeHTML(g.name)}</b></p>
+      <p><b>${escapeHTML(g.name)}</b> ${g.status !== 'approved' ? '<span class="gb-badge gb-badge--pending">Pending</span>' : '<span class="gb-badge gb-badge--approved">Approved</span>'}</p>
       <small>${escapeHTML(g.relation || '')} &middot; ${escapeHTML(g.phone || '')} &middot; ${escapeHTML(g.email || '')}</small>
       <small>Checked in ${checkedIn}</small>
       <div class="aq-actions">
+        ${g.status !== 'approved' ? '<button class="aq-approve" data-id="' + g.id + '" type="button">APPROVE</button>' : ''}
         <button class="aq-reject" data-id="${g.id}" type="button">REMOVE</button>
       </div>`;
+    card.querySelector('.aq-approve')?.addEventListener('click', async e => {
+      e.target.disabled = true;
+      try {
+        await updateGuest(g.id, { status: 'approved' });
+        g.status = 'approved';
+        updateAdminStats(); renderApprovalQueue(); renderGuestList();
+      } catch(err){ e.target.disabled = false; alert('Could not approve. Are you still signed in?'); }
+    });
     card.querySelector('.aq-reject').addEventListener('click', async () => {
       if (!confirm('Remove this guest?')) return;
       await deleteGuest(g.id);

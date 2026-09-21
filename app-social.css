@@ -613,3 +613,29 @@
   background:rgba(255,255,255,.75);
   color:#3d2c14;
 }
+
+/* ---------- admin mode & pending badge ---------- */
+.admin-mode-pill{
+  display:inline-block;
+  margin-left:8px;
+  padding:3px 10px;
+  border-radius:999px;
+  background:#a97c2c;
+  color:#fff;
+  font-size:.58rem;
+  font-weight:700;
+  letter-spacing:.14em;
+  vertical-align:middle;
+}
+.pending-badge{
+  display:inline-block;
+  margin-left:6px;
+  min-width:20px;
+  padding:2px 7px;
+  border-radius:999px;
+  background:#c0392b;
+  color:#fff;
+  font-size:.68rem;
+  font-weight:700;
+  vertical-align:middle;
+}
