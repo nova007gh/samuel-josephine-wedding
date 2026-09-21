@@ -18,11 +18,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Parisienne&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="assets/official-landing-page.jpg" />
   <link rel="preload" as="image" href="assets/seal-pressed-320.png" />
-  <link rel="stylesheet" href="app.css?v=87" />
+  <link rel="stylesheet" href="app.css?v=88" />
 
-  <link rel="stylesheet" href="app-views.css?v=87" />
-  <link rel="stylesheet" href="app-forms.css?v=87" />
-  <link rel="stylesheet" href="app-social.css?v=87" />
+  <link rel="stylesheet" href="app-views.css?v=88" />
+  <link rel="stylesheet" href="app-forms.css?v=88" />
+  <link rel="stylesheet" href="app-social.css?v=88" />
 </head>
 <body class="locked">
 
@@ -983,16 +983,16 @@
 <script>
 /* one-time cache purge + SW refresh — guarantees every device loads fresh assets */
 try{
-  if (localStorage.getItem('sj_cache_reset') !== 'v87'){
-    localStorage.setItem('sj_cache_reset', 'v87');
+  if (localStorage.getItem('sj_cache_reset') !== 'v88'){
+    localStorage.setItem('sj_cache_reset', 'v88');
     if ('caches' in window) caches.keys().then(ks => Promise.all(ks.map(k => caches.delete(k))));
   }
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.update()));
 }catch(e){}
 </script>
-<script src="api-data.js?v=87"></script>
-<script src="app.js?v=87"></script>
-<script src="app-data.js?v=87"></script>
-<script src="app-social.js?v=87"></script>
+<script src="api-data.js?v=88"></script>
+<script src="app.js?v=88"></script>
+<script src="app-data.js?v=88"></script>
+<script src="app-social.js?v=88"></script>
 </body>
 </html>

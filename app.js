@@ -55,6 +55,12 @@ function enterApp(){
 function hasEntered(){
   try { return localStorage.getItem('sj_entered') === '1'; } catch { return false; }
 }
+/* true whenever an invitation gate is on screen instead of the app */
+function gateShowing(){
+  return document.body.classList.contains('locked')
+    || !opening?.classList.contains('hidden')
+    || !!app?.classList.contains('hidden');
+}
 if (hasEntered()){
   document.addEventListener('DOMContentLoaded', () => {
     if (!document.body.classList.contains('locked')) return;
@@ -559,8 +565,19 @@ window.addEventListener('popstate', e => {
   const target = (e.state && e.state.view) || 'home';
   if (typeof closeLightbox === 'function') closeLightbox();
   document.querySelectorAll('.sheet').forEach(s => s.classList.add('hidden'));
-  if (hasEntered() && document.body.classList.contains('locked')) enterApp();
+  /* enterApp() is idempotent — call it whenever a returning guest lands on a
+     history entry that still shows the gate (including bfcache restores,
+     where the body is no longer locked but the gate markup is visible) */
+  if (hasEntered() && gateShowing()) enterApp();
   switchView(target, true);
+});
+
+/* a restored back/forward-cache page does not fire DOMContentLoaded */
+window.addEventListener('pageshow', () => {
+  if (hasEntered() && gateShowing()){
+    enterApp();
+    switchView((history.state && history.state.view) || 'home', true);
+  }
 });
 
 $$('.tab').forEach(tab => tab.addEventListener('click', () => switchView(tab.dataset.tab)));
