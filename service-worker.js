@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v86-playback-history';
+const CACHE = 'sj-wedding-v87-nav-polish';
 const ASSETS = [
   './',
   './index.html',

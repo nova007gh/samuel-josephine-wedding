@@ -58,9 +58,10 @@ function hasEntered(){
 if (hasEntered()){
   document.addEventListener('DOMContentLoaded', () => {
     if (!document.body.classList.contains('locked')) return;
-    enterApp();
+    /* read the target before entering: enterApp() rewrites the hash to #home */
     const hash = (location.hash || '').replace('#', '');
-    if (hash && document.querySelector(`.view[data-view="${hash}"]`)) switchView(hash, true);
+    enterApp();
+    if (hash && document.querySelector(`.view[data-view="${hash}"]`)) switchView(hash);
   });
 }
 
@@ -554,10 +555,11 @@ function switchView(name, fromHistory = false){
 
 window.addEventListener('popstate', e => {
   /* Back inside the app: go to the previous view, or fall back to Home so
-     the first Back press can never drop the guest out of the app. */
+     Back can never strand the guest on a half-dismissed invitation gate. */
   const target = (e.state && e.state.view) || 'home';
   if (typeof closeLightbox === 'function') closeLightbox();
   document.querySelectorAll('.sheet').forEach(s => s.classList.add('hidden'));
+  if (hasEntered() && document.body.classList.contains('locked')) enterApp();
   switchView(target, true);
 });
 
