@@ -8,6 +8,10 @@
 const SETTINGS_DB = 'SJWeddingSettings';
 const SETTINGS_STORE = 'kv';
 
+/* Server-backed site settings (photos, song, wedding details).
+   Declared first: gallery rendering below runs at parse time and reads it. */
+let siteSettings = {};
+
 function openSettingsDB(){
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(SETTINGS_DB, 1);
@@ -326,8 +330,6 @@ const SITE_PHOTO_SLOTS = [
   { slot:'now',             label:'Engaged Now',           def:'assets/story/now.jpg' }
 ];
 const SLOT_DEFS = Object.fromEntries(SITE_PHOTO_SLOTS.map(s => [s.slot, s.def]));
-
-let siteSettings = {};
 
 function sitePhoto(slot, fallback){
   if (!slot) return fallback;

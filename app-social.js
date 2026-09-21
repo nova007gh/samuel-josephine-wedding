@@ -598,6 +598,16 @@ adminLoginForm?.addEventListener('submit', async e => {
   }
 });
 
+/* Admin feed state and error tracking.
+   These must be initialized before onAdminAuth fires, because that callback
+   runs synchronously on registration and starts the admin pollers. */
+let adminMemories = [];
+let adminGuestbook = [];
+let adminGuests = [];
+let adminRsvps = [];
+let adminUnsubs = [];
+const adminFeedErrors = new Map();
+
 /* auth state drives everything admin-related */
 onAdminAuth(signedIn => {
   const wasSignedIn = adminSignedIn;
@@ -619,10 +629,7 @@ onAdminAuth(signedIn => {
 /* =========================================================
    Admin dashboard
    ========================================================= */
-let adminMemories = [];
-let adminGuestbook = [];
-let adminGuests = [];
-let adminRsvps = [];
+
 
 function allSubmissions(){
   const mems = (adminMemories || []).map(m => ({ ...m, kind: m.kind || 'photo', type: m.type || 'image/jpeg' }));
@@ -806,7 +813,6 @@ async function removeSubmission(btn){
 }
 
 /* surface feed failures instead of leaving the dashboard silently empty */
-const adminFeedErrors = new Map();
 function reportAdminFeed(path, err){
   if (err) adminFeedErrors.set(path, err.message || String(err));
   else adminFeedErrors.delete(path);
@@ -826,7 +832,6 @@ document.getElementById('adminRefresh')?.addEventListener('click', e => {
 });
 
 // admin real-time listeners — only while an admin is signed in
-let adminUnsubs = [];
 function startAdminListeners(){
   stopAdminListeners();
   adminUnsubs = [
