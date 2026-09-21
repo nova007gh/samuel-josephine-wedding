@@ -18,11 +18,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Parisienne&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="assets/official-landing-page.jpg" />
   <link rel="preload" as="image" href="assets/seal-pressed-320.png" />
-  <link rel="stylesheet" href="app.css?v=84" />
+  <link rel="stylesheet" href="app.css?v=85" />
 
-  <link rel="stylesheet" href="app-views.css?v=84" />
-  <link rel="stylesheet" href="app-forms.css?v=84" />
-  <link rel="stylesheet" href="app-social.css?v=84" />
+  <link rel="stylesheet" href="app-views.css?v=85" />
+  <link rel="stylesheet" href="app-forms.css?v=85" />
+  <link rel="stylesheet" href="app-social.css?v=85" />
 </head>
 <body class="locked">
 
@@ -392,6 +392,8 @@
           <option value="engagement">Engagement</option>
           <option value="wedding-photos">Wedding Photos</option>
           <option value="wedding-videos">Wedding Videos</option>
+          <option value="voice-messages">Voice &amp; Music</option>
+          <option value="video-messages">Video Messages</option>
         </select>
       </label>
       <label class="field">Caption
@@ -956,6 +958,8 @@
       <select name="shareCategory">
         <option value="wedding-photos">Wedding Photos</option>
         <option value="wedding-videos">Wedding Videos</option>
+        <option value="voice-messages">Voice &amp; Music</option>
+        <option value="video-messages">Video Messages</option>
         <option value="first-together">First Together</option>
         <option value="engagement">Engagement</option>
         <option value="adulthood">Adulthood</option>
@@ -979,16 +983,16 @@
 <script>
 /* one-time cache purge + SW refresh — guarantees every device loads fresh assets */
 try{
-  if (localStorage.getItem('sj_cache_reset') !== 'v84'){
-    localStorage.setItem('sj_cache_reset', 'v84');
+  if (localStorage.getItem('sj_cache_reset') !== 'v85'){
+    localStorage.setItem('sj_cache_reset', 'v85');
     if ('caches' in window) caches.keys().then(ks => Promise.all(ks.map(k => caches.delete(k))));
   }
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.update()));
 }catch(e){}
 </script>
-<script src="api-data.js?v=84"></script>
-<script src="app.js?v=84"></script>
-<script src="app-data.js?v=84"></script>
-<script src="app-social.js?v=84"></script>
+<script src="api-data.js?v=85"></script>
+<script src="app.js?v=85"></script>
+<script src="app-data.js?v=85"></script>
+<script src="app-social.js?v=85"></script>
 </body>
 </html>

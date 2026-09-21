@@ -227,10 +227,17 @@ function openShareSheet(blob, type, kind, guestName=''){
   else if (type.startsWith('video/')) preview.innerHTML = `<video src="${url}" controls playsinline></video>`;
   else if (type.startsWith('audio/')) preview.innerHTML = `<audio src="${url}" controls></audio>`;
 
-  if (guestName){
-    const nameInput = document.querySelector('#shareForm input[name="shareName"]');
-    if (nameInput) nameInput.value = guestName;
+  /* preselect the album that matches what they're sharing, so audio and
+     video don't end up buried in a photo album */
+  const catSelect = document.querySelector('#shareForm select[name="shareCategory"]');
+  if (catSelect && typeof defaultAlbumFor === 'function'){
+    const want = defaultAlbumFor(type, kind);
+    if ([...catSelect.options].some(o => o.value === want)) catSelect.value = want;
   }
+
+  const nameInput = document.querySelector('#shareForm input[name="shareName"]');
+  if (nameInput && !nameInput.value)
+    nameInput.value = guestName || (typeof getGuest === 'function' && getGuest()?.name) || '';
   openSheet('shareModal');
 }
 
@@ -279,8 +286,8 @@ document.getElementById('shareForm')?.addEventListener('submit', async e => {
     closeSheet('shareModal');
     teardownRecorders();
     renderMyUploads();
-    alert('Your memory has been submitted and is pending approval. Thank you for sharing!');
-    switchView('gallery');
+    alert('Your memory has been sent to the couple for approval. You can see it under "Your uploads" — once approved it appears in the Gallery for everyone.');
+    switchView('memories'); // show them their submission straight away
   } catch(err){
     console.warn('Memory upload failed:', err);
     alert('Sorry, the upload failed. Please check your connection and try again.');

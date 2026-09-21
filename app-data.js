@@ -67,8 +67,18 @@ const GALLERY_ALBUMS = [
   { id:'first-together', label:'First Together', cover:'assets/story/facetime.jpg',      photoKey:'facetime' },
   { id:'engagement',     label:'Engagement',     cover:'assets/story/proposal.jpg',      photoKey:'proposal' },
   { id:'wedding-photos', label:'Wedding Photos', cover:'assets/couple-home.jpg',         photoKey:'couple' },
-  { id:'wedding-videos', label:'Wedding Videos', cover:'assets/story/now.jpg',           photoKey:'now' }
+  { id:'wedding-videos', label:'Wedding Videos', cover:'assets/story/now.jpg',           photoKey:'now' },
+  { id:'voice-messages', label:'Voice & Music',  cover:'assets/story/facetime.jpg',      photoKey:'facetime' },
+  { id:'video-messages', label:'Video Messages', cover:'assets/story/proposal.jpg',      photoKey:'proposal' }
 ];
+
+/* the album a guest upload belongs in when they don't pick one */
+function defaultAlbumFor(type, kind){
+  if (kind === 'voice' || /^audio\//.test(type || '')) return 'voice-messages';
+  if (kind === 'videomsg') return 'video-messages';
+  if (/^video\//.test(type || '')) return 'wedding-videos';
+  return 'wedding-photos';
+}
 
 const CATEGORY_LABELS = Object.fromEntries(GALLERY_ALBUMS.map(a => [a.id, a.label]));
 
@@ -96,7 +106,7 @@ function matchesKind(item){
     case 'videos':   return t.startsWith('video/');
     case 'voice':    return t.startsWith('audio/');
     case 'selfies':  return item.kind === 'selfie';
-    case 'messages': return item.kind === 'message';
+    case 'messages': return item.kind === 'videomsg' || item.kind === 'voice';
     default:         return true;
   }
 }
@@ -119,7 +129,7 @@ function renderAlbums(){
   host.innerHTML = GALLERY_ALBUMS.map(album => {
     const count = items.filter(m => m.category === album.id).length;
     const cover = items.find(m => m.category === album.id && (m.src || m.mediaUrl) &&
-      !(m.type || '').startsWith('video/') && !(m.type || '').startsWith('audio/'));
+      (m.type || '').startsWith('image/'));
     const src = (cover && (cover.src || cover.mediaUrl)) || sitePhoto(album.photoKey, album.cover);
     return `
       <button class="cat-card" data-album="${album.id}" type="button">
