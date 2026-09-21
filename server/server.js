@@ -96,7 +96,9 @@ const EXT_BY_MIME = {
   'image/jpeg': '.jpg', 'image/png': '.png', 'image/gif': '.gif', 'image/webp': '.webp',
   'image/heic': '.heic', 'image/heif': '.heif',
   'video/mp4': '.mp4', 'video/webm': '.webm', 'video/quicktime': '.mov', 'video/3gpp': '.3gp',
-  'audio/webm': '.webm', 'audio/mpeg': '.mp3', 'audio/mp4': '.m4a', 'audio/ogg': '.ogg',
+  /* .weba, not .webm — nginx maps it to audio/webm so <audio> gets a
+     playable content type instead of video/webm */
+  'audio/webm': '.weba', 'audio/mpeg': '.mp3', 'audio/mp4': '.m4a', 'audio/ogg': '.ogg',
   'audio/wav': '.wav', 'audio/aac': '.aac', 'audio/x-m4a': '.m4a'
 };
 const storage = multer.diskStorage({
