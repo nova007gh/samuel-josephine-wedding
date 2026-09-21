@@ -18,11 +18,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Parisienne&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="assets/official-landing-page.jpg" />
   <link rel="preload" as="image" href="assets/seal-pressed-320.png" />
-  <link rel="stylesheet" href="app.css" />
+  <link rel="stylesheet" href="app.css?v=81" />
 
-  <link rel="stylesheet" href="app-views.css" />
-  <link rel="stylesheet" href="app-forms.css" />
-  <link rel="stylesheet" href="app-social.css" />
+  <link rel="stylesheet" href="app-views.css?v=81" />
+  <link rel="stylesheet" href="app-forms.css?v=81" />
+  <link rel="stylesheet" href="app-social.css?v=81" />
 </head>
 <body class="locked">
 
@@ -554,6 +554,12 @@
         <span class="menu-chev">&#10095;</span>
         <input id="shareTypeSelfie" type="file" accept="image/*" capture="user" class="hidden" />
       </label>
+      <label class="menu-item">
+        <span class="menu-icon menu-icon--purple">&#127925;</span>
+        <span class="menu-text"><strong>Upload Audio</strong><small>Music or a recording</small></span>
+        <span class="menu-chev">&#10095;</span>
+        <input id="shareTypeAudio" type="file" accept="audio/*" class="hidden" />
+      </label>
       <button class="menu-item" id="shareTypeVoice" type="button">
         <span class="menu-icon menu-icon--purple">&#127908;</span>
         <span class="menu-text"><strong>Voice Message</strong><small>Record audio</small></span>
@@ -876,6 +882,7 @@
       <button class="chip" data-aq-filter="voice">Voice</button>
       <button class="chip" data-aq-filter="video">Video</button>
       <button class="chip" data-aq-filter="guestbook">Guest Book</button>
+      <button class="chip" data-aq-filter="guests">Guests</button>
     </div>
 
     <div id="aqList" class="aq-list"></div>
@@ -966,9 +973,9 @@
 </div>
 
 <audio id="backgroundMusic" loop preload="none"></audio>
-<script src="api-data.js"></script>
-<script src="app.js"></script>
-<script src="app-data.js"></script>
-<script src="app-social.js"></script>
+<script src="api-data.js?v=81"></script>
+<script src="app.js?v=81"></script>
+<script src="app-data.js?v=81"></script>
+<script src="app-social.js?v=81"></script>
 </body>
 </html>

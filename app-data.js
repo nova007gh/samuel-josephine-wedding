@@ -566,9 +566,12 @@ function fillWeddingForm(){
 }
 
 document.getElementById('wedSaveBtn')?.addEventListener('click', async e => {
-  if (!isAdmin()) return;
   const btn = e.currentTarget;
   const status = document.getElementById('wedSaveStatus');
+  if (!isAdmin()){
+    if (status) status.textContent = 'Sign in as admin first to save wedding details.';
+    return;
+  }
   const fields = {};
   for (const [id, key] of Object.entries(WED_INPUTS)){
     const el = document.getElementById(id);

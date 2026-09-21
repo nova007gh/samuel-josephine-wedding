@@ -213,7 +213,7 @@ subscribeGuestbook();
 let pendingShare = null; // { blob, type, kind }
 const shareKindLabels = {
   photo:'Share Photo', video:'Share Video', selfie:'Share Selfie',
-  voice:'Voice Message', videomsg:'Video Message'
+  voice:'Voice Message', videomsg:'Video Message', music:'Share Audio'
 };
 
 function openShareSheet(blob, type, kind, guestName=''){
@@ -247,6 +247,11 @@ document.getElementById('shareTypeVideo')?.addEventListener('change', e => {
 document.getElementById('shareTypeSelfie')?.addEventListener('change', e => {
   const file = e.target.files?.[0];
   if (file) openShareSheet(file, file.type, 'selfie');
+  e.target.value = '';
+});
+document.getElementById('shareTypeAudio')?.addEventListener('change', e => {
+  const file = e.target.files?.[0];
+  if (file) openShareSheet(file, file.type, 'music');
   e.target.value = '';
 });
 
@@ -622,13 +627,14 @@ let adminRsvps = [];
 function allSubmissions(){
   const mems = (adminMemories || []).map(m => ({ ...m, kind: m.kind || 'photo', type: m.type || 'image/jpeg' }));
   const gbs = (adminGuestbook || []).map(g => ({ ...g, kind: 'guestbook', type: 'guestbook' }));
-  return [...mems, ...gbs];
+  const guests = (adminGuests || []).map(g => ({ ...g, kind: 'guest', type: 'guest', status: g.status || 'pending', createdAt: g.checkedInAt }));
+  return [...guests, ...mems, ...gbs];
 }
 
 function updateAdminStats(){
   const items = allSubmissions();
   const pending = items.filter(i => i.status !== 'approved').length;
-  const approved = items.filter(i => i.status === 'approved').length;
+  const approved = items.filter(i => i.status === 'approved' && i.kind !== 'guest').length;
   const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
   set('statPending', pending);
   set('statApproved', approved);
@@ -639,6 +645,7 @@ function updateAdminStats(){
 function aqFilterMatches(item, filter){
   if (filter === 'all') return true;
   if (filter === 'guestbook') return item.kind === 'guestbook';
+  if (filter === 'guests') return item.kind === 'guest';
   if (filter === 'photo') return item.type?.startsWith('image/') || item.kind === 'photo' || item.kind === 'selfie';
   if (filter === 'video') return item.type?.startsWith('video/') || item.kind === 'videomsg' || item.kind === 'video';
   if (filter === 'voice') return item.type?.startsWith('audio/') || item.kind === 'voice';
@@ -659,7 +666,10 @@ function renderApprovalQueue(){
     const card = document.createElement('article');
     card.className = 'aq-card';
     let media = '';
-    if (item.kind === 'guestbook'){
+    if (item.kind === 'guest'){
+      media = `<p><b>${escapeHTML(item.name)}</b> <span class="gb-badge gb-badge--pending">Guest check-in</span></p>
+        <small>${[item.relation, item.phone, item.email].filter(Boolean).map(escapeHTML).join(' &middot; ') || 'No contact details'} &middot; ${item.attending ? 'Attending' : 'Exploring'}</small>`;
+    } else if (item.kind === 'guestbook'){
       media = `<p><b>${escapeHTML(item.name)}</b> &mdash; ${escapeHTML(item.message)}</p>`;
     } else if (item.type && item.type.startsWith('image/') && item.mediaUrl){
       media = `<img class="aq-media" src="${item.mediaUrl}" alt="">`;
@@ -744,6 +754,14 @@ async function updateStatus(btn, status){
   btn.disabled = true;
   try {
     if (kind === 'guestbook') await gbUpdate({ id, status });
+    else if (kind === 'guest'){
+      await updateGuest(id, { status: 'approved' });
+      const g = adminGuests.find(x => x.id === id);
+      if (g) g.status = 'approved';
+      updateAdminStats();
+      renderApprovalQueue();
+      renderGuestList();
+    }
     else await updateMemory({ id, status });
   } catch(err){
     console.warn('Approve failed:', err);
@@ -758,6 +776,13 @@ async function removeSubmission(btn){
   btn.disabled = true;
   try {
     if (kind === 'guestbook') await deleteMemoryGB(id);
+    else if (kind === 'guest'){
+      await deleteGuest(id);
+      adminGuests = adminGuests.filter(x => x.id !== id);
+      updateAdminStats();
+      renderApprovalQueue();
+      renderGuestList();
+    }
     else await deleteMemory(id);
   } catch(err){
     console.warn('Reject failed:', err);
@@ -842,9 +867,13 @@ async function renderMyUploads(){
     card.className = 'aq-card';
     const pending = item.status !== 'approved';
     const label = item._kind === 'guestbook' ? 'Guest book message'
-      : ({ photo:'Photo', video:'Video', selfie:'Selfie', voice:'Voice message', videomsg:'Video message' })[item.kind] || 'Memory';
-    const thumb = item._kind === 'memory' && item.mediaUrl && /^image\//.test(item.type || '')
-      ? `<img class="aq-media" src="${item.mediaUrl}" alt="">` : '';
+      : ({ photo:'Photo', video:'Video', selfie:'Selfie', voice:'Voice message', videomsg:'Video message', music:'Audio / Music' })[item.kind] || 'Memory';
+    const type = item.type || '';
+    const thumb = item._kind === 'memory' && item.mediaUrl
+      ? /^image\//.test(type) ? `<img class="aq-media" src="${item.mediaUrl}" alt="">`
+      : /^video\//.test(type) ? `<video class="aq-media" controls playsinline src="${item.mediaUrl}"></video>`
+      : /^audio\//.test(type) ? `<audio controls src="${item.mediaUrl}"></audio>` : ''
+      : '';
     card.innerHTML = `
       ${thumb}
       <p><b>${escapeHTML(label)}</b> <span class="gb-badge gb-badge--${pending ? 'pending' : 'approved'}">${pending ? 'Pending review' : 'Published'}</span></p>

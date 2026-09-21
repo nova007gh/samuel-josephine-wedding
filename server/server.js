@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS guests (
   id TEXT PRIMARY KEY,
   name TEXT, phone TEXT, email TEXT, relation TEXT,
   attending INTEGER DEFAULT 1,
+  status TEXT DEFAULT 'pending',
   checkedInAt INTEGER
 );
 CREATE TABLE IF NOT EXISTS rsvps (
@@ -69,6 +70,9 @@ CREATE TABLE IF NOT EXISTS push_subs (
   p256dh TEXT, auth TEXT, createdAt INTEGER
 );
 `);
+
+/* column added after launch — migrate existing databases safely */
+try { db.exec(`ALTER TABLE guests ADD COLUMN status TEXT DEFAULT 'pending'`); } catch {}
 
 /* ---------- helpers ---------- */
 const uid = () => crypto.randomUUID();
@@ -184,6 +188,7 @@ app.post('/api/guests', publicWrite, (req, res) => {
     .run(id, name, str(g.phone, 60), str(g.email, 200), str(g.relation, 120),
          g.attending === false ? 0 : 1, now());
   res.json({ id });
+  notifyAll('New guest checked in', `${name} just ${g.attending === false ? 'joined to explore' : 'checked in to attend'} — pending your approval`);
 });
 
 /* ---------- RSVPs ---------- */
@@ -217,6 +222,7 @@ app.post('/api/guestbook', publicWrite, upload.single('selfie'), (req, res) => {
               VALUES (?, ?, ?, 'pending', 0, '[]', ?, ?)`)
     .run(id, name, message, selfieUrl, now());
   res.json({ id, name, message, status: 'pending', likes: 0, replies: [], selfieUrl, createdAt: now() });
+  notifyAll('New guest book message', `${name} left a message — pending your approval`);
 });
 
 /* guests may like / reply on approved entries only */
@@ -270,6 +276,8 @@ app.post('/api/memories', publicWrite, upload.single('file'), (req, res) => {
               VALUES (@id, @category, @caption, @guestName, @kind, @status, @type, @name, @size, @mediaUrl, @createdAt)`)
     .run(record);
   res.json(record);
+  const what = { photo:'a photo', video:'a video', selfie:'a selfie', voice:'a voice message', videomsg:'a video message', music:'a song' }[record.kind] || 'a memory';
+  notifyAll('New upload pending review', `${record.guestName || 'A guest'} shared ${what} — pending your approval`);
 });
 
 /* ---------- admin: full feeds ---------- */
@@ -494,15 +502,18 @@ app.patch('/api/admin/guests/:id', requireAdmin, (req, res) => {
   const row = db.prepare(`SELECT * FROM guests WHERE id = ?`).get(req.params.id);
   if (!row) return res.status(404).json({ error: 'Not found.' });
   const g = req.body || {};
-  db.prepare(`UPDATE guests SET name = ?, phone = ?, email = ?, relation = ?, attending = ? WHERE id = ?`)
+  db.prepare(`UPDATE guests SET name = ?, phone = ?, email = ?, relation = ?, attending = ?, status = ? WHERE id = ?`)
     .run(
       g.name !== undefined ? str(g.name, 120) : row.name,
       g.phone !== undefined ? str(g.phone, 60) : row.phone,
       g.email !== undefined ? str(g.email, 200) : row.email,
       g.relation !== undefined ? str(g.relation, 120) : row.relation,
       g.attending !== undefined ? (g.attending ? 1 : 0) : row.attending,
+      ['pending', 'approved'].includes(g.status) ? g.status : row.status,
       req.params.id
     );
+  if (g.status === 'approved' && row.status !== 'approved')
+    notifyAll('Guest approved', `${row.name} is on the guest list`);
   res.json({ ok: true });
 });
 
