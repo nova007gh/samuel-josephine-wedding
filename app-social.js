@@ -736,7 +736,9 @@ function renderGuestList(){
     card.className = 'aq-card';
     const checkedIn = g.checkedInAt ? timeAgo(g.checkedInAt) : '';
     card.innerHTML = `
-      <p><b>${escapeHTML(g.name)}</b> ${g.status !== 'approved' ? '<span class="gb-badge gb-badge--pending">Pending</span>' : '<span class="gb-badge gb-badge--approved">Approved</span>'}</p>
+      <p><b>${escapeHTML(g.name)}</b>
+        <span class="gb-badge ${g.attending ? 'gb-badge--approved' : 'gb-badge--pending'}">${g.attending ? 'Attending' : 'Exploring'}</span>
+        ${g.status !== 'approved' ? '<span class="gb-badge gb-badge--pending">Needs approval</span>' : ''}</p>
       <small>${escapeHTML(g.relation || '')} &middot; ${escapeHTML(g.phone || '')} &middot; ${escapeHTML(g.email || '')}</small>
       <small>Checked in ${checkedIn}</small>
       <div class="aq-actions">
@@ -933,8 +935,17 @@ async function renderMyUploads(){
       ${thumb}
       <p><b>${escapeHTML(label)}</b> <span class="gb-badge gb-badge--${pending ? 'pending' : 'approved'}">${pending ? 'Pending review' : 'Published'}</span></p>
       <small>${escapeHTML(item.caption || item.message || item.guestName || '')}</small>
-      ${pending ? '<div class="aq-actions"><button class="aq-approve" type="button">EDIT</button></div>' : ''}`;
-    card.querySelector('button')?.addEventListener('click', async () => {
+      ${pending ? '<div class="aq-actions"><button class="aq-approve" type="button">EDIT</button><button class="aq-reject" type="button">DELETE</button></div>' : ''}`;
+    card.querySelector('.aq-reject')?.addEventListener('click', async () => {
+      if (!confirm('Delete this submission?')) return;
+      try {
+        await (item._kind === 'guestbook' ? deleteMyGuestbook(item.id) : deleteMyMemory(item.id));
+        renderMyUploads();
+      } catch(err){
+        alert(err.message || 'Could not delete — it may already be published.');
+      }
+    });
+    card.querySelector('.aq-approve')?.addEventListener('click', async () => {
       const isGb = item._kind === 'guestbook';
       const current = isGb ? item.message : item.caption;
       const next = prompt(isGb ? 'Edit your message:' : 'Edit the caption:', current || '');

@@ -546,9 +546,10 @@ function switchView(name, fromHistory = false){
   $$('.view').forEach(v => v.classList.toggle('hidden', v.dataset.view !== name));
   $$('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tabName));
 
-  // Home shows the music control; every other screen shows the menu button
+  /* the music button floats over every screen once a song exists;
+     the menu button takes its header slot elsewhere */
   const onHome = name === 'home';
-  $('#musicToggle')?.classList.toggle('hidden', !onHome);
+  $('#musicToggle')?.classList.toggle('hidden', !music?.src);
   $('#menuToggle')?.classList.toggle('hidden', onHome);
 
   window.scrollTo({ top: 0, behavior: 'instant' });
@@ -637,12 +638,14 @@ async function loadSong(){
     const settings = await getSettings();
     if (settings.songUrl && music){
       currentSongUrl = settings.songUrl;
-      music.src = currentSongUrl;
-      music.load();
+      if (music.src !== location.origin + currentSongUrl && !music.src.endsWith(currentSongUrl)){
+        music.src = currentSongUrl;
+        music.load();
+      }
       const labelEl = document.getElementById('songLabel');
       if (labelEl) labelEl.textContent = settings.songLabel || 'Song loaded';
       const toggle = document.getElementById('musicToggle');
-      if (toggle) toggle.classList.add('has-song');
+      if (toggle){ toggle.classList.add('has-song'); toggle.classList.remove('hidden'); }
     }
   } catch(err){ console.warn(err); }
 }
@@ -655,7 +658,8 @@ async function saveSong(file){
   try {
     await uploadSiteSong(file, file.name);
     await loadSong();
-    if (music && music.paused === false){ music.play().catch(() => {}); }
+    /* admin just picked it — start it straight away so they hear it */
+    if (music && music.src) music.play().then(() => $('#musicToggle')?.classList.add('is-on')).catch(() => {});
   } catch(err){
     console.warn('Song upload failed:', err);
     alert('Could not upload the song. Are you still signed in as admin?');
@@ -664,20 +668,50 @@ async function saveSong(file){
 
 document.getElementById('songUpload')?.addEventListener('change', e => {
   const file = e.target.files?.[0];
-  if (file && file.type.startsWith('audio/')) saveSong(file);
+  if (file && (file.type.startsWith('audio/') || /\.(mp3|m4a|wav|ogg|aac|flac|m4b)$/i.test(file.name || ''))) saveSong(file);
   e.target.value = '';
 });
+
+/* ---------- autoplay + ducking ----------
+   Browsers block audio until the first user gesture, so the song starts on
+   the guest's first tap (the seal counts). While any other audio or video
+   is playing, the wedding song is muted — not paused — and un-mutes when
+   the other media stops, so the moment never loses its soundtrack. */
+let musicWanted = true;           // guest hasn't paused it via the button
+let mediaPlayingCount = 0;
+
+function tryStartSong(){
+  if (!music || !music.src || !music.paused || !musicWanted) return;
+  music.play().then(() => $('#musicToggle')?.classList.add('is-on')).catch(() => {});
+}
+['pointerdown','keydown'].forEach(ev =>
+  document.addEventListener(ev, () => tryStartSong(), { passive:true })
+);
+
+/* count other media elements that are currently playing */
+document.addEventListener('play', e => {
+  if (e.target === music || !(e.target instanceof HTMLMediaElement)) return;
+  mediaPlayingCount++;
+  if (music) music.muted = true;
+}, true);
+['pause','ended'].forEach(ev => document.addEventListener(ev, e => {
+  if (e.target === music || !(e.target instanceof HTMLMediaElement)) return;
+  mediaPlayingCount = Math.max(0, mediaPlayingCount - 1);
+  if (mediaPlayingCount === 0 && music) music.muted = false;
+}, true));
 
 $('#musicToggle')?.addEventListener('click', async e => {
   const btn = e.currentTarget;
   if (!music || !music.src) {
-    alert('Upload a wedding song from the More menu first.');
+    alert(isAdmin() ? 'Upload a wedding song from Site Settings first.' : 'No wedding song yet — the couple will add one soon.');
     return;
   }
   if (music.paused) {
+    musicWanted = true;
     await music.play().catch(() => {});
     btn.classList.add('is-on');
   } else {
+    musicWanted = false;
     music.pause();
     btn.classList.remove('is-on');
   }

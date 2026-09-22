@@ -239,6 +239,19 @@ async function fetchMyUploads(){
 async function editMyMemory(id, data){
   return await api(`/memories/${encodeURIComponent(id)}`, { method:'PATCH', body: data });
 }
+/* guests can remove their own submissions while still pending */
+function forgetUpload(id){
+  localStorage.setItem(MY_UPLOADS_KEY, JSON.stringify(myUploadIds().filter(u => u.id !== id)));
+}
+async function deleteMyMemory(id){
+  await api(`/memories/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  forgetUpload(id);
+}
+async function deleteMyGuestbook(id){
+  await api(`/guestbook/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  forgetUpload(id);
+}
+
 async function editMyGuestbook(id, data){
   return await api(`/guestbook/${encodeURIComponent(id)}`, { method:'PATCH', body: data });
 }

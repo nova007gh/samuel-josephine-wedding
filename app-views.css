@@ -792,3 +792,16 @@
   .invitation-screen{ padding:24px; }
   .invitation{ max-height:calc(100dvh - 48px); border-radius:20px; }
 }
+
+/* ---------- floating music control ---------- */
+#musicToggle.has-song{
+  position:fixed;
+  right:16px;
+  bottom:88px;
+  z-index:90;
+  background:rgba(255,251,244,.92);
+  border:1px solid rgba(169,124,44,.35);
+  box-shadow:0 10px 26px rgba(112,78,26,.28);
+  backdrop-filter:blur(6px);
+}
+#musicToggle.is-on{ box-shadow:0 10px 26px rgba(138,98,32,.45); }

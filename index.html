@@ -18,11 +18,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Parisienne&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="assets/official-landing-page.jpg" />
   <link rel="preload" as="image" href="assets/seal-pressed-320.png" />
-  <link rel="stylesheet" href="app.css?v=88" />
+  <link rel="stylesheet" href="app.css?v=89" />
 
-  <link rel="stylesheet" href="app-views.css?v=88" />
-  <link rel="stylesheet" href="app-forms.css?v=88" />
-  <link rel="stylesheet" href="app-social.css?v=88" />
+  <link rel="stylesheet" href="app-views.css?v=89" />
+  <link rel="stylesheet" href="app-forms.css?v=89" />
+  <link rel="stylesheet" href="app-social.css?v=89" />
 </head>
 <body class="locked">
 
@@ -158,7 +158,7 @@
       <span class="brand-mark">S<i>&amp;</i>J</span>
     </button>
     <div class="header-actions">
-      <button id="musicToggle" class="icon-button" aria-label="Toggle background music">
+      <button id="musicToggle" class="icon-button hidden" aria-label="Toggle background music">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg>
       </button>
       <button id="menuToggle" class="icon-button icon-button--plain hidden" data-goto="more" type="button" aria-label="Open menu">
@@ -979,20 +979,20 @@
   <p id="lightboxCaption" class="lightbox-caption"></p>
 </div>
 
-<audio id="backgroundMusic" loop preload="none"></audio>
+<audio id="backgroundMusic" loop preload="auto"></audio>
 <script>
 /* one-time cache purge + SW refresh — guarantees every device loads fresh assets */
 try{
-  if (localStorage.getItem('sj_cache_reset') !== 'v88'){
-    localStorage.setItem('sj_cache_reset', 'v88');
+  if (localStorage.getItem('sj_cache_reset') !== 'v89'){
+    localStorage.setItem('sj_cache_reset', 'v89');
     if ('caches' in window) caches.keys().then(ks => Promise.all(ks.map(k => caches.delete(k))));
   }
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.update()));
 }catch(e){}
 </script>
-<script src="api-data.js?v=88"></script>
-<script src="app.js?v=88"></script>
-<script src="app-data.js?v=88"></script>
-<script src="app-social.js?v=88"></script>
+<script src="api-data.js?v=89"></script>
+<script src="app.js?v=89"></script>
+<script src="app-data.js?v=89"></script>
+<script src="app-social.js?v=89"></script>
 </body>
 </html>

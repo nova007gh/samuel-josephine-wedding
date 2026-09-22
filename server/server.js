@@ -112,7 +112,11 @@ const upload = multer({
   storage,
   limits: { fileSize: MAX_UPLOAD, files: 1 },
   fileFilter: (req, file, cb) => {
-    const ok = /^(image|video|audio)\//.test(file.mimetype || '');
+    let ok = /^(image|video|audio)\//.test(file.mimetype || '');
+    /* some clients upload .m4a/.aac as application/octet-stream — allow
+       known audio extensions on the song endpoint */
+    if (!ok && req.path === '/api/admin/settings/song')
+      ok = AUDIO_EXTS.has(path.extname(file.originalname || '').toLowerCase());
     cb(ok ? null : new Error('Only image, video and audio files are allowed.'), ok);
   }
 });
@@ -382,9 +386,14 @@ app.post('/api/admin/settings/photo/:slot?', requireAdmin, upload.single('file')
   setSettingFile(res, req.file, key);
 });
 
+const AUDIO_EXTS = new Set(['.mp3', '.m4a', '.wav', '.ogg', '.aac', '.weba', '.flac', '.m4b']);
+
 app.post('/api/admin/settings/song', requireAdmin, upload.single('file'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'An audio file is required.' });
-  if (!/^audio\//.test(req.file.mimetype)) return res.status(400).json({ error: 'Song must be an audio file.' });
+  /* some browsers upload .m4a/.aac as application/octet-stream — accept by extension too */
+  const ext = path.extname(req.file.originalname || '').toLowerCase();
+  if (!/^audio\//.test(req.file.mimetype) && !AUDIO_EXTS.has(ext))
+    return res.status(400).json({ error: 'Song must be an audio file.' });
   setSettingFile(res, req.file, 'songUrl', { songLabel: str(req.body.label, 200) || req.file.originalname || '' });
 });
 
@@ -433,6 +442,17 @@ app.patch('/api/memories/:id', publicWrite, (req, res) => {
   res.json({ ok: true });
 });
 
+/* guests may delete their own submissions while still pending — ids are
+   unguessable UUIDs, and approved content stays admin-only */
+app.delete('/api/memories/:id', publicWrite, (req, res) => {
+  const row = db.prepare('SELECT status, mediaUrl FROM memories WHERE id = ?').get(req.params.id);
+  if (!row) return res.status(404).json({ error: 'Not found.' });
+  if (row.status !== 'pending') return res.status(403).json({ error: 'Already published — only admin can remove it.' });
+  db.prepare('DELETE FROM memories WHERE id = ?').run(req.params.id);
+  unlinkUpload(row.mediaUrl);
+  res.json({ ok: true });
+});
+
 app.post('/api/guestbook/mine', publicWrite, (req, res) => {
   const ids = lookupIds(req.body);
   if (!ids.length) return res.json([]);
@@ -448,6 +468,15 @@ app.patch('/api/guestbook/:id', publicWrite, (req, res) => {
     req.body.message !== undefined ? str(req.body.message, 2000) : row.message,
     req.params.id
   );
+  res.json({ ok: true });
+});
+
+app.delete('/api/guestbook/:id', publicWrite, (req, res) => {
+  const row = db.prepare('SELECT status, selfieUrl FROM guestbook WHERE id = ?').get(req.params.id);
+  if (!row) return res.status(404).json({ error: 'Not found.' });
+  if (row.status !== 'pending') return res.status(403).json({ error: 'Already published — only admin can remove it.' });
+  db.prepare('DELETE FROM guestbook WHERE id = ?').run(req.params.id);
+  unlinkUpload(row.selfieUrl);
   res.json({ ok: true });
 });
 
