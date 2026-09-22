@@ -678,7 +678,6 @@ document.getElementById('songUpload')?.addEventListener('change', e => {
    is playing, the wedding song is muted — not paused — and un-mutes when
    the other media stops, so the moment never loses its soundtrack. */
 let musicWanted = true;           // guest hasn't paused it via the button
-let mediaPlayingCount = 0;
 
 function tryStartSong(){
   if (!music || !music.src || !music.paused || !musicWanted) return;
