@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v89-music-ducking';
+const CACHE = 'sj-wedding-v90-music-float';
 const ASSETS = [
   './',
   './index.html',

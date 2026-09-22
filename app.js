@@ -688,17 +688,28 @@ function tryStartSong(){
   document.addEventListener(ev, () => tryStartSong(), { passive:true })
 );
 
-/* count other media elements that are currently playing */
+/* track other media elements that are currently playing; reconcile from the
+   set itself so a detached/lightbox-closed element can't wedge the mute on */
+const liveMedia = new Set();
+function reconcileDucking(){
+  for (const el of liveMedia)
+    if (el.paused || el.ended || !el.isConnected) liveMedia.delete(el);
+  if (music) music.muted = liveMedia.size > 0;
+}
 document.addEventListener('play', e => {
   if (e.target === music || !(e.target instanceof HTMLMediaElement)) return;
-  mediaPlayingCount++;
-  if (music) music.muted = true;
+  liveMedia.add(e.target);
+  reconcileDucking();
 }, true);
-['pause','ended'].forEach(ev => document.addEventListener(ev, e => {
-  if (e.target === music || !(e.target instanceof HTMLMediaElement)) return;
-  mediaPlayingCount = Math.max(0, mediaPlayingCount - 1);
-  if (mediaPlayingCount === 0 && music) music.muted = false;
-}, true));
+['pause','ended','emptied','error'].forEach(ev =>
+  document.addEventListener(ev, e => {
+    if (e.target !== music && e.target instanceof HTMLMediaElement) liveMedia.delete(e.target);
+    reconcileDucking();
+  }, true)
+);
+/* safety net: while muted, sweep for media that stopped without a
+   document-visible event (e.g. lightbox emptied its DOM) */
+setInterval(() => { if (music?.muted) reconcileDucking(); }, 1200);
 
 $('#musicToggle')?.addEventListener('click', async e => {
   const btn = e.currentTarget;
