@@ -331,6 +331,9 @@ function closeLightbox(){
   lightboxBody?.querySelectorAll('video, audio').forEach(el => { el.pause(); el.removeAttribute('src'); });
   if (lightboxBody) lightboxBody.innerHTML = '';
   document.body.classList.remove('locked');
+  /* a detached media element's pause event can't reach document — tell the
+     song-ducking tracker directly so the wedding song un-mutes now */
+  if (typeof reconcileDucking === 'function') reconcileDucking();
 }
 document.getElementById('lightboxClose')?.addEventListener('click', closeLightbox);
 lightbox?.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
