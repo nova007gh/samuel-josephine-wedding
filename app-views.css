@@ -836,15 +836,45 @@
 
 /* ---------- seal as the Gallery tab icon ---------- */
 .tab-seal{
-  width:36px;
+  width:46px;
   height:auto;
   display:block;
-  margin-top:-6px;
-  filter:drop-shadow(0 3px 7px rgba(112,78,26,.28));
-  transition:transform .2s ease, filter .2s ease;
+  margin-top:-8px;
+  transition:transform .2s ease;
+  /* neon-electric glow: warm gold core with a faint cyan edge,
+     pulsing softly with an occasional flicker */
+  animation:sealNeon 2.4s ease-in-out infinite;
+}
+@keyframes sealNeon{
+  0%,100%{
+    filter:
+      drop-shadow(0 0 3px rgba(255,214,110,.85))
+      drop-shadow(0 0 9px rgba(255,180,60,.5))
+      drop-shadow(0 0 16px rgba(120,200,255,.22));
+  }
+  7%{
+    filter:
+      drop-shadow(0 0 6px rgba(255,230,150,1))
+      drop-shadow(0 0 18px rgba(255,190,70,.8))
+      drop-shadow(0 0 26px rgba(120,200,255,.4));
+  }
+  10%{
+    filter:
+      drop-shadow(0 0 3px rgba(255,214,110,.85))
+      drop-shadow(0 0 9px rgba(255,180,60,.5))
+      drop-shadow(0 0 16px rgba(120,200,255,.22));
+  }
+  50%{
+    filter:
+      drop-shadow(0 0 5px rgba(255,225,140,.95))
+      drop-shadow(0 0 14px rgba(255,190,70,.7))
+      drop-shadow(0 0 24px rgba(120,200,255,.32));
+  }
 }
 .tab.active .tab-seal{
-  transform:translateY(-3px) scale(1.14);
-  filter:drop-shadow(0 6px 12px rgba(138,98,32,.4));
+  transform:translateY(-3px) scale(1.12);
 }
 .tab:active .tab-seal{ transform:scale(.92); }
+@media (prefers-reduced-motion: reduce){
+  .tab-seal{ animation:none; filter:drop-shadow(0 0 6px rgba(255,200,90,.6)); }
+}
