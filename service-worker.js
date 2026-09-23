@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v93-seal-logo';
+const CACHE = 'sj-wedding-v94-seal-tab';
 const ASSETS = [
   './',
   './index.html',

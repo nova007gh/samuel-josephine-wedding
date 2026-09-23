@@ -833,3 +833,18 @@
 @media (prefers-reduced-motion: reduce){
   .page-loader-seal{ animation:none; }
 }
+
+/* ---------- seal as the Gallery tab icon ---------- */
+.tab-seal{
+  width:36px;
+  height:auto;
+  display:block;
+  margin-top:-6px;
+  filter:drop-shadow(0 3px 7px rgba(112,78,26,.28));
+  transition:transform .2s ease, filter .2s ease;
+}
+.tab.active .tab-seal{
+  transform:translateY(-3px) scale(1.14);
+  filter:drop-shadow(0 6px 12px rgba(138,98,32,.4));
+}
+.tab:active .tab-seal{ transform:scale(.92); }
