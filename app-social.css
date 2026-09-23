@@ -710,3 +710,45 @@
 @media (prefers-reduced-motion: reduce){
   .activity-toast{ transition:opacity .2s ease; }
 }
+
+/* ---------- who-invited-you stats (admin guest list) ---------- */
+.invite-stats{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  justify-content:center;
+  margin:6px 0 16px;
+}
+.invite-stats-title{
+  width:100%;
+  margin:0 0 2px;
+  font-size:.66rem;
+  font-weight:700;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:#9a7b45;
+  text-align:center;
+}
+.invite-chip{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  padding:5px 12px;
+  border-radius:999px;
+  border:1px solid rgba(178,134,54,.4);
+  background:rgba(253,249,241,.85);
+  font-size:.74rem;
+  font-weight:600;
+  color:#6d4d17;
+}
+.invite-chip b{
+  min-width:20px;
+  height:20px;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  background:linear-gradient(#c79c48,#8a6220);
+  color:#fff6e2;
+  font-size:.68rem;
+  padding:0 5px;
+}

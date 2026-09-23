@@ -732,6 +732,20 @@ function renderGuestList(){
   list.innerHTML = '';
   empty.classList.toggle('hidden', adminGuests.length > 0);
 
+  /* "who invited you" breakdown — counts per source, most common first */
+  const stats = document.getElementById('inviteStats');
+  if (stats){
+    const counts = {};
+    for (const g of adminGuests)
+      counts[g.relation || 'Not specified'] = (counts[g.relation || 'Not specified'] || 0) + 1;
+    const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+    stats.innerHTML = entries.length
+      ? `<p class="invite-stats-title">Who invited them</p>` +
+        entries.map(([src, n]) =>
+          `<span class="invite-chip">${escapeHTML(src)} <b>${n}</b></span>`).join('')
+      : '';
+  }
+
   for (const g of adminGuests){
     const card = document.createElement('article');
     card.className = 'aq-card';

@@ -861,6 +861,7 @@
     <h1 class="page-title page-title--serif">Guest List</h1>
     <div class="divider"><span></span><i>&#10084;</i><span></span></div>
     <p class="page-sub">All guests who checked in</p>
+    <div id="inviteStats" class="invite-stats"></div>
     <div id="guestListContainer" class="aq-list"></div>
     <p id="guestListEmpty" class="page-sub">No guests have checked in yet.</p>
   </section>
@@ -998,8 +999,8 @@
 <script>
 /* one-time cache purge + SW refresh — guarantees every device loads fresh assets */
 try{
-  if (localStorage.getItem('sj_cache_reset') !== 'v103'){
-    localStorage.setItem('sj_cache_reset', 'v103');
+  if (localStorage.getItem('sj_cache_reset') !== 'v104'){
+    localStorage.setItem('sj_cache_reset', 'v104');
     if ('caches' in window) caches.keys().then(ks => Promise.all(ks.map(k => caches.delete(k))));
   }
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.update()));
