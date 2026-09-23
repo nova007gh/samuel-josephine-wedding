@@ -878,12 +878,24 @@ function kindLabel(kind){
 }
 
 const feedSeen = {};
+let pendingAnnounced = false;
 function toastNewItems(feedKey, items, describe){
   const prev = feedSeen[feedKey];
   feedSeen[feedKey] = new Set(items.map(i => i.id));
   if (!prev) return;                       // first populate — baseline only
   for (const item of items)
     if (!prev.has(item.id)) describe(item);
+}
+/* on sign-in, surface everything already waiting so nothing sits silently */
+function announcePendingBacklog(){
+  if (pendingAnnounced) return;
+  pendingAnnounced = true;
+  const mem = (adminMemories || []).filter(i => i.status === 'pending').length;
+  const gb = (adminGuestbook || []).filter(i => i.status === 'pending').length;
+  const guests = (adminGuests || []).filter(i => i.status === 'pending').length;
+  const total = mem + gb + guests;
+  if (total > 0)
+    activityToast(`${total} item${total > 1 ? 's' : ''} waiting`, 'Tap Pending Approvals to review');
 }
 
 function startAdminListeners(){
@@ -906,6 +918,8 @@ function startAdminListeners(){
         activityToast(`${g.name} checked in`,
                       `${g.attending ? 'Attending' : 'Exploring'} · ${g.status === 'pending' ? 'pending approval' : 'on the guest list'}`));
       adminGuests = items; updateAdminStats(); renderGuestList();
+      /* last feed to populate announces the backlog once all lists are in */
+      setTimeout(announcePendingBacklog, 600);
     }),
     onRsvps(items => {
       toastNewItems('rsvps', items, r => {
@@ -919,6 +933,7 @@ function startAdminListeners(){
 function stopAdminListeners(){
   adminUnsubs.forEach(fn => fn());
   adminUnsubs = [];
+  pendingAnnounced = false;
   adminMemories = []; adminGuestbook = []; adminGuests = []; adminRsvps = [];
   updateAdminStats(); renderApprovalQueue(); renderGuestList(); renderRsvpAdmin();
 }

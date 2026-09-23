@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v98-activity-toasts';
+const CACHE = 'sj-wedding-v99-pending-toast';
 const ASSETS = [
   './',
   './index.html',
