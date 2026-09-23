@@ -467,9 +467,9 @@
 
   <!-- ---------- More (hub menu) ---------- -->
   <section class="view hidden" data-view="more">
-    <h1 class="page-title">More</h1>
+    <h1 class="page-title">Share Moments</h1>
     <div class="divider"><span></span><i>&#10084;</i><span></span></div>
-    <p class="page-sub">Guest book, shared memories &amp; RSVP.</p>
+    <p class="page-sub">Share your photos, videos &amp; wishes with the couple.</p>
 
     <div class="menu-list">
       <button class="menu-item" data-goto="guestbook" type="button">
@@ -492,7 +492,7 @@
         <span class="menu-text"><strong>Notifications</strong><small id="notifStatus">Tap to get updates on new memories</small></span>
         <span class="menu-chev">&#10095;</span>
       </button>
-      <button class="menu-item" data-goto="adminlogin" type="button">
+      <button class="menu-item admin-only" data-goto="adminlogin" type="button">
         <span class="menu-icon menu-icon--gold">&#128100;</span>
         <span class="menu-text"><strong>Admin Dashboard</strong><small>Samuel &amp; Josephine only</small></span>
         <span class="menu-chev">&#10095;</span>
@@ -937,8 +937,8 @@
       Events
     </button>
     <button class="tab" data-tab="more">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="18.5" cy="12" r="1.8"/></svg>
-      More
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V6"/><path d="M5 12l7-7 7 7"/><path d="M5 21h14"/></svg>
+      Share
     </button>
   </nav>
 </main>
@@ -1006,8 +1006,8 @@
 <script>
 /* one-time cache purge + SW refresh — guarantees every device loads fresh assets */
 try{
-  if (localStorage.getItem('sj_cache_reset') !== 'v105'){
-    localStorage.setItem('sj_cache_reset', 'v105');
+  if (localStorage.getItem('sj_cache_reset') !== 'v106'){
+    localStorage.setItem('sj_cache_reset', 'v106');
     if ('caches' in window) caches.keys().then(ks => Promise.all(ks.map(k => caches.delete(k))));
   }
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.update()));

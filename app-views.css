@@ -888,3 +888,7 @@
 @media (prefers-reduced-motion: reduce){
   .tab-seal{ animation:none; filter:drop-shadow(0 0 6px rgba(255,200,90,.6)); }
 }
+
+/* ---------- admin-only menu items — hidden from guests ---------- */
+.admin-only{ display:none !important; }
+body.is-admin .admin-only{ display:flex !important; }

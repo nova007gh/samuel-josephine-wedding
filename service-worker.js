@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v105-checkin-rsvp';
+const CACHE = 'sj-wedding-v106-share-tab';
 const ASSETS = [
   './',
   './index.html',
