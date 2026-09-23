@@ -178,6 +178,11 @@ async function addGuest(guest){
   return res.id;
 }
 
+/* public approved guest list (name + attending only) */
+function onPublicGuests(callback){
+  return pollFeed('/guests', rows => callback(rows.slice().sort(newestFirst('checkedInAt'))));
+}
+
 function onGuests(callback){
   return pollFeed('/admin/guests', rows => callback(rows.slice().sort(newestFirst('checkedInAt'))), true);
 }

@@ -1057,3 +1057,48 @@ notifToggle?.addEventListener('click', async () => {
     : res === 'denied' ? 'Blocked — enable notifications in your browser settings'
     : 'Notifications are not supported on this device';
 });
+
+/* =========================================================
+   Guest-facing activity toasts — who's here, what's shared
+   ========================================================= */
+let publicAnnounced = false;
+const pubLatest = { mem: [], gb: [], guests: [] };
+
+/* once all three public feeds have seeded, greet the guest with a
+   one-time summary of the celebration so far */
+function announcePublicSummary(){
+  if (publicAnnounced || isAdmin()) return;
+  /* wait until the guest is actually inside the app — toasts behind the
+     invitation gate would be invisible; retried on the next poll */
+  if (typeof gateShowing === 'function' && gateShowing()) return;
+  if (!feedSeen['pub-mem'] || !feedSeen['pub-gb'] || !feedSeen['pub-guests']) return;
+  publicAnnounced = true;
+  const attending = pubLatest.guests.filter(g => g.attending).length;
+  const exploring = pubLatest.guests.length - attending;
+  const mems = pubLatest.mem.length;
+  const msgs = pubLatest.gb.length;
+  const bits = [];
+  if (attending) bits.push(`${attending} attending`);
+  if (exploring) bits.push(`${exploring} exploring`);
+  if (mems) bits.push(`${mems} ${mems > 1 ? 'memories' : 'memory'} shared`);
+  if (msgs) bits.push(`${msgs} message${msgs > 1 ? 's' : ''}`);
+  if (bits.length) activityToast('Welcome to the celebration', bits.join('  ·  '));
+}
+
+function publicToastWrapper(key, items, store, describe){
+  const inApp = typeof gateShowing === 'function' ? !gateShowing() : true;
+  toastNewItems(key, items, item => { if (!isAdmin() && inApp) describe(item); });
+  if (store) store.splice(0, store.length, ...items);
+  announcePublicSummary();
+}
+
+onMemories(items => publicToastWrapper('pub-mem', items, pubLatest.mem, m =>
+  activityToast(`${m.guestName || 'A guest'} shared ${kindLabel(m.kind).toLowerCase()}`,
+                'Just posted · see it in the Gallery')));
+
+onGuestbook(items => publicToastWrapper('pub-gb', items, pubLatest.gb, g =>
+  activityToast(`${g.name || 'A guest'} left a message`, 'Guest book')));
+
+onPublicGuests(items => publicToastWrapper('pub-guests', items, pubLatest.guests, g =>
+  activityToast(`${g.name} is here`,
+                g.attending ? 'Attending the wedding' : 'Exploring the celebration')));

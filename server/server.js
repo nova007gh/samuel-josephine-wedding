@@ -197,6 +197,12 @@ app.post('/api/guests', publicWrite, (req, res) => {
   notifyAll('New guest checked in', `${name} just ${g.attending === false ? 'joined to explore' : 'checked in to attend'} — pending your approval`);
 });
 
+/* public guest list — approved check-ins only, no contact details */
+app.get('/api/guests', (req, res) => {
+  const rows = db.prepare(`SELECT id, name, attending, checkedInAt FROM guests WHERE status = 'approved' ORDER BY checkedInAt DESC`).all();
+  res.json(rows.map(g => ({ ...g, attending: !!g.attending })));
+});
+
 /* ---------- RSVPs ---------- */
 app.post('/api/rsvps', publicWrite, (req, res) => {
   const r = req.body || {};
