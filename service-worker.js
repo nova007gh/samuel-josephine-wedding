@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v102-private-attendees';
+const CACHE = 'sj-wedding-v103-invite-options';
 const ASSETS = [
   './',
   './index.html',

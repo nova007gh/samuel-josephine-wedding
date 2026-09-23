@@ -136,6 +136,10 @@
           <option value="Jossy's Family">Jossy's Family</option>
           <option value="Sam's Friend">Sam's Friend</option>
           <option value="Jossy's Friend">Jossy's Friend</option>
+          <option value="Groom's JSS Mate">Groom's JSS Mate</option>
+          <option value="Bride's HSS Mate">Bride's HSS Mate</option>
+          <option value="OPASS">OPASS</option>
+          <option value="KOSEC">KOSEC</option>
           <option value="Colleague">Colleague</option>
           <option value="Church Family">Church Family</option>
           <option value="Other">Other</option>
@@ -994,8 +998,8 @@
 <script>
 /* one-time cache purge + SW refresh — guarantees every device loads fresh assets */
 try{
-  if (localStorage.getItem('sj_cache_reset') !== 'v102'){
-    localStorage.setItem('sj_cache_reset', 'v102');
+  if (localStorage.getItem('sj_cache_reset') !== 'v103'){
+    localStorage.setItem('sj_cache_reset', 'v103');
     if ('caches' in window) caches.keys().then(ks => Promise.all(ks.map(k => caches.delete(k))));
   }
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.update()));
