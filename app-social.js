@@ -622,6 +622,7 @@ let adminGuestbook = [];
 let adminGuests = [];
 let adminRsvps = [];
 let adminUnsubs = [];
+let pendingAnnounced = false;
 const adminFeedErrors = new Map();
 
 /* auth state drives everything admin-related */
@@ -878,7 +879,6 @@ function kindLabel(kind){
 }
 
 const feedSeen = {};
-let pendingAnnounced = false;
 function toastNewItems(feedKey, items, describe){
   const prev = feedSeen[feedKey];
   feedSeen[feedKey] = new Set(items.map(i => i.id));
