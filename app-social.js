@@ -1071,15 +1071,11 @@ function announcePublicSummary(){
   /* wait until the guest is actually inside the app — toasts behind the
      invitation gate would be invisible; retried on the next poll */
   if (typeof gateShowing === 'function' && gateShowing()) return;
-  if (!feedSeen['pub-mem'] || !feedSeen['pub-gb'] || !feedSeen['pub-guests']) return;
+  if (!feedSeen['pub-mem'] || !feedSeen['pub-gb']) return;
   publicAnnounced = true;
-  const attending = pubLatest.guests.filter(g => g.attending).length;
-  const exploring = pubLatest.guests.length - attending;
   const mems = pubLatest.mem.length;
   const msgs = pubLatest.gb.length;
   const bits = [];
-  if (attending) bits.push(`${attending} attending`);
-  if (exploring) bits.push(`${exploring} exploring`);
   if (mems) bits.push(`${mems} ${mems > 1 ? 'memories' : 'memory'} shared`);
   if (msgs) bits.push(`${msgs} message${msgs > 1 ? 's' : ''}`);
   if (bits.length) activityToast('Welcome to the celebration', bits.join('  ·  '));
@@ -1099,6 +1095,5 @@ onMemories(items => publicToastWrapper('pub-mem', items, pubLatest.mem, m =>
 onGuestbook(items => publicToastWrapper('pub-gb', items, pubLatest.gb, g =>
   activityToast(`${g.name || 'A guest'} left a message`, 'Guest book')));
 
-onPublicGuests(items => publicToastWrapper('pub-guests', items, pubLatest.guests, g =>
-  activityToast(`${g.name} is here`,
-                g.attending ? 'Attending the wedding' : 'Exploring the celebration')));
+/* attendees are tracked for the admin only — guests don't see who is
+   attending or exploring, so no public guest feed/toast is wired */
