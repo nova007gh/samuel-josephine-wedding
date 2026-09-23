@@ -317,3 +317,37 @@
   color:#f2e5cc;
   font-size:1rem;
 }
+
+/* ---------- RSVP pills inside the check-in form ---------- */
+.field-label{
+  display:block;
+  font-size:.68rem;
+  font-weight:700;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:#9a7b45;
+  margin-bottom:8px;
+}
+.rsvp-pills{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.rsvp-pill{
+  padding:12px 8px;
+  border-radius:14px;
+  border:1px solid rgba(178,134,54,.4);
+  background:rgba(253,249,241,.8);
+  font-family:inherit;
+  font-size:.78rem;
+  font-weight:600;
+  color:#8b7355;
+  cursor:pointer;
+  transition:all .2s ease;
+}
+.rsvp-pill.active{
+  background:linear-gradient(#c79c48,#8a6220);
+  color:#fff6e2;
+  border-color:#c79c48;
+  box-shadow:0 6px 16px rgba(138,98,32,.3);
+}

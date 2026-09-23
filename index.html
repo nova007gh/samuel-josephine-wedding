@@ -129,6 +129,13 @@
       <label class="field">Email Address
         <input id="guestEmail" type="email" name="email" required placeholder="you@example.com" autocomplete="email" />
       </label>
+      <div class="field">
+        <span class="field-label">Will you attend?</span>
+        <div class="rsvp-pills" id="guestRsvp">
+          <button type="button" class="rsvp-pill active" data-rsvp="yes">Attending</button>
+          <button type="button" class="rsvp-pill" data-rsvp="no">Can't make it — exploring</button>
+        </div>
+      </div>
       <label class="field">Your Relationship / Invited By
         <select id="guestRelation" name="relation" required>
           <option value="" disabled selected>Select who invited you</option>
@@ -999,8 +1006,8 @@
 <script>
 /* one-time cache purge + SW refresh — guarantees every device loads fresh assets */
 try{
-  if (localStorage.getItem('sj_cache_reset') !== 'v104'){
-    localStorage.setItem('sj_cache_reset', 'v104');
+  if (localStorage.getItem('sj_cache_reset') !== 'v105'){
+    localStorage.setItem('sj_cache_reset', 'v105');
     if ('caches' in window) caches.keys().then(ks => Promise.all(ks.map(k => caches.delete(k))));
   }
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.update()));

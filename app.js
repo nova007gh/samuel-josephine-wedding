@@ -435,6 +435,7 @@ let pendingAttending = true; // YES path vs explore-first path
 
 $('#attendYes')?.addEventListener('click', () => {
   pendingAttending = true;
+  syncGuestRsvpPills();
   hideGate(attendScreen);
   setTimeout(() => showGate(guestLoginScreen), 650);
 });
@@ -457,6 +458,21 @@ $('#attendBrowse')?.addEventListener('click', () => {
 });
 
 /* ---- Guest login form ---- */
+/* RSVP pills inside the check-in form — prefilled from the attend screen,
+   but the guest can change their answer right here */
+let guestRsvpYes = true;
+document.querySelectorAll('#guestRsvp .rsvp-pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    document.querySelectorAll('#guestRsvp .rsvp-pill').forEach(x => x.classList.toggle('active', x === pill));
+    guestRsvpYes = pill.dataset.rsvp === 'yes';
+  });
+});
+function syncGuestRsvpPills(){
+  guestRsvpYes = pendingAttending !== false;
+  document.querySelectorAll('#guestRsvp .rsvp-pill').forEach(x =>
+    x.classList.toggle('active', (x.dataset.rsvp === 'yes') === guestRsvpYes));
+}
+
 $('#guestLoginForm')?.addEventListener('submit', async e => {
   e.preventDefault();
   const err = $('#guestLoginError');
@@ -471,7 +487,7 @@ $('#guestLoginForm')?.addEventListener('submit', async e => {
     return;
   }
 
-  const guest = { name, phone, email, relation, attending:pendingAttending, checkedInAt:new Date().toISOString() };
+  const guest = { name, phone, email, relation, attending:guestRsvpYes, checkedInAt:new Date().toISOString() };
 
   // Show loading state on the button
   if (submitBtn){
@@ -516,6 +532,7 @@ $('#enterFromHome')?.addEventListener('click', () => {
   // details form first — we still want their name/phone/email on record.
   if (!getGuest()){
     pendingAttending = false;
+    syncGuestRsvpPills();
     showGate(guestLoginScreen);
     return;
   }
