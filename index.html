@@ -986,8 +986,8 @@
 <script>
 /* one-time cache purge + SW refresh — guarantees every device loads fresh assets */
 try{
-  if (localStorage.getItem('sj_cache_reset') !== 'v90'){
-    localStorage.setItem('sj_cache_reset', 'v90');
+  if (localStorage.getItem('sj_cache_reset') !== 'v91'){
+    localStorage.setItem('sj_cache_reset', 'v91');
     if ('caches' in window) caches.keys().then(ks => Promise.all(ks.map(k => caches.delete(k))));
   }
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.update()));

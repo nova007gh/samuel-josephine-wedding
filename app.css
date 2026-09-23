@@ -602,3 +602,15 @@ button{ font:inherit; cursor:pointer; }
   .gate-card,
   .gate-seal{ animation-duration:.01s; animation-delay:0s; transition-duration:.01s; }
 }
+
+/* ---------- full-bleed invitation gates on phones ----------
+   Portrait screens: the artwork covers the whole viewport instead of
+   letterboxing inside a fixed-ratio frame with dark bars. The art's own
+   ratio (≈0.46) matches phone viewports almost exactly, so cover crops
+   nearly nothing and the % hotspots stay on their buttons. Landscape /
+   desktop keeps the fitted frame so nothing important is cropped away. */
+@media (max-aspect-ratio: 3/4){
+  .landing-frame{ width:100vw; height:100dvh; aspect-ratio:auto; }
+  .landing-art{ object-fit:cover; }
+  .invitation{ width:100vw; height:100dvh; aspect-ratio:auto; }
+}
