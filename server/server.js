@@ -210,6 +210,9 @@ app.post('/api/rsvps', publicWrite, (req, res) => {
          Math.min(Math.max(parseInt(r.guestCount, 10) || 1, 1), 20),
          str(r.song, 200), str(r.message, 2000), now());
   res.json({ ok: true, id });
+  const att = (r.attending || '').toString();
+  const attLabel = /decline|no|can't/i.test(att) ? "can't make it" : 'is attending';
+  notifyAll('New RSVP', `${name} ${attLabel}${parseInt(r.guestCount, 10) > 1 ? ` — party of ${r.guestCount}` : ''}`);
 });
 
 /* ---------- guestbook ---------- */

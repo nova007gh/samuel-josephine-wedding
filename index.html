@@ -931,6 +931,9 @@
   </nav>
 </main>
 
+<!-- activity toasts — styled notifications for registrations, uploads, messages -->
+<div id="activityToasts" class="activity-toasts" aria-live="polite"></div>
+
 <!-- Guest book: leave a message -->
 <div id="gbModal" class="sheet hidden" role="dialog" aria-label="Leave a message">
   <form id="gbForm" class="sheet-card">
@@ -991,8 +994,8 @@
 <script>
 /* one-time cache purge + SW refresh — guarantees every device loads fresh assets */
 try{
-  if (localStorage.getItem('sj_cache_reset') !== 'v97'){
-    localStorage.setItem('sj_cache_reset', 'v97');
+  if (localStorage.getItem('sj_cache_reset') !== 'v98'){
+    localStorage.setItem('sj_cache_reset', 'v98');
     if ('caches' in window) caches.keys().then(ks => Promise.all(ks.map(k => caches.delete(k))));
   }
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.update()));

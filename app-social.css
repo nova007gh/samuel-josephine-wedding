@@ -656,3 +656,57 @@
   margin:0 auto 14px;
   max-width:200px;
 }
+
+/* ---------- activity toasts — elegant gold notifications ---------- */
+.activity-toasts{
+  position:fixed;
+  top:calc(12px + env(safe-area-inset-top));
+  left:50%;
+  transform:translateX(-50%);
+  z-index:300;
+  display:grid;
+  gap:8px;
+  width:min(92vw, 380px);
+  pointer-events:none;
+}
+.activity-toast{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:10px 16px 10px 10px;
+  border-radius:999px;
+  background:rgba(253,249,241,.96);
+  border:1px solid rgba(178,134,54,.45);
+  box-shadow:0 12px 30px rgba(112,78,26,.25), inset 0 0 0 1px rgba(255,255,255,.6);
+  backdrop-filter:blur(10px);
+  opacity:0;
+  transform:translateY(-14px) scale(.96);
+  transition:opacity .3s ease, transform .35s cubic-bezier(.2,.9,.3,1.2);
+}
+.activity-toast.in{ opacity:1; transform:translateY(0) scale(1); }
+.activity-toast img{
+  width:38px;
+  height:38px;
+  object-fit:contain;
+  flex:none;
+  filter:drop-shadow(0 0 6px rgba(255,200,90,.6));
+}
+.activity-toast b{
+  display:block;
+  font-family:"Cormorant Garamond",Georgia,serif;
+  font-size:1.02rem;
+  font-weight:600;
+  color:#6d4d17;
+  line-height:1.15;
+}
+.activity-toast span{
+  display:block;
+  font-size:.68rem;
+  font-weight:500;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  color:#9a7b45;
+}
+@media (prefers-reduced-motion: reduce){
+  .activity-toast{ transition:opacity .2s ease; }
+}

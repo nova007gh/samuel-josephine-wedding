@@ -850,13 +850,70 @@ document.getElementById('adminRefresh')?.addEventListener('click', e => {
 });
 
 // admin real-time listeners — only while an admin is signed in
+/* ---------- activity toasts ----------
+   Elegant gold notifications whenever something new lands — a guest
+   checks in, uploads, leaves a message, or RSVPs. Seeded on first load
+   so signing in doesn't fire a storm of toasts for old items. */
+function activityToast(title, sub){
+  const wrap = document.getElementById('activityToasts');
+  if (!wrap) return;
+  const el = document.createElement('div');
+  el.className = 'activity-toast';
+  el.innerHTML =
+    `<img src="assets/seal-logo.png" alt="" aria-hidden="true">` +
+    `<div><b>${escapeHTML(title)}</b><span>${escapeHTML(sub)}</span></div>`;
+  wrap.appendChild(el);
+  requestAnimationFrame(() => el.classList.add('in'));
+  setTimeout(() => {
+    el.classList.remove('in');
+    setTimeout(() => el.remove(), 400);
+  }, 4600);
+  while (wrap.children.length > 3) wrap.firstChild.remove();
+}
+
+function kindLabel(kind){
+  return ({ photo:'Photo', video:'Video', selfie:'Selfie',
+            voice:'Voice message', videomsg:'Video message',
+            music:'Audio / Music' })[kind] || 'Memory';
+}
+
+const feedSeen = {};
+function toastNewItems(feedKey, items, describe){
+  const prev = feedSeen[feedKey];
+  feedSeen[feedKey] = new Set(items.map(i => i.id));
+  if (!prev) return;                       // first populate — baseline only
+  for (const item of items)
+    if (!prev.has(item.id)) describe(item);
+}
+
 function startAdminListeners(){
   stopAdminListeners();
   adminUnsubs = [
-    onAllMemories(items => { adminMemories = items; updateAdminStats(); renderApprovalQueue(); }),
-    onAllGuestbook(items => { adminGuestbook = items; updateAdminStats(); renderApprovalQueue(); }),
-    onGuests(items => { adminGuests = items; updateAdminStats(); renderGuestList(); }),
-    onRsvps(items => { adminRsvps = items; updateAdminStats(); renderRsvpAdmin(); })
+    onAllMemories(items => {
+      toastNewItems('mem', items, m =>
+        activityToast(`${m.guestName || 'A guest'} shared ${kindLabel(m.kind).toLowerCase()}`,
+                      m.status === 'pending' ? 'Pending your approval' : 'New memory'));
+      adminMemories = items; updateAdminStats(); renderApprovalQueue();
+    }),
+    onAllGuestbook(items => {
+      toastNewItems('gb', items, g =>
+        activityToast(`${g.name || 'A guest'} left a message`,
+                      g.status === 'pending' ? 'Pending your approval' : 'Guest book'));
+      adminGuestbook = items; updateAdminStats(); renderApprovalQueue();
+    }),
+    onGuests(items => {
+      toastNewItems('guests', items, g =>
+        activityToast(`${g.name} checked in`,
+                      `${g.attending ? 'Attending' : 'Exploring'} · ${g.status === 'pending' ? 'pending approval' : 'on the guest list'}`));
+      adminGuests = items; updateAdminStats(); renderGuestList();
+    }),
+    onRsvps(items => {
+      toastNewItems('rsvps', items, r => {
+        const att = /decline|no|can't/i.test(r.attending || '') ? "can't make it" : 'is attending';
+        activityToast(`${r.name} RSVP'd`, `${att}${r.guestCount > 1 ? ` · party of ${r.guestCount}` : ''}`);
+      });
+      adminRsvps = items; updateAdminStats(); renderRsvpAdmin();
+    })
   ];
 }
 function stopAdminListeners(){
@@ -923,8 +980,7 @@ async function renderMyUploads(){
     const card = document.createElement('article');
     card.className = 'aq-card';
     const pending = item.status !== 'approved';
-    const label = item._kind === 'guestbook' ? 'Guest book message'
-      : ({ photo:'Photo', video:'Video', selfie:'Selfie', voice:'Voice message', videomsg:'Video message', music:'Audio / Music' })[item.kind] || 'Memory';
+    const label = item._kind === 'guestbook' ? 'Guest book message' : kindLabel(item.kind);
     const type = item.type || '';
     const thumb = item._kind === 'memory' && item.mediaUrl
       ? /^image\//.test(type) ? `<img class="aq-media" src="${item.mediaUrl}" alt="">`
