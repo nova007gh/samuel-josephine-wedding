@@ -807,7 +807,17 @@
 #musicToggle.is-on{ box-shadow:0 10px 26px rgba(138,98,32,.45); }
 
 /* ---------- seal logo + page-transition loader ---------- */
-.brand-mark{ width:46px; height:auto; display:block; }
+.brand-mark{
+  width:58px;
+  height:auto;
+  display:block;
+  filter:drop-shadow(0 2px 8px rgba(255,196,80,.5)) drop-shadow(0 0 14px rgba(255,180,60,.3));
+  animation:brandGlow 3s ease-in-out infinite;
+}
+@keyframes brandGlow{
+  0%,100%{ filter:drop-shadow(0 2px 8px rgba(255,196,80,.5)) drop-shadow(0 0 14px rgba(255,180,60,.3)); }
+  50%{ filter:drop-shadow(0 2px 10px rgba(255,210,110,.85)) drop-shadow(0 0 22px rgba(255,185,70,.55)); }
+}
 .page-loader{
   position:fixed;
   inset:0;
@@ -836,39 +846,39 @@
 
 /* ---------- seal as the Gallery tab icon ---------- */
 .tab-seal{
-  width:58px;
+  width:74px;
   height:auto;
   display:block;
-  margin-top:-16px;
+  margin-top:-30px;
   transition:transform .2s ease;
-  /* neon-electric glow: warm gold core with a faint cyan edge,
-     pulsing softly with an occasional flicker */
-  animation:sealNeon 2.4s ease-in-out infinite;
+  /* golden neon pulse — layered amber halos that swell and shimmer,
+     with a bright flare mid-cycle */
+  animation:sealNeon 2.6s ease-in-out infinite;
 }
 @keyframes sealNeon{
   0%,100%{
     filter:
-      drop-shadow(0 0 3px rgba(255,214,110,.85))
-      drop-shadow(0 0 9px rgba(255,180,60,.5))
-      drop-shadow(0 0 16px rgba(120,200,255,.22));
+      drop-shadow(0 0 4px rgba(255,222,130,.9))
+      drop-shadow(0 0 12px rgba(255,190,70,.6))
+      drop-shadow(0 0 26px rgba(230,150,30,.35));
   }
-  7%{
+  8%{
     filter:
-      drop-shadow(0 0 6px rgba(255,230,150,1))
-      drop-shadow(0 0 18px rgba(255,190,70,.8))
-      drop-shadow(0 0 26px rgba(120,200,255,.4));
+      drop-shadow(0 0 7px rgba(255,240,170,1))
+      drop-shadow(0 0 22px rgba(255,200,80,.85))
+      drop-shadow(0 0 40px rgba(240,170,50,.55));
   }
-  10%{
+  12%{
     filter:
-      drop-shadow(0 0 3px rgba(255,214,110,.85))
-      drop-shadow(0 0 9px rgba(255,180,60,.5))
-      drop-shadow(0 0 16px rgba(120,200,255,.22));
+      drop-shadow(0 0 4px rgba(255,222,130,.9))
+      drop-shadow(0 0 12px rgba(255,190,70,.6))
+      drop-shadow(0 0 26px rgba(230,150,30,.35));
   }
   50%{
     filter:
-      drop-shadow(0 0 5px rgba(255,225,140,.95))
-      drop-shadow(0 0 14px rgba(255,190,70,.7))
-      drop-shadow(0 0 24px rgba(120,200,255,.32));
+      drop-shadow(0 0 6px rgba(255,235,160,1))
+      drop-shadow(0 0 18px rgba(255,200,80,.8))
+      drop-shadow(0 0 36px rgba(235,160,40,.5));
   }
 }
 .tab.active .tab-seal{
