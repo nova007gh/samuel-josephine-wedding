@@ -836,10 +836,10 @@
 
 /* ---------- seal as the Gallery tab icon ---------- */
 .tab-seal{
-  width:46px;
+  width:58px;
   height:auto;
   display:block;
-  margin-top:-8px;
+  margin-top:-16px;
   transition:transform .2s ease;
   /* neon-electric glow: warm gold core with a faint cyan edge,
      pulsing softly with an occasional flicker */
