@@ -1,9 +1,10 @@
 
-const CACHE = 'sj-wedding-v92-direct-enter';
+const CACHE = 'sj-wedding-v93-seal-logo';
 const ASSETS = [
   './',
   './index.html',
   './app.css',
+  './assets/seal-logo.png',
   './app-views.css',
   './app-forms.css',
   './app-social.css',

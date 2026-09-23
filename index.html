@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="Sam & Jossy" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" href="assets/icons/icon-192.png" />
-  <link rel="icon" sizes="192x192" href="assets/icons/icon-192.png" />
+  <link rel="icon" type="image/png" href="assets/seal-logo.png" />
   <title>Sam &amp; Jossy | January 9, 2027</title>
   <meta name="description" content="The wedding celebration of Samuel Nana Yaw Obeng and Josephine Abena Owusua Appiah." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -155,7 +155,7 @@
 
   <header class="app-header">
     <button class="app-brand" data-goto="home" type="button" aria-label="Home">
-      <span class="brand-mark">S<i>&amp;</i>J</span>
+      <img class="brand-mark" src="assets/seal-logo.png" alt="S &amp; J" draggable="false" />
     </button>
     <div class="header-actions">
       <button id="menuToggle" class="icon-button icon-button--plain hidden" data-goto="more" type="button" aria-label="Open menu">
@@ -896,6 +896,11 @@
   <span class="app-floral-br" aria-hidden="true"></span>
 
   <!-- ---------- Bottom tab bar ---------- -->
+  <!-- page-transition seal — flashes briefly between views -->
+  <div id="pageLoader" class="page-loader hidden" aria-hidden="true">
+    <img src="assets/seal-logo.png" alt="" class="page-loader-seal" draggable="false" />
+  </div>
+
   <!-- floating wedding-song control — lives outside the header because
        the header's backdrop-filter would trap position:fixed -->
   <button id="musicToggle" class="icon-button hidden" aria-label="Toggle background music">
@@ -986,8 +991,8 @@
 <script>
 /* one-time cache purge + SW refresh — guarantees every device loads fresh assets */
 try{
-  if (localStorage.getItem('sj_cache_reset') !== 'v92'){
-    localStorage.setItem('sj_cache_reset', 'v92');
+  if (localStorage.getItem('sj_cache_reset') !== 'v93'){
+    localStorage.setItem('sj_cache_reset', 'v93');
     if ('caches' in window) caches.keys().then(ks => Promise.all(ks.map(k => caches.delete(k))));
   }
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.update()));

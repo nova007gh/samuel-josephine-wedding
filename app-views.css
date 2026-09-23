@@ -805,3 +805,31 @@
   backdrop-filter:blur(6px);
 }
 #musicToggle.is-on{ box-shadow:0 10px 26px rgba(138,98,32,.45); }
+
+/* ---------- seal logo + page-transition loader ---------- */
+.brand-mark{ width:46px; height:auto; display:block; }
+.page-loader{
+  position:fixed;
+  inset:0;
+  z-index:250;
+  display:grid;
+  place-items:center;
+  background:rgba(247,239,228,.55);
+  backdrop-filter:blur(3px);
+  pointer-events:none;
+  opacity:0;
+  transition:opacity .18s ease;
+}
+.page-loader.show{ opacity:1; }
+.page-loader-seal{
+  width:104px;
+  filter:drop-shadow(0 10px 22px rgba(112,78,26,.35));
+  animation:sealPress .9s ease-in-out infinite;
+}
+@keyframes sealPress{
+  0%,100%{ transform:scale(.9); opacity:.8; }
+  45%{ transform:scale(1.02); opacity:1; }
+}
+@media (prefers-reduced-motion: reduce){
+  .page-loader-seal{ animation:none; }
+}

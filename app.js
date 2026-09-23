@@ -536,8 +536,22 @@ const ADMIN_VIEWS = new Set(['admin', 'approvals', 'rsvpAdmin', 'guestlist']);
    between screens instead of leaving the page — leaving would reload the
    app and replay the invitation gates. */
 let currentView = 'home';
+/* brief seal pulse between pages — visual only, never blocks taps */
+function flashPageLoader(){
+  const pl = document.getElementById('pageLoader');
+  if (!pl) return;
+  pl.classList.remove('hidden');
+  requestAnimationFrame(() => pl.classList.add('show'));
+  clearTimeout(flashPageLoader._t);
+  flashPageLoader._t = setTimeout(() => {
+    pl.classList.remove('show');
+    setTimeout(() => pl.classList.add('hidden'), 200);
+  }, 420);
+}
+
 function switchView(name, fromHistory = false){
   if (ADMIN_VIEWS.has(name) && !isAdmin()) name = 'adminlogin';
+  if (name !== currentView) flashPageLoader();
   /* signed-in admin entering an admin view: probe the session so an
      expired token drops immediately instead of showing empty feeds */
   if (ADMIN_VIEWS.has(name) && isAdmin() && typeof api === 'function')
