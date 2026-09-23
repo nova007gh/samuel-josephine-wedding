@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v91-fullbleed-gates';
+const CACHE = 'sj-wedding-v92-direct-enter';
 const ASSETS = [
   './',
   './index.html',
