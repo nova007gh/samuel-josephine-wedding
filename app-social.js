@@ -637,6 +637,9 @@ onAdminAuth(signedIn => {
 
   subscribeGuestbook();
   if (typeof renderGallery === 'function') renderGallery();
+  if (typeof renderTimeline === 'function') renderTimeline();
+  /* song REMOVE buttons + settings controls depend on admin state */
+  if (typeof renderSiteSettings === 'function') renderSiteSettings();
 
   const current = document.querySelector('.view:not(.hidden)')?.dataset.view;
   if (signedIn && current === 'adminlogin') switchView('admin');
@@ -697,7 +700,7 @@ function renderApprovalQueue(){
     let media = '';
     if (item.kind === 'guest'){
       media = `<p><b>${escapeHTML(item.name)}</b> <span class="gb-badge gb-badge--pending">Guest check-in</span></p>
-        <small>${[item.relation, item.phone, item.email].filter(Boolean).map(escapeHTML).join(' &middot; ') || 'No contact details'} &middot; ${item.attending ? 'Attending' : 'Exploring'}</small>`;
+        <small>${[item.relation, item.phone, item.email].filter(Boolean).map(escapeHTML).join(' &middot; ') || 'No contact details'} &middot; ${item.attending ? 'Attending' : 'Exploring'}${item.attending && item.tableGuests > 0 ? ` &middot; table of ${1 + item.tableGuests}` : ''}</small>`;
     } else if (item.kind === 'guestbook'){
       media = `<p><b>${escapeHTML(item.name)}</b> &mdash; ${escapeHTML(item.message)}</p>`;
     } else if (item.type && item.type.startsWith('image/') && item.mediaUrl){
@@ -753,8 +756,10 @@ function renderGuestList(){
     card.innerHTML = `
       <p><b>${escapeHTML(g.name)}</b>
         <span class="gb-badge ${g.attending ? 'gb-badge--approved' : 'gb-badge--pending'}">${g.attending ? 'Attending' : 'Exploring'}</span>
+        ${g.attending && g.tableGuests > 0 ? `<span class="gb-badge gb-badge--approved">Table of ${1 + g.tableGuests}</span>` : ''}
         ${g.status !== 'approved' ? '<span class="gb-badge gb-badge--pending">Needs approval</span>' : ''}</p>
       <small>${escapeHTML(g.relation || '')} &middot; ${escapeHTML(g.phone || '')} &middot; ${escapeHTML(g.email || '')}</small>
+      ${[g.city, g.state, g.country].filter(Boolean).length ? `<small>${escapeHTML([g.city, g.state, g.country].filter(Boolean).join(', '))}</small>` : ''}
       <small>Checked in ${checkedIn}</small>
       <div class="aq-actions">
         ${g.status !== 'approved' ? '<button class="aq-approve" data-id="' + g.id + '" type="button">APPROVE</button>' : ''}
@@ -802,6 +807,92 @@ function renderRsvpAdmin(){
   }
 }
 
+/* =========================================================
+   Security Log — sign-in attempts, blocks & suspicious requests
+   ========================================================= */
+let adminSecurity = [];
+
+const SEC_META = {
+  admin_login:        { icon:'✅', label:'Admin signed in',        cls:'ok'   },
+  admin_login_failed: { icon:'⛔', label:'Failed admin sign-in',   cls:'warn' },
+  admin_token_invalid:{ icon:'🔑', label:'Rejected admin token',   cls:'warn' },
+  admin_no_token:     { icon:'👀', label:'Admin endpoint probe',   cls:'info' },
+  otp_verify_failed:  { icon:'✖️', label:'Wrong entry code',        cls:'info' },
+  rate_limited:       { icon:'⏱️', label:'Rate limit hit',          cls:'info' },
+  suspicious_input:   { icon:'🚨', label:'Injection-shaped request',cls:'high' }
+};
+
+function secGeoLine(ev){
+  const g = ev.geo || {};
+  const where = [g.city, g.region, g.country].filter(Boolean).join(', ');
+  const bits = [];
+  if (where) bits.push(where);
+  if (g.isp) bits.push(`ISP: ${g.isp}`);
+  if (ev.ip) bits.push(`IP: ${ev.ip}`);
+  return bits.join('  ·  ');
+}
+function secDeviceLine(ev){
+  const bits = [];
+  if (ev.deviceId) bits.push(`Device: ${ev.deviceId.slice(0, 13)}…`);
+  if (ev.net) bits.push(`Network: ${ev.net}`);
+  if (ev.ua) bits.push(ev.ua.slice(0, 110));
+  return bits.join('  ·  ');
+}
+
+function renderSecurityLog(){
+  const list = document.getElementById('securityList');
+  const empty = document.getElementById('securityEmpty');
+  if (!list) return;
+  list.innerHTML = '';
+  empty?.classList.toggle('hidden', adminSecurity.length > 0);
+  /* menu badge counts alert-level events from the last 24h */
+  const alerts = adminSecurity.filter(e =>
+    (e.severity === 'warn' || e.severity === 'high') && Date.now() - e.createdAt < 86400000).length;
+  const badge = document.getElementById('securityBadge');
+  if (badge){ badge.textContent = alerts || ''; badge.classList.toggle('hidden', !alerts); }
+
+  for (const ev of adminSecurity){
+    const meta = SEC_META[ev.type] || { icon:'•', label: ev.type, cls:'info' };
+    const card = document.createElement('article');
+    card.className = `aq-card sec-card sec-card--${meta.cls}`;
+    const when = ev.createdAt ? timeAgo(ev.createdAt) : '';
+    card.innerHTML = `
+      <p><b>${meta.icon} ${escapeHTML(meta.label)}</b>
+        <span class="gb-badge ${meta.cls === 'info' || meta.cls === 'ok' ? 'gb-badge--approved' : 'gb-badge--pending'}">${escapeHTML(ev.severity)}</span></p>
+      ${ev.detail ? `<p class="sec-detail">${escapeHTML(ev.detail)}</p>` : ''}
+      <small>${escapeHTML(secGeoLine(ev) || 'location unknown')}</small>
+      <small>${escapeHTML(secDeviceLine(ev) || 'device unknown')}</small>
+      <small>${escapeHTML(ev.path || '')} · ${when}</small>`;
+    list.appendChild(card);
+  }
+}
+
+async function refreshSecurityLog(){
+  const list = document.getElementById('securityList');
+  try {
+    adminSecurity = await getSecurityEvents();
+  } catch(err){
+    if (list) list.innerHTML = '<small>Could not load the security log.</small>';
+    return;
+  }
+  renderSecurityLog();
+}
+
+document.querySelector('[data-goto="security"]')?.addEventListener('click', refreshSecurityLog);
+document.getElementById('securityRefresh')?.addEventListener('click', e => {
+  e.currentTarget.disabled = true;
+  refreshSecurityLog().finally(() => { e.currentTarget.disabled = false; });
+});
+document.getElementById('securityClear')?.addEventListener('click', async () => {
+  if (!confirm('Clear the entire security log?')) return;
+  await clearSecurityEvents();
+  adminSecurity = [];
+  renderSecurityLog();
+});
+
+/* =========================================================
+   Approve / remove helpers for guestbook, memories, guests
+   ========================================================= */
 async function updateStatus(btn, status){
   const kind = btn.dataset.kind;
   const id = btn.dataset.id;
@@ -861,6 +952,7 @@ document.getElementById('adminRefresh')?.addEventListener('click', e => {
   btn.disabled = true;
   btn.textContent = 'REFRESHING…';
   startAdminListeners();
+  refreshSecurityLog();
   setTimeout(() => { btn.disabled = false; btn.textContent = 'REFRESH DATA'; }, 1500);
 });
 
@@ -869,9 +961,13 @@ document.getElementById('adminRefresh')?.addEventListener('click', e => {
    Elegant gold notifications whenever something new lands — a guest
    checks in, uploads, leaves a message, or RSVPs. Seeded on first load
    so signing in doesn't fire a storm of toasts for old items. */
+/* nothing pops up until the guest has entered the wedding — no toasts over
+   the landing seal, the RSVP choice or the check-in form */
+function inWedding(){ return !(typeof gateShowing === 'function' && gateShowing()); }
+
 function activityToast(title, sub){
   const wrap = document.getElementById('activityToasts');
-  if (!wrap) return;
+  if (!wrap || !inWedding()) return;
   const el = document.createElement('div');
   el.className = 'activity-toast';
   el.innerHTML =
@@ -902,7 +998,7 @@ function toastNewItems(feedKey, items, describe){
 }
 /* on sign-in, surface everything already waiting so nothing sits silently */
 function announcePendingBacklog(){
-  if (pendingAnnounced) return;
+  if (pendingAnnounced || !inWedding() || !feedSeen.guests) return;
   pendingAnnounced = true;
   const mem = (adminMemories || []).filter(i => i.status === 'pending').length;
   const gb = (adminGuestbook || []).filter(i => i.status === 'pending').length;
@@ -1108,6 +1204,98 @@ onMemories(items => publicToastWrapper('pub-mem', items, pubLatest.mem, m =>
 
 onGuestbook(items => publicToastWrapper('pub-gb', items, pubLatest.gb, g =>
   activityToast(`${g.name || 'A guest'} left a message`, 'Guest book')));
+
+/* ---------- admin announcements — a glowing pop-up for every guest ---------- */
+let announceSeenAt = 0;
+let announceRepeatTimer = null;
+
+/* shared by the guest pop-up and the admin's live preview */
+function announceMarkup(ann){
+  const a = sitePhoto(ann.photoA || 'sam-adult', 'assets/seal-logo.png');
+  const b = sitePhoto(ann.photoB || 'jossy-adult', 'assets/seal-logo.png');
+  return `<span class="ann-photos"><img src="${a}" alt=""><img src="${b}" alt=""></span>` +
+    `<div class="ann-body"><b>&#10084; FROM ${escapeHTML((wed('weddingNameA') || 'Sam').toUpperCase())} &amp; ${escapeHTML((wed('weddingNameB') || 'Jossy').toUpperCase())} &#10084;</b>` +
+    `<p><i class="ann-heart">&#10084;</i> ${escapeHTML(ann.text || '')} <i class="ann-heart">&#10084;</i></p></div>`;
+}
+
+function showAnnouncement(ann){
+  const wrap = document.getElementById('activityToasts');
+  if (!wrap || !inWedding()) return;
+  if (typeof ann === 'string') ann = { text: ann };
+  const el = document.createElement('div');
+  el.className = 'activity-toast announce-toast';
+  el.innerHTML = announceMarkup(ann);
+  wrap.appendChild(el);
+  requestAnimationFrame(() => el.classList.add('in'));
+  /* announcements linger much longer than activity toasts */
+  setTimeout(() => { el.classList.remove('in'); setTimeout(() => el.remove(), 500); }, 12000);
+  while (wrap.children.length > 4) wrap.firstChild.remove();
+}
+
+async function checkAnnouncement(){
+  /* admins see it too — it's the sender's instant confirmation */
+  if (typeof gateShowing === 'function' && gateShowing()) return;
+  try {
+    const s = await getSettings();
+    let ann = null;
+    try { ann = JSON.parse(s.announcement || 'null'); } catch {}
+    clearInterval(announceRepeatTimer); announceRepeatTimer = null;
+    if (!ann?.text) return;
+    const seen = Number(localStorage.getItem('sj_announce_seen') || 0);
+    if (ann.at > announceSeenAt && ann.at > seen){
+      announceSeenAt = ann.at;
+      localStorage.setItem('sj_announce_seen', String(ann.at));
+      showAnnouncement(ann);
+    }
+    if (ann.everyMin > 0)
+      announceRepeatTimer = setInterval(() => showAnnouncement(ann), ann.everyMin * 60000);
+  } catch {}
+}
+setInterval(checkAnnouncement, 20000);
+checkAnnouncement();
+
+/* ---------- event-time announcements — each programme item, on the day ----------
+   Times are Accra time (GMT, no daylight saving), so guests abroad are told
+   at the real moment it happens in Ghana. */
+function eventStartTimes(){
+  let events = [];
+  try { events = JSON.parse(wed('events')) || []; } catch {}
+  const iso = wed('weddingDateISO') || '';
+  const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return [];
+  const [, y, mo, d] = m.map(Number);
+  return events.map((ev, i) => {
+    const t = (ev.time || '').match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+    if (!t) return null;
+    let h = +t[1] % 12;
+    if (/pm/i.test(t[3] || '')) h += 12;
+    if (!t[3] && +t[1] === 12) h = 12;
+    return { i, name: ev.name || 'The next celebration', time: ev.time, icon: ev.icon || '❤',
+             at: Date.UTC(y, mo - 1, d, h, +t[2]) };
+  }).filter(Boolean);
+}
+const EVENT_WINDOW_MS = 20 * 60000;   // late arrivals still get the call for 20 min
+function checkEventAnnouncements(now = Date.now()){
+  if (typeof gateShowing === 'function' && gateShowing()) return;
+  for (const ev of eventStartTimes()){
+    if (now < ev.at || now - ev.at > EVENT_WINDOW_MS) continue;
+    const key = `sj_event_ann_${ev.at}_${ev.i}`;
+    if (localStorage.getItem(key)) continue;
+    localStorage.setItem(key, '1');
+    showAnnouncement({ text: `${ev.icon} It's time! ${ev.name} begins now — ${ev.time}` });
+  }
+}
+setInterval(checkEventAnnouncements, 20000);
+setTimeout(checkEventAnnouncements, 3000);
+
+/* the moment a guest enters: welcome summary, then any live announcement,
+   then any event that is on right now — staggered so they don't pile up */
+window.addEventListener('sj:entered', () => {
+  setTimeout(announcePublicSummary, 900);
+  setTimeout(checkAnnouncement, 2600);
+  setTimeout(checkEventAnnouncements, 4200);
+  if (isAdmin()) setTimeout(announcePendingBacklog, 900);
+});
 
 /* attendees are tracked for the admin only — guests don't see who is
    attending or exploring, so no public guest feed/toast is wired */

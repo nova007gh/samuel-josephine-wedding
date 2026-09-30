@@ -567,6 +567,43 @@
 .settings-song .aq-actions{ grid-template-columns:1fr; }
 .settings-song{ margin-top:12px; }
 
+/* wedding playlist */
+.song-list{ display:grid; gap:8px; margin:8px 0; }
+.song-row{
+  display:grid; grid-template-columns:auto 1fr auto auto;
+  align-items:center; gap:8px;
+  padding:6px 8px; border:1px solid var(--edge); border-radius:10px;
+  background:#fff;
+}
+.song-num{
+  width:22px; height:22px; display:grid; place-items:center;
+  background:var(--gold); color:#fff; border-radius:50%;
+  font-size:11px; font-weight:700; font-family:Georgia;
+}
+.song-row audio{ width:100%; min-width:0; height:30px; }
+.song-name{
+  font-family:Cormorant, Georgia, serif; font-size:14px; color:var(--ink);
+  max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.song-del{ padding:6px 10px; border-radius:8px; font-size:9px; }
+.song-actions{ display:flex; align-items:center; gap:6px; }
+.song-order{ display:grid; gap:2px; }
+.song-order button{
+  width:26px; height:16px; padding:0;
+  display:grid; place-items:center;
+  border:1px solid rgba(169,124,44,.3); border-radius:5px;
+  background:rgba(255,251,244,.9); color:#8a6d34;
+  font-size:8px; line-height:1; cursor:pointer;
+}
+.song-order button:disabled{ opacity:.3; cursor:default; }
+.song-order button:not(:disabled):active{ transform:scale(.9); }
+.song-first-badge{
+  padding:5px 9px; border-radius:8px; font-size:8px; font-weight:700;
+  font-family:Montserrat,sans-serif; letter-spacing:.08em;
+  color:#8a6d34; background:rgba(232,195,94,.25);
+  border:1px solid rgba(169,124,44,.35);
+}
+
 .aq-reject{
   padding:12px;
   border:0;
@@ -657,10 +694,25 @@
   max-width:200px;
 }
 
+/* ---------- security log ---------- */
+.sec-actions{ display:flex; gap:10px; justify-content:center; margin-bottom:14px; }
+.sec-actions .admin-refresh{ display:inline-block; margin:0; }
+.sec-card--warn{ border-left:3px solid #c0392b; }
+.sec-card--high{ border-left:3px solid #96281b; background:rgba(192,57,43,.07); }
+.sec-card--ok{ border-left:3px solid #6a994e; }
+.sec-card--info{ border-left:3px solid rgba(169,124,44,.3); }
+.sec-detail{
+  margin-top:4px;
+  font-size:.78rem;
+  color:#7a4a1e;
+  word-break:break-word;
+}
+.sec-card small{ line-height:1.5; }
+
 /* ---------- activity toasts — elegant gold notifications ---------- */
 .activity-toasts{
   position:fixed;
-  top:calc(12px + env(safe-area-inset-top));
+  top:calc(74px + env(safe-area-inset-top));
   left:50%;
   transform:translateX(-50%);
   z-index:300;
@@ -710,6 +762,93 @@
 @media (prefers-reduced-motion: reduce){
   .activity-toast{ transition:opacity .2s ease; }
 }
+
+/* ---------- admin announcement toast — golden neon, lingers longer ---------- */
+.announce-toast{
+  align-items:center;
+  padding:9px 14px 9px 9px;
+  border-radius:16px;
+  border:1.5px solid #e8c35e;
+  background:linear-gradient(160deg,#fffdf7,#fff6e2);
+  animation:annNeon 2.6s ease-in-out infinite;
+}
+@keyframes annNeon{
+  0%,100%{
+    border-color:#e4c167;
+    box-shadow:0 0 8px rgba(255,196,54,.4), 0 0 18px rgba(255,170,0,.2),
+               0 8px 20px rgba(112,78,26,.18);
+  }
+  50%{
+    border-color:#f0d488;
+    box-shadow:0 0 14px rgba(255,200,60,.6), 0 0 30px rgba(255,160,0,.3),
+               0 8px 22px rgba(112,78,26,.22);
+  }
+}
+.announce-toast .ann-photos{
+  display:flex; flex:none; margin-right:2px;
+}
+.announce-toast .ann-photos img{
+  width:32px; height:32px; border-radius:50%;
+  object-fit:cover;
+  border:1.5px solid #e4c167;
+  box-shadow:0 0 6px rgba(255,190,60,.45);
+}
+.announce-toast .ann-photos img + img{ margin-left:-10px; }
+.announce-toast .ann-body b{
+  display:block;
+  font-family:Montserrat, sans-serif;
+  font-size:.56rem; font-weight:700; letter-spacing:.15em;
+  color:#b1121f;
+  text-shadow:0 0 4px rgba(255,60,60,.25);
+  margin-bottom:2px;
+}
+.announce-toast .ann-body p{
+  margin:0;
+  font-family:Cormorant, Georgia, serif;
+  font-size:.92rem; font-weight:700; line-height:1.25;
+  color:#8a5a00;
+  text-shadow:0 0 5px rgba(255,190,60,.35);
+}
+.announce-toast .ann-heart{
+  font-style:normal; color:#d21f2c; font-size:.85em;
+  text-shadow:0 0 5px rgba(255,60,60,.5);
+}
+@media (prefers-reduced-motion: reduce){
+  .announce-toast{ animation:none; box-shadow:0 0 10px rgba(255,180,0,.35); }
+}
+
+/* ---------- announcement photo pickers + live preview (admin) ---------- */
+.ann-photo-pick{ display:grid; gap:8px; justify-items:center; }
+.ann-preview{
+  position:relative;
+  width:84px; height:84px; padding:0;
+  border-radius:50%; overflow:hidden; cursor:pointer;
+  border:2px solid #e4c167;
+  background:#fff8ea;
+  box-shadow:0 0 12px rgba(255,190,60,.35);
+  transition:transform .15s ease;
+}
+.ann-preview:active{ transform:scale(.95); }
+.ann-preview img{ width:100%; height:100%; object-fit:cover; display:block; }
+.ann-preview-hint{
+  position:absolute; left:0; right:0; bottom:0;
+  padding:4px 0 6px;
+  font-size:.56rem; font-weight:700; letter-spacing:.08em;
+  color:#fff; text-align:center;
+  background:linear-gradient(transparent, rgba(70,45,10,.75));
+}
+.ann-preview.uploading{ animation:annUp 1s ease-in-out infinite; }
+.ann-preview.uploading::after{
+  content:''; position:absolute; inset:0;
+  background:rgba(255,248,234,.45);
+}
+@keyframes annUp{ 50%{ box-shadow:0 0 22px rgba(255,190,60,.8); } }
+.ann-photo-pick select{ width:100%; }
+.ann-live-preview{ display:grid; gap:8px; margin-top:6px; }
+.ann-live-preview .announce-toast{ opacity:1; transform:none; pointer-events:none; }
+
+/* keep the last button in admin cards clear of the raised Gallery seal */
+[data-view="admin"]{ padding-bottom:60px; }
 
 /* ---------- who-invited-you stats (admin guest list) ---------- */
 .invite-stats{

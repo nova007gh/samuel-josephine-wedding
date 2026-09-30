@@ -17,6 +17,14 @@ function getGuest(){ return JSON.parse(localStorage.getItem('sj_guest') || 'null
 function setGuest(g){ localStorage.setItem('sj_guest', JSON.stringify(g)); }
 function clearGuest(){ sessionStorage.removeItem('sj_guest'); }
 
+/* a check-in whose save failed (offline) is retried quietly on the next visit */
+window.addEventListener('load', () => {
+  const g = getGuest();
+  if (!g?.unsaved || g.id || typeof addGuest !== 'function') return;
+  const { unsaved, ...record } = g;
+  addGuest(record).then(id => { if (id) setGuest({ ...record, id }); }).catch(() => {});
+});
+
 let adminSignedIn = false;
 function isAdmin(){ return adminSignedIn; }
 
@@ -24,6 +32,7 @@ function isAdmin(){ return adminSignedIn; }
 function showGate(screen){
   [welcomeScreen, welcome2Screen, attendScreen, guestLoginScreen].forEach(s => s?.classList.add('hidden'));
   screen.classList.remove('hidden', 'exit');
+  if (screen === guestLoginScreen) showPane('form');
   void screen.offsetWidth;
 }
 function hideGate(screen){
@@ -42,6 +51,8 @@ function enterApp(){
   document.body.classList.remove('locked');
   window.scrollTo({ top: 0, behavior: 'instant' });
   updateGuestUI();
+  /* notifications start streaming only from here */
+  window.dispatchEvent(new Event('sj:entered'));
   try {
     localStorage.setItem('sj_entered', '1');
     /* baseline history entry, so the very first Back press lands on Home
@@ -53,7 +64,22 @@ function enterApp(){
 /* A guest who has already opened the invitation goes straight in on their
    next visit — replaying the seal flow on every reload is jarring. */
 function hasEntered(){
-  try { return localStorage.getItem('sj_entered') === '1'; } catch { return false; }
+  /* only a guest who actually checked in (gave their details) skips the gates */
+  try {
+    return localStorage.getItem('sj_entered') === '1' &&
+      (!!getGuest()?.name || !!localStorage.getItem('sj_admin_token'));
+  } catch { return false; }
+}
+
+/* every guest must check in before using the app — send anyone who got
+   past the gates without details back to the "Will you join us?" screen */
+function requireCheckIn(){
+  app.classList.add('hidden');
+  document.body.classList.add('locked');
+  opening.classList.add('hidden');
+  attendDeclinePanel?.classList.add('hidden');
+  attendActions?.classList.remove('hidden');
+  showGate(attendScreen);
 }
 /* true whenever an invitation gate is on screen instead of the app */
 function gateShowing(){
@@ -77,9 +103,11 @@ function handleSealButtonClick(){
   opening.classList.add('breaking');
   if (sealButton) sealButton.disabled = true;
 
-  // swap in the cracked-seal artwork for the burst moment
+  // swap in the cracked-seal artwork for the burst moment (art mode only —
+  // the designed card animates its own seal press instead)
   const art = $('#landingArt');
-  if (art) art.src = 'assets/seal-burst.jpg';
+  if (art && !landingFrame.classList.contains('landing-frame--card'))
+    art.src = 'assets/seal-burst.jpg';
 
   // landing fades out, then straight to the attend/check-in gate —
   // the ENTER OUR WEDDING splash was removed from the flow
@@ -452,9 +480,12 @@ $('#attendChange')?.addEventListener('click', () => {
   setTimeout(() => $('#attendNo')?.focus(), 200);
 });
 
+/* "Explore anyway" still needs their details — open check-in as Exploring */
 $('#attendBrowse')?.addEventListener('click', () => {
+  pendingAttending = false;
+  syncGuestRsvpPills();
   hideGate(attendScreen);
-  setTimeout(enterApp, 650);
+  setTimeout(() => showGate(guestLoginScreen), 650);
 });
 
 /* ---- Guest login form ---- */
@@ -465,12 +496,196 @@ document.querySelectorAll('#guestRsvp .rsvp-pill').forEach(pill => {
   pill.addEventListener('click', () => {
     document.querySelectorAll('#guestRsvp .rsvp-pill').forEach(x => x.classList.toggle('active', x === pill));
     guestRsvpYes = pill.dataset.rsvp === 'yes';
+    syncCheckinParty();
   });
 });
 function syncGuestRsvpPills(){
   guestRsvpYes = pendingAttending !== false;
   document.querySelectorAll('#guestRsvp .rsvp-pill').forEach(x =>
     x.classList.toggle('active', (x.dataset.rsvp === 'yes') === guestRsvpYes));
+  syncCheckinParty();
+}
+
+/* extra guests joining the checker's table — only matters if attending */
+let checkinParty = 0;
+function syncCheckinParty(){
+  $('#checkinPartyRow')?.classList.toggle('hidden', !guestRsvpYes);
+}
+const setCheckinParty = n => { checkinParty = Math.min(9, Math.max(0, n)); $('#checkinCount').textContent = checkinParty ? `+${checkinParty}` : 'Just me'; };
+$('#checkinMinus')?.addEventListener('click', () => setCheckinParty(checkinParty - 1));
+$('#checkinPlus')?.addEventListener('click', () => setCheckinParty(checkinParty + 1));
+
+/* reveal a "who invited you?" text field when the guest picks Other */
+$('#guestRelation')?.addEventListener('change', e => {
+  const isOther = e.target.value === 'Other';
+  $('#guestRelationOtherWrap')?.classList.toggle('hidden', !isOther);
+  const input = $('#guestRelationOther');
+  if (input) input.required = isOther;
+  if (isOther) input?.focus();
+});
+
+/* ---- country list — drives the flag'd calling-code picker and the
+   home-country field; Ghana first, then common diaspora, then a-z ---- */
+const COUNTRIES = [
+  { n:'Ghana', d:'+233', f:'🇬🇭' },
+  { n:'United States', d:'+1', f:'🇺🇸' },
+  { n:'United Kingdom', d:'+44', f:'🇬🇧' },
+  { n:'Canada', d:'+1', f:'🇨🇦' },
+  { n:'Nigeria', d:'+234', f:'🇳🇬' },
+  { n:'South Africa', d:'+27', f:'🇿🇦' },
+  { n:'Germany', d:'+49', f:'🇩🇪' },
+  { n:'Netherlands', d:'+31', f:'🇳🇱' },
+  { n:'France', d:'+33', f:'🇫🇷' },
+  { n:'Italy', d:'+39', f:'🇮🇹' },
+  { n:'Australia', d:'+61', f:'🇦🇺' },
+  { n:'Belgium', d:'+32', f:'🇧🇪' },
+  { n:'Benin', d:'+229', f:'🇧🇯' },
+  { n:'Botswana', d:'+267', f:'🇧🇼' },
+  { n:'Brazil', d:'+55', f:'🇧🇷' },
+  { n:'Burkina Faso', d:'+226', f:'🇧🇫' },
+  { n:'Cameroon', d:'+237', f:'🇨🇲' },
+  { n:'China', d:'+86', f:'🇨🇳' },
+  { n:'Côte d\'Ivoire', d:'+225', f:'🇨🇮' },
+  { n:'Denmark', d:'+45', f:'🇩🇰' },
+  { n:'Egypt', d:'+20', f:'🇪🇬' },
+  { n:'Ethiopia', d:'+251', f:'🇪🇹' },
+  { n:'Finland', d:'+358', f:'🇫🇮' },
+  { n:'Gambia', d:'+220', f:'🇬🇲' },
+  { n:'India', d:'+91', f:'🇮🇳' },
+  { n:'Ireland', d:'+353', f:'🇮🇪' },
+  { n:'Israel', d:'+972', f:'🇮🇱' },
+  { n:'Jamaica', d:'+1876', f:'🇯🇲' },
+  { n:'Japan', d:'+81', f:'🇯🇵' },
+  { n:'Kenya', d:'+254', f:'🇰🇪' },
+  { n:'Liberia', d:'+231', f:'🇱🇷' },
+  { n:'Mexico', d:'+52', f:'🇲🇽' },
+  { n:'Morocco', d:'+212', f:'🇲🇦' },
+  { n:'Norway', d:'+47', f:'🇳🇴' },
+  { n:'Poland', d:'+48', f:'🇵🇱' },
+  { n:'Portugal', d:'+351', f:'🇵🇹' },
+  { n:'Qatar', d:'+974', f:'🇶🇦' },
+  { n:'Rwanda', d:'+250', f:'🇷🇼' },
+  { n:'Senegal', d:'+221', f:'🇸🇳' },
+  { n:'Sierra Leone', d:'+232', f:'🇸🇱' },
+  { n:'Spain', d:'+34', f:'🇪🇸' },
+  { n:'Sweden', d:'+46', f:'🇸🇪' },
+  { n:'Switzerland', d:'+41', f:'🇨🇭' },
+  { n:'Tanzania', d:'+255', f:'🇹🇿' },
+  { n:'Togo', d:'+228', f:'🇹🇬' },
+  { n:'Trinidad & Tobago', d:'+1868', f:'🇹🇹' },
+  { n:'Turkey', d:'+90', f:'🇹🇷' },
+  { n:'Uganda', d:'+256', f:'🇺🇬' },
+  { n:'Ukraine', d:'+380', f:'🇺🇦' },
+  { n:'United Arab Emirates', d:'+971', f:'🇦🇪' },
+  { n:'Zambia', d:'+260', f:'🇿🇲' },
+  { n:'Zimbabwe', d:'+263', f:'🇿🇼' }
+];
+
+/* populate the country pickers; choosing a home country also swaps the
+   calling code so the phone stays in sync */
+const dialSel = $('#guestDialCode');
+const countrySel = $('#guestCountry');
+if (dialSel){
+  dialSel.innerHTML = COUNTRIES.map(c =>
+    `<option value="${c.d}" data-country="${c.n}">${c.f} ${c.n} (${c.d})</option>`).join('');
+  dialSel.value = '+233';
+}
+if (countrySel){
+  countrySel.innerHTML = `<option value="" disabled selected>Select your country</option>` +
+    COUNTRIES.map(c => `<option value="${c.n}">${c.f} ${c.n}</option>`).join('');
+  countrySel.addEventListener('change', () => {
+    const c = COUNTRIES.find(x => x.n === countrySel.value);
+    if (c && dialSel) dialSel.value = c.d;
+  });
+}
+
+/* dial code + local digits → international format the server expects;
+   a number typed with a leading + or 00 is trusted as already-intl */
+function composePhone(){
+  const raw = ($('#guestPhone')?.value || '').trim();
+  if (raw.startsWith('+') || raw.startsWith('00')) return raw;
+  const digits = raw.replace(/[^\d]/g, '').replace(/^0+/, '');
+  return (dialSel?.value || '+233') + digits;
+}
+
+/* ---- Phone OTP — one pane shared by registration and returning sign-in ---- */
+let otpMode = 'register';       /* 'register' | 'login' */
+let otpPhone = '';
+let otpChannel = 'sms';         /* 'sms' | 'email' — delivery channel for the code */
+let otpEmail = '';              /* target/masked email shown in the hint */
+let pendingGuest = null;
+
+function showPane(which){
+  $('#guestLoginForm')?.classList.toggle('hidden', which !== 'form');
+  $('#returnPane')?.classList.toggle('hidden', which !== 'return');
+  $('#otpPane')?.classList.toggle('hidden', which !== 'otp');
+}
+function setOtpHint(delivered){
+  const hint = $('#otpHint');
+  if (!hint) return;
+  hint.textContent = '';
+  if (delivered === 'sms'){
+    hint.append('We texted a 6-digit code to ');
+    const b = document.createElement('b');
+    b.textContent = otpPhone;
+    hint.append(b);
+  } else if (delivered === 'email'){
+    hint.append('We emailed a 6-digit code to ');
+    const b = document.createElement('b');
+    b.textContent = otpEmail;
+    hint.append(b);
+  } else {
+    hint.textContent = 'Sam & Jossy have your code — just ask them for it';
+  }
+}
+function showOtpPane(phone, mode, delivered, resp){
+  otpMode = mode; otpPhone = phone;
+  otpChannel = delivered === 'email' ? 'email' : 'sms';
+  /* registration knows the typed email; sign-in only knows the masked one from the server */
+  otpEmail = pendingGuest?.email || resp?.emailMasked || '';
+  /* offer the opposite channel — email link only when a usable address exists */
+  $('#otpEmailBtn')?.classList.toggle('hidden', otpChannel === 'email' || !otpEmail);
+  $('#otpSmsBtn')?.classList.toggle('hidden', otpChannel !== 'email');
+  setOtpHint(delivered);
+  $('#otpError').textContent = '';
+  $('#otpCode').value = '';
+  showPane('otp');
+  $('#otpCode')?.focus();
+}
+async function resendOtp(channel){
+  const r = await sendOtp(otpPhone, otpMode, pendingGuest?.name,
+    channel === 'email' ? { channel, email: pendingGuest?.email } : undefined);
+  if (r.delivered === 'email' && r.emailMasked && !pendingGuest?.email) otpEmail = r.emailMasked;
+  otpChannel = r.delivered === 'email' ? 'email' : r.delivered === 'sms' ? 'sms' : otpChannel;
+  $('#otpEmailBtn')?.classList.toggle('hidden', otpChannel === 'email' || !otpEmail);
+  $('#otpSmsBtn')?.classList.toggle('hidden', otpChannel !== 'email');
+  setOtpHint(r.delivered);
+  $('#otpError').textContent = '';
+}
+
+/* new guest — details collected, phone verified by code, then saved */
+async function finishCheckin(){
+  const guest = pendingGuest;
+  pendingGuest = null;
+  try {
+    if (typeof addGuest === 'function'){
+      const savePromise = addGuest(guest);
+      savePromise
+        .then(id => { if (id){ const g = getGuest() || guest; g.id = id; delete g.unsaved; setGuest(g); } })
+        .catch(() => { const g = getGuest() || guest; if (!g.id){ g.unsaved = true; setGuest(g); } });
+      const timeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Guest save timeout')), 4000));
+      const id = await Promise.race([savePromise, timeout]);
+      if (id) guest.id = id;
+    }
+  } catch(ferr){ console.warn('Guest save still in progress:', ferr); }
+
+  /* keep otpToken on the record — the unsaved-retry path needs it */
+  setGuest(guest);
+  hideGate(guestLoginScreen);
+  setTimeout(enterApp, 650);
+  // gesture context — good moment to offer notifications (fire & forget)
+  if (typeof enableNotifications === 'function') enableNotifications().catch(() => {});
 }
 
 $('#guestLoginForm')?.addEventListener('submit', async e => {
@@ -478,43 +693,158 @@ $('#guestLoginForm')?.addEventListener('submit', async e => {
   const err = $('#guestLoginError');
   const submitBtn = e.target.querySelector('button[type="submit"]');
   const name = $('#guestName').value.trim();
-  const phone = $('#guestPhone').value.trim();
+  const phone = composePhone();
   const email = $('#guestEmail').value.trim();
-  const relation = $('#guestRelation').value;
+  const city = $('#guestCity')?.value.trim() || '';
+  const state = $('#guestState')?.value.trim() || '';
+  const country = $('#guestCountry')?.value || '';
+  const relationSel = $('#guestRelation').value;
+  const relationOther = $('#guestRelationOther')?.value.trim();
+  const relation = relationSel === 'Other' ? (relationOther ? `Other — ${relationOther}` : 'Other') : relationSel;
 
-  if (!name || !phone || !email || !relation){
+  if (!name || !phone || !email || !relationSel){
     if (err) err.textContent = 'Please fill in all fields.';
     return;
   }
+  if (phone.replace(/[^\d]/g, '').length < 7){
+    if (err) err.textContent = 'Enter a valid phone number.';
+    $('#guestPhone')?.focus();
+    return;
+  }
+  if (!city || !country){
+    if (err) err.textContent = 'Please add your city and country — state is optional.';
+    return;
+  }
+  if (relationSel === 'Other' && !relationOther){
+    if (err) err.textContent = 'Please tell us who invited you.';
+    $('#guestRelationOther')?.focus();
+    return;
+  }
 
-  const guest = { name, phone, email, relation, attending:guestRsvpYes, checkedInAt:new Date().toISOString() };
+  pendingGuest = { name, phone, email, city, state, country, relation,
+                   attending:guestRsvpYes,
+                   tableGuests: guestRsvpYes ? checkinParty : 0,
+                   checkedInAt:new Date().toISOString() };
 
-  // Show loading state on the button
   if (submitBtn){
     submitBtn.disabled = true;
     submitBtn.dataset.label = submitBtn.innerHTML;
-    submitBtn.innerHTML = 'Opening your experience…';
+    submitBtn.innerHTML = 'Sending code…';
   }
-
-  // Save to the server, but never let it block the form.
-  // A hanging request (offline / network) would otherwise freeze check-in.
   try {
-    if (typeof addGuest === 'function'){
-      const savePromise = addGuest(guest);
-      const timeout = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Guest save timeout')), 4000)
-      );
-      const id = await Promise.race([savePromise, timeout]);
-      if (id) guest.id = id;
-    }
-  } catch(ferr){ console.warn('Guest save skipped:', ferr); }
+    const r = await sendOtp(phone, 'register', name);
+    showOtpPane(phone, 'register', r.delivered, r);
+    if (err) err.textContent = '';
+  } catch(x){
+    if (err) err.textContent = x.message || 'Could not send the code — try again.';
+    pendingGuest = null;
+  } finally {
+    if (submitBtn){ submitBtn.disabled = false; submitBtn.innerHTML = submitBtn.dataset.label; }
+  }
+});
 
-  setGuest(guest);
-  if (err) err.textContent = '';
-  hideGate(guestLoginScreen);
-  setTimeout(enterApp, 650);
-  // gesture context — good moment to offer notifications (fire & forget)
-  if (typeof enableNotifications === 'function') enableNotifications().catch(() => {});
+/* returning guest — phone + code brings their check-in back */
+$('#returnGuestLink')?.addEventListener('click', () => {
+  $('#guestLoginError').textContent = '';
+  $('#returnError').textContent = '';
+  showPane('return');
+  $('#returnPhone')?.focus();
+});
+$('#returnSendBtn')?.addEventListener('click', async e => {
+  const btn = e.currentTarget;
+  const err = $('#returnError');
+  const phone = $('#returnPhone').value.trim();
+  if (!phone){ err.textContent = 'Enter your phone number.'; return; }
+  btn.disabled = true;
+  const label = btn.innerHTML;
+  btn.innerHTML = 'Sending code…';
+  try {
+    const r = await sendOtp(phone, 'login');
+    pendingGuest = null;
+    showOtpPane(phone, 'login', r.delivered, r);
+  } catch(x){
+    err.textContent = x.message || 'Could not send the code — try again.';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = label;
+  }
+});
+
+$('#otpVerifyBtn')?.addEventListener('click', async e => {
+  const btn = e.currentTarget;
+  const err = $('#otpError');
+  const code = $('#otpCode').value.replace(/\D/g, '');
+  if (code.length !== 6){ err.textContent = 'Enter the 6-digit code.'; return; }
+  btn.disabled = true;
+  const label = btn.innerHTML;
+  btn.innerHTML = 'Verifying…';
+  try {
+    if (otpMode === 'login'){
+      const r = await guestLogin(otpPhone, code);
+      setGuest(r.guest);
+      hideGate(guestLoginScreen);
+      setTimeout(enterApp, 650);
+      if (typeof enableNotifications === 'function') enableNotifications().catch(() => {});
+    } else {
+      const r = await verifyOtp(otpPhone, code);
+      if (pendingGuest) pendingGuest.otpToken = r.otpToken;
+      finishCheckin();
+    }
+  } catch(x){
+    err.textContent = x.message || 'Verification failed — try again.';
+    btn.disabled = false;
+    btn.innerHTML = label;
+  }
+});
+$('#otpCode')?.addEventListener('keydown', e => {
+  if (e.key === 'Enter') $('#otpVerifyBtn')?.click();
+});
+$('#otpResendBtn')?.addEventListener('click', async e => {
+  const btn = e.currentTarget;
+  btn.disabled = true;
+  const label = btn.textContent;
+  btn.textContent = 'Sending…';
+  try {
+    await resendOtp(otpChannel);
+  } catch(x){
+    $('#otpError').textContent = x.message || 'Could not resend — try again.';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = label;
+  }
+});
+/* channel switchers — same code screen, alternate delivery */
+$('#otpEmailBtn')?.addEventListener('click', async e => {
+  const btn = e.currentTarget;
+  btn.disabled = true;
+  try {
+    await resendOtp('email');
+  } catch(x){
+    $('#otpError').textContent = x.message || 'Could not email the code — try again.';
+  } finally {
+    btn.disabled = false;
+  }
+});
+$('#otpSmsBtn')?.addEventListener('click', async e => {
+  const btn = e.currentTarget;
+  btn.disabled = true;
+  try {
+    await resendOtp('sms');
+  } catch(x){
+    $('#otpError').textContent = x.message || 'Could not text the code — try again.';
+  } finally {
+    btn.disabled = false;
+  }
+});
+document.querySelectorAll('[data-pane]').forEach(b =>
+  b.addEventListener('click', () => showPane(b.dataset.pane === 'back' ? (otpMode === 'login' ? 'return' : 'form') : 'form')));
+
+/* guest sign-out — clears this device's check-in; admin session untouched */
+$('#guestSignOut')?.addEventListener('click', () => {
+  if (!confirm('Sign out of this device? You can sign back in anytime with your phone number.')) return;
+  localStorage.removeItem('sj_guest');
+  localStorage.removeItem('sj_entered');
+  location.href = '/';
 });
 
 /* ---- Update UI based on guest session ---- */
@@ -546,9 +876,9 @@ $('#enterFromHome')?.addEventListener('click', () => {
    --------------------------------------------------------- */
 const SUBVIEW_TAB = {
   guestbook:'more', memories:'more', rsvp:'more', voicemsg:'more', videomsg:'more',
-  admin:'more', adminlogin:'more', approvals:'more', rsvpAdmin:'more', guestlist:'more'
+  admin:'more', adminlogin:'more', approvals:'more', rsvpAdmin:'more', guestlist:'more', security:'more'
 };
-const ADMIN_VIEWS = new Set(['admin', 'approvals', 'rsvpAdmin', 'guestlist']);
+const ADMIN_VIEWS = new Set(['admin', 'approvals', 'rsvpAdmin', 'guestlist', 'security']);
 /* Views are pushed onto browser history so the device Back button moves
    between screens instead of leaving the page — leaving would reload the
    app and replay the invitation gates. */
@@ -567,6 +897,14 @@ function flashPageLoader(){
 }
 
 function switchView(name, fromHistory = false){
+  /* guest pages need a check-in; only the admin sign-in page is open to all */
+  if (name !== 'adminlogin' && !ADMIN_VIEWS.has(name) && !isAdmin() && !getGuest()?.name && !gateShowing()){
+    requireCheckIn();
+    return;
+  }
+  /* signed-in admin never sees the login form — any path to it goes
+     straight to the dashboard; only a real logout returns them here */
+  if (name === 'adminlogin' && isAdmin()) name = 'admin';
   if (ADMIN_VIEWS.has(name) && !isAdmin()) name = 'adminlogin';
   if (name !== currentView) flashPageLoader();
   /* signed-in admin entering an admin view: probe the session so an
@@ -580,8 +918,7 @@ function switchView(name, fromHistory = false){
   /* the music button floats over every screen once a song exists;
      the menu button takes its header slot elsewhere */
   const onHome = name === 'home';
-  $('#musicToggle')?.classList.toggle('hidden', !music?.src);
-  $('#menuToggle')?.classList.toggle('hidden', onHome);
+  $('#musicDock')?.classList.toggle('hidden', !music?.src);
 
   window.scrollTo({ top: 0, behavior: 'instant' });
 
@@ -663,23 +1000,52 @@ setInterval(updateCountdown, 1000);
    --------------------------------------------------------- */
 const music = $('#backgroundMusic');
 let currentSongUrl = null;
+let songPlaylist = [];
+let songIndex = 0;
+
+function setSongTrack(i){
+  const s = songPlaylist[i];
+  if (!s || !music) return;
+  songIndex = i;
+  currentSongUrl = s.url;
+  if (!music.src.endsWith(s.url)){ music.src = s.url; music.load(); }
+  const labelEl = document.getElementById('songLabel');
+  if (labelEl) labelEl.textContent = s.label || 'Song loaded';
+}
 
 async function loadSong(){
   try {
     const settings = await getSettings();
-    if (settings.songUrl && music){
-      currentSongUrl = settings.songUrl;
-      if (music.src !== location.origin + currentSongUrl && !music.src.endsWith(currentSongUrl)){
-        music.src = currentSongUrl;
-        music.load();
-      }
-      const labelEl = document.getElementById('songLabel');
-      if (labelEl) labelEl.textContent = settings.songLabel || 'Song loaded';
-      const toggle = document.getElementById('musicToggle');
-      if (toggle){ toggle.classList.add('has-song'); toggle.classList.remove('hidden'); }
-    }
+    let list = [];
+    try { list = JSON.parse(settings.songs || '[]'); } catch {}
+    if (!list.length && settings.songUrl) list = [{ url: settings.songUrl, label: settings.songLabel || 'Wedding song' }];
+    if (!list.length || !music) return;
+    songPlaylist = list;
+    const wasPlaying = musicWanted;
+    const cur = music.src ? songPlaylist.findIndex(s => music.src.endsWith(s.url)) : -1;
+    setSongTrack(cur >= 0 ? cur : 0);
+    const toggle = document.getElementById('musicToggle');
+    if (toggle){ toggle.classList.add('has-song'); }
+    document.getElementById('musicDock')?.classList.remove('hidden');
+    const multi = songPlaylist.length > 1;
+    document.getElementById('musicPrev')?.classList.toggle('hidden', !multi);
+    document.getElementById('musicNext')?.classList.toggle('hidden', !multi);
+    if (wasPlaying && music.paused) tryStartSong();
   } catch(err){ console.warn(err); }
 }
+music?.addEventListener('ended', () => {
+  /* playlist advance — the audio element has no `loop` so 'ended' fires */
+  if (songPlaylist.length > 1) setSongTrack((songIndex + 1) % songPlaylist.length);
+  else music.currentTime = 0;
+  tryStartSong();
+});
+function stepSong(dir){
+  if (songPlaylist.length < 2) return;
+  setSongTrack((songIndex + dir + songPlaylist.length) % songPlaylist.length);
+  if (musicWanted !== false) tryStartSong();
+}
+$('#musicPrev')?.addEventListener('click', () => stepSong(-1));
+$('#musicNext')?.addEventListener('click', () => stepSong(1));
 // getSettings lives in api-data.js, which loads before this file
 window.addEventListener('DOMContentLoaded', loadSong);
 
@@ -789,7 +1155,29 @@ $('#viewMap')?.addEventListener('click', () => {
    PWA
    --------------------------------------------------------- */
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./service-worker.js').catch(console.error);
+  window.addEventListener('load', async () => {
+    const hadController = !!navigator.serviceWorker.controller;
+    let reg;
+    try { reg = await navigator.serviceWorker.register('./service-worker.js', { updateViaCache: 'none' }); }
+    catch(err){ console.error(err); return; }
+    /* phones that keep the app open (or installed on the home screen) never
+       reload on their own — check for a new release regularly */
+    const check = () => reg.update().catch(() => {});
+    setInterval(check, 5 * 60000);
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') check(); });
+
+    /* a new version took over: reload into it, but never mid-upload,
+       mid-recording, or while someone is watching a video */
+    let reloading = false;
+    const busy = () => (window.__uploadsInFlight > 0) ||
+      [...document.querySelectorAll('video, audio')].some(m => m.id !== 'backgroundMusic' && !m.paused) ||
+      document.querySelector('.recording');
+    const reloadWhenIdle = () => {
+      if (reloading) return;
+      if (busy()) return setTimeout(reloadWhenIdle, 5000);
+      reloading = true;
+      location.reload();
+    };
+    navigator.serviceWorker.addEventListener('controllerchange', () => { if (hadController) reloadWhenIdle(); });
   });
 }

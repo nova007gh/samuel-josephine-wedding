@@ -74,6 +74,101 @@ button{ font:inherit; cursor:pointer; }
 .landing-art{ display:block; width:100%; height:100%; }
 .landing-art{ object-fit:contain; user-select:none; -webkit-user-drag:none; }
 
+/* ---------- designed landing card (default; replaces the JPEG artwork) ---------- */
+.landing-card{
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  padding:clamp(10px,3.5vw,30px);
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(255,251,240,.9), transparent 60%),
+    radial-gradient(140% 110% at 50% 105%, rgba(196,149,77,.28), transparent 55%),
+    linear-gradient(165deg, #f8eeda 0%, #f0dfc0 52%, #e8d2ad 100%);
+}
+.landing-card-inner{
+  width:100%;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  gap:0;
+  padding:clamp(26px,7vw,60px);
+  border:1px solid rgba(169,124,44,.55);
+  outline:1px solid rgba(169,124,44,.25);
+  outline-offset:-9px;
+}
+.landing-eyebrow{
+  font:600 .68rem "Montserrat",sans-serif;
+  letter-spacing:.34em;
+  text-transform:uppercase;
+  color:#8a6d34;
+}
+.landing-pre{
+  margin-top:14px;
+  font-family:"Parisienne",cursive;
+  font-size:clamp(1.5rem,5.6vw,2.2rem);
+  color:#7a5c2a;
+}
+.landing-names{
+  margin-top:6px;
+  font-family:"Cormorant Garamond",Georgia,serif;
+  font-weight:600;
+  font-size:clamp(2.3rem,9vw,3.8rem);
+  line-height:1.05;
+  color:#573c14;
+}
+.landing-amp{
+  padding:0 .14em;
+  font-family:"Parisienne",cursive;
+  font-weight:400;
+  color:#b98c33;
+}
+.landing-rule{
+  margin-top:20px;
+  width:min(52%,220px);
+  height:1px;
+  background:linear-gradient(90deg, transparent, #b98c33, transparent);
+}
+.landing-hashtag{
+  margin-top:18px;
+  font-family:"Parisienne",cursive;
+  font-size:clamp(1.2rem,4.6vw,1.7rem);
+  color:#8a6d34;
+}
+.landing-tap{
+  position:absolute;
+  left:50%;
+  bottom:5.5%;
+  transform:translateX(-50%);
+  font:700 .6rem "Montserrat",sans-serif;
+  letter-spacing:.32em;
+  text-transform:uppercase;
+  color:#8a6d34;
+  white-space:nowrap;
+}
+/* seal artwork lives inside the tap hotspot in card mode */
+.landing-seal{
+  display:block;
+  width:100%;
+  pointer-events:none;
+  filter:drop-shadow(0 10px 18px rgba(80,50,10,.4));
+}
+.landing-frame--card .seal-hotspot{ top:64%; width:46%; }
+/* mode switch — uploaded art replaces the whole card */
+.landing-frame--card .landing-art{ display:none; }
+.landing-frame:not(.landing-frame--card) .landing-card{ display:none; }
+.landing-frame:not(.landing-frame--card) .landing-seal{ display:none; }
+.landing-frame:not(.landing-frame--card) .landing-tap{ display:none; }
+/* press feedback while the invitation opens */
+.opening.breaking .landing-seal{ animation:sealCrack .8s ease forwards; }
+@keyframes sealCrack{
+  30%{ transform:scale(.9) rotate(-3deg); filter:drop-shadow(0 4px 8px rgba(80,50,10,.5)); }
+  100%{ transform:scale(1.06); opacity:.4; }
+}
+
 .seal-hotspot{
   position:absolute;
   left:50%;
@@ -568,6 +663,25 @@ button{ font:inherit; cursor:pointer; }
   font-size:.8rem;
   margin:0;
   min-height:1em;
+}
+/* secondary text actions under the big submit buttons */
+.gate-link{
+  align-self:center;
+  background:none; border:0; padding:2px;
+  font-family:Montserrat,sans-serif;
+  font-size:.7rem; font-weight:600;
+  letter-spacing:.1em; text-transform:uppercase;
+  color:#9a7b45; cursor:pointer;
+}
+.gate-link:active{ color:var(--ink); }
+.gate-sub--otp{ text-align:center; }
+.gate-sub--otp b{ color:#8a5a00; }
+.otp-input{
+  text-align:center !important;
+  font-size:1.5rem !important;
+  font-weight:700;
+  letter-spacing:.4em;
+  font-family:Montserrat,sans-serif;
 }
 .gate-form .field{
   display:block;

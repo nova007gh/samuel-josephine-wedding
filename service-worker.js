@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v106-share-tab';
+const CACHE = 'sj-wedding-v137-landing-card';
 const ASSETS = [
   './',
   './index.html',
@@ -13,7 +13,6 @@ const ASSETS = [
   './app-social.js',
   './api-data.js',
   './manifest.webmanifest',
-  './assets/official-landing-page.jpg',
   './assets/welcome-bg.jpg',
   './assets/attend-bg.jpg',
   './assets/seal-burst.jpg',

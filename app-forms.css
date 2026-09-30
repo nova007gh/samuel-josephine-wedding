@@ -35,6 +35,67 @@
   text-transform:none;
 }
 .field textarea{ resize:vertical; }
+.field-pair{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+.field-pair--two{ grid-template-columns:1fr 1fr; }
+.field-opt{ font-weight:500; letter-spacing:.06em; text-transform:none; color:#a08b69; }
+
+/* country calling-code + local number, side by side */
+.phone-row{ display:grid; grid-template-columns:minmax(0,58%) 1fr; gap:8px; margin-top:6px; }
+.phone-row .dial-select{
+  width:100%;
+  padding:12px 8px;
+  border:1px solid rgba(169,124,44,.26);
+  border-radius:12px;
+  background:rgba(255,255,255,.9);
+  color:var(--ink);
+  font-family:"Montserrat",sans-serif;
+  font-size:.8rem;
+  font-weight:400;
+  letter-spacing:0;
+  text-transform:none;
+}
+.phone-row input{
+  width:100%;
+  padding:12px 13px;
+  border:1px solid rgba(169,124,44,.26);
+  border-radius:12px;
+  background:rgba(255,255,255,.9);
+  color:var(--ink);
+  font-family:"Montserrat",sans-serif;
+  font-size:.86rem;
+  letter-spacing:0;
+  text-transform:none;
+}
+.phone-row .dial-select:focus,
+.phone-row input:focus{
+  outline:none;
+  border-color:rgba(169,124,44,.6);
+  box-shadow:0 0 0 3px rgba(212,171,95,.22);
+}
+@media(max-width:380px){ .phone-row{ grid-template-columns:1fr; } }
+
+/* optional full RSVP inside the check-in form */
+.checkin-rsvp{
+  border:1px dashed rgba(169,124,44,.45);
+  border-radius:14px;
+  background:rgba(255,251,242,.7);
+  overflow:hidden;
+}
+.checkin-rsvp-toggle{
+  width:100%;
+  display:flex; justify-content:space-between; align-items:center;
+  padding:11px 14px;
+  border:0; background:none; cursor:pointer;
+  font:600 .72rem Montserrat, sans-serif; letter-spacing:.08em;
+  color:#8a6d34; text-transform:uppercase;
+}
+.checkin-rsvp-toggle i{
+  font-style:normal; font-size:1.1rem; line-height:1;
+  transition:transform .25s ease;
+}
+.checkin-rsvp-toggle.open i{ transform:rotate(45deg); }
+.checkin-rsvp-body{ display:grid; gap:12px; padding:0 14px 14px; }
+.checkin-rsvp-body.hidden{ display:none; }
 .field input:focus,
 .field select:focus,
 .field textarea:focus{

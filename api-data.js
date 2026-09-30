@@ -11,6 +11,22 @@ const API_BASE = '/api';
 const ADMIN_TOKEN_KEY = 'sj_admin_token';
 const POLL_MS = 15000;
 
+/* ---------- device identity for the security log ----------
+   A random per-browser id + the connection's effective type ride along
+   on every API call so the server can attribute events to a device. */
+const DEVICE_ID = (() => {
+  let id = localStorage.getItem('sj_device_id');
+  if (!id){
+    id = (crypto.randomUUID ? crypto.randomUUID() : 'd' + Math.random().toString(36).slice(2) + Date.now().toString(36));
+    try { localStorage.setItem('sj_device_id', id); } catch {}
+  }
+  return id;
+})();
+function deviceNetType(){
+  const c = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  return c ? (c.effectiveType || c.type || '') : '';
+}
+
 function toMillis(ts){
   if (ts && typeof ts.toMillis === 'function') return ts.toMillis();
   return Number(ts) || Date.now();
@@ -39,19 +55,23 @@ function onAdminAuth(callback){
 /* ---------- fetch helper ---------- */
 async function api(path, opts = {}){
   const { method = 'GET', body, form = null, admin = false } = opts;
-  const headers = {};
+  const headers = { 'X-Device-Id': DEVICE_ID, 'X-Network-Type': deviceNetType() };
   if (admin && adminToken) headers['Authorization'] = `Bearer ${adminToken}`;
   if (body !== undefined && !form) headers['Content-Type'] = 'application/json';
 
   let res;
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), form ? 120000 : 15000);
+  /* large phone videos on mobile data need far more than 2 minutes */
+  const timer = setTimeout(() => ctrl.abort(), form ? 15 * 60000 : 15000);
+  /* counted so an app-update reload never interrupts an upload */
+  if (form) window.__uploadsInFlight = (window.__uploadsInFlight || 0) + 1;
   try {
     res = await fetch(API_BASE + path, {
       method,
       headers,
       body: form || (body !== undefined ? JSON.stringify(body) : undefined),
-      signal: ctrl.signal
+      signal: ctrl.signal,
+      cache: 'no-store'
     });
   } catch(e){
     const err = new Error('No connection. Please check your network and try again.');
@@ -59,6 +79,7 @@ async function api(path, opts = {}){
     throw err;
   } finally {
     clearTimeout(timer);
+    if (form) window.__uploadsInFlight--;
   }
 
   let data = null;
@@ -178,6 +199,19 @@ async function addGuest(guest){
   return res.id;
 }
 
+/* ---------- phone OTP — registration & returning-guest sign-in ----------
+   channel 'sms' (default) or 'email'; email is the bridge while SMS
+   sender approval is pending with the providers */
+async function sendOtp(phone, purpose, name, opts){
+  return await api('/otp/send', { method: 'POST', body: { phone, purpose, name, ...(opts || {}) } });
+}
+async function verifyOtp(phone, code){
+  return await api('/otp/verify', { method: 'POST', body: { phone, code } });
+}
+async function guestLogin(phone, code){
+  return await api('/guests/login', { method: 'POST', body: { phone, code } });
+}
+
 /* public approved guest list (name + attending only) */
 function onPublicGuests(callback){
   return pollFeed('/guests', rows => callback(rows.slice().sort(newestFirst('checkedInAt'))));
@@ -211,6 +245,46 @@ async function uploadSiteSong(file, label){
   fd.append('file', file, file.name || 'song');
   if (label) fd.append('label', label);
   return await api('/admin/settings/song', { method: 'POST', form: fd, admin: true });
+}
+async function deleteSiteSong(index){
+  return await api(`/admin/settings/song/${index}`, { method: 'DELETE', admin: true });
+}
+async function songPlayFirst(index){
+  return await api(`/admin/settings/song/${index}/first`, { method: 'POST', admin: true });
+}
+async function songMove(index, to){
+  return await api(`/admin/settings/song/${index}/move`, { method: 'POST', body: { to }, admin: true });
+}
+async function likeStoryItem(itemId, delta){
+  return await api('/story-likes', { method: 'POST', body: { itemId, delta } });
+}
+async function likeHome(delta){
+  return await api('/home-like', { method: 'POST', body: { delta } });
+}
+/* is this checked-in email allowed through to the admin sign-in? */
+async function checkAdminEmail(email){
+  return await api('/admin-email-check', { method: 'POST', body: { email } });
+}
+async function getAdminEmails(){
+  return await api('/admin/emails', { admin: true });
+}
+async function addAdminEmail(email){
+  return await api('/admin/emails', { method: 'POST', body: { email }, admin: true });
+}
+async function removeAdminEmail(email){
+  return await api(`/admin/emails/${encodeURIComponent(email)}`, { method: 'DELETE', admin: true });
+}
+async function getSecurityEvents(){
+  return await api('/admin/security', { admin: true });
+}
+async function clearSecurityEvents(){
+  return await api('/admin/security', { method: 'DELETE', admin: true });
+}
+async function sendAnnouncement(text, everyMin, photoA, photoB){
+  return await api('/admin/announce', { method: 'POST', body: { text, everyMin, photoA, photoB }, admin: true });
+}
+async function stopAnnouncement(){
+  return await api('/admin/announce', { method: 'DELETE', admin: true });
 }
 
 async function patchSettings(fields){

@@ -4,6 +4,7 @@
 .app{
   position:relative;
   min-height:100dvh;
+  padding-top:calc(80px + env(safe-area-inset-top));
   padding-bottom:calc(var(--tabbar-h) + env(safe-area-inset-bottom));
   background:
     radial-gradient(120% 70% at 0% 0%, rgba(235,221,202,.75), transparent 45%),
@@ -53,13 +54,14 @@
 }
 
 .app-header{
-  position:sticky;
-  top:0;
-  z-index:40;
+  position:fixed;
+  top:0; left:0; right:0;
+  margin:0 auto;
+  z-index:60;
   display:flex;
   align-items:center;
-  justify-content:space-between;
-  padding:calc(14px + env(safe-area-inset-top)) 20px 12px;
+  justify-content:flex-start;
+  padding:calc(10px + env(safe-area-inset-top)) 16px 10px;
   background:linear-gradient(rgba(247,239,228,.96),rgba(247,239,228,.72));
   backdrop-filter:blur(12px);
 }
@@ -513,6 +515,57 @@
   line-height:1.5;
   color:#6d5a3d;
 }
+
+/* love-this-moment heart — neon golden pulse like the gallery seal */
+.tl-card{ position:relative; padding-bottom:40px; }
+body.is-admin .tl-card h4{ padding-right:26px; }
+.tl-like{
+  position:absolute; right:10px; bottom:8px;
+  display:inline-flex; align-items:center; gap:5px;
+  padding:4px 10px 4px 8px;
+  border:1px solid rgba(169,124,44,.35); border-radius:999px;
+  background:linear-gradient(#fffdf7,#fdf3df);
+  cursor:pointer; -webkit-tap-highlight-color:transparent;
+  transition:transform .15s ease, box-shadow .3s ease;
+}
+.tl-like .tl-heart{
+  font-size:13px; line-height:1; color:#cbb68a;
+  transition:color .2s, text-shadow .3s;
+}
+.tl-like .tl-count{
+  font-family:Georgia, 'Times New Roman', serif;
+  font-size:11px; font-weight:700; letter-spacing:.04em;
+  color:#8a6d34; min-width:10px; text-align:center;
+}
+.tl-like:active{ transform:scale(.92); }
+.tl-like.liked{
+  border-color:#d4a12c;
+  box-shadow:0 0 10px rgba(255,196,54,.55), 0 0 22px rgba(255,170,0,.35);
+}
+.tl-like.liked .tl-heart{
+  color:#e8a80c;
+  text-shadow:0 0 6px #ffd54a, 0 0 14px #ffab00, 0 0 24px rgba(255,150,0,.8);
+  animation:tlHeartPulse 1.6s ease-in-out infinite;
+}
+.tl-like.liked .tl-count{
+  color:#b98718;
+  text-shadow:0 0 6px rgba(255,200,60,.7);
+}
+@keyframes tlHeartPulse{
+  0%,100%{ transform:scale(1);   text-shadow:0 0 6px #ffd54a, 0 0 14px #ffab00; }
+  50%    { transform:scale(1.2); text-shadow:0 0 10px #ffe27a, 0 0 24px #ffb300, 0 0 34px rgba(255,150,0,.85); }
+}
+@media (prefers-reduced-motion: reduce){
+  .tl-like.liked .tl-heart{ animation:none; }
+}
+
+/* admin pencil on story cards — visible only when signed in */
+.tl-edit{
+  position:absolute; top:8px; right:8px;
+  width:26px; height:26px; border-radius:50%;
+  border:1px solid rgba(169,124,44,.4); background:#fffdf7;
+  color:#a97c2c; font-size:12px; line-height:1; cursor:pointer;
+}
 .tl-date{
   display:grid;
   place-items:center;
@@ -542,15 +595,29 @@
   color:#9b7b46;
 }
 .tl-date b:first-child{ font-size:.78rem; font-weight:700; letter-spacing:.12em; }
+/* photo fills its whole half of the row; the date rides on its corner */
 .tl-photo{
-  border-radius:14px;
+  border-radius:16px;
   overflow:hidden;
-  aspect-ratio:1/1;
+  aspect-ratio:4/5;
   background:linear-gradient(140deg,#e8d7bd,#d9c3a2);
+  box-shadow:0 10px 24px rgba(112,78,26,.18);
+  cursor:zoom-in;
 }
-.tl-photo img{ width:100%; height:100%; object-fit:cover; }
-.tl-pair{ display:grid; grid-template-columns:auto 1fr; gap:10px; align-items:center; }
-.tl-pair--rev{ grid-template-columns:1fr auto; }
+.tl-photo img{ width:100%; height:100%; object-fit:cover; display:block; transition:transform .35s ease; }
+.tl-photo:active img{ transform:scale(1.04); }
+.tl-pair{ position:relative; display:block; }
+.tl-pair .tl-date{
+  position:absolute;
+  top:-10px; left:-6px;
+  z-index:2;
+  width:auto; min-width:52px;
+  padding:5px 7px;
+  pointer-events:none;
+}
+.tl-pair--rev .tl-date{ left:auto; right:-6px; }
+.tl-pair .tl-date b{ font-size:1.35rem; }
+.tl-pair .tl-date span{ font-size:.6rem; }
 
 /* closing quote */
 .story-quote{
@@ -793,18 +860,112 @@
   .invitation{ max-height:calc(100dvh - 48px); border-radius:20px; }
 }
 
-/* ---------- floating music control ---------- */
-#musicToggle.has-song{
-  position:fixed;
-  right:16px;
-  bottom:88px;
-  z-index:90;
-  background:rgba(255,251,244,.92);
-  border:1px solid rgba(169,124,44,.35);
-  box-shadow:0 10px 26px rgba(112,78,26,.28);
-  backdrop-filter:blur(6px);
+/* ---------- floating music player ---------- */
+/* ---------- header music player — sits between the seal and the menu ---------- */
+.music-dock{
+  position:absolute;
+  left:50%;
+  top:calc(50% + env(safe-area-inset-top) / 2);
+  transform:translate(-50%, -50%);
+  display:flex;
+  align-items:center;
+  gap:4px;
+  padding:4px 6px;
+  border-radius:999px;
+  background:rgba(255,251,244,.85);
+  border:1px solid rgba(169,124,44,.3);
+  box-shadow:0 6px 16px rgba(112,78,26,.18);
 }
-#musicToggle.is-on{ box-shadow:0 10px 26px rgba(138,98,32,.45); }
+.music-dock.hidden{ display:none; }
+.music-nav{
+  width:28px; height:28px;
+  display:grid; place-items:center;
+  border-radius:50%;
+  color:#8a6d34;
+}
+.music-nav:active{ transform:scale(.9); }
+.header-actions{ margin-left:auto; }
+
+/* admin shortcut — the couple's photo cut into a heart, softly glowing */
+.admin-heart{
+  position:relative;
+  width:46px; height:42px;
+  padding:0; border:0; background:none; cursor:pointer;
+  filter:drop-shadow(0 0 4px rgba(255,190,60,.7)) drop-shadow(0 3px 6px rgba(140,40,50,.35));
+  animation:heartBeat 2.4s ease-in-out infinite;
+  -webkit-tap-highlight-color:transparent;
+}
+.admin-heart img,
+.aq-media.heart-preview{
+  object-fit:cover;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 22'%3E%3Cpath d='M12 21.6 10.3 20C4.3 14.6.4 11.1.4 6.7.4 3.2 3.1.5 6.6.5c2 0 3.9.9 5.4 2.4C13.5 1.4 15.4.5 17.4.5c3.5 0 6.2 2.7 6.2 6.2 0 4.4-3.9 7.9-9.9 13.3z'/%3E%3C/svg%3E") center/contain no-repeat;
+          mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 22'%3E%3Cpath d='M12 21.6 10.3 20C4.3 14.6.4 11.1.4 6.7.4 3.2 3.1.5 6.6.5c2 0 3.9.9 5.4 2.4C13.5 1.4 15.4.5 17.4.5c3.5 0 6.2 2.7 6.2 6.2 0 4.4-3.9 7.9-9.9 13.3z'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+.admin-heart img{ width:100%; height:100%; display:block; }
+.aq-media.heart-preview{
+  display:block; width:100px; height:92px; margin:6px auto;
+  border-radius:0 !important;
+  filter:drop-shadow(0 0 6px rgba(255,190,60,.6));
+}
+
+/* header heart — tap to send love; doubles as the admin doorway */
+#homeHeart.liked{
+  filter:drop-shadow(0 0 10px rgba(255,70,90,.85))
+         drop-shadow(0 0 24px rgba(255,190,60,.65));
+}
+/* like count pinned to the heart's corner */
+.heart-badge{
+  position:absolute; right:-7px; bottom:-5px;
+  min-width:18px; height:18px; padding:0 4px;
+  border-radius:9px;
+  display:grid; place-items:center;
+  background:linear-gradient(135deg,#d4af5f,#a8760a);
+  color:#fff; font:700 .62rem/1 Montserrat,sans-serif;
+  box-shadow:0 1px 4px rgba(120,80,10,.45);
+  pointer-events:none;
+}
+/* little hearts that float up on every tap */
+.heart-particle{
+  position:absolute; left:50%; top:50%;
+  color:#d21f2c; font-size:15px; pointer-events:none;
+  text-shadow:0 0 6px rgba(255,60,60,.6);
+  animation:heartFly 1.1s ease-out forwards;
+}
+@keyframes heartFly{
+  0%{ opacity:0; transform:translate(-50%,-50%) scale(.4); }
+  20%{ opacity:1; }
+  100%{ opacity:0; transform:translate(calc(-50% + var(--dx,0px)),-90px) rotate(var(--rot,0deg)) scale(1.15); }
+}
+
+/* admin access emails */
+.admin-email-list{ display:grid; gap:8px; margin:6px 0 10px; }
+.admin-email-row{
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:8px 10px 8px 14px; border-radius:12px;
+  background:rgba(255,251,244,.85); border:1px solid rgba(169,124,44,.2);
+  font-family:Montserrat,sans-serif; font-size:.8rem; color:#5a4326;
+}
+.admin-email-add{ display:flex; gap:8px; align-items:center; }
+.admin-email-add input{
+  flex:1; min-width:0; padding:11px 13px;
+  border:1px solid rgba(169,124,44,.26); border-radius:12px;
+  background:rgba(255,255,255,.9);
+  font-family:Montserrat,sans-serif; font-size:.86rem; color:var(--ink);
+}
+.admin-email-add input:focus{
+  outline:none; border-color:rgba(169,124,44,.6);
+  box-shadow:0 0 0 3px rgba(212,171,95,.22);
+}
+.admin-email-add .aq-approve{ padding:11px 18px; }
+.admin-heart:active{ transform:scale(.9); }
+@keyframes heartBeat{
+  0%,100%{ transform:scale(1); }
+  12%{ transform:scale(1.08); }
+  24%{ transform:scale(1); }
+  36%{ transform:scale(1.05); }
+}
+@media (prefers-reduced-motion: reduce){ .admin-heart{ animation:none; } }
+#musicToggle.is-on{ box-shadow:0 6px 18px rgba(138,98,32,.35); }
 
 /* ---------- seal logo + page-transition loader ---------- */
 .brand-mark{
