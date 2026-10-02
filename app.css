@@ -61,6 +61,9 @@ button{ font:inherit; cursor:pointer; }
   background:#e7d5bf;
   overflow:hidden;
 }
+/* .guest-in is set by the inline head script when a checked-in guest
+   returns — the invitation must not paint at all for them */
+.guest-in .opening{ display:none; }
 .landing-frame{
   position:relative;
   /* fit inside the viewport in BOTH dimensions so the art is never cropped */

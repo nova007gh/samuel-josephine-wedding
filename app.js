@@ -13,9 +13,12 @@ const guestLoginScreen = $('#guestLoginScreen');
 const app = $('#app');
 
 /* ---- Guest session helpers ---- */
-function getGuest(){ return JSON.parse(localStorage.getItem('sj_guest') || 'null'); }
-function setGuest(g){ localStorage.setItem('sj_guest', JSON.stringify(g)); }
-function clearGuest(){ sessionStorage.removeItem('sj_guest'); }
+function getGuest(){
+  try { return JSON.parse(localStorage.getItem('sj_guest') || 'null'); }
+  catch { return null; }
+}
+function setGuest(g){ try { localStorage.setItem('sj_guest', JSON.stringify(g)); } catch {} }
+function clearGuest(){ localStorage.removeItem('sj_guest'); localStorage.removeItem('sj_entered'); }
 
 /* a check-in whose save failed (offline) is retried quietly on the next visit */
 window.addEventListener('load', () => {
@@ -50,15 +53,17 @@ function enterApp(){
   app.classList.remove('hidden');
   document.body.classList.remove('locked');
   window.scrollTo({ top: 0, behavior: 'instant' });
-  updateGuestUI();
-  /* notifications start streaming only from here */
-  window.dispatchEvent(new Event('sj:entered'));
+  /* mark the session BEFORE any UI work — a rendering error must never
+     leave a checked-in guest looking logged-out on their next visit */
   try {
     localStorage.setItem('sj_entered', '1');
     /* baseline history entry, so the very first Back press lands on Home
        inside the app rather than unloading the page */
     if (!history.state) history.replaceState({ view:'home' }, '', '#home');
   } catch {}
+  try { updateGuestUI(); } catch {}
+  /* notifications start streaming only from here */
+  window.dispatchEvent(new Event('sj:entered'));
 }
 
 /* A guest who has already opened the invitation goes straight in on their
@@ -877,8 +882,7 @@ document.querySelectorAll('[data-pane]').forEach(b =>
 /* guest sign-out — clears this device's check-in; admin session untouched */
 $('#guestSignOut')?.addEventListener('click', () => {
   if (!confirm('Sign out of this device? You can sign back in anytime with your phone number.')) return;
-  localStorage.removeItem('sj_guest');
-  localStorage.removeItem('sj_entered');
+  clearGuest();
   location.href = '/';
 });
 
@@ -886,7 +890,7 @@ $('#guestSignOut')?.addEventListener('click', () => {
 function updateGuestUI(){
   const guest = getGuest();
   // show guest name in home hero
-  if (guest){
+  if (guest?.name){
     const hero = document.querySelector('.home-eyebrow');
     if (hero) hero.textContent = `WELCOME, ${guest.name.toUpperCase()}`;
   }

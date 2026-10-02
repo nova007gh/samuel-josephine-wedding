@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v143-recorder-refresh';
+const CACHE = 'sj-wedding-v144-guest-persistence';
 const ASSETS = [
   './',
   './index.html',
