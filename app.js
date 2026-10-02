@@ -656,7 +656,8 @@ function setOtpHint(delivered){
 function syncOtpButtons(){
   /* hide the button for the active channel; offer the alternates */
   $('#otpEmailBtn')?.classList.toggle('hidden', otpChannel === 'email' || !otpEmail);
-  $('#otpSmsBtn')?.classList.toggle('hidden', otpChannel === 'sms');
+  /* intl SMS is blocked (A2P), so only Ghana numbers get the text option */
+  $('#otpSmsBtn')?.classList.toggle('hidden', otpChannel === 'sms' || !isGhanaPhone(otpPhone));
   $('#otpCallBtn')?.classList.toggle('hidden', otpChannel === 'call' || isGhanaPhone(otpPhone));
 }
 function showOtpPane(phone, mode, delivered, resp){
@@ -769,18 +770,47 @@ $('#guestLoginForm')?.addEventListener('submit', async e => {
 $('#returnGuestLink')?.addEventListener('click', () => {
   $('#guestLoginError').textContent = '';
   $('#returnError').textContent = '';
+  $('#returnRegister')?.classList.add('hidden');
   showPane('return');
   $('#returnPhone')?.focus();
 });
+const returnNotFound = () => {
+  $('#returnError').textContent = 'No check-in found for that number.';
+  $('#returnRegister')?.classList.remove('hidden');
+};
+$('#returnPhone')?.addEventListener('input', () => $('#returnRegister')?.classList.add('hidden'));
 $('#returnSendBtn')?.addEventListener('click', async e => {
   const btn = e.currentTarget;
   const err = $('#returnError');
   const phone = $('#returnPhone').value.trim();
   if (!phone){ err.textContent = 'Enter your phone number.'; return; }
+  err.textContent = '';
+  $('#returnRegister')?.classList.add('hidden');
+
+  /* same device + same number as the stored check-in → they already proved
+     themselves once, let them straight back in without another code */
+  const tailOf = v => (String(v || '').match(/\d/g) || []).join('').slice(-9);
+  const saved = getGuest();
+  if (saved?.name && tailOf(phone).length === 9 && tailOf(saved.phone) === tailOf(phone)){
+    try { localStorage.setItem('sj_entered', '1'); } catch {}
+    hideGate(guestLoginScreen);
+    setTimeout(enterApp, 650);
+    return;
+  }
+
   btn.disabled = true;
   const label = btn.innerHTML;
-  btn.innerHTML = 'Sending code…';
+  btn.innerHTML = 'Checking…';
   try {
+    /* confirm the number actually checked in before spending an OTP send */
+    let firstName = null;
+    try {
+      const lk = await lookupGuest(phone);
+      firstName = lk.exists ? (lk.name || '') : null;
+    } catch { firstName = undefined; }  /* lookup unreachable — let sendOtp decide */
+    if (firstName === null){ returnNotFound(); return; }
+
+    btn.innerHTML = firstName ? `Welcome back, ${firstName}! Sending code…` : 'Sending code…';
     const intl = !isGhanaPhone(phone);
     let r;
     try {
@@ -792,7 +822,8 @@ $('#returnSendBtn')?.addEventListener('click', async e => {
     pendingGuest = null;
     showOtpPane(phone, 'login', r.delivered, r);
   } catch(x){
-    err.textContent = x.message || 'Could not send the code — try again.';
+    if (/no check-in/i.test(x.message || '')) returnNotFound();
+    else err.textContent = x.message || 'Could not send the code — try again.';
   } finally {
     btn.disabled = false;
     btn.innerHTML = label;

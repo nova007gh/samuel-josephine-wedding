@@ -361,6 +361,9 @@ function normPhone(v){
   /* Ghana wedding — local 0xx and bare 9-digit numbers default to +233 */
   if (digits.startsWith('0')) return '+233' + digits.slice(1);
   if (digits.length === 9) return '+233' + digits;
+  /* bare 10-digit NANP — US/Canada guests often type without the +1,
+     and +91xxxxx accidentally reads as an Indian number */
+  if (digits.length === 10) return '+1' + digits;
   return '+' + digits;
 }
 /* compare on the last 9 digits so 0xx / +233 / other formats all match */
@@ -513,17 +516,36 @@ async function sendEmail(to, subject, text){
 async function sendCall(to, code){
   const { TWILIO_SID, TWILIO_TOKEN, TWILIO_FROM } = process.env;
   if (!TWILIO_SID || !TWILIO_TOKEN || !TWILIO_FROM) return false;
+  const auth = 'Basic ' + Buffer.from(`${TWILIO_SID}:${TWILIO_TOKEN}`).toString('base64');
   try {
     const spoken = String(code).split('').join(', ');
     const twiml = `<Response><Say voice="alice" language="en-US">Hello from Sam and Jossy's wedding! Your entry code is: ${spoken}. I repeat: ${spoken}. Goodbye!</Say></Response>`;
     const r = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TWILIO_SID}/Calls.json`, {
       method: 'POST',
-      headers: { 'Authorization': 'Basic ' + Buffer.from(`${TWILIO_SID}:${TWILIO_TOKEN}`).toString('base64'),
+      headers: { 'Authorization': auth,
                  'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({ To: to, From: TWILIO_FROM, Twiml: twiml })
     });
     if (!r.ok) throw new Error('Twilio call ' + r.status + ': ' + (await r.text()).slice(0, 200));
-    return true;
+    const { sid } = await r.json();
+    /* Twilio accepting the create request only means the call is queued —
+       a bad or unreachable number still fails async. Watch the status for
+       a few seconds so a dead call falls back to email instead of
+       telling the guest "we're calling" forever */
+    const deadline = Date.now() + 12000;
+    while (Date.now() < deadline){
+      await new Promise(done => setTimeout(done, 2000));
+      const s = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TWILIO_SID}/Calls/${sid}.json`,
+        { headers: { 'Authorization': auth } });
+      if (!s.ok) break;
+      const { status } = await s.json();
+      if (['ringing', 'in-progress', 'completed'].includes(status)) return true;
+      if (['failed', 'busy', 'no-answer', 'canceled'].includes(status)){
+        console.warn(`[call] ${to} → ${status}`);
+        return false;
+      }
+    }
+    return true; /* still queued/ringing past the window — treat as sent */
   } catch (e) { console.warn('[call] send failed:', e.message); return false; }
 }
 
@@ -582,20 +604,24 @@ app.post('/api/otp/send', otpSendLimit, async (req, res) => {
     .run(tail, hashOtp(code), now() + OTP_TTL_MS, now(), channel);
 
   const msg = `Sam & Jossy's Wedding — your entry code is ${code} (valid 10 min)`;
+  /* sign-in always dials the number stored at check-in — the guest may
+     type a different format, the record is the verified one */
+  const sendTo = loginGuest?.phone || phone;
   let delivered = channel;
   let sent;
   if (channel === 'email'){
     sent = await sendEmail(emailTo, 'Your wedding entry code', msg + ' ❤');
   } else if (channel === 'call'){
-    sent = await sendCall(phone, code);
+    sent = await sendCall(sendTo, code);
     /* call couldn't connect — email the code instead when we have an address */
     if (!sent && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTo) && emailOtpEnabled()){
       sent = await sendEmail(emailTo, 'Your wedding entry code', msg + ' ❤');
       delivered = 'email';
     }
   } else {
-    sent = await sendSms(phone, msg + ' ❤');
+    sent = await sendSms(sendTo, msg + ' ❤');
   }
+  console.log(`[otp] ${purpose}/${channel} → ${sent ? delivered : 'undelivered'} — ${sendTo}`);
   /* nothing delivered → the couple gets it by push and reads it to the guest */
   if (!sent) notifyAll('Guest entry code', `${str(b.name, 60) || phone} needs code: ${code}`);
   res.json({
@@ -617,6 +643,15 @@ app.post('/api/otp/verify', otpCheckLimit, (req, res) => {
   db.prepare('INSERT INTO otp_tokens (token, phone, expiresAt) VALUES (?, ?, ?)')
     .run(token, r.tail, now() + 15 * 60 * 1000);
   res.json({ ok: true, otpToken: token });
+});
+
+/* "Already checked in?" — confirm the number has a check-in before we
+   burn an OTP send; first name only, nothing else leaks */
+app.post('/api/guests/lookup', otpCheckLimit, (req, res) => {
+  const tail = phoneTail(str(req.body?.phone, 40));
+  const g = tail.length >= 9 ? findGuestByPhone(tail) : null;
+  if (!g) return res.json({ exists: false });
+  res.json({ exists: true, name: (g.name || '').split(/\s+/)[0] });
 });
 
 app.post('/api/guests/login', otpCheckLimit, (req, res) => {

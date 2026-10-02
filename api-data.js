@@ -211,6 +211,10 @@ async function verifyOtp(phone, code){
 async function guestLogin(phone, code){
   return await api('/guests/login', { method: 'POST', body: { phone, code } });
 }
+/* does this number already have a check-in? first name only, for the greeting */
+async function lookupGuest(phone){
+  return await api('/guests/lookup', { method: 'POST', body: { phone } });
+}
 
 /* public approved guest list (name + attending only) */
 function onPublicGuests(callback){
