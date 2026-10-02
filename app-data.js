@@ -132,9 +132,10 @@ function renderAlbums(){
     const cover = items.find(m => m.category === album.id && (m.src || m.mediaUrl) &&
       (m.type || '').startsWith('image/'));
     const src = (cover && (cover.src || cover.mediaUrl)) || sitePhoto(album.photoKey, album.cover);
+    const badge = album.id === 'sj-gallery' ? '<span class="cat-badge">&#10084; S&amp;J</span>' : '';
     return `
-      <button class="cat-card" data-album="${album.id}" type="button">
-        <span class="cat-thumb"><img loading="lazy" decoding="async" src="${src}" alt="${escapeHTML(album.label)}"></span>
+      <button class="cat-card${album.id === 'sj-gallery' ? ' cat-card--sj' : ''}" data-album="${album.id}" type="button">
+        <span class="cat-thumb">${badge}<img loading="lazy" decoding="async" src="${src}" alt="${escapeHTML(album.label)}"></span>
         <span class="cat-name">${escapeHTML(album.label)}</span>
         <span class="cat-count">${count}</span>
       </button>`;
