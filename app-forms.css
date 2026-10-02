@@ -118,6 +118,38 @@
   cursor:pointer;
 }
 .upload-drop:hover{ background:rgba(250,240,223,.9); }
+button.upload-drop{ width:100%; font-family:inherit; }
+/* staged S&J picks — preview before publishing */
+.sj-preview{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:8px;
+  margin:12px 0 0;
+}
+.sj-thumb{
+  position:relative;
+  margin:0;
+  aspect-ratio:1;
+  border-radius:12px;
+  overflow:hidden;
+  border:1px solid rgba(169,124,44,.3);
+  box-shadow:0 4px 10px rgba(112,78,26,.12);
+}
+.sj-thumb img, .sj-thumb video{ width:100%; height:100%; object-fit:cover; display:block; }
+.sj-thumb-x{
+  position:absolute; top:4px; right:4px;
+  width:22px; height:22px; border-radius:50%;
+  border:none; background:rgba(0,0,0,.55); color:#fff;
+  font-size:14px; line-height:1; cursor:pointer;
+}
+.sj-vid-badge{
+  position:absolute; left:50%; top:50%;
+  transform:translate(-50%,-50%);
+  width:30px; height:30px; border-radius:50%;
+  display:grid; place-items:center;
+  background:rgba(0,0,0,.5); color:#fff; font-size:11px;
+  pointer-events:none;
+}
 .upload-status{
   margin:10px 0 0;
   font-size:.74rem;

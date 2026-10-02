@@ -18,11 +18,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Parisienne&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="assets/landing-invite.jpg" />
   <link rel="preload" as="image" href="assets/seal-pressed-320.png" />
-  <link rel="stylesheet" href="app.css?v=149" />
+  <link rel="stylesheet" href="app.css?v=150" />
 
-  <link rel="stylesheet" href="app-views.css?v=149" />
-  <link rel="stylesheet" href="app-forms.css?v=149" />
-  <link rel="stylesheet" href="app-social.css?v=149" />
+  <link rel="stylesheet" href="app-views.css?v=150" />
+  <link rel="stylesheet" href="app-forms.css?v=150" />
+  <link rel="stylesheet" href="app-social.css?v=150" />
   <script>
   /* a checked-in guest goes straight into the app — flag it before first
      paint so the invitation never flashes on their screen (mirrors
@@ -1012,10 +1012,15 @@
       <label class="field">Caption <small class="field-opt">(optional)</small>
         <input id="sjCaption" type="text" maxlength="200" placeholder="A little note about this memory" />
       </label>
-      <label class="upload-drop">
+      <button id="sjPick" class="upload-drop" type="button">
         <span>&#43;&nbsp; ADD PHOTOS OR VIDEOS</span>
-        <input id="sjFiles" type="file" accept="image/*,video/*" multiple class="hidden" />
-      </label>
+      </button>
+      <input id="sjFiles" type="file" accept="image/*,video/*" multiple class="hidden" />
+      <div id="sjPreview" class="sj-preview hidden"></div>
+      <div id="sjActions" class="aq-actions hidden">
+        <button id="sjPublish" class="aq-approve" type="button">PUBLISH TO S&amp;J GALLERY</button>
+        <button id="sjClear" class="aq-reject" type="button">CLEAR</button>
+      </div>
       <p id="sjUploadStatus" class="upload-status hidden"></p>
       <div id="sjGrid" class="mem-grid"></div>
       <p id="sjEmpty" class="page-sub">Nothing here yet — add your first memory above.</p>
@@ -1239,9 +1244,9 @@ try{
   });
 }catch(e){}
 </script>
-<script src="api-data.js?v=149"></script>
-<script src="app.js?v=149"></script>
-<script src="app-data.js?v=149"></script>
-<script src="app-social.js?v=149"></script>
+<script src="api-data.js?v=150"></script>
+<script src="app.js?v=150"></script>
+<script src="app-data.js?v=150"></script>
+<script src="app-social.js?v=150"></script>
 </body>
 </html>

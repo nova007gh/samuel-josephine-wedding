@@ -1084,34 +1084,87 @@ function renderSjAdminGrid(){
     }));
 }
 
-document.getElementById('sjFiles')?.addEventListener('change', async e => {
-  const files = [...e.target.files];
-  if (!files.length) return;
+/* pick → preview → publish. The input is opened by an explicit button so a
+   label-wrapped hidden input can never swallow the tap on mobile. */
+const sjFiles = document.getElementById('sjFiles');
+let sjPending = [];
+
+function renderSjPreview(){
+  const host = document.getElementById('sjPreview');
+  const actions = document.getElementById('sjActions');
+  const publish = document.getElementById('sjPublish');
+  if (!host || !actions || !publish) return;
+  host.classList.toggle('hidden', !sjPending.length);
+  actions.classList.toggle('hidden', !sjPending.length);
+  publish.textContent = sjPending.length ? `PUBLISH ${sjPending.length} TO S&J GALLERY` : 'PUBLISH TO S&J GALLERY';
+  host.innerHTML = sjPending.map((p, i) => {
+    const isVid = (p.file.type || '').startsWith('video/');
+    return `<figure class="sj-thumb${isVid ? ' sj-thumb--vid' : ''}">
+      ${isVid ? `<video src="${p.url}" muted playsinline preload="metadata"></video><span class="sj-vid-badge">&#9654;</span>` : `<img src="${p.url}" alt="">`}
+      <button class="sj-thumb-x" data-sj-rm="${i}" type="button" aria-label="Remove">&times;</button>
+    </figure>`;
+  }).join('');
+  host.querySelectorAll('[data-sj-rm]').forEach(b =>
+    b.addEventListener('click', () => {
+      URL.revokeObjectURL(sjPending[+b.dataset.sjRm].url);
+      sjPending.splice(+b.dataset.sjRm, 1);
+      renderSjPreview();
+    }));
+}
+
+document.getElementById('sjPick')?.addEventListener('click', () => sjFiles?.click());
+
+sjFiles?.addEventListener('change', e => {
+  for (const f of e.target.files) sjPending.push({ file: f, url: URL.createObjectURL(f) });
+  e.target.value = '';  /* re-picking the same file must still fire change */
+  renderSjPreview();
+});
+
+document.getElementById('sjClear')?.addEventListener('click', () => {
+  sjPending.forEach(p => URL.revokeObjectURL(p.url));
+  sjPending = [];
+  renderSjPreview();
+});
+
+document.getElementById('sjPublish')?.addEventListener('click', async () => {
+  if (!sjPending.length) return;
   const status = document.getElementById('sjUploadStatus');
   const captionEl = document.getElementById('sjCaption');
+  const publish = document.getElementById('sjPublish');
   const caption = captionEl?.value.trim() || '';
+  const total = sjPending.length;
   status.classList.remove('hidden');
-  e.target.disabled = true;
+  publish.disabled = true;
   let saved = 0, failed = 0;
-  for (let i = 0; i < files.length; i++){
-    status.textContent = `Publishing ${i + 1} of ${files.length}…`;
+  const done = [];
+  for (let i = 0; i < sjPending.length; i++){
+    status.textContent = `Publishing ${saved + failed + 1} of ${total}…`;
     try {
-      await addCoupleMemory(files[i], files.length === 1 ? caption : (caption ? `${caption} ${i + 1}` : ''));
+      const record = await addCoupleMemory(sjPending[i].file, total === 1 ? caption : (caption ? `${caption} ${i + 1}` : ''));
       saved++;
+      done.push(i);
+      /* show it in the grid immediately — no waiting on the poll */
+      adminMemories = [record, ...(adminMemories || [])];
+      renderSjAdminGrid();
     } catch(err){
-      console.warn('S&J gallery upload failed:', files[i].name, err);
+      console.warn('S&J gallery upload failed:', sjPending[i].file.name, err);
       failed++;
     }
   }
-  e.target.disabled = false;
-  e.target.value = '';
+  /* keep failed picks staged so they can retry; done ones leave */
+  sjPending = sjPending.filter((p, i) => {
+    if (done.includes(i)){ URL.revokeObjectURL(p.url); return false; }
+    return true;
+  });
+  publish.disabled = false;
+  renderSjPreview();
   if (failed && !saved){
     status.textContent = 'Upload failed — check your connection and try again.';
   } else {
     if (captionEl) captionEl.value = '';
-    status.textContent = `${saved} ${saved === 1 ? 'memory' : 'memories'} published to the S&J Gallery${failed ? ` (${failed} failed)` : ''} — live for guests now.`;
+    status.textContent = `${saved} ${saved === 1 ? 'memory' : 'memories'} published to the S&J Gallery${failed ? ` — ${failed} failed, still staged` : ''} — live for guests now.`;
   }
-  setTimeout(() => status.classList.add('hidden'), 6000);
+  setTimeout(() => status.classList.add('hidden'), 8000);
 });
 
 // admin logout
