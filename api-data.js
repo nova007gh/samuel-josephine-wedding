@@ -141,6 +141,15 @@ function onAllMemories(callback){
   return pollFeed('/admin/memories', rows => callback(rows.slice().sort(newestFirst('createdAt'))), true);
 }
 
+/* the couple's own album — admin-published, lands approved instantly */
+async function addCoupleMemory(file, caption){
+  const fd = new FormData();
+  fd.append('file', file, file.name || 'memory');
+  fd.append('caption', caption || '');
+  fd.append('name', file.name || '');
+  return await api('/admin/gallery', { method: 'POST', form: fd, admin: true });
+}
+
 async function deleteMemory(id){
   await api(`/admin/memories/${encodeURIComponent(id)}`, { method: 'DELETE', admin: true });
 }

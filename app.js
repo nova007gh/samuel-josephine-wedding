@@ -946,9 +946,10 @@ $('#enterFromHome')?.addEventListener('click', () => {
    --------------------------------------------------------- */
 const SUBVIEW_TAB = {
   guestbook:'more', memories:'more', rsvp:'more', voicemsg:'more', videomsg:'more',
-  admin:'more', adminlogin:'more', approvals:'more', rsvpAdmin:'more', guestlist:'more', security:'more'
+  admin:'more', adminlogin:'more', approvals:'more', rsvpAdmin:'more', guestlist:'more', security:'more',
+  sjgallery:'more'
 };
-const ADMIN_VIEWS = new Set(['admin', 'approvals', 'rsvpAdmin', 'guestlist', 'security']);
+const ADMIN_VIEWS = new Set(['admin', 'approvals', 'rsvpAdmin', 'guestlist', 'security', 'sjgallery']);
 /* Views are pushed onto browser history so the device Back button moves
    between screens instead of leaving the page — leaving would reload the
    app and replay the invitation gates. */

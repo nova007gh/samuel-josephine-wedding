@@ -757,12 +757,37 @@ app.post('/api/memories', publicWrite, upload.single('file'), (req, res) => {
     mediaUrl: `/uploads/${req.file.filename}`,
     createdAt: now()
   };
+  /* the couple's album is published by admin only — a guest upload can
+     never land in it */
+  if (record.category === 'sj-gallery') record.category = 'wedding-photos';
   db.prepare(`INSERT INTO memories (id, category, caption, guestName, kind, status, type, name, size, mediaUrl, createdAt)
               VALUES (@id, @category, @caption, @guestName, @kind, @status, @type, @name, @size, @mediaUrl, @createdAt)`)
     .run(record);
   res.json(record);
   const what = { photo:'a photo', video:'a video', selfie:'a selfie', voice:'a voice message', videomsg:'a video message', music:'a song' }[record.kind] || 'a memory';
   notifyAll('New upload pending review', `${record.guestName || 'A guest'} shared ${what} — pending your approval`);
+});
+
+/* ---------- S&J Gallery — the couple's own album, published instantly ---------- */
+app.post('/api/admin/gallery', requireAdmin, upload.single('file'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'A media file is required.' });
+  const record = {
+    id: uid(),
+    category: 'sj-gallery',
+    caption: str(req.body.caption, 500),
+    guestName: 'Sam & Jossy',
+    kind: 'gallery',
+    status: 'approved',
+    type: req.file.mimetype || 'application/octet-stream',
+    name: str(req.body.name, 200) || req.file.filename,
+    size: req.file.size,
+    mediaUrl: `/uploads/${req.file.filename}`,
+    createdAt: now()
+  };
+  db.prepare(`INSERT INTO memories (id, category, caption, guestName, kind, status, type, name, size, mediaUrl, createdAt)
+              VALUES (@id, @category, @caption, @guestName, @kind, @status, @type, @name, @size, @mediaUrl, @createdAt)`)
+    .run(record);
+  res.json(record);
 });
 
 /* ---------- admin: full feeds ---------- */

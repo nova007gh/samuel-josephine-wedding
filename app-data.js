@@ -62,6 +62,7 @@ function escapeHTML(value=''){
    ========================================================= */
 /* albums shown as cover cards on the gallery landing */
 const GALLERY_ALBUMS = [
+  { id:'sj-gallery',     label:'S&J Gallery',    cover:'assets/couple-home.jpg',         photoKey:'couple' },
   { id:'childhood',      label:'Childhood',      cover:'assets/story/sam-childhood.jpg', photoKey:'sam-childhood' },
   { id:'adulthood',      label:'Adulthood',      cover:'assets/story/sam-adult.jpg',     photoKey:'sam-adult' },
   { id:'first-together', label:'First Together', cover:'assets/story/facetime.jpg',      photoKey:'facetime' },

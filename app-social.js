@@ -985,7 +985,7 @@ function activityToast(title, sub){
 function kindLabel(kind){
   return ({ photo:'Photo', video:'Video', selfie:'Selfie',
             voice:'Voice message', videomsg:'Video message',
-            music:'Audio / Music' })[kind] || 'Memory';
+            music:'Audio / Music', gallery:'Gallery photo/video' })[kind] || 'Memory';
 }
 
 const feedSeen = {};
@@ -1012,10 +1012,12 @@ function startAdminListeners(){
   stopAdminListeners();
   adminUnsubs = [
     onAllMemories(items => {
-      toastNewItems('mem', items, m =>
+      toastNewItems('mem', items, m => {
+        if (m.kind === 'gallery') return;  /* your own publishes don't need a toast */
         activityToast(`${m.guestName || 'A guest'} shared ${kindLabel(m.kind).toLowerCase()}`,
-                      m.status === 'pending' ? 'Pending your approval' : 'New memory'));
-      adminMemories = items; updateAdminStats(); renderApprovalQueue();
+                      m.status === 'pending' ? 'Pending your approval' : 'New memory');
+      });
+      adminMemories = items; updateAdminStats(); renderApprovalQueue(); renderSjAdminGrid();
     }),
     onAllGuestbook(items => {
       toastNewItems('gb', items, g =>
@@ -1045,8 +1047,72 @@ function stopAdminListeners(){
   adminUnsubs = [];
   pendingAnnounced = false;
   adminMemories = []; adminGuestbook = []; adminGuests = []; adminRsvps = [];
-  updateAdminStats(); renderApprovalQueue(); renderGuestList(); renderRsvpAdmin();
+  updateAdminStats(); renderApprovalQueue(); renderGuestList(); renderRsvpAdmin(); renderSjAdminGrid();
 }
+
+/* =========================================================
+   S&J Gallery — the couple's album; admin adds, guests see it live
+   ========================================================= */
+const sjGrid = document.getElementById('sjGrid');
+const sjEmpty = document.getElementById('sjEmpty');
+
+function renderSjAdminGrid(){
+  if (!sjGrid || !sjEmpty) return;
+  const items = (adminMemories || []).filter(m => m.category === 'sj-gallery');
+  sjEmpty.classList.toggle('hidden', items.length > 0);
+  /* keep any playing video alive across poll refreshes — same rule as the
+     guest gallery grid */
+  if ([...sjGrid.querySelectorAll('video, audio')].some(el => !el.paused && !el.ended)) return;
+  sjGrid.innerHTML = items.map(m => {
+    const isVid = (m.type || '').startsWith('video/');
+    const media = isVid
+      ? `<div class="mem-media"><video src="${m.mediaUrl}" controls playsinline preload="metadata"></video></div>`
+      : `<img loading="lazy" decoding="async" src="${m.mediaUrl}" alt="${escapeHTML(m.caption || 'S&J memory')}">`;
+    return `<article class="mem-card">
+      ${media}
+      <div class="mem-meta">
+        <p class="mem-cap">${escapeHTML(m.caption || '—')}</p>
+        <button class="mem-del" data-sj-del="${m.id}" type="button">Remove</button>
+      </div>
+    </article>`;
+  }).join('');
+  sjGrid.querySelectorAll('[data-sj-del]').forEach(btn =>
+    btn.addEventListener('click', async () => {
+      if (!confirm('Remove this from the S&J Gallery?')) return;
+      try { await deleteMemory(btn.dataset.sjDel); }
+      catch { alert('Could not remove — try again.'); }
+    }));
+}
+
+document.getElementById('sjFiles')?.addEventListener('change', async e => {
+  const files = [...e.target.files];
+  if (!files.length) return;
+  const status = document.getElementById('sjUploadStatus');
+  const captionEl = document.getElementById('sjCaption');
+  const caption = captionEl?.value.trim() || '';
+  status.classList.remove('hidden');
+  e.target.disabled = true;
+  let saved = 0, failed = 0;
+  for (let i = 0; i < files.length; i++){
+    status.textContent = `Publishing ${i + 1} of ${files.length}…`;
+    try {
+      await addCoupleMemory(files[i], files.length === 1 ? caption : (caption ? `${caption} ${i + 1}` : ''));
+      saved++;
+    } catch(err){
+      console.warn('S&J gallery upload failed:', files[i].name, err);
+      failed++;
+    }
+  }
+  e.target.disabled = false;
+  e.target.value = '';
+  if (failed && !saved){
+    status.textContent = 'Upload failed — check your connection and try again.';
+  } else {
+    if (captionEl) captionEl.value = '';
+    status.textContent = `${saved} ${saved === 1 ? 'memory' : 'memories'} published to the S&J Gallery${failed ? ` (${failed} failed)` : ''} — live for guests now.`;
+  }
+  setTimeout(() => status.classList.add('hidden'), 6000);
+});
 
 // admin logout
 document.getElementById('adminLogout')?.addEventListener('click', async () => {

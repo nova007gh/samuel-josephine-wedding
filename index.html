@@ -18,11 +18,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Parisienne&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="assets/landing-invite.jpg" />
   <link rel="preload" as="image" href="assets/seal-pressed-320.png" />
-  <link rel="stylesheet" href="app.css?v=145" />
+  <link rel="stylesheet" href="app.css?v=146" />
 
-  <link rel="stylesheet" href="app-views.css?v=145" />
-  <link rel="stylesheet" href="app-forms.css?v=145" />
-  <link rel="stylesheet" href="app-social.css?v=145" />
+  <link rel="stylesheet" href="app-views.css?v=146" />
+  <link rel="stylesheet" href="app-forms.css?v=146" />
+  <link rel="stylesheet" href="app-social.css?v=146" />
   <script>
   /* a checked-in guest goes straight into the app — flag it before first
      paint so the invitation never flashes on their screen (mirrors
@@ -1033,6 +1033,11 @@
         <span class="menu-text"><strong>Guest Book</strong><small>All guest messages</small></span>
         <span class="menu-chev">&#10095;</span>
       </button>
+      <button class="menu-item" data-goto="sjgallery" type="button">
+        <span class="menu-icon menu-icon--gold">&#128444;</span>
+        <span class="menu-text"><strong>S&amp;J Gallery</strong><small>Add photos &amp; videos — publish instantly</small></span>
+        <span class="menu-chev">&#10095;</span>
+      </button>
       <button class="menu-item" data-goto="gallery" type="button">
         <span class="menu-icon menu-icon--gold">&#128247;</span>
         <span class="menu-text"><strong>Photos &amp; Videos</strong><small>Shared memories</small></span>
@@ -1109,6 +1114,29 @@
 
     <div id="aqList" class="aq-list"></div>
     <p id="aqEmpty" class="page-sub">No pending submissions. Great job!</p>
+  </section>
+
+  <!-- ---------- S&J Gallery manager (Admin) ---------- -->
+  <section class="view hidden" data-view="sjgallery">
+    <button class="back-link" data-goto="admin" type="button">&#10094; Back</button>
+    <h1 class="page-title page-title--serif">S&amp;J Gallery</h1>
+    <div class="divider"><span></span><i>&#10084;</i><span></span></div>
+    <p class="page-sub">Your shared album — photos and videos go live instantly, no review needed.</p>
+
+    <div class="rec-page-card">
+      <label class="field">Caption <small class="field-opt">(optional)</small>
+        <input id="sjCaption" type="text" maxlength="200" placeholder="A little note about this memory" />
+      </label>
+      <label class="upload-drop">
+        <span>&#43;&nbsp; ADD PHOTOS OR VIDEOS</span>
+        <input id="sjFiles" type="file" accept="image/*,video/*" multiple class="hidden" />
+      </label>
+      <p id="sjUploadStatus" class="upload-status hidden"></p>
+    </div>
+
+    <h2 class="settings-heading">In this album</h2>
+    <div id="sjGrid" class="mem-grid"></div>
+    <p id="sjEmpty" class="page-sub">Nothing here yet — add your first memory above.</p>
   </section>
 
   <!-- ---------- Floral corners (bottom) ---------- -->
@@ -1224,9 +1252,9 @@ try{
   });
 }catch(e){}
 </script>
-<script src="api-data.js?v=145"></script>
-<script src="app.js?v=145"></script>
-<script src="app-data.js?v=145"></script>
-<script src="app-social.js?v=145"></script>
+<script src="api-data.js?v=146"></script>
+<script src="app.js?v=146"></script>
+<script src="app-data.js?v=146"></script>
+<script src="app-social.js?v=146"></script>
 </body>
 </html>
