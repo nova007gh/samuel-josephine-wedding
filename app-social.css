@@ -291,18 +291,23 @@
 
 .voice-wave{
   width:100%;
-  height:80px;
-  margin:0 0 8px;
-  border-radius:12px;
-  background:rgba(250,243,231,.85);
+  height:90px;
+  margin:4px 0 2px;
+}
+
+.rec-timer{
+  margin:2px 0 0;
+  font-size:.95rem;
+  letter-spacing:.08em;
+  color:#5a4a30;
 }
 
 .mic-button{
   position:relative;
-  width:86px;
-  height:86px;
-  margin:14px auto 0;
-  border:3px solid rgba(169,124,44,.3);
+  width:80px;
+  height:80px;
+  margin:16px auto 0;
+  border:0;
   border-radius:50%;
   background:linear-gradient(#b98c33,#8a6220);
   color:#fff;
@@ -329,12 +334,25 @@
 .viewfinder{
   position:relative;
   margin:16px 0 0;
-  aspect-ratio:4/5;
+  aspect-ratio:4/3;
   border-radius:18px;
   overflow:hidden;
   background:#1a1208;
 }
+/* blurred couple photo sits behind the camera preview so the idle
+   viewfinder reads as a photo frame, not a black box */
+.vf-backdrop{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  filter:blur(18px) brightness(.45) saturate(.9);
+  transform:scale(1.3);
+}
 .viewfinder video{
+  position:relative;
+  z-index:1;
   width:100%;
   height:100%;
   object-fit:cover;
@@ -342,6 +360,7 @@
 .viewfinder video.mirrored{ transform:scaleX(-1); }
 .vf-corner{
   position:absolute;
+  z-index:2;
   width:28px;
   height:28px;
   border-color:rgba(255,242,212,.8);
@@ -354,6 +373,7 @@
 .vf-corner--br{ bottom:16px; right:16px; border-bottom-width:2px; border-right-width:2px; }
 .vf-overlay{
   position:absolute;
+  z-index:2;
   inset:0;
   display:grid;
   place-content:center;
@@ -362,12 +382,14 @@
   text-align:center;
   color:#fff;
   cursor:pointer;
+  text-shadow:0 1px 10px rgba(0,0,0,.55);
 }
-.vf-overlay svg{ width:44px; height:44px; }
+.vf-overlay svg{ width:44px; height:44px; filter:drop-shadow(0 1px 8px rgba(0,0,0,.5)); }
 .vf-overlay p{ margin:0; font-size:.92rem; }
-.vf-overlay small{ font-size:.74rem; opacity:.8; }
+.vf-overlay small{ font-size:.74rem; opacity:.85; }
 .vf-timer{
   position:absolute;
+  z-index:3;
   top:12px;
   left:50%;
   transform:translateX(-50%);
@@ -387,8 +409,9 @@
   gap:10px;
   margin:14px 0 0;
   padding:10px 12px;
-  border-radius:16px;
-  background:rgba(255,255,255,.72);
+  border-radius:18px;
+  background:rgba(255,255,255,.9);
+  border:1px solid rgba(169,124,44,.12);
 }
 .vm-side{
   display:grid;
@@ -402,17 +425,18 @@
 }
 .vm-side svg{ width:24px; height:24px; stroke:var(--gold-deep); }
 .vm-record{
-  width:72px;
-  height:72px;
-  border:3px solid rgba(169,124,44,.35);
+  width:70px;
+  height:70px;
+  border:1px solid rgba(169,124,44,.28);
   border-radius:50%;
   display:grid;
   place-items:center;
-  background:rgba(255,255,255,.85);
+  background:#fff;
+  box-shadow:0 4px 14px rgba(112,78,26,.12);
 }
 .vm-record span{
-  width:32px;
-  height:32px;
+  width:44px;
+  height:44px;
   border-radius:50%;
   background:#b03a2e;
   transition:all .2s ease;

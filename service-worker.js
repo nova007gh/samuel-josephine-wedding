@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v142-gate-scroll-fix';
+const CACHE = 'sj-wedding-v143-recorder-refresh';
 const ASSETS = [
   './',
   './index.html',
