@@ -16,12 +16,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Parisienne&display=swap" rel="stylesheet">
+  <link rel="preload" as="image" href="assets/landing-invite.jpg" />
   <link rel="preload" as="image" href="assets/seal-pressed-320.png" />
-  <link rel="stylesheet" href="app.css?v=137" />
+  <link rel="stylesheet" href="app.css?v=142" />
 
-  <link rel="stylesheet" href="app-views.css?v=137" />
-  <link rel="stylesheet" href="app-forms.css?v=137" />
-  <link rel="stylesheet" href="app-social.css?v=137" />
+  <link rel="stylesheet" href="app-views.css?v=142" />
+  <link rel="stylesheet" href="app-forms.css?v=142" />
+  <link rel="stylesheet" href="app-social.css?v=142" />
 </head>
 <body class="locked">
 
@@ -29,7 +30,7 @@
      SCREEN 1 — invitation, tap the seal
      ============================================================ -->
 <div id="opening" class="opening">
-  <div id="landingFrame" class="landing-frame landing-frame--card">
+  <div id="landingFrame" class="landing-frame">
     <div id="landingCard" class="landing-card">
       <div class="landing-card-inner">
         <p class="landing-eyebrow">You are cordially invited</p>
@@ -43,7 +44,7 @@
         <p class="landing-hashtag" data-wed="hashtag">#AlwaysAndForever</p>
       </div>
     </div>
-    <img id="landingArt" class="landing-art hidden"
+    <img id="landingArt" class="landing-art" src="assets/landing-invite.jpg"
          alt="You are cordially invited to the wedding. Tap the S&amp;J seal to open." />
 
     <button id="sealButton" class="seal-hotspot" aria-label="Tap the wax seal to open the invitation" type="button">
@@ -220,6 +221,7 @@
       <button type="button" id="otpResendBtn" class="gate-link">Resend code</button>
       <button type="button" id="otpEmailBtn" class="gate-link hidden">&#9993; Send to my email instead</button>
       <button type="button" id="otpSmsBtn" class="gate-link hidden">&#128241; Send as text instead</button>
+      <button type="button" id="otpCallBtn" class="gate-link hidden">&#128222; Call me with the code</button>
       <button type="button" class="gate-link" data-pane="back">&#10094; Wrong number? Go back</button>
     </div>
   </div>
@@ -1209,9 +1211,9 @@ try{
   });
 }catch(e){}
 </script>
-<script src="api-data.js?v=137"></script>
-<script src="app.js?v=137"></script>
-<script src="app-data.js?v=137"></script>
-<script src="app-social.js?v=137"></script>
+<script src="api-data.js?v=142"></script>
+<script src="app.js?v=142"></script>
+<script src="app-data.js?v=142"></script>
+<script src="app-social.js?v=142"></script>
 </body>
 </html>

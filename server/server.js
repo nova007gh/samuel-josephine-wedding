@@ -507,6 +507,26 @@ async function sendEmail(to, subject, text){
   return false;
 }
 
+/* voice OTP — Twilio call reads the code aloud. Voice is not subject to
+   the A2P 10DLC rules that block unregistered SMS to US/international
+   numbers, so this is the international channel while email is fallback */
+async function sendCall(to, code){
+  const { TWILIO_SID, TWILIO_TOKEN, TWILIO_FROM } = process.env;
+  if (!TWILIO_SID || !TWILIO_TOKEN || !TWILIO_FROM) return false;
+  try {
+    const spoken = String(code).split('').join(', ');
+    const twiml = `<Response><Say voice="alice" language="en-US">Hello from Sam and Jossy's wedding! Your entry code is: ${spoken}. I repeat: ${spoken}. Goodbye!</Say></Response>`;
+    const r = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TWILIO_SID}/Calls.json`, {
+      method: 'POST',
+      headers: { 'Authorization': 'Basic ' + Buffer.from(`${TWILIO_SID}:${TWILIO_TOKEN}`).toString('base64'),
+                 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ To: to, From: TWILIO_FROM, Twiml: twiml })
+    });
+    if (!r.ok) throw new Error('Twilio call ' + r.status + ': ' + (await r.text()).slice(0, 200));
+    return true;
+  } catch (e) { console.warn('[call] send failed:', e.message); return false; }
+}
+
 function checkOtpCode(phone, code){
   const tail = phoneTail(phone);
   const row = tail && db.prepare('SELECT * FROM otps WHERE phone = ?').get(tail);
@@ -531,17 +551,20 @@ app.post('/api/otp/send', otpSendLimit, async (req, res) => {
   if (tail.length < 9)
     return res.status(400).json({ error: 'Enter a valid phone number (include the country code if abroad).' });
   const purpose = b.purpose === 'login' ? 'login' : 'register';
-  const channel = b.channel === 'email' ? 'email' : 'sms';
+  const channel = ['email', 'call'].includes(b.channel) ? b.channel : 'sms';
   const loginGuest = purpose === 'login' ? findGuestByPhone(tail) : null;
   if (purpose === 'login' && !loginGuest)
     return res.status(404).json({ error: 'No check-in found for that number — register first.' });
 
-  /* email channel — registration uses the typed email, sign-in uses the one on file */
+  /* email channel — registration uses the typed email, sign-in uses the one on file;
+     the call channel also collects it so a failed call can fall back to email */
   let emailTo = '';
-  if (channel === 'email'){
+  if (channel === 'email' || channel === 'call'){
     emailTo = purpose === 'login'
       ? str(loginGuest?.email, 120).toLowerCase()
       : str(b.email, 120).toLowerCase();
+  }
+  if (channel === 'email'){
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTo))
       return res.status(400).json({ error: 'No usable email address for this check-in.' });
     if (!emailOtpEnabled())
@@ -559,14 +582,25 @@ app.post('/api/otp/send', otpSendLimit, async (req, res) => {
     .run(tail, hashOtp(code), now() + OTP_TTL_MS, now(), channel);
 
   const msg = `Sam & Jossy's Wedding — your entry code is ${code} (valid 10 min)`;
-  const sent = channel === 'email'
-    ? await sendEmail(emailTo, 'Your wedding entry code', msg + ' ❤')
-    : await sendSms(phone, msg + ' ❤');
+  let delivered = channel;
+  let sent;
+  if (channel === 'email'){
+    sent = await sendEmail(emailTo, 'Your wedding entry code', msg + ' ❤');
+  } else if (channel === 'call'){
+    sent = await sendCall(phone, code);
+    /* call couldn't connect — email the code instead when we have an address */
+    if (!sent && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTo) && emailOtpEnabled()){
+      sent = await sendEmail(emailTo, 'Your wedding entry code', msg + ' ❤');
+      delivered = 'email';
+    }
+  } else {
+    sent = await sendSms(phone, msg + ' ❤');
+  }
   /* nothing delivered → the couple gets it by push and reads it to the guest */
   if (!sent) notifyAll('Guest entry code', `${str(b.name, 60) || phone} needs code: ${code}`);
   res.json({
     ok: true,
-    delivered: sent ? channel : 'admin',
+    delivered: sent ? delivered : 'admin',
     emailAvailable: emailOtpEnabled(),
     emailMasked: purpose === 'login' ? maskEmail(loginGuest?.email) : maskEmail(emailTo)
   });

@@ -64,8 +64,8 @@ button{ font:inherit; cursor:pointer; }
 .landing-frame{
   position:relative;
   /* fit inside the viewport in BOTH dimensions so the art is never cropped */
-  aspect-ratio:934/1545;
-  height:min(100dvh, calc(100vw * 1545 / 934));
+  aspect-ratio:320/531;
+  height:min(100dvh, calc(100vw * 531 / 320));
   max-width:100vw;
   cursor:pointer;
   animation:landingIn 1.1s ease both;
@@ -92,10 +92,11 @@ button{ font:inherit; cursor:pointer; }
   display:flex;
   flex-direction:column;
   align-items:center;
-  justify-content:center;
+  justify-content:flex-start;
   text-align:center;
   gap:0;
-  padding:clamp(26px,7vw,60px);
+  /* text sits in the top half — the wax seal owns the lower zone */
+  padding:clamp(56px,15%,110px) clamp(26px,7vw,60px) clamp(26px,7vw,60px);
   border:1px solid rgba(169,124,44,.55);
   outline:1px solid rgba(169,124,44,.25);
   outline-offset:-9px;
@@ -149,14 +150,19 @@ button{ font:inherit; cursor:pointer; }
   color:#8a6d34;
   white-space:nowrap;
 }
-/* seal artwork lives inside the tap hotspot in card mode */
+/* seal artwork lives inside the tap hotspot in card mode;
+   the PNG is an opaque square with the round seal ~97% of it,
+   so clip to the disc — drop-shadow then follows the round shape */
 .landing-seal{
   display:block;
   width:100%;
+  height:100%;
+  object-fit:cover;
+  clip-path:circle(48.5% at 48.7% 50.5%);
   pointer-events:none;
-  filter:drop-shadow(0 10px 18px rgba(80,50,10,.4));
+  filter:drop-shadow(0 12px 20px rgba(80,50,10,.38));
 }
-.landing-frame--card .seal-hotspot{ top:64%; width:46%; }
+.landing-frame--card .seal-hotspot{ top:71%; width:44%; }
 /* mode switch — uploaded art replaces the whole card */
 .landing-frame--card .landing-art{ display:none; }
 .landing-frame:not(.landing-frame--card) .landing-card{ display:none; }
@@ -172,8 +178,8 @@ button{ font:inherit; cursor:pointer; }
 .seal-hotspot{
   position:absolute;
   left:50%;
-  top:66%;
-  width:40%;
+  top:75%;           /* lands on the wax seal baked into landing-invite.jpg */
+  width:36%;
   aspect-ratio:1;
   transform:translate(-50%,-50%);
   border:0;
@@ -399,8 +405,12 @@ button{ font:inherit; cursor:pointer; }
   position:fixed;
   inset:0;
   z-index:998;
-  display:grid;
-  place-items:center;
+  /* flex + margin:auto on the card: centered when it fits, top-anchored
+     and fully scrollable when it's taller than the viewport — the old
+     place-items:center clipped the top of tall forms beyond reach */
+  display:flex;
+  flex-direction:column;
+  align-items:center;
   overflow-y:auto;
   padding:24px;
   background:
@@ -421,6 +431,8 @@ button{ font:inherit; cursor:pointer; }
 
 .gate-card{
   width:min(100%,460px);
+  margin:auto;
+  flex-shrink:0;
   padding:40px 28px 32px;
   text-align:center;
   border-radius:24px;

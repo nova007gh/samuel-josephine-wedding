@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v137-landing-card';
+const CACHE = 'sj-wedding-v142-gate-scroll-fix';
 const ASSETS = [
   './',
   './index.html',
@@ -14,8 +14,8 @@ const ASSETS = [
   './api-data.js',
   './manifest.webmanifest',
   './assets/welcome-bg.jpg',
+  './assets/landing-invite.jpg',
   './assets/attend-bg.jpg',
-  './assets/seal-burst.jpg',
   './assets/seal-pressed-320.png',
   './assets/seal-transparent-320.png',
   './assets/seal-embossed.svg',

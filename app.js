@@ -103,11 +103,8 @@ function handleSealButtonClick(){
   opening.classList.add('breaking');
   if (sealButton) sealButton.disabled = true;
 
-  // swap in the cracked-seal artwork for the burst moment (art mode only —
-  // the designed card animates its own seal press instead)
-  const art = $('#landingArt');
-  if (art && !landingFrame.classList.contains('landing-frame--card'))
-    art.src = 'assets/seal-burst.jpg';
+  // the seal-press pulse + envelope-open animation carries the transition;
+  // the artwork has no burst frame, so it stays on screen while opening
 
   // landing fades out, then straight to the attend/check-in gate —
   // the ENTER OUR WEDDING splash was removed from the flow
@@ -608,6 +605,14 @@ function composePhone(){
   return (dialSel?.value || '+233') + digits;
 }
 
+/* Ghana numbers get the code by SMS; international SMS is unreliable
+   (US carriers block unregistered senders), so everyone else gets email */
+function isGhanaPhone(p){
+  const n = (p || '').trim();
+  const intl = n.startsWith('00') ? '+' + n.slice(2).replace(/[^\d]/g, '') : n;
+  return intl.startsWith('+233');
+}
+
 /* ---- Phone OTP — one pane shared by registration and returning sign-in ---- */
 let otpMode = 'register';       /* 'register' | 'login' */
 let otpPhone = '';
@@ -634,18 +639,29 @@ function setOtpHint(delivered){
     const b = document.createElement('b');
     b.textContent = otpEmail;
     hint.append(b);
+  } else if (delivered === 'call'){
+    hint.append("We're calling ");
+    const b = document.createElement('b');
+    b.textContent = otpPhone;
+    hint.append(b, ' — answer to hear your 6-digit code');
   } else {
     hint.textContent = 'Sam & Jossy have your code — just ask them for it';
   }
 }
+function syncOtpButtons(){
+  /* hide the button for the active channel; offer the alternates */
+  $('#otpEmailBtn')?.classList.toggle('hidden', otpChannel === 'email' || !otpEmail);
+  $('#otpSmsBtn')?.classList.toggle('hidden', otpChannel === 'sms');
+  $('#otpCallBtn')?.classList.toggle('hidden', otpChannel === 'call' || isGhanaPhone(otpPhone));
+}
 function showOtpPane(phone, mode, delivered, resp){
   otpMode = mode; otpPhone = phone;
-  otpChannel = delivered === 'email' ? 'email' : 'sms';
+  /* undelivered ('admin') resends should retry the channel that fits the number */
+  otpChannel = ['email', 'call', 'sms'].includes(delivered) ? delivered
+             : (isGhanaPhone(phone) ? 'sms' : 'call');
   /* registration knows the typed email; sign-in only knows the masked one from the server */
   otpEmail = pendingGuest?.email || resp?.emailMasked || '';
-  /* offer the opposite channel — email link only when a usable address exists */
-  $('#otpEmailBtn')?.classList.toggle('hidden', otpChannel === 'email' || !otpEmail);
-  $('#otpSmsBtn')?.classList.toggle('hidden', otpChannel !== 'email');
+  syncOtpButtons();
   setOtpHint(delivered);
   $('#otpError').textContent = '';
   $('#otpCode').value = '';
@@ -654,11 +670,11 @@ function showOtpPane(phone, mode, delivered, resp){
 }
 async function resendOtp(channel){
   const r = await sendOtp(otpPhone, otpMode, pendingGuest?.name,
-    channel === 'email' ? { channel, email: pendingGuest?.email } : undefined);
+    channel === 'email' ? { channel, email: pendingGuest?.email }
+    : channel === 'call' ? { channel, email: pendingGuest?.email } : undefined);
   if (r.delivered === 'email' && r.emailMasked && !pendingGuest?.email) otpEmail = r.emailMasked;
-  otpChannel = r.delivered === 'email' ? 'email' : r.delivered === 'sms' ? 'sms' : otpChannel;
-  $('#otpEmailBtn')?.classList.toggle('hidden', otpChannel === 'email' || !otpEmail);
-  $('#otpSmsBtn')?.classList.toggle('hidden', otpChannel !== 'email');
+  otpChannel = ['email', 'call', 'sms'].includes(r.delivered) ? r.delivered : otpChannel;
+  syncOtpButtons();
   setOtpHint(r.delivered);
   $('#otpError').textContent = '';
 }
@@ -732,7 +748,8 @@ $('#guestLoginForm')?.addEventListener('submit', async e => {
     submitBtn.innerHTML = 'Sending code…';
   }
   try {
-    const r = await sendOtp(phone, 'register', name);
+    const intl = !isGhanaPhone(phone);
+    const r = await sendOtp(phone, 'register', name, intl ? { channel:'call', email } : undefined);
     showOtpPane(phone, 'register', r.delivered, r);
     if (err) err.textContent = '';
   } catch(x){
@@ -759,7 +776,14 @@ $('#returnSendBtn')?.addEventListener('click', async e => {
   const label = btn.innerHTML;
   btn.innerHTML = 'Sending code…';
   try {
-    const r = await sendOtp(phone, 'login');
+    const intl = !isGhanaPhone(phone);
+    let r;
+    try {
+      r = await sendOtp(phone, 'login', undefined, intl ? { channel:'call' } : undefined);
+    } catch(ex){
+      if (!intl) throw ex;
+      r = await sendOtp(phone, 'login');   /* call channel rejected — fall back to SMS */
+    }
     pendingGuest = null;
     showOtpPane(phone, 'login', r.delivered, r);
   } catch(x){
@@ -832,6 +856,17 @@ $('#otpSmsBtn')?.addEventListener('click', async e => {
     await resendOtp('sms');
   } catch(x){
     $('#otpError').textContent = x.message || 'Could not text the code — try again.';
+  } finally {
+    btn.disabled = false;
+  }
+});
+$('#otpCallBtn')?.addEventListener('click', async e => {
+  const btn = e.currentTarget;
+  btn.disabled = true;
+  try {
+    await resendOtp('call');
+  } catch(x){
+    $('#otpError').textContent = x.message || 'Could not call you — try again.';
   } finally {
     btn.disabled = false;
   }

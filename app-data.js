@@ -356,7 +356,7 @@ document.querySelectorAll('.tl-photo img').forEach(img => {
    ========================================================= */
 const SITE_PHOTO_SLOTS = [
   { slot:'couple',          label:'Couple Photo (Home)',   def:'assets/couple-home.jpg' },
-  { slot:'landing',         label:'Landing Page Art',      def:'assets/seal-pressed-320.png' },
+  { slot:'landing',         label:'Landing Page Art',      def:'assets/landing-invite.jpg' },
   { slot:'welcome',         label:'Welcome Background',    def:'assets/welcome-bg.jpg' },
   { slot:'attend',          label:'Enter Screen Art',      def:'assets/attend-bg.jpg' },
   { slot:'sam-childhood',   label:'Sam — Childhood',       def:'assets/story/sam-childhood.jpg' },
@@ -394,9 +394,10 @@ function applySitePhotos(){
   document.querySelectorAll('[data-site-photo]').forEach(img => {
     img.src = sitePhoto(img.dataset.sitePhoto, SLOT_DEFS[img.dataset.sitePhoto] || img.getAttribute('src'));
   });
-  /* the landing screen is a designed card by default; uploading Landing
-     Page Art in Site Settings swaps the card out for the image again */
-  const landUrl = siteSettings['photo:landing'];
+  /* the landing screen shows the bundled invitation art; uploading Landing
+     Page Art in Site Settings replaces it, and the code-rendered card
+     stays available as the no-art fallback */
+  const landUrl = siteSettings['photo:landing'] || SLOT_DEFS.landing;
   const lFrame = document.getElementById('landingFrame');
   const lArt = document.getElementById('landingArt');
   lFrame?.classList.toggle('landing-frame--card', !landUrl);
