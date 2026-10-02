@@ -771,6 +771,10 @@ app.post('/api/memories', publicWrite, upload.single('file'), (req, res) => {
 /* ---------- S&J Gallery — the couple's own album, published instantly ---------- */
 app.post('/api/admin/gallery', requireAdmin, upload.single('file'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'A media file is required.' });
+  if (!/^(image|video)\//.test(req.file.mimetype || '')){
+    try { fs.unlinkSync(req.file.path); } catch {}
+    return res.status(400).json({ error: 'Only photos and videos go in the S&J Gallery.' });
+  }
   const record = {
     id: uid(),
     category: 'sj-gallery',
