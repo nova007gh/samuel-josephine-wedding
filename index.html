@@ -18,11 +18,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Parisienne&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="assets/landing-invite.jpg" />
   <link rel="preload" as="image" href="assets/seal-pressed-320.png" />
-  <link rel="stylesheet" href="app.css?v=150" />
+  <link rel="stylesheet" href="app.css?v=151" />
 
-  <link rel="stylesheet" href="app-views.css?v=150" />
-  <link rel="stylesheet" href="app-forms.css?v=150" />
-  <link rel="stylesheet" href="app-social.css?v=150" />
+  <link rel="stylesheet" href="app-views.css?v=151" />
+  <link rel="stylesheet" href="app-forms.css?v=151" />
+  <link rel="stylesheet" href="app-social.css?v=151" />
   <script>
   /* a checked-in guest goes straight into the app — flag it before first
      paint so the invitation never flashes on their screen (mirrors
@@ -330,6 +330,7 @@
 
     <div class="segmented">
       <button class="active" data-story-tab="timeline">Timeline</button>
+      <button data-story-tab="sjgallery">S&J Gallery</button>
       <button data-story-tab="journey">Our Journey</button>
       <button data-story-tab="met">How We Met</button>
     </div>
@@ -439,6 +440,12 @@
 
     <div class="story-panel hidden" data-story-panel="met">
       <p id="storyText"></p>
+    </div>
+
+    <div class="story-panel hidden" data-story-panel="sjgallery">
+      <p class="page-sub">Photos and videos shared by Sam &amp; Jossy — their special moments captured forever.</p>
+      <div id="sjStoryGrid" class="mem-grid mem-grid--story"></div>
+      <p id="sjStoryEmpty" class="page-sub">No memories here yet — check back soon!</p>
     </div>
   </section>
 
@@ -1244,9 +1251,9 @@ try{
   });
 }catch(e){}
 </script>
-<script src="api-data.js?v=150"></script>
-<script src="app.js?v=150"></script>
-<script src="app-data.js?v=150"></script>
-<script src="app-social.js?v=150"></script>
+<script src="api-data.js?v=151"></script>
+<script src="app.js?v=151"></script>
+<script src="app-data.js?v=151"></script>
+<script src="app-social.js?v=151"></script>
 </body>
 </html>

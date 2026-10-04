@@ -306,7 +306,7 @@ document.querySelectorAll('#galleryChips .chip').forEach(chip => {
 renderAlbums();
 
 if (typeof onMemories === 'function'){
-  onMemories(rows => { renderGallery(rows); renderTimeline(); });
+  onMemories(rows => { renderGallery(rows); renderTimeline(); renderSjStoryPanel(); });
 }
 
 /* =========================================================
@@ -874,6 +874,44 @@ document.addEventListener('click', e => {
   const title = img.closest('.tl-row')?.querySelector('.tl-card h4')?.textContent || img.alt || '';
   openLightbox(img.currentSrc || img.src, title);
 });
+
+/* ---------- S&J Gallery panel on Our Story ---------- */
+function renderSjStoryPanel(){
+  const grid = document.getElementById('sjStoryGrid');
+  const empty = document.getElementById('sjStoryEmpty');
+  if (!grid || !empty) return;
+
+  const items = (latestMemories || [])
+    .filter(m => m.status === 'approved' && m.category === 'sj-gallery' && m.mediaUrl)
+    .sort((a, b) => toMillis(b.createdAt) - toMillis(a.createdAt)); // newest first
+
+  empty.classList.toggle('hidden', items.length > 0);
+  grid.innerHTML = items.map(m => {
+    const isVid = (m.type || '').startsWith('video/');
+    const media = isVid
+      ? `<div class="mem-media"><video src="${m.mediaUrl}" controls playsinline preload="metadata"></video></div>`
+      : `<img loading="lazy" decoding="async" src="${m.mediaUrl}" alt="${escapeHTML(m.caption || 'S&J memory')}">`;
+    return `<article class="mem-card">
+      ${media}
+      <div class="mem-meta">
+        <p class="mem-cap">${escapeHTML(m.caption || '—')}</p>
+        <small>Shared by Sam &amp; Jossy</small>
+      </div>
+    </article>`;
+  }).join('');
+
+  /* photos open in lightbox */
+  grid.querySelectorAll('img').forEach(img => {
+    img.style.cursor = 'zoom-in';
+    img.addEventListener('click', () => {
+      const caption = img.closest('.mem-card')?.querySelector('.mem-cap')?.textContent || '';
+      openLightbox(img.currentSrc || img.src, caption);
+    });
+  });
+}
+
+/* Re-render when the S&J Gallery tab is opened */
+document.querySelector('[data-story-tab="sjgallery"]')?.addEventListener('click', renderSjStoryPanel);
 
 /* admin pencil on a story card — jump straight to that moment in the editor */
 document.addEventListener('click', e => {
