@@ -444,7 +444,7 @@
    ========================================================= */
 .segmented{
   display:grid;
-  grid-template-columns:repeat(3,1fr);
+  grid-template-columns:repeat(4,1fr);
   margin:16px 0 0;
   padding:4px;
   border-radius:999px;
@@ -452,13 +452,15 @@
   border:1px solid var(--line);
 }
 .segmented button{
-  padding:10px 6px;
+  padding:9px 4px;
   border:0;
   border-radius:999px;
   background:transparent;
-  font-size:.72rem;
+  font-size:.68rem;
   font-weight:600;
+  letter-spacing:.04em;
   color:#7a6340;
+  white-space:nowrap;
 }
 .segmented button.active{
   background:linear-gradient(#8a6623,#5f4413);
