@@ -640,6 +640,11 @@ const ADMIN_CONTENT_VIEWS = {
 };
 let guestRsvpTab = 'all';
 let guestRsvpQuery = '';
+
+/* Guest/RSVP editor state. Also hoisted: renderGuestRsvpList() runs during
+   page load via updateAdminStats(), so a late declaration would be TDZ. */
+const grDrafts = new Map();
+let grCreating = null;
 const adminFeedErrors = new Map();
 
 /* S&J Gallery nodes must exist before onAdminAuth fires — that callback
@@ -1830,6 +1835,7 @@ function renderAdminContentView(viewName){
 function renderGuestRsvpList(){
   const guestHost = document.getElementById('grGuestList');
   const rsvpHost  = document.getElementById('grRsvpList');
+  const editor    = document.getElementById('grEditorRoot');
   if (!guestHost || !rsvpHost) return;
 
   const q = guestRsvpQuery.trim().toLowerCase();
@@ -1843,6 +1849,14 @@ function renderGuestRsvpList(){
 
   const showGuests = guestRsvpTab !== 'rsvps';
   const showRsvps  = guestRsvpTab !== 'guests';
+
+  /* --- add / edit panel, kept above the list it edits --- */
+  if (editor){
+    let panel = '';
+    if (grCreating === 'guest') panel = grShell('guest');
+    else if (grCreating === 'rsvp') panel = grShell('rsvp');
+    editor.innerHTML = panel;
+  }
 
   /* --- guests column --- */
   guestHost.innerHTML = '';
@@ -1867,7 +1881,11 @@ function renderGuestRsvpList(){
       const card = document.createElement('article');
       card.className = 'aq-card';
       const checkedIn = g.checkedInAt ? timeAgo(g.checkedInAt) : '';
+      /* the draft renders above the card so the list doesn't jump under the
+       * pointer while an edit is open */
+      const open = grDrafts.get(g.id) === 'open';
       card.innerHTML = `
+        ${open ? grShell('guest', g) : ''}
         <p><b>${escapeHTML(g.name)}</b>
           <span class="gb-badge ${g.attending ? 'gb-badge--approved' : 'gb-badge--pending'}">${g.attending ? 'Attending' : 'Exploring'}</span>
           ${g.attending && g.tableGuests > 0 ? `<span class="gb-badge gb-badge--approved">Table of ${1 + g.tableGuests}</span>` : ''}
@@ -1876,10 +1894,12 @@ function renderGuestRsvpList(){
         ${[g.city, g.state, g.country].filter(Boolean).length ? `<small>${escapeHTML([g.city, g.state, g.country].filter(Boolean).join(', '))}</small>` : ''}
         <small>Checked in ${checkedIn}</small>
         <div class="aq-actions">
-          ${g.status !== 'approved' ? '<button class="aq-approve" type="button">APPROVE</button>' : ''}
-          <button class="aq-reject" type="button">REMOVE</button>
+          <button class="aq-approve" data-gr-edit="${g.id}" type="button">${open ? 'CLOSE' : 'EDIT'}</button>
+          ${g.status !== 'approved' ? '<button class="aq-neutral" data-gr-approve type="button">APPROVE</button>' : ''}
+          <button class="aq-reject" data-gr-remove="${g.id}" data-gr-kind="guest" type="button">REMOVE</button>
         </div>`;
-      card.querySelector('.aq-approve')?.addEventListener('click', async e => {
+
+      card.querySelector('[data-gr-approve]')?.addEventListener('click', async e => {
         e.target.disabled = true;
         try {
           await updateGuest(g.id, { status: 'approved' });
@@ -1891,10 +1911,6 @@ function renderGuestRsvpList(){
           e.target.disabled = false;
         }
       });
-      card.querySelector('.aq-reject').addEventListener('click', async () => {
-        if (!confirm('Remove this guest?')) return;
-        await deleteGuest(g.id);
-      });
       guestHost.appendChild(card);
     }
   }
@@ -1902,7 +1918,7 @@ function renderGuestRsvpList(){
   /* --- rsvp column --- */
   rsvpHost.innerHTML = '';
   if (showRsvps){
-    if (!rsvps.length){
+    if (!rsvps.length && grCreating !== 'rsvp'){
       const none = document.createElement('p');
       none.className = 'page-sub';
       none.textContent = q ? 'No RSVPs match that search.' : 'No RSVPs yet.';
@@ -1913,15 +1929,21 @@ function renderGuestRsvpList(){
       card.className = 'aq-card';
       const submitted = r.submittedAt ? timeAgo(r.submittedAt) : '';
       const declined = isDeclinedRSVP(r);
-      const plusOne = r.plusOne ? `+${r.plusOne}` : '';
-      const guestCount = r.guestCount && Number(r.guestCount) > 1 ? ` (${r.guestCount} guests)` : '';
+      const open = grDrafts.get(r.id) === 'open';
+      const plusOne = r.plusOne ? '+1' : '';
+      const party = r.guestCount && Number(r.guestCount) > 1 ? ` &middot; party of ${escapeHTML(String(r.guestCount))}` : '';
       card.innerHTML = `
+        ${open ? grShell('rsvp', null, r) : ''}
         <p><b>${escapeHTML(r.name || 'Guest')}</b>
           <span class="gb-badge ${declined ? 'gb-badge--pending' : 'gb-badge--approved'}">${declined ? 'Not Attending' : 'Attending'}</span>
-          ${plusOne ? `<span class="gb-badge gb-badge--approved">${escapeHTML(plusOne)}</span>` : ''}</p>
-        <small>${escapeHTML(r.attending || '')}${escapeHTML(guestCount)} &middot; ${escapeHTML(r.phone || '—')} &middot; ${escapeHTML(r.email || '—')}</small>
+          ${plusOne ? `<span class="gb-badge gb-badge--approved">${plusOne}</span>` : ''}</p>
+        <small>${escapeHTML(r.attending || '')}${party} &middot; ${escapeHTML(r.phone || '—')} &middot; ${escapeHTML(r.email || '—')}</small>
         ${r.message ? `<p class="gb-msg">${escapeHTML(r.message)}</p>` : ''}
-        <small>Submitted ${submitted}</small>`;
+        <small>Submitted ${submitted}</small>
+        <div class="aq-actions">
+          <button class="aq-approve" data-gr-edit="${r.id}" type="button">${open ? 'CLOSE' : 'EDIT'}</button>
+          <button class="aq-reject" data-gr-remove="${r.id}" data-gr-kind="rsvp" type="button">REMOVE</button>
+        </div>`;
       rsvpHost.appendChild(card);
     }
   }
@@ -1964,3 +1986,220 @@ function initAdminViews(){
   }
 }
 initAdminViews();
+/* =========================================================
+   Admin guest & RSVP editor
+   Add, edit and remove. The couple often holds the real list
+   on paper, so the app must accept records the guests never
+   submitted themselves.
+   ========================================================= */
+function grField(label, key, value, opts = {}){
+  const { type = 'text', placeholder = '', attrs = '' } = opts;
+  const v = value == null ? '' : String(value);
+  return `<label class="gr-field">
+    <span>${escapeHTML(label)}</span>
+    <input data-gr-field="${escapeHTML(key)}" type="${type}" value="${escapeHTML(v)}"
+           placeholder="${escapeHTML(placeholder)}" ${attrs} autocomplete="off" />
+  </label>`;
+}
+
+/* Guests and RSVPs have different columns, so each gets its own form body —
+   but both render through the same shell, save path and error handling. */
+function grGuestForm(g = {}){
+  const attending = g.attending !== 0 && g.attending != null;
+  return `
+    ${grField('Name *', 'name', g.name, { placeholder: 'Ama Boateng' })}
+    <div class="gr-field-row">
+      ${grField('Phone', 'phone', g.phone, { type: 'tel', placeholder: '+233…' })}
+      ${grField('Email', 'email', g.email, { type: 'email', placeholder: 'name@email.com' })}
+    </div>
+    <div class="gr-field-row">
+      ${grField('Relation', 'relation', g.relation, { placeholder: 'Cousin, Friend…' })}
+      ${grField('Extra table seats', 'tableGuests', g.tableGuests || 0, { type: 'number', attrs: 'min="0" max="20"' })}
+    </div>
+    <div class="gr-field-row">
+      ${grField('City', 'city', g.city)}
+      ${grField('Country', 'country', g.country)}
+    </div>
+    <div class="gr-field-row">
+      <label class="gr-field"><span>Attending</span>
+        <select data-gr-field="attending">
+          <option value="1"${attending ? ' selected' : ''}>Coming to the wedding</option>
+          <option value="0"${!attending ? ' selected' : ''}>Exploring, not attending</option>
+        </select>
+      </label>
+      <label class="gr-field"><span>Approval</span>
+        <select data-gr-field="status">
+          <option value="approved"${g.status !== 'pending' ? ' selected' : ''}>Approved</option>
+          <option value="pending"${g.status === 'pending' ? ' selected' : ''}>Pending</option>
+        </select>
+      </label>
+    </div>`;
+}
+
+function grRsvpForm(r = {}){
+  return `
+    ${grField('Name *', 'name', r.name, { placeholder: 'Kofi Mensah' })}
+    <div class="gr-field-row">
+      ${grField('Phone', 'phone', r.phone, { type: 'tel', placeholder: '+233…' })}
+      ${grField('Email', 'email', r.email, { type: 'email', placeholder: 'name@email.com' })}
+    </div>
+    <div class="gr-field-row">
+      <label class="gr-field"><span>Attending</span>
+        <select data-gr-field="attending">
+          <option value="yes"${r.attending === 'yes' ? ' selected' : ''}>Attending</option>
+          <option value="Joyfully accept"${r.attending === 'Joyfully accept' ? ' selected' : ''}>Joyfully accept</option>
+          <option value="no"${r.attending === 'no' ? ' selected' : ''}>Not attending</option>
+          <option value="Regretfully decline"${r.attending === 'Regretfully decline' ? ' selected' : ''}>Regretfully decline</option>
+        </select>
+      </label>
+      <label class="gr-field"><span>Guests in party</span>
+        <input data-gr-field="guestCount" type="number" min="1" max="50"
+               value="${escapeHTML(String(r.guestCount || 1))}" autocomplete="off" />
+      </label>
+    </div>
+    <label class="gr-field"><span>Message</span>
+      <textarea data-gr-field="message" rows="2" maxlength="800"
+                placeholder="Congratulations!">${escapeHTML(r.message || '')}</textarea>
+    </label>`;
+}
+
+/* Read a form back into a plain payload object. Integer fields are sent as
+   real numbers: the string "0" is truthy in JavaScript, so a checkbox-style
+   <select> left as text would flip a "not attending" guest back to attending. */
+function grReadForm(scope, numericFields = []){
+  const out = {};
+  scope.querySelectorAll('[data-gr-field]').forEach(el => {
+    const k = el.dataset.grField;
+    out[k] = numericFields.includes(k) ? (parseInt(el.value, 10) || 0) : el.value.trim();
+  });
+  return out;
+}
+
+function grShell(kind, g, r){
+  const editing = Boolean(g || r);
+  const id = g ? g.id : r ? r.id : '';
+  return `<div class="gr-form gr-form--${kind}" data-gr-kind="${kind}"${id ? ` data-gr-id="${escapeHTML(id)}"` : ''}>
+    <p class="gr-form-title">${editing ? 'Edit' : 'Add'} ${kind === 'guest' ? 'guest' : 'RSVP'}</p>
+    ${kind === 'guest' ? grGuestForm(g || {}) : grRsvpForm(r || {})}
+    <div class="aq-actions">
+      <button class="aq-approve" data-gr-save type="button">SAVE</button>
+      <button class="aq-reject" data-gr-cancel type="button">CANCEL</button>
+    </div>
+    <small class="gr-form-status"></small>
+  </div>`;
+}
+
+/* ---------- wiring ---------- */
+function initGuestRsvpEditor(){
+  /* Delegate from the whole view: the add buttons are siblings of
+     #grEditorRoot, so scoping the listener to the editor root alone would
+     never see their clicks. */
+  const root = document.querySelector('[data-view="guestrsvp"]');
+  if (!root) return;
+
+  root.addEventListener('click', async e => {
+    const t = e.target;
+
+    /* --- open the "add" form --- */
+    const addBtn = t.closest('[data-gr-add]');
+    if (addBtn){
+      grCreating = grCreating === addBtn.dataset.grAdd ? null : addBtn.dataset.grAdd;
+      grDrafts.clear();
+      renderGuestRsvpList();
+      return;
+    }
+
+    /* --- open an existing row for editing --- */
+    const editBtn = t.closest('[data-gr-edit]');
+    if (editBtn){
+      const id = editBtn.dataset.grEdit;
+      grCreating = null;
+      if (grDrafts.get(id) === 'open') grDrafts.delete(id);
+      else grDrafts.set(id, 'open');
+      renderGuestRsvpList();
+      return;
+    }
+
+    /* --- save --- */
+    const saveBtn = t.closest('[data-gr-save]');
+    if (saveBtn){
+      const form = saveBtn.closest('.gr-form');
+      if (!form) return;
+      const kind = form.dataset.grKind;
+      const id = form.dataset.grId;
+      const status = form.querySelector('.gr-form-status');
+      const payload = grReadForm(form,
+        kind === 'guest' ? ['tableGuests', 'attending'] : ['guestCount', 'plusOne']);
+
+      if (!payload.name){
+        if (status) status.textContent = 'Please enter a name.';
+        return;
+      }
+      saveBtn.disabled = true;
+      if (status) status.textContent = 'Saving…';
+      try {
+        if (id){
+          if (kind === 'guest') await updateGuest(id, payload);
+          else await updateRsvp(id, payload);
+        } else {
+          if (kind === 'guest') await addAdminGuest(payload);
+          else await addAdminRsvp(payload);
+        }
+        grDrafts.delete(id || '');
+        grCreating = null;
+        await refreshAdminFeeds();
+      } catch (err){
+        console.warn('Save failed:', err);
+        if (status) status.textContent = err.message || 'Could not save. Are you still signed in?';
+        saveBtn.disabled = false;
+      }
+      return;
+    }
+
+    /* --- cancel --- */
+    if (t.closest('[data-gr-cancel]')){
+      grCreating = null;
+      grDrafts.clear();
+      renderGuestRsvpList();
+      return;
+    }
+
+    /* --- remove --- */
+    const delBtn = t.closest('[data-gr-remove]');
+    if (delBtn){
+      const kind = delBtn.dataset.grKind || 'guest';
+      if (!confirm(kind === 'guest' ? 'Remove this guest?' : 'Remove this RSVP response?')) return;
+      delBtn.disabled = true;
+      try {
+        if (kind === 'guest') await deleteGuest(delBtn.dataset.grRemove);
+        else await deleteRsvp(delBtn.dataset.grRemove);
+        await refreshAdminFeeds();
+      } catch (err){
+        console.warn('Remove failed:', err);
+        alert('Could not remove this record. Are you still signed in?');
+        delBtn.disabled = false;
+      }
+      return;
+    }
+  });
+}
+
+/* Pull every admin feed in one go so a save or delete is reflected
+   everywhere at once — tiles, badges, both lists and the sub-views. */
+async function refreshAdminFeeds(){
+  const [mem, gb, gu, rs] = await Promise.all([
+    api('/admin/memories',   { admin: true }).catch(() => adminMemories),
+    api('/admin/guestbook',  { admin: true }).catch(() => adminGuestbook),
+    api('/admin/guests',     { admin: true }).catch(() => adminGuests),
+    api('/admin/rsvps',      { admin: true }).catch(() => adminRsvps)
+  ]);
+  adminMemories = mem || [];
+  adminGuestbook = gb || [];
+  adminGuests = gu || [];
+  adminRsvps = rs || [];
+  updateAdminStats();
+  renderGuestRsvpList();
+  renderApprovalQueue();
+}
+/* guest & RSVP editor */
+initGuestRsvpEditor();

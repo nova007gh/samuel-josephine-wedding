@@ -242,6 +242,26 @@ async function updateGuest(id, data){
   await api(`/admin/guests/${encodeURIComponent(id)}`, { method: 'PATCH', body: data, admin: true });
 }
 
+/* the couple often keeps the authoritative list on paper, so they can add a
+   guest themselves instead of only reacting to self check-ins */
+async function addAdminGuest(data){
+  const res = await api('/admin/guests', { method: 'POST', body: data, admin: true });
+  return res.id;
+}
+
+async function addAdminRsvp(data){
+  const res = await api('/admin/rsvps', { method: 'POST', body: data, admin: true });
+  return res.id;
+}
+
+async function updateRsvp(id, data){
+  await api(`/admin/rsvps/${encodeURIComponent(id)}`, { method: 'PATCH', body: data, admin: true });
+}
+
+async function deleteRsvp(id){
+  await api(`/admin/rsvps/${encodeURIComponent(id)}`, { method: 'DELETE', admin: true });
+}
+
 /* ---------- Site settings (couple photo, wedding song) ---------- */
 async function getSettings(){
   return await api('/settings');

@@ -823,8 +823,8 @@ body.is-admin .tl-card h4{ padding-right:26px; }
   bottom:0;
   z-index:50;
   display:grid;
-  /* six tabs now (Home, Our Story, Gallery, Events, Gifts, Share) */
-  grid-template-columns:repeat(6,1fr);
+  /* seven tabs: Home, Our Story, Events, Gallery, Memories, Gifts, Share */
+  grid-template-columns:repeat(7,1fr);
   height:calc(var(--tabbar-h) + env(safe-area-inset-bottom));
   padding-bottom:env(safe-area-inset-bottom);
   background:rgba(246,238,226,.96);
@@ -1086,3 +1086,24 @@ body.is-admin .tl-card h4{ padding-right:26px; }
 /* ---------- admin-only menu items — hidden from guests ---------- */
 .admin-only{ display:none !important; }
 body.is-admin .admin-only{ display:flex !important; }
+/* ---------- Gallery holds the centre slot ----------
+   Seven tabs put the seal exactly in the middle of the bar. Keep it there:
+   a slightly wider slot stops the pulsing seal from crowding its neighbours. */
+.tab--center{ position:relative; }
+.tab--center .tab-seal{ width:66px; }
+@media (max-width:400px){
+  /* seven slots leave ~57px each — tighten the icon so labels never wrap */
+  .tab{ font-size:.54rem; letter-spacing:.01em; }
+  .tab svg{ width:22px; height:22px; }
+  .tab--center .tab-seal{ width:56px; }
+}
+
+/* Seven tabs leave narrow slots, and the UA button padding was eating 12px
+   of every one — enough to wrap "Our Story" onto two lines while every other
+   label stayed on one. Reset it so all labels sit on a single line. */
+.tab{ padding:0 1px; white-space:nowrap; }
+@media (max-width:430px){
+  .tab{ font-size:.55rem; letter-spacing:0; }
+  .tab svg{ width:22px; height:22px; }
+  .tab--center .tab-seal{ width:54px; }
+}

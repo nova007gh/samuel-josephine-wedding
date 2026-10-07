@@ -18,11 +18,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Parisienne&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="assets/landing-invite.jpg" />
   <link rel="preload" as="image" href="assets/seal-pressed-320.png" />
-  <link rel="stylesheet" href="app.css?v=159" />
+  <link rel="stylesheet" href="app.css?v=162" />
 
-  <link rel="stylesheet" href="app-views.css?v=159" />
-  <link rel="stylesheet" href="app-forms.css?v=159" />
-  <link rel="stylesheet" href="app-social.css?v=159" />
+  <link rel="stylesheet" href="app-views.css?v=162" />
+  <link rel="stylesheet" href="app-forms.css?v=162" />
+  <link rel="stylesheet" href="app-social.css?v=162" />
   <script>
   /* a checked-in guest goes straight into the app — flag it before first
      paint so the invitation never flashes on their screen (mirrors
@@ -1172,6 +1172,12 @@
     </div>
     <small id="grCount" class="page-sub"></small>
 
+    <div class="gr-add-row">
+      <button class="aq-approve gr-add" data-gr-add="guest" type="button">+ ADD GUEST</button>
+      <button class="aq-approve gr-add" data-gr-add="rsvp" type="button">+ ADD RSVP</button>
+    </div>
+    <div id="grEditorRoot"></div>
+
     <div id="grInviteStats" class="invite-stats"></div>
     <div id="grGuestList" class="aq-list"></div>
     <p id="grEmpty" class="page-sub hidden">Nothing matches that search.</p>
@@ -1359,13 +1365,17 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.5s-7.5-4.6-7.5-9.6a4.2 4.2 0 0 1 7.5-2.6 4.2 4.2 0 0 1 7.5 2.6c0 5-7.5 9.6-7.5 9.6z"/></svg>
       Our Story
     </button>
-    <button class="tab" data-tab="gallery">
-      <img class="tab-seal" src="assets/seal-logo.png" alt="" draggable="false" />
-      Gallery
-    </button>
     <button class="tab" data-tab="events">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/><circle cx="8" cy="14" r="1.2"/><circle cx="16" cy="14" r="1.2"/><circle cx="8" cy="17.5" r="1.2"/><circle cx="16" cy="17.5" r="1.2"/></svg>
       Events
+    </button>
+    <button class="tab tab--center" data-tab="gallery">
+      <img class="tab-seal" src="assets/seal-logo.png" alt="" draggable="false" />
+      Gallery
+    </button>
+    <button class="tab" data-tab="memories">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+      Memories
     </button>
     <button class="tab" data-tab="gifts">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M3 8h18v3H3zM12 8v13"/><path d="M12 8S9.5 8 8.5 6.5 11 3 12 5c1-2 2.5-1.5 3.5 1.5S14 8 12 8z"/></svg>
@@ -1457,9 +1467,9 @@ try{
   });
 }catch(e){}
 </script>
-<script src="api-data.js?v=159"></script>
-<script src="app.js?v=159"></script>
-<script src="app-data.js?v=159"></script>
-<script src="app-social.js?v=159"></script>
+<script src="api-data.js?v=161"></script>
+<script src="app.js?v=161"></script>
+<script src="app-data.js?v=161"></script>
+<script src="app-social.js?v=161"></script>
 </body>
 </html>

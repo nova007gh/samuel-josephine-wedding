@@ -1162,4 +1162,45 @@
   background:#fffdf8;
   font:inherit; color:inherit;
 }
-.admin-search input::-webkit-search-cancel-button{ cursor:pointer; }
+.admin-search input::-webkit-search-cancel-button{ cursor:pointer; }/* ---------- Guest & RSVP editor ---------- */
+.gr-add-row{
+  display:flex; gap:10px; margin:14px 0 4px;
+}
+.gr-add{ flex:1; }
+.gr-form{
+  margin:12px 0;
+  padding:14px 15px;
+  border:1px solid rgba(178,134,54,.34);
+  border-radius:14px;
+  background:rgba(253,249,241,.92);
+  display:grid; gap:10px;
+}
+.gr-form-title{
+  margin:0;
+  font-size:.72rem;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:#9a7b45;
+}
+.gr-field{ display:flex; flex-direction:column; gap:5px; min-width:0; }
+.gr-field > span{ font-size:.7rem; letter-spacing:.03em; color:#8a7a60; }
+.gr-field input, .gr-field select, .gr-field textarea{
+  width:100%; padding:11px 12px;
+  border:1px solid rgba(178,134,54,.35);
+  border-radius:10px;
+  background:#fffdf8;
+  font:inherit; color:inherit;
+  min-width:0;
+}
+.gr-field-row{ display:grid; gap:10px; }
+@media (min-width:520px){ .gr-field-row{ grid-template-columns:1fr 1fr; } }
+.gr-form-status{ display:block; min-height:1.1em; font-size:.76rem; color:#8a6a1e; }
+.aq-neutral{
+  padding:9px 14px;
+  border:0; border-radius:999px;
+  background:rgba(178,134,54,.16);
+  color:#7a5c18;
+  font:inherit; font-size:.74rem; font-weight:700;
+  cursor:pointer;
+}
+.aq-neutral:disabled{ opacity:.5; }

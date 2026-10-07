@@ -945,8 +945,9 @@ $('#enterFromHome')?.addEventListener('click', () => {
    Tab navigation
    --------------------------------------------------------- */
 const SUBVIEW_TAB = {
-  guestbook:'more', memories:'more', rsvp:'more', voicemsg:'more', videomsg:'more',
-  admin:'more', adminlogin:'more', approvals:'more', rsvpAdmin:'more', guestlist:'more', security:'more'
+  guestbook:'more', rsvp:'more', voicemsg:'more', videomsg:'more',
+  admin:'more', adminlogin:'more', approvals:'more', rsvpAdmin:'more', guestlist:'more',
+  guestrsvp:'more', adminmedia:'more', adminvoice:'more', adminvideo:'more', security:'more'
 };
 const ADMIN_VIEWS = new Set(['admin', 'approvals', 'rsvpAdmin', 'guestlist', 'guestrsvp', 'adminmedia', 'adminvoice', 'adminvideo', 'security']);
 /* Views are pushed onto browser history so the device Back button moves

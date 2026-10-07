@@ -1094,6 +1094,13 @@ app.get('/api/admin/gifts', requireAdmin, (req, res) => {
   res.json(db.prepare('SELECT * FROM gifts ORDER BY createdAt DESC').all());
 });
 
+/* Boolean form fields arrive as real booleans, numbers, or the strings
+   "1"/"0" that an HTML <select> produces. Plain truthiness would read the
+   string "0" as true, so a guest marked "not attending" would be stored as
+   still attending. Normalise explicitly, once. */
+const asBool = v =>
+  v === true || v === 1 || v === '1' || v === 'true' || v === 'yes' ? 1 : 0;
+
 /* ---------- admin access emails ----------
    Guests who check in with one of these emails can open the admin sign-in by
    tapping the couple's heart on Home. The list itself is never exposed. */
@@ -1347,18 +1354,85 @@ app.patch('/api/admin/guests/:id', requireAdmin, (req, res) => {
   const row = db.prepare(`SELECT * FROM guests WHERE id = ?`).get(req.params.id);
   if (!row) return res.status(404).json({ error: 'Not found.' });
   const g = req.body || {};
-  db.prepare(`UPDATE guests SET name = ?, phone = ?, email = ?, relation = ?, attending = ?, status = ? WHERE id = ?`)
+  /* every writable column is applied explicitly: an absent key keeps the
+     stored value, so the editor can PATCH a single field safely */
+  db.prepare(`UPDATE guests SET name = ?, phone = ?, email = ?, relation = ?,
+               city = ?, state = ?, country = ?, attending = ?, status = ?,
+               tableGuests = ? WHERE id = ?`)
     .run(
       g.name !== undefined ? str(g.name, 120) : row.name,
       g.phone !== undefined ? str(g.phone, 60) : row.phone,
       g.email !== undefined ? str(g.email, 200) : row.email,
       g.relation !== undefined ? str(g.relation, 120) : row.relation,
-      g.attending !== undefined ? (g.attending ? 1 : 0) : row.attending,
+      g.city !== undefined ? str(g.city, 80) : row.city,
+      g.state !== undefined ? str(g.state, 80) : row.state,
+      g.country !== undefined ? str(g.country, 80) : row.country,
+      g.attending !== undefined ? asBool(g.attending) : row.attending,
       ['pending', 'approved'].includes(g.status) ? g.status : row.status,
+      g.tableGuests !== undefined ? Math.max(0, Math.min(20, parseInt(g.tableGuests, 10) || 0)) : row.tableGuests,
       req.params.id
     );
   if (g.status === 'approved' && row.status !== 'approved')
     notifyAll('Guest approved', `${row.name} is on the guest list`);
+  res.json({ ok: true });
+});
+
+/* ---------- admin CRUD: add, edit, remove guests and RSVPs ----------
+   The couple often holds the authoritative list on paper, so they need to
+   create and correct records themselves rather than only react to what
+   guests submitted. Writes are admin-only and reuse the same column
+   clamping the check-in form applies. */
+app.post('/api/admin/guests', requireAdmin, (req, res) => {
+  const g = req.body || {};
+  const name = str(g.name, 120);
+  if (!name) return res.status(400).json({ error: 'Please enter a name.' });
+  const id = uid();
+  db.prepare(`INSERT INTO guests
+      (id, name, phone, email, relation, city, state, country,
+       attending, status, tableGuests, checkedInAt)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+    .run(id, name, str(g.phone, 60), str(g.email, 200), str(g.relation, 120),
+         str(g.city, 80), str(g.state, 80), str(g.country, 80),
+         asBool(g.attending),
+         ['pending', 'approved'].includes(g.status) ? g.status : 'approved',
+         Math.max(0, Math.min(20, parseInt(g.tableGuests, 10) || 0)),
+         now());
+  res.json({ ok: true, id });
+});
+
+app.post('/api/admin/rsvps', requireAdmin, (req, res) => {
+  const r = req.body || {};
+  const name = str(r.name, 120);
+  if (!name) return res.status(400).json({ error: 'Please enter a name.' });
+  const id = uid();
+  db.prepare(`INSERT INTO rsvps
+      (id, name, email, phone, attending, plusOne, guestCount, song, message, submittedAt)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+    .run(id, name, str(r.email, 200), str(r.phone, 60), str(r.attending, 120),
+         asBool(r.plusOne),
+         Math.max(1, Math.min(50, parseInt(r.guestCount, 10) || 1)),
+         str(r.song, 200), str(r.message, 800), now());
+  res.json({ ok: true, id });
+});
+
+app.patch('/api/admin/rsvps/:id', requireAdmin, (req, res) => {
+  const row = db.prepare('SELECT * FROM rsvps WHERE id = ?').get(req.params.id);
+  if (!row) return res.status(404).json({ error: 'Not found.' });
+  const r = req.body || {};
+  if (r.name !== undefined && !str(r.name, 120))
+    return res.status(400).json({ error: 'Name cannot be empty.' });
+  db.prepare(`UPDATE rsvps SET name = ?, email = ?, phone = ?, attending = ?,
+               plusOne = ?, guestCount = ?, message = ? WHERE id = ?`)
+    .run(
+      r.name !== undefined ? str(r.name, 120) : row.name,
+      r.email !== undefined ? str(r.email, 200) : row.email,
+      r.phone !== undefined ? str(r.phone, 60) : row.phone,
+      r.attending !== undefined ? str(r.attending, 120) : row.attending,
+      r.plusOne !== undefined ? asBool(r.plusOne) : row.plusOne,
+      r.guestCount !== undefined ? Math.max(1, Math.min(50, parseInt(r.guestCount, 10) || 1)) : row.guestCount,
+      r.message !== undefined ? str(r.message, 800) : row.message,
+      req.params.id
+    );
   res.json({ ok: true });
 });
 
