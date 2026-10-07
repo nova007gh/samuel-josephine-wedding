@@ -79,6 +79,18 @@ CREATE TABLE IF NOT EXISTS push_subs (
   endpoint TEXT PRIMARY KEY,
   p256dh TEXT, auth TEXT, createdAt INTEGER
 );
+CREATE TABLE IF NOT EXISTS gifts (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  phone TEXT DEFAULT '',
+  email TEXT DEFAULT '',
+  fund TEXT NOT NULL DEFAULT 'cash',
+  amountCents INTEGER NOT NULL,
+  provider TEXT DEFAULT '',
+  txnRef TEXT DEFAULT '',
+  message TEXT DEFAULT '',
+  createdAt INTEGER
+);
 CREATE TABLE IF NOT EXISTS security_events (
   id TEXT PRIMARY KEY,
   type TEXT, severity TEXT DEFAULT 'info',
@@ -1035,6 +1047,51 @@ app.post('/api/admin/settings/song/:index/move', requireAdmin, (req, res) => {
   songs.splice(to, 0, pick);
   setSongs(songs);
   res.json({ ok: true, songs });
+});
+
+/* ---------- gifts (Mobile Money) ---------- */
+const GIFTS_PUBLIC = Object.freeze({
+  cash:     { label: 'Cash Gift',       min: 50,    max: 2000000 },
+  house:    { label: 'House Fund',      min: 50,    max: 2000000 },
+  honeymoon:{ label: 'Honeymoon Fund',  min: 50,    max: 2000000 }
+});
+const giftPublic = r => ({
+  name: r.name, fund: r.fund, amountCents: r.amountCents,
+  message: r.message, createdAt: r.createdAt
+});
+
+/* Public feed: the thank-you wall. Contact details never leave the admin API. */
+app.get('/api/gifts', (req, res) => {
+  const rows = db.prepare('SELECT name, fund, amountCents, message, createdAt FROM gifts ORDER BY createdAt DESC LIMIT 40').all();
+  res.json(rows);
+});
+
+app.post('/api/gifts', publicWrite, (req, res) => {
+  const b = req.body || {};
+  const name = str(b.name, 120);
+  if (!name) return res.status(400).json({ error: 'Please enter your name.' });
+  const fund = GIFTS_PUBLIC[b.fund] ? b.fund : 'cash';
+  /* money travels as integer cents. The client may post amountCents
+     directly, or a cedis "amount" — never accept a float and never divide,
+     or a GHS 200 gift silently records as GHS 2. */
+  let cents = NaN;
+  if (b.amountCents != null && b.amountCents !== '') cents = Math.round(Number(b.amountCents));
+  else if (b.amount != null && b.amount !== '') cents = Math.round(Number(b.amount) * 100);
+  if (!Number.isFinite(cents)) cents = 0;
+  if (cents < GIFTS_PUBLIC[fund].min || cents > GIFTS_PUBLIC[fund].max)
+    return res.status(400).json({ error: 'That amount is outside the allowed range.' });
+  const provider = ['mtn', 'telecel', 'airteltigo'].includes(b.provider) ? b.provider : '';
+  const id = uid();
+  db.prepare(`INSERT INTO gifts (id, name, phone, email, fund, amountCents, provider, txnRef, message, createdAt)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+    .run(id, name, str(b.phone, 40), str(b.email, 200), fund, cents,
+         provider, str(b.txnRef, 80), str(b.message, 500), now());
+  notifyAll('Gift received', `${name} sent GHS ${(cents / 100).toFixed(2)} toward the ${GIFTS_PUBLIC[fund].label}`);
+  res.json({ ok: true, id });
+});
+
+app.get('/api/admin/gifts', requireAdmin, (req, res) => {
+  res.json(db.prepare('SELECT * FROM gifts ORDER BY createdAt DESC').all());
 });
 
 /* ---------- admin access emails ----------
