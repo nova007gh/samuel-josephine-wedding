@@ -779,16 +779,12 @@ function renderTimeline(){
   const likes = getStoryLikes();
   const mine = new Set(myStoryLikes());
   const items = getStoryItems();
-  /* the couple's album continues the story — S&J Gallery uploads append
-     after the written moments, oldest first so it reads chronologically */
-  const sj = (latestMemories || [])
-    .filter(m => m.status === 'approved' && m.category === 'sj-gallery' && m.mediaUrl)
-    .slice()
-    .sort((a, b) => toMillis(a.createdAt) - toMillis(b.createdAt));
+  /* S&J Gallery has its own tab on this page, so the timeline stays the
+     written story only — no album rows appended here. */
 
   /* feeds poll every 15s — rebuilding would stomp scroll position and
      kill any playing video, so only repaint when content actually changed */
-  const key = JSON.stringify([items, sj.map(m => [m.id, m.caption]), likes, isAdmin()]);
+  const key = JSON.stringify([items, likes, isAdmin()]);
   if (key === timelineRenderKey) return;
   if ([...tl.querySelectorAll('video, audio')].some(el => !el.paused && !el.ended)) return;
   timelineRenderKey = key;
@@ -810,29 +806,6 @@ function renderTimeline(){
       ? `<div class="tl-pair tl-pair--rev">${photo}${date}</div>`
       : `<div class="tl-pair">${date}${photo}</div>`;
     const node = `<span class="tl-node">${it.emoji || '&#10084;'}</span>`;
-    return `<div class="tl-row">${i % 2 ? card + node + pair : pair + node + card}</div>`;
-  }).join('')
-  + (sj.length ? `<div class="tl-section"><span>S&amp;J GALLERY</span></div>` : '')
-  + sj.map((m, j) => {
-    const i = items.length + j;
-    const liked = mine.has(m.id);
-    const d = new Date(toMillis(m.createdAt));
-    const card = `<div class="tl-card">
-        <h4>${escapeHTML(m.caption || 'S&J GALLERY')}</h4>
-        <p>Shared by Sam &amp; Jossy</p>
-        <button class="tl-like ${liked ? 'liked' : ''}" data-like="${escapeHTML(m.id)}" type="button" aria-label="Love this memory">
-          <span class="tl-heart">&#10084;</span><b class="tl-count">${likes[m.id] || 0}</b>
-        </button>
-        ${isAdmin() ? `<button class="tl-edit-sj" type="button" aria-label="Manage in S&J Gallery">&#9998;</button>` : ''}
-      </div>`;
-    const date = `<div class="tl-date"><span>${TL_MONTHS[d.getMonth()]}</span><b>${d.getDate()}</b><span>${d.getFullYear()}</span></div>`;
-    const photo = (m.type || '').startsWith('video/')
-      ? `<div class="tl-photo"><video src="${m.mediaUrl}" controls playsinline preload="metadata"></video></div>`
-      : `<div class="tl-photo"><img src="${m.mediaUrl}" alt="${escapeHTML(m.caption || 'S&J memory')}" loading="lazy"></div>`;
-    const pair = i % 2
-      ? `<div class="tl-pair tl-pair--rev">${photo}${date}</div>`
-      : `<div class="tl-pair">${date}${photo}</div>`;
-    const node = `<span class="tl-node">&#128155;</span>`;
     return `<div class="tl-row">${i % 2 ? card + node + pair : pair + node + card}</div>`;
   }).join('');
   applySitePhotos();
@@ -929,13 +902,6 @@ document.addEventListener('click', e => {
   const sel = document.getElementById('storyEditSelect');
   if (sel){ sel.value = String(i); loadStoryEditorItem(i); }
   document.getElementById('storyEditSelect')?.closest('.aq-card')?.scrollIntoView({ block:'center', behavior:'smooth' });
-});
-
-/* admin pencil on an S&J timeline row — jump to the album on the dashboard */
-document.addEventListener('click', e => {
-  if (!e.target.closest('.tl-edit-sj')) return;
-  switchView('admin');
-  document.getElementById('sjGrid')?.scrollIntoView({ block:'center', behavior:'smooth' });
 });
 
 /* heart toggle — optimistic UI, server reconciles the real count */

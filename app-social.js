@@ -666,6 +666,47 @@ function allSubmissions(){
   return [...guests, ...mems, ...gbs];
 }
 
+/* Guest breakdown: attendance split, approval state, headcount once table
+   guests are added, and the RSVP tally — the two numbers you actually plan a
+   wedding around. Recomputed from the polled feeds, never cached. */
+function renderGuestBreakdown(){
+  const host = document.getElementById('guestBreakdownBody');
+  if (!host) return;
+
+  const guests = adminGuests || [];
+  const rsvps  = adminRsvps  || [];
+
+  /* attendance: 1 = coming to the wedding, 0 = browsing only */
+  const attending = guests.filter(g => g.attending).length;
+  const exploring = guests.length - attending;
+  const approved  = guests.filter(g => g.status === 'approved').length;
+  const awaiting  = guests.length - approved;
+
+  /* seats needed = one per attending guest plus the extra seats each brought */
+  const seats = guests.reduce((n, g) => n + (g.attending ? 1 + (parseInt(g.tableGuests, 10) || 0) : 0), 0);
+
+  /* RSVPs are free text ("Joyfully accept", "Can't make it") so match loosely */
+  const declined = rsvps.filter(r => /decline|can'?t|cannot|unable|regret|\bno\b/i.test(r.attending || '')).length;
+  const accepted = rsvps.length - declined;
+  const rsvpSeats = rsvps.reduce((n, r) => {
+    if (/decline|can'?t|cannot|unable|regret|\bno\b/i.test(r.attending || '')) return n;
+    return n + Math.max(1, parseInt(r.guestCount, 10) || 1);
+  }, 0);
+
+  const row = (label, value, note) => `<div class="gb-row"><span>${escapeHTML(label)}</span>
+      <b>${escapeHTML(String(value))}</b>${note ? `<small>${escapeHTML(note)}</small>` : ''}</div>`;
+
+  host.innerHTML =
+      `<p class="guest-breakdown-title">Check-ins by attendance</p>` +
+      row('Attending', attending, 'coming to the wedding') +
+      row('Exploring', exploring, 'browsing, not attending') +
+      row('Seats needed', seats, 'includes table guests') +
+      row('Awaiting approval', awaiting, awaiting ? 'not yet on the guest list' : 'all approved') +
+      `<p class="guest-breakdown-title">RSVPs</p>` +
+      row('Accepted', accepted, rsvpSeats ? `party of ${rsvpSeats} total` : '') +
+      row('Declined', declined);
+}
+
 function updateAdminStats(){
   const items = allSubmissions();
   const pending = items.filter(i => i.status !== 'approved').length;
@@ -1035,7 +1076,7 @@ function startAdminListeners(){
       toastNewItems('guests', items, g =>
         activityToast(`${g.name} checked in`,
                       `${g.attending ? 'Attending' : 'Exploring'} · ${g.status === 'pending' ? 'pending approval' : 'on the guest list'}`));
-      adminGuests = items; updateAdminStats(); renderGuestList();
+      adminGuests = items; updateAdminStats(); renderGuestList(); renderGuestBreakdown();
       /* last feed to populate announces the backlog once all lists are in */
       setTimeout(announcePendingBacklog, 600);
     }),
@@ -1044,7 +1085,7 @@ function startAdminListeners(){
         const att = /decline|no|can't/i.test(r.attending || '') ? "can't make it" : 'is attending';
         activityToast(`${r.name} RSVP'd`, `${att}${r.guestCount > 1 ? ` · party of ${r.guestCount}` : ''}`);
       });
-      adminRsvps = items; updateAdminStats(); renderRsvpAdmin();
+      adminRsvps = items; updateAdminStats(); renderRsvpAdmin(); renderGuestBreakdown();
     })
   ];
   /* not a 15s poller — fetch once per sign-in so the Security page and its
@@ -1056,7 +1097,7 @@ function stopAdminListeners(){
   adminUnsubs = [];
   pendingAnnounced = false;
   adminMemories = []; adminGuestbook = []; adminGuests = []; adminRsvps = []; adminSecurity = [];
-  updateAdminStats(); renderApprovalQueue(); renderGuestList(); renderRsvpAdmin(); renderSjAdminGrid();
+  updateAdminStats(); renderApprovalQueue(); renderGuestList(); renderRsvpAdmin(); renderSjAdminGrid(); renderGuestBreakdown();
 }
 
 /* =========================================================

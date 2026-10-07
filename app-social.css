@@ -874,6 +874,44 @@
 /* keep the last button in admin cards clear of the raised Gallery seal */
 [data-view="admin"]{ padding-bottom:60px; }
 
+/* ---------- guest + RSVP breakdown (admin dashboard) ---------- */
+.guest-breakdown{ margin:16px 0 8px; }
+.guest-breakdown-body{ margin-top:8px; }
+.guest-breakdown-title{
+  margin:14px 0 6px;
+  font-size:.64rem;
+  font-weight:700;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:#9a7b45;
+}
+.guest-breakdown-title:first-child{ margin-top:2px; }
+.gb-row{
+  display:flex;
+  align-items:baseline;
+  gap:8px;
+  padding:7px 0;
+  border-bottom:1px solid rgba(178,134,54,.14);
+}
+.gb-row:last-child{ border-bottom:0; }
+.gb-row span{
+  flex:1;
+  font-size:.84rem;
+  color:#4a3a22;
+}
+.gb-row b{
+  font-size:1.05rem;
+  font-weight:700;
+  color:#8a6a1e;
+  min-width:2.2em;
+  text-align:right;
+}
+.gb-row small{
+  font-size:.68rem;
+  color:#9a8a6a;
+  opacity:.85;
+}
+
 /* ---------- who-invited-you stats (admin guest list) ---------- */
 .invite-stats{
   display:flex;
