@@ -205,26 +205,8 @@ button.upload-drop{ width:100%; font-family:inherit; }
   transition:transform .2s ease, box-shadow .2s ease;
 }
 .cat-card:active{ transform:scale(.98); box-shadow:0 6px 16px rgba(112,78,26,.14); }
-/* S&J Gallery — the couple's own album gets a gold frame and badge */
-.cat-card--sj{
-  border:1.5px solid rgba(196,148,44,.55);
-  box-shadow:0 10px 26px rgba(196,148,44,.26);
-}
-.cat-card--sj .cat-name{ color:#8a6a1e; }
-.cat-card--sj .cat-thumb{ position:relative; }
-.cat-badge{
-  position:absolute;
-  top:8px; left:8px;
-  padding:3px 10px;
-  border-radius:999px;
-  background:linear-gradient(135deg,#c49a3f,#a87f2c);
-  color:#fff;
-  font-size:.62rem;
-  font-weight:700;
-  letter-spacing:.14em;
-  text-transform:uppercase;
-  box-shadow:0 3px 8px rgba(90,60,10,.3);
-}
+/* S&J Gallery lives on the Our Story page only — the gold-framed album
+   card and its badge are no longer rendered anywhere. */
 .cat-thumb{
   display:block;
   border-radius:0;

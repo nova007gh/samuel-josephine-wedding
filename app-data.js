@@ -62,7 +62,6 @@ function escapeHTML(value=''){
    ========================================================= */
 /* albums shown as cover cards on the gallery landing */
 const GALLERY_ALBUMS = [
-  { id:'sj-gallery',     label:'S&J Gallery',    cover:'assets/couple-home.jpg',         photoKey:'couple' },
   { id:'childhood',      label:'Childhood',      cover:'assets/story/sam-childhood.jpg', photoKey:'sam-childhood' },
   { id:'adulthood',      label:'Adulthood',      cover:'assets/story/sam-adult.jpg',     photoKey:'sam-adult' },
   { id:'first-together', label:'First Together', cover:'assets/story/facetime.jpg',      photoKey:'facetime' },
@@ -81,7 +80,12 @@ function defaultAlbumFor(type, kind){
   return 'wedding-photos';
 }
 
-const CATEGORY_LABELS = Object.fromEntries(GALLERY_ALBUMS.map(a => [a.id, a.label]));
+const CATEGORY_LABELS = {
+  ...Object.fromEntries(GALLERY_ALBUMS.map(a => [a.id, a.label])),
+  /* not a Gallery album any more — it lives on Our Story — but the label is
+     still handy if an admin surface ever needs to name the bucket */
+  'sj-gallery': 'S&J Gallery'
+};
 
 /* built-in memories shown alongside guest uploads */
 const SEED_MEMORIES = [
@@ -113,9 +117,12 @@ function matchesKind(item){
 }
 
 function allGalleryItems(){
-  // Only show approved memories to users; seed memories are always visible
+  // Only show approved memories to users; seed memories are always visible.
+  // S&J Gallery is deliberately excluded: the couple's own album is presented
+  // on the Our Story page, and duplicating it here would show the same photos
+  // in two places.
   const uploaded = latestMemories
-    .filter(m => m.status === 'approved')
+    .filter(m => m.status === 'approved' && m.category !== 'sj-gallery')
     .map(m => ({ ...m, seeded:false }));
   const seeded = SEED_MEMORIES.map(m => ({ ...m, src: sitePhoto(m.photoKey, m.src), type:'image/jpeg', seeded:true }));
   return [...uploaded, ...seeded];
@@ -132,10 +139,10 @@ function renderAlbums(){
     const cover = items.find(m => m.category === album.id && (m.src || m.mediaUrl) &&
       (m.type || '').startsWith('image/'));
     const src = (cover && (cover.src || cover.mediaUrl)) || sitePhoto(album.photoKey, album.cover);
-    const badge = album.id === 'sj-gallery' ? '<span class="cat-badge">&#10084; S&amp;J</span>' : '';
+
     return `
-      <button class="cat-card${album.id === 'sj-gallery' ? ' cat-card--sj' : ''}" data-album="${album.id}" type="button">
-        <span class="cat-thumb">${badge}<img loading="lazy" decoding="async" src="${src}" alt="${escapeHTML(album.label)}"></span>
+      <button class="cat-card" data-album="${album.id}" type="button">
+        <span class="cat-thumb"><img loading="lazy" decoding="async" src="${src}" alt="${escapeHTML(album.label)}"></span>
         <span class="cat-name">${escapeHTML(album.label)}</span>
         <span class="cat-count">${count}</span>
       </button>`;
