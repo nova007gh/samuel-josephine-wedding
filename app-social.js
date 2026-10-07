@@ -623,7 +623,15 @@ let adminGuests = [];
 let adminRsvps = [];
 let adminUnsubs = [];
 let pendingAnnounced = false;
+/* declared here, not down by the security renderer — onAdminAuth fires
+   synchronously at load and reaches stopAdminListeners before line 800 runs */
+let adminSecurity = [];
 const adminFeedErrors = new Map();
+
+/* S&J Gallery nodes must exist before onAdminAuth fires — that callback
+   runs synchronously at load and renders the admin grid. */
+const sjGrid = document.getElementById('sjGrid');
+const sjEmpty = document.getElementById('sjEmpty');
 
 /* auth state drives everything admin-related */
 onAdminAuth(signedIn => {
@@ -810,8 +818,6 @@ function renderRsvpAdmin(){
 /* =========================================================
    Security Log — sign-in attempts, blocks & suspicious requests
    ========================================================= */
-let adminSecurity = [];
-
 const SEC_META = {
   admin_login:        { icon:'✅', label:'Admin signed in',        cls:'ok'   },
   admin_login_failed: { icon:'⛔', label:'Failed admin sign-in',   cls:'warn' },
@@ -1041,21 +1047,21 @@ function startAdminListeners(){
       adminRsvps = items; updateAdminStats(); renderRsvpAdmin();
     })
   ];
+  /* not a 15s poller — fetch once per sign-in so the Security page and its
+     menu badge populate without a manual refresh */
+  refreshSecurityLog();
 }
 function stopAdminListeners(){
   adminUnsubs.forEach(fn => fn());
   adminUnsubs = [];
   pendingAnnounced = false;
-  adminMemories = []; adminGuestbook = []; adminGuests = []; adminRsvps = [];
+  adminMemories = []; adminGuestbook = []; adminGuests = []; adminRsvps = []; adminSecurity = [];
   updateAdminStats(); renderApprovalQueue(); renderGuestList(); renderRsvpAdmin(); renderSjAdminGrid();
 }
 
 /* =========================================================
    S&J Gallery — the couple's album; admin adds, guests see it live
    ========================================================= */
-const sjGrid = document.getElementById('sjGrid');
-const sjEmpty = document.getElementById('sjEmpty');
-
 function renderSjAdminGrid(){
   if (!sjGrid || !sjEmpty) return;
   const items = (adminMemories || []).filter(m => m.category === 'sj-gallery');
