@@ -18,11 +18,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Parisienne&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="assets/landing-invite.jpg" />
   <link rel="preload" as="image" href="assets/seal-pressed-320.png" />
-  <link rel="stylesheet" href="app.css?v=162" />
+  <link rel="stylesheet" href="app.css?v=163" />
 
-  <link rel="stylesheet" href="app-views.css?v=162" />
-  <link rel="stylesheet" href="app-forms.css?v=162" />
-  <link rel="stylesheet" href="app-social.css?v=162" />
+  <link rel="stylesheet" href="app-views.css?v=163" />
+  <link rel="stylesheet" href="app-forms.css?v=163" />
+  <link rel="stylesheet" href="app-social.css?v=163" />
   <script>
   /* a checked-in guest goes straight into the app — flag it before first
      paint so the invitation never flashes on their screen (mirrors
@@ -1348,6 +1348,23 @@
 
     <h2 class="settings-heading gifts-heading">Recent gifts</h2>
     <div class="gift-list" id="giftList"><p class="page-sub">No gifts recorded yet.</p></div>
+
+    <!-- Admin-only: Manage Gift Funds -->
+    <section class="admin-only hidden" id="adminGiftFundsSection" aria-labelledby="adminGiftFundsTitle">
+      <h2 class="settings-heading gifts-heading" id="adminGiftFundsTitle">Manage Gift Funds</h2>
+      <p class="page-sub">Add, edit or remove the fund options guests see. Changes appear instantly.</p>
+      <button class="aq-approve" id="addGiftFundBtn" type="button">+ ADD FUND</button>
+      <div class="gr-form" id="giftFundEditor"></div>
+      <div class="gf-list" id="adminGiftFundsList"></div>
+    </section>
+
+    <!-- Admin-only: MoMo Settings -->
+    <section class="admin-only hidden" id="momoSettingsSection" aria-labelledby="momoSettingsTitle">
+      <h2 class="settings-heading gifts-heading" id="momoSettingsTitle">MoMo Settings (admin only)</h2>
+      <p class="page-sub">The send-to number and account name shown to guests. Only you can change these.</p>
+      <div class="gr-form" id="momoSettingsEditor"></div>
+    </section>
+
   </section>
 
   <!-- ---------- Bottom tab bar ---------- -->

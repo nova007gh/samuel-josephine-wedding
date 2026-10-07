@@ -18,6 +18,9 @@ const DATA_DIR = process.env.DATA_DIR || '/var/lib/wedding';
 const UPLOADS_DIR = path.join(DATA_DIR, 'uploads');
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || '';
+let MOMO_NUMBER = process.env.MOMO_NUMBER || '+233 24 123 4567';
+let MOMO_ACCOUNT_NAME = process.env.MOMO_ACCOUNT_NAME || 'Samuel & Josephine';
+
 const MAX_UPLOAD = 256 * 1024 * 1024; // 256MB — long phone videos
 const SESSION_TTL_MS = 30 * 24 * 3600 * 1000; // 30 days
 
@@ -91,6 +94,13 @@ CREATE TABLE IF NOT EXISTS gifts (
   message TEXT DEFAULT '',
   createdAt INTEGER
 );
+CREATE TABLE IF NOT EXISTS gift_funds (
+  id TEXT PRIMARY KEY,
+  label TEXT NOT NULL,
+  description TEXT DEFAULT '',
+  sortOrder INTEGER DEFAULT 0,
+  enabled INTEGER DEFAULT 1
+);
 CREATE TABLE IF NOT EXISTS security_events (
   id TEXT PRIMARY KEY,
   type TEXT, severity TEXT DEFAULT 'info',
@@ -101,6 +111,16 @@ CREATE TABLE IF NOT EXISTS security_events (
 `);
 
 /* column added after launch — migrate existing databases safely */
+/* seed default gift funds if empty */
+(function seedGiftFunds(){
+  const count = db.prepare('SELECT COUNT(*) AS c FROM gift_funds').get().c;
+  if (count > 0) return;
+  const stmt = db.prepare('INSERT INTO gift_funds (id, label, description, sortOrder, enabled) VALUES (?, ?, ?, ?, ?)');
+  stmt.run('cash', 'Cash Gift', 'Contribute any amount to support our new journey.', 10, 1);
+  stmt.run('house', 'House Fund', 'Help us build our future home together.', 20, 1);
+  stmt.run('honeymoon', 'Honeymoon Fund', 'Bless our first adventure as husband and wife.', 30, 1);
+})();
+
 try { db.exec(`ALTER TABLE guests ADD COLUMN status TEXT DEFAULT 'pending'`); } catch {}
 try { db.exec(`ALTER TABLE guests ADD COLUMN tableGuests INTEGER DEFAULT 0`); } catch {}
 try { db.exec(`ALTER TABLE guests ADD COLUMN city TEXT`); } catch {}
@@ -1047,6 +1067,76 @@ app.post('/api/admin/settings/song/:index/move', requireAdmin, (req, res) => {
   songs.splice(to, 0, pick);
   setSongs(songs);
   res.json({ ok: true, songs });
+});
+
+/* ---------- gift funds (admin-managed) ---------- */
+app.get('/api/gift-funds', (req, res) => {
+  const rows = db.prepare('SELECT id, label, description FROM gift_funds WHERE enabled = 1 ORDER BY sortOrder, label').all();
+  if (!rows.length){
+    res.json([
+      { id:'cash', label:'Cash Gift', description:'Contribute any amount to support our new journey.' },
+      { id:'house', label:'House Fund', description:'Help us build our future home together.' },
+      { id:'honeymoon', label:'Honeymoon Fund', description:'Bless our first adventure as husband and wife.' }
+    ]);
+    return;
+  }
+  res.json(rows);
+});
+
+app.get('/api/admin/gift-funds', requireAdmin, (req, res) => {
+  res.json(db.prepare('SELECT * FROM gift_funds ORDER BY sortOrder, label').all());
+});
+
+app.post('/api/admin/gift-funds', requireAdmin, (req, res) => {
+  const f = req.body || {};
+  const id = str(f.id, 40).toLowerCase();
+  const label = str(f.label, 80);
+  if (!id || !/^[a-z][a-z0-9-]*$/.test(id)) return res.status(400).json({ error: 'Invalid ID. Use lowercase letters, numbers, hyphens.' });
+  if (!label) return res.status(400).json({ error: 'Label is required.' });
+  const exists = db.prepare('SELECT 1 FROM gift_funds WHERE id = ?').get(id);
+  if (exists) return res.status(400).json({ error: 'A fund with that ID already exists.' });
+  const sortOrder = Math.max(0, parseInt(f.sortOrder, 10) || 0);
+  db.prepare('INSERT INTO gift_funds (id, label, description, sortOrder, enabled) VALUES (?, ?, ?, ?, ?)')
+    .run(id, label, str(f.description, 300), sortOrder, f.enabled ? 1 : 0);
+  res.json({ ok: true, id });
+});
+
+app.patch('/api/admin/gift-funds/:id', requireAdmin, (req, res) => {
+  const id = req.params.id;
+  const f = req.body || {};
+  const row = db.prepare('SELECT * FROM gift_funds WHERE id = ?').get(id);
+  if (!row) return res.status(404).json({ error: 'Not found.' });
+  const label = f.label !== undefined ? str(f.label, 80) : row.label;
+  if (!label) return res.status(400).json({ error: 'Label cannot be empty.' });
+  db.prepare('UPDATE gift_funds SET label = ?, description = ?, sortOrder = ?, enabled = ? WHERE id = ?')
+    .run(label, f.description !== undefined ? str(f.description, 300) : row.description,
+         f.sortOrder !== undefined ? Math.max(0, parseInt(f.sortOrder, 10) || 0) : row.sortOrder,
+         f.enabled !== undefined ? (f.enabled ? 1 : 0) : row.enabled, id);
+  res.json({ ok: true });
+});
+
+app.delete('/api/admin/gift-funds/:id', requireAdmin, (req, res) => {
+  const id = req.params.id;
+  const row = db.prepare('SELECT * FROM gift_funds WHERE id = ?').get(id);
+  if (!row) return res.status(404).json({ error: 'Not found.' });
+  db.prepare('DELETE FROM gift_funds WHERE id = ?').run(id);
+  res.json({ ok: true });
+});
+
+/* admin MoMo settings (number + account name) */
+app.get('/api/admin/momo-settings', requireAdmin, (req, res) => {
+  res.json({ number: MOMO_NUMBER, accountName: MOMO_ACCOUNT_NAME });
+});
+
+app.patch('/api/admin/momo-settings', requireAdmin, (req, res) => {
+  const b = req.body || {};
+  const number = b.number !== undefined ? str(b.number, 40).trim() : MOMO_NUMBER;
+  const accountName = b.accountName !== undefined ? str(b.accountName, 120).trim() : MOMO_ACCOUNT_NAME;
+  if (number && !/^\+\d{9,15}$/.test(number.replace(/\s+/g, '')))
+    return res.status(400).json({ error: 'Number must be in international format, e.g. +233241234567' });
+  MOMO_NUMBER = number;
+  MOMO_ACCOUNT_NAME = accountName;
+  res.json({ ok: true, number: MOMO_NUMBER, accountName: MOMO_ACCOUNT_NAME });
 });
 
 /* ---------- gifts (Mobile Money) ---------- */

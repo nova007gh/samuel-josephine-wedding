@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v162-tabbar-pad-12';
+const CACHE = 'sj-wedding-v163-gifts-admin-13';
 const ASSETS = [
   './',
   './index.html',

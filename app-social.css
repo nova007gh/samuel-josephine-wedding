@@ -1203,4 +1203,46 @@
   font:inherit; font-size:.74rem; font-weight:700;
   cursor:pointer;
 }
-.aq-neutral:disabled{ opacity:.5; }
+.aq-neutral:disabled{ opacity:.5; }/* ---------- Admin-only Gift Funds & MoMo sections ---------- */
+.admin-only{
+  margin-top:28px;
+  padding-top:22px;
+  border-top:1px solid rgba(178,134,54,.2);
+}
+.admin-only h2{ margin-bottom:4px; }
+.admin-only .page-sub{ margin-bottom:16px; }
+
+.gf-list{ display:grid; gap:10px; margin-top:14px; }
+.gf-row{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:12px 14px;
+  border:1px solid rgba(178,134,54,.25);
+  border-radius:10px;
+  background:rgba(253,249,241,.8);
+}
+.gf-info b{ color:#6d4d17; }
+.gf-info code{
+  font-size:.7rem;
+  background:rgba(178,134,54,.12);
+  padding:2px 6px; border-radius:4px;
+  color:#8a6a1e;
+}
+.gf-info small{ display:block; margin-top:4px; color:#9a8a6a; font-size:.75rem; }
+.gf-actions{ display:flex; gap:8px; flex-shrink:0; }
+
+.gr-hint{
+  display:block; margin-top:4px;
+  font-size:.65rem; color:#9a8a6a;
+}
+#giftFundEditor, #momoSettingsEditor{
+  margin-top:14px;
+  padding:14px;
+  border:1px solid rgba(178,134,54,.3);
+  border-radius:12px;
+  background:rgba(253,249,241,.9);
+  display:grid; gap:10px;
+}
+
+/* read-only MoMo fields for non-admins */
+input[readOnly]{ background:rgba(240,228,196,.5) !important; }
+.hidden{ display:none !important; }

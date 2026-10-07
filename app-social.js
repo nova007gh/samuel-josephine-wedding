@@ -1545,11 +1545,9 @@ window.addEventListener('sj:entered', () => {
 /* attendees are tracked for the admin only — guests don't see who is
    attending or exploring, so no public guest feed/toast is wired */
 /* =========================================================
-   Gifts — Mobile Money
-   The guest picks a fund and an amount, taps through to their MoMo
-   app, then tells us who they were so we can thank them by name.
+   Gifts — Mobile Money (admin-managed funds + locked MoMo)
    ========================================================= */
-const GIFT_FUNDS = [
+let GIFT_FUNDS = [
   { id:'cash',      label:'Cash Gift',      desc:'Contribute any amount to support our new journey.' },
   { id:'house',     label:'House Fund',     desc:'Help us build our future home together.' },
   { id:'honeymoon', label:'Honeymoon Fund', desc:'Bless our first adventure as husband and wife.' }
@@ -1564,6 +1562,17 @@ const GIFT_PROVIDERS = [
 const giftState = { fund:'cash', amount:200, provider:'mtn' };
 
 function giftCedi(cents){ return 'GHS ' + (Number(cents || 0) / 100).toLocaleString('en-GH', { minimumFractionDigits:2, maximumFractionDigits:2 }); }
+
+async function loadGiftFunds(){
+  try {
+    const rows = await getGiftFunds();
+    if (Array.isArray(rows) && rows.length){
+      GIFT_FUNDS = rows;
+    }
+  } catch (e){
+    console.warn('Could not load gift funds, using defaults:', e);
+  }
+}
 
 function renderGiftOptions(){
   const funds = document.getElementById('giftFunds');
@@ -1609,7 +1618,6 @@ function updateGiftPayButton(){
 }
 
 function moneyToMoMoDialString(cedi){
-  /* *722# = Mobile Money, *165# = Ghana number, *23# = amount (encoded * as %2A) */
   const amount = encodeURIComponent('*' + Number(cedi).toFixed(2) + '*');
   return `%2A722%23%2A165%23${amount}%23`;
 }
@@ -1639,8 +1647,178 @@ async function renderGiftList(){
   }
 }
 
+/* Admin: manage gift funds */
+function renderAdminGiftFunds(){
+  const host = document.getElementById('adminGiftFundsList');
+  if (!host) return;
+  getAdminGiftFunds().then(rows => {
+    host.innerHTML = rows.map(f => `
+      <div class="gf-row">
+        <div class="gf-info">
+          <b>${escapeHTML(f.label)}</b> <code>${escapeHTML(f.id)}</code>
+          <small>${escapeHTML(f.description || 'No description')}</small>
+        </div>
+        <div class="gf-actions">
+          <button class="aq-neutral gf-edit" data-id="${escapeHTML(f.id)}" type="button">EDIT</button>
+          <button class="aq-reject gf-del" data-id="${escapeHTML(f.id)}" type="button">REMOVE</button>
+        </div>
+      </div>`).join('');
+  }).catch(() => { host.innerHTML = '<p class="page-sub">Could not load funds.</p>'; });
+}
+
+function openGiftFundEditor(f = null){
+  const editor = document.getElementById('giftFundEditor');
+  if (!editor) return;
+  const isEdit = !!f;
+  editor.innerHTML = `
+    <p class="gr-form-title">${isEdit ? 'Edit' : 'Add'} Gift Fund</p>
+    <label class="gr-field"><span>ID *</span>
+      <input data-gf-field="id" type="text" value="${escapeHTML(f?.id || '')}" placeholder="e.g. charity" ${isEdit ? 'readonly' : ''} maxlength="40" />
+      <small class="gr-hint">lowercase, numbers, hyphens only</small>
+    </label>
+    <label class="gr-field"><span>Label *</span>
+      <input data-gf-field="label" type="text" value="${escapeHTML(f?.label || '')}" placeholder="e.g. Charity Fund" maxlength="80" required />
+    </label>
+    <label class="gr-field"><span>Description</span>
+      <textarea data-gf-field="description" rows="2" maxlength="300" placeholder="What is this fund for?">${escapeHTML(f?.description || '')}</textarea>
+    </label>
+    <div class="gr-field-row">
+      <label class="gr-field"><span>Sort Order</span>
+        <input data-gf-field="sortOrder" type="number" min="0" value="${escapeHTML(String(f?.sortOrder ?? 0))}" />
+      </label>
+      <label class="gr-field"><span>Enabled</span>
+        <select data-gf-field="enabled">
+          <option value="1"${f?.enabled !== 0 ? ' selected' : ''}>Yes</option>
+          <option value="0"${f?.enabled === 0 ? ' selected' : ''}>No</option>
+        </select>
+      </label>
+    </div>
+    <div class="aq-actions">
+      <button class="aq-approve" data-gf-save type="button">SAVE</button>
+      <button class="aq-reject" data-gf-cancel type="button">CANCEL</button>
+    </div>
+    <small class="gr-form-status"></small>`;
+  editor.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function initGiftFundsAdmin(){
+  document.getElementById('addGiftFundBtn')?.addEventListener('click', () => openGiftFundEditor());
+  document.getElementById('adminGiftFundsList')?.addEventListener('click', async e => {
+    const editBtn = e.target.closest('.gf-edit');
+    if (editBtn){
+      const id = editBtn.dataset.id;
+      const rows = await getAdminGiftFunds();
+      const f = rows.find(x => x.id === id);
+      if (f) openGiftFundEditor(f);
+      return;
+    }
+    const delBtn = e.target.closest('.gf-del');
+    if (delBtn){
+      if (!confirm('Delete this gift fund?')) return;
+      await deleteGiftFund(delBtn.dataset.id);
+      renderAdminGiftFunds();
+      await loadGiftFunds();
+      renderGiftOptions();
+      return;
+    }
+  });
+  document.getElementById('giftFundEditor')?.addEventListener('click', async e => {
+    if (e.target.matches('[data-gf-save]')){
+      const form = e.target.closest('.gr-form');
+      const id = form.querySelector('[data-gf-field="id"]').value.trim().toLowerCase();
+      const label = form.querySelector('[data-gf-field="label"]').value.trim();
+      const description = form.querySelector('[data-gf-field="description"]').value.trim();
+      const sortOrder = parseInt(form.querySelector('[data-gf-field="sortOrder"]').value, 10) || 0;
+      const enabled = parseInt(form.querySelector('[data-gf-field="enabled"]').value, 10);
+      const status = form.querySelector('.gr-form-status');
+      if (!id || !/^[a-z][a-z0-9-]*$/.test(id)){ status.textContent = 'Invalid ID format.'; return; }
+      if (!label){ status.textContent = 'Label is required.'; return; }
+      e.target.disabled = true; status.textContent = 'Saving…';
+      try {
+        const existing = (await getAdminGiftFunds()).find(x => x.id === id);
+        if (existing) await updateGiftFund(id, { label, description, sortOrder, enabled });
+        else await addGiftFund({ id, label, description, sortOrder, enabled });
+        form.innerHTML = '';
+        renderAdminGiftFunds();
+        await loadGiftFunds();
+        renderGiftOptions();
+      } catch (err){
+        status.textContent = err.message || 'Could not save.';
+        e.target.disabled = false;
+      }
+      return;
+    }
+    if (e.target.matches('[data-gf-cancel]')){
+      e.target.closest('.gr-form').innerHTML = '';
+    }
+  });
+}
+
+/* Admin: MoMo settings */
+function renderMomoSettingsAdmin(){
+  const host = document.getElementById('momoSettingsEditor');
+  if (!host) return;
+  getMomoSettings().then(s => {
+    host.innerHTML = `
+      <p class="gr-form-title">MoMo Settings (admin only)</p>
+      <label class="gr-field"><span>Send-to Number *</span>
+        <input id="momoNumberInput" type="tel" value="${escapeHTML(s.number)}" placeholder="+233 24 123 4567" required />
+      </label>
+      <label class="gr-field"><span>Account Name *</span>
+        <input id="momoNameInput" type="text" value="${escapeHTML(s.accountName)}" placeholder="Samuel & Josephine" required />
+      </label>
+      <div class="aq-actions">
+        <button class="aq-approve" id="saveMomoSettings" type="button">SAVE</button>
+      </div>
+      <small id="momoSettingsStatus" class="gr-form-status"></small>`;
+  }).catch(() => { host.innerHTML = '<p class="page-sub">Could not load MoMo settings.</p>'; });
+}
+
+function initMomoSettingsAdmin(){
+  document.getElementById('momoSettingsEditor')?.addEventListener('click', async e => {
+    if (!e.target.matches('#saveMomoSettings')) return;
+    const number = document.getElementById('momoNumberInput').value.trim();
+    const accountName = document.getElementById('momoNameInput').value.trim();
+    const status = document.getElementById('momoSettingsStatus');
+    if (!number || !/^\+\d{9,15}$/.test(number.replace(/\s+/g, ''))){ status.textContent = 'Number must be in international format.'; return; }
+    if (!accountName){ status.textContent = 'Account name is required.'; return; }
+    e.target.disabled = true; status.textContent = 'Saving…';
+    try {
+      await updateMomoSettings({ number, accountName });
+      status.textContent = 'Saved.';
+      // update the guest-facing fields
+      document.getElementById('giftMoMoNumber').value = number;
+      document.getElementById('giftMoMoName').value = accountName;
+    } catch (err){
+      status.textContent = err.message || 'Could not save.';
+    } finally {
+      e.target.disabled = false;
+    }
+  });
+}
+
 /* wire everything once */
-function initGifts(){
+
+function updateGiftAdminVisibility(){
+  const isAdm = isAdmin();
+  document.getElementById('adminGiftFundsSection')?.classList.toggle('hidden', !isAdm);
+  document.getElementById('momoSettingsSection')?.classList.toggle('hidden', !isAdm);
+  /* lock/unlock MoMo fields */
+  const momoNum = document.getElementById('giftMoMoNumber');
+  const momoName = document.getElementById('giftMoMoName');
+  if (momoNum && momoName){
+    momoNum.readOnly = !isAdm;
+    momoName.readOnly = !isAdm;
+    momoNum.style.opacity = isAdm ? '' : '0.7';
+    momoName.style.opacity = isAdm ? '' : '0.7';
+    document.querySelector('[data-paste="giftMoMoNumber"]')?.classList.toggle('hidden', !isAdm);
+    document.querySelector('[data-paste="giftMoMoName"]')?.classList.toggle('hidden', !isAdm);
+  }
+}
+
+async function initGifts(){
+  updateGiftAdminVisibility();
+  await loadGiftFunds();
   renderGiftOptions();
   renderGiftList();
 
@@ -1676,7 +1854,6 @@ function initGifts(){
     renderGiftOptions();
   });
 
-  /* paste buttons — clipboard read is best-effort and may be blocked */
   document.querySelectorAll('[data-paste]')?.forEach(btn => {
     btn.addEventListener('click', async () => {
       const input = document.getElementById(btn.dataset.paste);
@@ -1730,18 +1907,44 @@ function initGifts(){
       btn.textContent = original;
     }
   });
-}
 
-function flashGiftStatus(text){
-  const status = document.getElementById('giftStatus');
-  if (!status) return;
-  status.textContent = text;
-  document.getElementById('giftConfirmWrap')?.setAttribute('open', '');
-  status.scrollIntoView({ block:'nearest', behavior:'smooth' });
+  /* admin sections */
+  if (isAdmin()){
+    document.getElementById(adminGiftFundsSection)?.classList.remove(hidden);
+    document.getElementById(momoSettingsSection)?.classList.remove(hidden);
+    renderAdminGiftFunds();
+    initGiftFundsAdmin();
+    renderMomoSettingsAdmin();
+    initMomoSettingsAdmin();
+  }
+
+  /* lock MoMo fields for non-admins */
+  const momoNum = document.getElementById('giftMoMoNumber');
+  const momoName = document.getElementById('giftMoMoName');
+  if (momoNum && momoName && !isAdmin()){
+    momoNum.readOnly = true;
+    momoName.readOnly = true;
+    momoNum.style.opacity = '0.7';
+    momoName.style.opacity = '0.7';
+    momoNum.title = 'Only admin can change this number';
+    momoName.title = 'Only admin can change this name';
+    /* hide the paste buttons too */
+    document.querySelector('[data-paste="giftMoMoNumber"]')?.classList.add('hidden');
+    document.querySelector('[data-paste="giftMoMoName"]')?.classList.add('hidden');
+  }
 }
 
 /* refresh the list each time the Gifts tab is opened */
-document.querySelector('[data-tab="gifts"]')?.addEventListener('click', () => { renderGiftOptions(); renderGiftList(); });
+document.querySelector('[data-tab="gifts"]')?.addEventListener('click', () => {
+  updateGiftAdminVisibility();
+  renderGiftOptions();
+  renderGiftList();
+  if (isAdmin()){
+    renderAdminGiftFunds();
+    renderMomoSettingsAdmin();
+  }
+});
+
 /* app-social.js loads last, so the gifts view can wire itself up immediately */
 initGifts();
 /* =========================================================

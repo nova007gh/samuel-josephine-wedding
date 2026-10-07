@@ -262,6 +262,37 @@ async function deleteRsvp(id){
   await api(`/admin/rsvps/${encodeURIComponent(id)}`, { method: 'DELETE', admin: true });
 }
 
+/* gift funds - admin can manage the three fund cards */
+async function getGiftFunds(){
+  const rows = await api('/gift-funds');
+  return rows;
+}
+
+async function getAdminGiftFunds(){
+  return await api('/admin/gift-funds', { admin: true });
+}
+
+async function addGiftFund(data){
+  return await api('/admin/gift-funds', { method: 'POST', body: data, admin: true });
+}
+
+async function updateGiftFund(id, data){
+  return await api(`/admin/gift-funds/${encodeURIComponent(id)}`, { method: 'PATCH', body: data, admin: true });
+}
+
+async function deleteGiftFund(id){
+  return await api(`/admin/gift-funds/${encodeURIComponent(id)}`, { method: 'DELETE', admin: true });
+}
+
+/* MoMo settings - admin only */
+async function getMomoSettings(){
+  return await api('/admin/momo-settings', { admin: true });
+}
+
+async function updateMomoSettings(data){
+  return await api('/admin/momo-settings', { method: 'PATCH', body: data, admin: true });
+}
+
 /* ---------- Site settings (couple photo, wedding song) ---------- */
 async function getSettings(){
   return await api('/settings');
