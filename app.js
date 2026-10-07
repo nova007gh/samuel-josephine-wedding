@@ -982,6 +982,12 @@ function switchView(name, fromHistory = false){
      expired token drops immediately instead of showing empty feeds */
   if (ADMIN_VIEWS.has(name) && isAdmin() && typeof api === 'function')
     api('/admin/guests', { admin: true }).catch(() => {});
+
+  /* Render admin content views when navigated to directly */
+  if (name === 'adminmedia' && typeof renderAdminContentView === 'function') renderAdminContentView('adminmedia');
+  if (name === 'adminvoice' && typeof renderAdminContentView === 'function') renderAdminContentView('adminvoice');
+  if (name === 'adminvideo' && typeof renderAdminContentView === 'function') renderAdminContentView('adminvideo');
+  if (name === 'gifts' && typeof updateGiftAdminVisibility === 'function') updateGiftAdminVisibility();
   const tabName = SUBVIEW_TAB[name] || name;
   $$('.view').forEach(v => v.classList.toggle('hidden', v.dataset.view !== name));
   $$('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tabName));
