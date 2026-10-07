@@ -626,6 +626,20 @@ let pendingAnnounced = false;
 /* declared here, not down by the security renderer — onAdminAuth fires
    synchronously at load and reaches stopAdminListeners before line 800 runs */
 let adminSecurity = [];
+
+/* New admin sub-view state. Declared here rather than beside the renderers:
+   updateAdminStats() touches these during page load via onAdminAuth(), and a
+   late "let" would be a temporal-dead-zone ReferenceError. */
+const ADMIN_CONTENT_VIEWS = {
+  adminmedia: { bucket: 'media',  list: 'adminMediaList', empty: 'adminMediaEmpty',
+                filters: 'amFilters', prefix: 'am', title: 'Photos & Videos' },
+  adminvoice: { bucket: 'voice',  list: 'adminVoiceList', empty: 'adminVoiceEmpty',
+                filters: 'avFilters', prefix: 'av', title: 'Voice Messages' },
+  adminvideo: { bucket: 'video',  list: 'adminVideoList', empty: 'adminVideoEmpty',
+                filters: 'adFilters', prefix: 'ad', title: 'Video Messages' }
+};
+let guestRsvpTab = 'all';
+let guestRsvpQuery = '';
 const adminFeedErrors = new Map();
 
 /* S&J Gallery nodes must exist before onAdminAuth fires — that callback
@@ -666,6 +680,27 @@ function allSubmissions(){
   return [...guests, ...mems, ...gbs];
 }
 
+
+/* =========================================================
+   Content buckets — one row lands in exactly one bucket.
+   "kind" is the semantic field: 'voice' is a recorded note, 'videomsg'
+   is a filmed message, everything else is shared media.
+   ========================================================= */
+function contentBucket(item){
+  const kind = item?.kind || 'photo';
+  if (kind === 'voice') return 'voice';
+  if (kind === 'videomsg') return 'video';
+  return 'media';
+}
+
+function contentBuckets(){
+  const out = { media: [], voice: [], video: [] };
+  for (const m of (adminMemories || [])) out[contentBucket(m)].push(m);
+  return out;
+}
+
+function isDeclinedRSVP(r){ return /decline|can'?t|cannot|unable|regret|\bno\b/i.test(r?.attending || ''); }
+
 /* Guest breakdown: attendance split, approval state, headcount once table
    guests are added, and the RSVP tally — the two numbers you actually plan a
    wedding around. Recomputed from the polled feeds, never cached. */
@@ -686,10 +721,10 @@ function renderGuestBreakdown(){
   const seats = guests.reduce((n, g) => n + (g.attending ? 1 + (parseInt(g.tableGuests, 10) || 0) : 0), 0);
 
   /* RSVPs are free text ("Joyfully accept", "Can't make it") so match loosely */
-  const declined = rsvps.filter(r => /decline|can'?t|cannot|unable|regret|\bno\b/i.test(r.attending || '')).length;
+  const declined = rsvps.filter(isDeclinedRSVP).length;
   const accepted = rsvps.length - declined;
   const rsvpSeats = rsvps.reduce((n, r) => {
-    if (/decline|can'?t|cannot|unable|regret|\bno\b/i.test(r.attending || '')) return n;
+    if (isDeclinedRSVP(r)) return n;
     return n + Math.max(1, parseInt(r.guestCount, 10) || 1);
   }, 0);
 
@@ -709,18 +744,57 @@ function renderGuestBreakdown(){
 
 function updateAdminStats(){
   const items = allSubmissions();
-  const pending = items.filter(i => i.status !== 'approved').length;
-  const approved = items.filter(i => i.status === 'approved' && i.kind !== 'guest').length;
   const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-  set('statPending', pending);
-  set('statApproved', approved);
-  set('statGuests', adminGuests.length);
-  set('statRsvps', adminRsvps.length);
-  const badge = document.getElementById('pendingMenuBadge');
-  if (badge){
-    badge.textContent = pending > 0 ? pending : '';
-    badge.classList.toggle('hidden', pending === 0);
-  }
+
+  /* ---- guest side: attendance is what you plan a wedding around ---- */
+  const guests = adminGuests || [];
+  const rsvps  = adminRsvps  || [];
+  const attending = guests.filter(g => g.attending).length;
+  const notAttending = guests.length - attending;
+  const awaiting = guests.filter(g => g.status !== 'approved').length;
+  const rsvpDeclined = rsvps.filter(isDeclinedRSVP).length;
+  /* seats = one per attending guest plus the extra seats each brought */
+  const expected = guests.reduce((n, g) => n + (g.attending ? 1 + (parseInt(g.tableGuests, 10) || 0) : 0), 0);
+
+  set('statGuests', guests.length);
+  set('statRsvps', rsvps.length);
+  set('statAttending', attending);
+  set('statNotAttending', notAttending + rsvpDeclined);
+  set('statPending', awaiting);
+  set('statExpected', expected);
+
+  /* ---- content side: photos, voice and video kept strictly apart ---- */
+  const b = contentBuckets();
+  const book  = adminGuestbook || [];
+  const contentPending = items.filter(i => i.status !== 'approved').length;
+
+  set('statContentMedia', b.media.length);
+  set('statContentVoice', b.voice.length);
+  set('statContentVideo', b.video.length);
+  set('statContentBook', book.length);
+  set('statContentPending', contentPending);
+  set('statContentTotal', b.media.length + b.voice.length + b.video.length + book.length);
+
+  /* ---- menu badges ---- */
+  const badge = (id, n) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = n > 0 ? n : '';
+    el.classList.toggle('hidden', n === 0);
+  };
+  badge('badgeGuests', guests.length);
+  badge('badgeRsvps', rsvps.length);
+  badge('badgeMedia', b.media.length);
+  badge('badgeVoice', b.voice.length);
+  badge('badgeVideo', b.video.length);
+  badge('badgeBook', book.length);
+  badge('pendingMenuBadge', contentPending);
+
+  /* keep any open admin sub-view honest as the feeds tick over */
+  renderGuestRsvpList();
+  renderAdminContentView('adminmedia');
+  renderAdminContentView('adminvoice');
+  renderAdminContentView('adminvideo');
 }
 
 function aqFilterMatches(item, filter){
@@ -1465,3 +1539,428 @@ window.addEventListener('sj:entered', () => {
 
 /* attendees are tracked for the admin only — guests don't see who is
    attending or exploring, so no public guest feed/toast is wired */
+/* =========================================================
+   Gifts — Mobile Money
+   The guest picks a fund and an amount, taps through to their MoMo
+   app, then tells us who they were so we can thank them by name.
+   ========================================================= */
+const GIFT_FUNDS = [
+  { id:'cash',      label:'Cash Gift',      desc:'Contribute any amount to support our new journey.' },
+  { id:'house',     label:'House Fund',     desc:'Help us build our future home together.' },
+  { id:'honeymoon', label:'Honeymoon Fund', desc:'Bless our first adventure as husband and wife.' }
+];
+const GIFT_AMOUNTS = [50, 100, 200, 500, 1000];
+const GIFT_PROVIDERS = [
+  { id:'mtn',       label:'MTN MoMo',       short:'MTN' },
+  { id:'telecel',   label:'Telecel Cash',   short:'Telecel' },
+  { id:'airteltigo',label:'AirtelTigo Money', short:'AirtelTigo' }
+];
+
+const giftState = { fund:'cash', amount:200, provider:'mtn' };
+
+function giftCedi(cents){ return 'GHS ' + (Number(cents || 0) / 100).toLocaleString('en-GH', { minimumFractionDigits:2, maximumFractionDigits:2 }); }
+
+function renderGiftOptions(){
+  const funds = document.getElementById('giftFunds');
+  if (funds) funds.innerHTML = GIFT_FUNDS.map(f => `
+    <button class="gift-fund${giftState.fund === f.id ? ' is-on' : ''}" data-fund="${f.id}"
+            type="button" role="radio" aria-checked="${giftState.fund === f.id}">
+      <span class="gift-fund-label">${escapeHTML(f.label)}</span>
+      <span class="gift-fund-desc">${escapeHTML(f.desc)}</span>
+      <span class="gift-radio" aria-hidden="true"></span>
+    </button>`).join('');
+
+  const amts = document.getElementById('giftAmounts');
+  const other = document.getElementById('giftOtherWrap');
+  const isOther = !GIFT_AMOUNTS.includes(giftState.amount);
+  if (amts) amts.innerHTML = GIFT_AMOUNTS.map(a => `
+    <button class="gift-amount${giftState.amount === a ? ' is-on' : ''}" data-amount="${a}"
+            type="button" role="radio" aria-checked="${giftState.amount === a}">${a.toLocaleString('en-GH')}</button>`).join('')
+    + `<button class="gift-amount${isOther ? ' is-on' : ''}" data-amount="other" type="button"
+         role="radio" aria-checked="${isOther}">Other</button>`;
+  other?.classList.toggle('hidden', !isOther);
+
+  const provs = document.getElementById('giftProviders');
+  if (provs) provs.innerHTML = GIFT_PROVIDERS.map(p => `
+    <button class="gift-provider${giftState.provider === p.id ? ' is-on' : ''}" data-provider="${p.id}"
+            type="button" role="radio" aria-checked="${giftState.provider === p.id}">
+      <span class="gift-provider-short">${escapeHTML(p.short)}</span>
+      <span>${escapeHTML(p.label)}</span>
+    </button>`).join('');
+
+  updateGiftPayButton();
+}
+
+function updateGiftPayButton(){
+  const btn = document.getElementById('giftPayBtn');
+  if (!btn) return;
+  const fund = GIFT_FUNDS.find(f => f.id === giftState.fund);
+  const prov = GIFT_PROVIDERS.find(p => p.id === giftState.provider);
+  btn.innerHTML = `<span>&#8599; Open ${escapeHTML(prov.label)} to pay ${escapeHTML(giftCedi(giftState.amount * 100))}</span><span>&#10095;</span>`;
+  btn.dataset.amount = giftState.amount;
+  btn.dataset.fund = giftState.fund;
+  btn.dataset.provider = giftState.provider;
+  btn.title = `${prov.label} · ${fund.label}`;
+}
+
+function moneyToMoMoDialString(cedi){
+  /* *722# = Mobile Money, *165# = Ghana number, *23# = amount (encoded * as %2A) */
+  const amount = encodeURIComponent('*' + Number(cedi).toFixed(2) + '*');
+  return `%2A722%23%2A165%23${amount}%23`;
+}
+
+async function renderGiftList(){
+  const host = document.getElementById('giftList');
+  if (!host) return;
+  try {
+    const rows = await api('/gifts');
+    if (!Array.isArray(rows) || !rows.length){
+      host.innerHTML = '<p class="page-sub">No gifts recorded yet — be the first.</p>';
+      return;
+    }
+    const fundLabel = id => (GIFT_FUNDS.find(f => f.id === id) || {}).label || 'Gift';
+    host.innerHTML = rows.map(g => `
+      <article class="gift-item">
+        <span class="gift-avatar" aria-hidden="true">${escapeHTML((g.name || '?').trim().charAt(0).toUpperCase())}</span>
+        <div class="gift-item-body">
+          <p><b>${escapeHTML(g.name)}</b></p>
+          <small>${escapeHTML(giftCedi(g.amountCents))} &middot; ${escapeHTML(fundLabel(g.fund))}</small>
+          ${g.message ? `<small class="gift-msg">&#10084; ${escapeHTML(g.message)}</small>` : ''}
+        </div>
+        <time>${escapeHTML(g.createdAt ? timeAgo(g.createdAt) : '')}</time>
+      </article>`).join('');
+  } catch {
+    host.innerHTML = '<p class="page-sub">Could not load gifts right now.</p>';
+  }
+}
+
+/* wire everything once */
+function initGifts(){
+  renderGiftOptions();
+  renderGiftList();
+
+  document.getElementById('giftFunds')?.addEventListener('click', e => {
+    const b = e.target.closest('[data-fund]');
+    if (!b) return;
+    giftState.fund = b.dataset.fund;
+    renderGiftOptions();
+  });
+
+  document.getElementById('giftAmounts')?.addEventListener('click', e => {
+    const b = e.target.closest('[data-amount]');
+    if (!b) return;
+    if (b.dataset.amount === 'other'){
+      giftState.amount = 0;
+      renderGiftOptions();
+      document.getElementById('giftOtherAmount')?.focus();
+      return;
+    }
+    giftState.amount = parseInt(b.dataset.amount, 10) || 0;
+    renderGiftOptions();
+  });
+
+  document.getElementById('giftOtherAmount')?.addEventListener('input', e => {
+    giftState.amount = Math.max(0, parseInt(e.target.value, 10) || 0);
+    updateGiftPayButton();
+  });
+
+  document.getElementById('giftProviders')?.addEventListener('click', e => {
+    const b = e.target.closest('[data-provider]');
+    if (!b) return;
+    giftState.provider = b.dataset.provider;
+    renderGiftOptions();
+  });
+
+  /* paste buttons — clipboard read is best-effort and may be blocked */
+  document.querySelectorAll('[data-paste]')?.forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const input = document.getElementById(btn.dataset.paste);
+      if (!input) return;
+      try {
+        const text = await navigator.clipboard.readText();
+        if (text) { input.value = text.trim(); btn.classList.add('is-ok'); setTimeout(() => btn.classList.remove('is-ok'), 900); }
+      } catch { input.focus(); }
+    });
+  });
+
+  document.getElementById('giftPayBtn')?.addEventListener('click', e => {
+    e.preventDefault();
+    const cedi = giftState.amount;
+    if (!cedi || cedi < 50){ flashGiftStatus('Choose an amount of at least GHS 50.'); return; }
+    const num = (document.getElementById('giftMoMoNumber')?.value || '').replace(/\s+/g, '');
+    if (!/^\+\d{9,15}$/.test(num)){ flashGiftStatus('Check the MoMo number — it should look like +233241234567.'); return; }
+    const dial = moneyToMoMoDialString(cedi);
+    window.location.href = `tel:${dial}`;
+    flashGiftStatus('Choose Mobile Money, MTN MoMo and enter your PIN to complete the payment.');
+  });
+
+  document.getElementById('giftForm')?.addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn = document.getElementById('giftSubmit');
+    const status = document.getElementById('giftStatus');
+    const name = (document.getElementById('giftName')?.value || '').trim();
+    if (!name){ if (status) status.textContent = 'Please enter your name.'; return; }
+    const cedi = giftState.amount;
+    if (!cedi || cedi < 50){ if (status) status.textContent = 'Choose an amount of at least GHS 50.'; return; }
+    btn.disabled = true;
+    const original = btn.textContent;
+    btn.textContent = 'Sending…';
+    try {
+      await api('/gifts', { method:'POST', body:{
+        name,
+        phone: document.getElementById('giftPhone')?.value || '',
+        fund: giftState.fund,
+        amountCents: cedi * 100,
+        provider: giftState.provider,
+        txnRef: document.getElementById('giftTxn')?.value || '',
+        message: document.getElementById('giftMessage')?.value || ''
+      }});
+      if (status) status.textContent = 'Thank you! Your gift has been recorded.';
+      e.target.reset();
+      await renderGiftList();
+    } catch (err){
+      if (status) status.textContent = err.message || 'Could not record the gift — please try again.';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = original;
+    }
+  });
+}
+
+function flashGiftStatus(text){
+  const status = document.getElementById('giftStatus');
+  if (!status) return;
+  status.textContent = text;
+  document.getElementById('giftConfirmWrap')?.setAttribute('open', '');
+  status.scrollIntoView({ block:'nearest', behavior:'smooth' });
+}
+
+/* refresh the list each time the Gifts tab is opened */
+document.querySelector('[data-tab="gifts"]')?.addEventListener('click', () => { renderGiftOptions(); renderGiftList(); });
+/* app-social.js loads last, so the gifts view can wire itself up immediately */
+initGifts();
+/* =========================================================
+   Admin content views — Photos & Videos, Voice, Video
+   One renderer, three views: they differ only by bucket, so
+   the approve/remove behaviour can never drift between them.
+   ========================================================= */
+
+function adminContentMedia(item){
+  if (item.type && item.type.startsWith('image/') && item.mediaUrl)
+    return `<img class="aq-media" src="${item.mediaUrl}" alt="" loading="lazy" />`;
+  if (item.type && item.type.startsWith('video/') && item.mediaUrl)
+    return `<video class="aq-media" controls playsinline preload="metadata" src="${item.mediaUrl}"></video>`;
+  if (item.type && item.type.startsWith('audio/') && item.mediaUrl)
+    return `<audio controls preload="none" src="${item.mediaUrl}"></audio>`;
+  return '';
+}
+
+function renderAdminContentView(viewName){
+  const cfg = ADMIN_CONTENT_VIEWS[viewName];
+  if (!cfg) return;
+  const host = document.getElementById(cfg.list);
+  const empty = document.getElementById(cfg.empty);
+  if (!host) return;
+
+  const filter = document.querySelector('#' + cfg.filters + ' .chip.active')?.dataset[cfg.prefix + 'Filter'] || 'all';
+  const all = contentBuckets()[cfg.bucket];
+  const items = filter === 'all' ? all
+    : filter === 'pending' ? all.filter(i => i.status !== 'approved')
+    : all.filter(i => i.status === 'approved');
+
+  empty.classList.toggle('hidden', items.length > 0);
+  host.innerHTML = '';
+
+  if (!items.length){
+    empty.textContent = filter === 'all'
+      ? `No ${cfg.title.toLowerCase()} yet.`
+      : `No ${filter} ${cfg.title.toLowerCase()}.`;
+    return;
+  }
+
+  for (const item of items){
+    const card = document.createElement('article');
+    card.className = 'aq-card';
+    const by = item.guestName || item.name || 'Guest';
+    const pending = item.status !== 'approved';
+    card.innerHTML = `
+      ${adminContentMedia(item)}
+      <p><b>${escapeHTML(by)}</b>
+        <span class="gb-badge ${pending ? 'gb-badge--pending' : 'gb-badge--approved'}">${pending ? 'Pending' : 'Approved'}</span></p>
+      <small>${escapeHTML(CATEGORY_LABELS[item.category] || item.category || 'Memory')} &middot; ${timeAgo(item.createdAt)}</small>
+      ${item.message ? `<p class="gb-msg">${escapeHTML(item.message)}</p>` : ''}
+      <div class="aq-actions">
+        <button class="aq-approve" data-id="${item.id}" type="button">${pending ? 'APPROVE' : 'UNAPPROVE'}</button>
+        <button class="aq-reject" data-id="${item.id}" type="button">REMOVE</button>
+      </div>`;
+
+    card.querySelector('.aq-approve').addEventListener('click', async e => {
+      e.target.disabled = true;
+      const next = pending ? 'approved' : 'pending';
+      try {
+        await updateMemory({ id: item.id, status: next });
+        item.status = next;
+        updateAdminStats();
+      } catch (err){
+        console.warn('Status change failed:', err);
+        alert('Could not update this item. Are you still signed in?');
+        e.target.disabled = false;
+      }
+    });
+
+    card.querySelector('.aq-reject').addEventListener('click', async e => {
+      if (!confirm('Permanently remove this item?')) return;
+      e.target.disabled = true;
+      try {
+        await deleteMemory(item.id);
+      } catch (err){
+        console.warn('Remove failed:', err);
+        alert('Could not remove this item. Are you still signed in?');
+        e.target.disabled = false;
+      }
+    });
+
+    host.appendChild(card);
+  }
+}
+
+/* =========================================================
+   Guest & RSVP List — both feeds in one searchable place
+   ========================================================= */
+function renderGuestRsvpList(){
+  const guestHost = document.getElementById('grGuestList');
+  const rsvpHost  = document.getElementById('grRsvpList');
+  if (!guestHost || !rsvpHost) return;
+
+  const q = guestRsvpQuery.trim().toLowerCase();
+  const hay = (...parts) => parts.filter(Boolean).join(' ').toLowerCase();
+  const match = (...parts) => !q || hay(...parts).includes(q);
+
+  const guests = (adminGuests || []).filter(g =>
+    match(g.name, g.phone, g.email, g.relation, g.city, g.country));
+  const rsvps = (adminRsvps || []).filter(r =>
+    match(r.name, r.phone, r.email, r.attending, r.message));
+
+  const showGuests = guestRsvpTab !== 'rsvps';
+  const showRsvps  = guestRsvpTab !== 'guests';
+
+  /* --- guests column --- */
+  guestHost.innerHTML = '';
+  document.getElementById('grEmpty')?.classList.toggle('hidden', showGuests ? guests.length > 0 : true);
+
+  /* "who invited you" breakdown — counts per source, most common first */
+  const stats = document.getElementById('grInviteStats');
+  if (stats){
+    const counts = {};
+    for (const g of (adminGuests || []))
+      counts[g.relation || 'Not specified'] = (counts[g.relation || 'Not specified'] || 0) + 1;
+    const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+    stats.innerHTML = entries.length && showGuests
+      ? `<p class="invite-stats-title">Who invited them</p>` +
+        entries.map(([src, n]) =>
+          `<span class="invite-chip">${escapeHTML(src)} <b>${n}</b></span>`).join('')
+      : '';
+  }
+
+  if (showGuests){
+    for (const g of guests){
+      const card = document.createElement('article');
+      card.className = 'aq-card';
+      const checkedIn = g.checkedInAt ? timeAgo(g.checkedInAt) : '';
+      card.innerHTML = `
+        <p><b>${escapeHTML(g.name)}</b>
+          <span class="gb-badge ${g.attending ? 'gb-badge--approved' : 'gb-badge--pending'}">${g.attending ? 'Attending' : 'Exploring'}</span>
+          ${g.attending && g.tableGuests > 0 ? `<span class="gb-badge gb-badge--approved">Table of ${1 + g.tableGuests}</span>` : ''}
+          ${g.status !== 'approved' ? '<span class="gb-badge gb-badge--pending">Needs approval</span>' : ''}</p>
+        <small>${escapeHTML(g.relation || '')} &middot; ${escapeHTML(g.phone || '')} &middot; ${escapeHTML(g.email || '')}</small>
+        ${[g.city, g.state, g.country].filter(Boolean).length ? `<small>${escapeHTML([g.city, g.state, g.country].filter(Boolean).join(', '))}</small>` : ''}
+        <small>Checked in ${checkedIn}</small>
+        <div class="aq-actions">
+          ${g.status !== 'approved' ? '<button class="aq-approve" type="button">APPROVE</button>' : ''}
+          <button class="aq-reject" type="button">REMOVE</button>
+        </div>`;
+      card.querySelector('.aq-approve')?.addEventListener('click', async e => {
+        e.target.disabled = true;
+        try {
+          await updateGuest(g.id, { status: 'approved' });
+          g.status = 'approved';
+          updateAdminStats(); renderApprovalQueue();
+        } catch (err){
+          console.warn('Approve failed:', err);
+          alert('Could not approve this guest. Are you still signed in?');
+          e.target.disabled = false;
+        }
+      });
+      card.querySelector('.aq-reject').addEventListener('click', async () => {
+        if (!confirm('Remove this guest?')) return;
+        await deleteGuest(g.id);
+      });
+      guestHost.appendChild(card);
+    }
+  }
+
+  /* --- rsvp column --- */
+  rsvpHost.innerHTML = '';
+  if (showRsvps){
+    if (!rsvps.length){
+      const none = document.createElement('p');
+      none.className = 'page-sub';
+      none.textContent = q ? 'No RSVPs match that search.' : 'No RSVPs yet.';
+      rsvpHost.appendChild(none);
+    }
+    for (const r of rsvps){
+      const card = document.createElement('article');
+      card.className = 'aq-card';
+      const submitted = r.submittedAt ? timeAgo(r.submittedAt) : '';
+      const declined = isDeclinedRSVP(r);
+      const plusOne = r.plusOne ? `+${r.plusOne}` : '';
+      const guestCount = r.guestCount && Number(r.guestCount) > 1 ? ` (${r.guestCount} guests)` : '';
+      card.innerHTML = `
+        <p><b>${escapeHTML(r.name || 'Guest')}</b>
+          <span class="gb-badge ${declined ? 'gb-badge--pending' : 'gb-badge--approved'}">${declined ? 'Not Attending' : 'Attending'}</span>
+          ${plusOne ? `<span class="gb-badge gb-badge--approved">${escapeHTML(plusOne)}</span>` : ''}</p>
+        <small>${escapeHTML(r.attending || '')}${escapeHTML(guestCount)} &middot; ${escapeHTML(r.phone || '—')} &middot; ${escapeHTML(r.email || '—')}</small>
+        ${r.message ? `<p class="gb-msg">${escapeHTML(r.message)}</p>` : ''}
+        <small>Submitted ${submitted}</small>`;
+      rsvpHost.appendChild(card);
+    }
+  }
+
+  const count = (showGuests ? guests.length : 0) + (showRsvps ? rsvps.length : 0);
+  const label = document.getElementById('grCount');
+  if (label)
+    label.textContent = q
+      ? `${count} match${count === 1 ? '' : 'es'} for "${guestRsvpQuery.trim()}"`
+      : `${guests.length} guest${guests.length === 1 ? '' : 's'} · ${rsvps.length} RSVP${rsvps.length === 1 ? '' : 's'}`;
+}
+
+/* wire the new views once — search, tabs and per-view filters */
+function initAdminViews(){
+  document.getElementById('grSearch')?.addEventListener('input', e => {
+    guestRsvpQuery = e.target.value;
+    renderGuestRsvpList();
+  });
+  document.getElementById('grClear')?.addEventListener('click', () => {
+    guestRsvpQuery = '';
+    const box = document.getElementById('grSearch');
+    if (box) box.value = '';
+    renderGuestRsvpList();
+  });
+  document.getElementById('grTabs')?.addEventListener('click', e => {
+    const chip = e.target.closest('[data-gr-tab]');
+    if (!chip) return;
+    guestRsvpTab = chip.dataset.grTab;
+    document.querySelectorAll('#grTabs .chip').forEach(c => c.classList.toggle('active', c === chip));
+    renderGuestRsvpList();
+  });
+
+  for (const [view, cfg] of Object.entries(ADMIN_CONTENT_VIEWS)){
+    document.getElementById(cfg.filters)?.addEventListener('click', e => {
+      const chip = e.target.closest('[data-' + cfg.prefix + '-filter]');
+      if (!chip) return;
+      document.querySelectorAll('#' + cfg.filters + ' .chip').forEach(c => c.classList.toggle('active', c === chip));
+      renderAdminContentView(view);
+    });
+  }
+}
+initAdminViews();

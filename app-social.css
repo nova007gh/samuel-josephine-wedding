@@ -953,3 +953,213 @@
   font-size:.68rem;
   padding:0 5px;
 }
+/* ---------- Gifts (Mobile Money) ---------- */
+.gifts-title{
+  font-family:var(--serif, Georgia, serif);
+  font-size:clamp(2.6rem, 12vw, 3.6rem);
+  font-style:italic;
+  letter-spacing:.02em;
+  text-align:center;
+  color:#8a6a1e;
+  margin:.2em 0 .1em;
+}
+.gifts-heading{
+  margin:26px 0 10px;
+  text-align:center;
+  font-size:.74rem;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  color:#9a7b45;
+}
+.gift-funds{ display:grid; gap:12px; }
+@media (min-width:640px){ .gift-funds{ grid-template-columns:repeat(3,1fr); } }
+.gift-fund{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+  padding:22px 16px 18px;
+  border:1px solid rgba(178,134,54,.3);
+  border-radius:16px;
+  background:rgba(253,249,241,.9);
+  box-shadow:0 6px 18px rgba(112,78,26,.08);
+  cursor:pointer;
+  text-align:center;
+  font:inherit;
+  color:inherit;
+  transition:border-color .2s ease, box-shadow .2s ease, transform .15s ease;
+}
+.gift-fund:hover{ transform:translateY(-2px); }
+.gift-fund.is-on{
+  border-color:rgba(196,148,44,.85);
+  box-shadow:0 10px 26px rgba(196,148,44,.28);
+}
+.gift-fund-label{ font-family:var(--serif, Georgia, serif); font-size:1.22rem; color:#6d4d17; }
+.gift-fund-desc{ font-size:.78rem; line-height:1.45; color:#7a6a52; }
+.gift-radio{
+  width:18px; height:18px; margin-top:2px;
+  border:2px solid rgba(140,105,30,.5); border-radius:50%;
+  background:transparent;
+}
+.gift-fund.is-on .gift-radio{ background:#b8860b; border-color:#b8860b; box-shadow:inset 0 0 0 3px #fdf9f1; }
+
+.gift-amounts{ display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
+.gift-amount{
+  min-width:72px; padding:12px 16px;
+  border:1px solid rgba(178,134,54,.3);
+  border-radius:10px;
+  background:rgba(253,249,241,.9);
+  font:inherit; font-weight:600; color:#6d4d17;
+  cursor:pointer;
+  transition:background .18s ease, color .18s ease, border-color .18s ease;
+}
+.gift-amount.is-on{ background:#a97c1d; border-color:#a97c1d; color:#fff8e7; }
+.gift-other{ margin-top:12px; }
+.gift-other input{
+  width:100%; padding:12px 14px; text-align:center;
+  border:1px solid rgba(178,134,54,.35); border-radius:10px;
+  background:rgba(253,249,241,.9); font:inherit; color:inherit;
+}
+
+.gift-providers{ display:grid; gap:10px; }
+@media (min-width:520px){ .gift-providers{ grid-template-columns:repeat(3,1fr); } }
+.gift-provider{
+  display:flex; align-items:center; gap:10px;
+  padding:12px 14px;
+  border:1px solid rgba(178,134,54,.3);
+  border-radius:12px;
+  background:rgba(253,249,241,.9);
+  font:inherit; font-size:.86rem; color:#6d4d17;
+  cursor:pointer; text-align:left;
+}
+.gift-provider.is-on{ border-color:rgba(196,148,44,.9); background:rgba(240,225,190,.55); }
+.gift-provider-short{
+  flex:0 0 auto;
+  width:34px; height:34px; border-radius:8px;
+  display:grid; place-items:center;
+  font-size:.56rem; font-weight:700; letter-spacing:.02em;
+  color:#fff; background:#8a6a1e;
+}
+
+.gift-momo{
+  margin-top:14px; padding:16px;
+  border:1px solid rgba(178,134,54,.3);
+  border-radius:14px;
+  background:rgba(253,249,241,.9);
+}
+.gift-momo-row{ display:grid; gap:14px; }
+@media (min-width:620px){ .gift-momo-row{ grid-template-columns:1fr 1fr; } }
+.gift-field{ display:flex; flex-direction:column; gap:6px; }
+.gift-field > span:first-child{ font-size:.72rem; letter-spacing:.04em; color:#8a7a60; }
+.gift-input-wrap{ position:relative; display:flex; }
+.gift-input-wrap input{
+  width:100%; padding:12px 44px 12px 14px;
+  border:1px solid rgba(178,134,54,.35); border-radius:10px;
+  background:#fffdf8; font:inherit; color:inherit;
+}
+.gift-paste{
+  position:absolute; right:6px; top:50%; transform:translateY(-50%);
+  width:32px; height:32px; border:0; border-radius:8px;
+  background:rgba(178,134,54,.12); color:#8a6a1e;
+  cursor:pointer; font-size:.9rem;
+}
+.gift-paste.is-ok{ background:rgba(80,150,80,.25); }
+.gift-pay-btn{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  margin-top:16px; padding:15px 18px;
+  border-radius:12px;
+  background:linear-gradient(135deg,#c49a3f,#a87f2c);
+  color:#fff8e7; text-decoration:none;
+  font-weight:600; font-size:.95rem;
+  box-shadow:0 8px 20px rgba(90,60,10,.25);
+}
+
+.gift-confirm{
+  margin-top:20px; padding:14px 16px;
+  border:1px solid rgba(178,134,54,.3);
+  border-radius:14px;
+  background:rgba(253,249,241,.9);
+}
+.gift-confirm summary{
+  cursor:pointer; font-size:.88rem; color:#6d4d17; line-height:1.5;
+}
+.gift-confirm form{ margin-top:14px; display:grid; gap:6px; }
+.gift-confirm input, .gift-confirm textarea{
+  width:100%; padding:11px 13px;
+  border:1px solid rgba(178,134,54,.35); border-radius:10px;
+  background:#fffdf8; font:inherit; color:inherit;
+}
+#giftStatus{ display:block; min-height:1.2em; font-size:.78rem; color:#8a6a1e; }
+
+.gift-list{ display:grid; gap:10px; }
+.gift-item{
+  display:flex; align-items:center; gap:12px;
+  padding:12px 14px;
+  border:1px solid rgba(178,134,54,.22);
+  border-radius:12px;
+  background:rgba(253,249,241,.85);
+}
+.gift-avatar{
+  flex:0 0 auto; width:40px; height:40px; border-radius:50%;
+  display:grid; place-items:center;
+  background:rgba(178,134,54,.18); color:#8a6a1e; font-weight:700;
+}
+.gift-item-body{ flex:1; min-width:0; }
+.gift-item-body p{ margin:0; font-size:.94rem; color:#4a3a22; }
+.gift-item-body small{ display:block; font-size:.76rem; color:#8a7a60; }
+.gift-msg{ color:#a97c1d !important; }
+.gift-item time{ flex:0 0 auto; font-size:.7rem; color:#9a8a6a; white-space:nowrap; }/* ---------- Admin dashboard: separated stat groups ---------- */
+.stats-group-label{
+  margin:22px 0 10px;
+  font-size:.72rem;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:#9a7b45;
+  text-align:center;
+}
+.admin-stats{ display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+@media (min-width:520px){ .admin-stats{ grid-template-columns:repeat(3,1fr); } }
+@media (min-width:820px){ .admin-stats{ grid-template-columns:repeat(6,1fr); } }
+
+.admin-stats--content .admin-stat{ background:rgba(240,228,196,.35); }
+.admin-stat-note{ display:block; margin-top:2px; font-size:.62rem; color:#9a8a6a; line-height:1.3; }
+.admin-stat-num--good{ color:#4f7a3a; }
+.admin-stat-num--gold{ color:#a97c1d; }
+
+/* ---------- Menu group labels + count badges ---------- */
+.menu-group-label{
+  margin:16px 0 6px;
+  padding:0 4px;
+  font-size:.66rem;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  color:#a08e68;
+}
+.menu-group-label:first-child{ margin-top:4px; }
+.menu-badge{
+  display:inline-block;
+  margin-left:6px;
+  min-width:20px;
+  padding:1px 7px;
+  border-radius:999px;
+  background:rgba(140,105,30,.16);
+  color:#7a5c18;
+  font-size:.68rem;
+  font-weight:700;
+  vertical-align:middle;
+  text-align:center;
+}
+.menu-badge:empty{ display:none; }
+
+/* ---------- Guest & RSVP search ---------- */
+.admin-search{ display:flex; gap:8px; margin:14px 0 8px; }
+.admin-search input{
+  flex:1; min-width:0;
+  padding:12px 14px;
+  border:1px solid rgba(178,134,54,.35);
+  border-radius:10px;
+  background:#fffdf8;
+  font:inherit; color:inherit;
+}
+.admin-search input::-webkit-search-cancel-button{ cursor:pointer; }
