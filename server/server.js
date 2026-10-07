@@ -386,7 +386,10 @@ async function sendSms(to, body){
                         : ['twilio', 'arkesel', 'bulkclix', 'hubtel', 'mnotify'];
   for (const p of order){
     try {
-      if (p === 'mnotify' && MNOTIFY_API_KEY){
+      /* mNotify only carries Ghana traffic — it happily 2xx a foreign
+         number it cannot actually route, which made it mask a Twilio
+         failure and report a code 'sent' that never arrived. */
+      if (p === 'mnotify' && MNOTIFY_API_KEY && isGhana){
         /* mNotify (Ghana) — key on query param, recipients without '+',
            sms_type 'otp' gets priority OTP routing */
         const r = await fetch(`https://api.mnotify.com/api/sms/quick?key=${encodeURIComponent(MNOTIFY_API_KEY)}`, {
@@ -419,13 +422,35 @@ async function sendSms(to, body){
         return true;
       }
       if (p === 'twilio' && TWILIO_SID && TWILIO_TOKEN && TWILIO_FROM){
+        const twAuth = 'Basic ' + Buffer.from(`${TWILIO_SID}:${TWILIO_TOKEN}`).toString('base64');
         const r = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TWILIO_SID}/Messages.json`, {
           method: 'POST',
-          headers: { 'Authorization': 'Basic ' + Buffer.from(`${TWILIO_SID}:${TWILIO_TOKEN}`).toString('base64'),
-                     'Content-Type': 'application/x-www-form-urlencoded' },
+          headers: { 'Authorization': twAuth, 'Content-Type': 'application/x-www-form-urlencoded' },
           body: new URLSearchParams({ To: to, From: TWILIO_FROM, Body: body })
         });
         if (!r.ok) throw new Error('Twilio ' + r.status + ': ' + (await r.text()).slice(0, 200));
+        const { sid } = await r.json();
+        /* 201 only means Twilio accepted the request. An unroutable
+           destination (unreachable handset, unregistered sender) is rejected
+           afterwards with 30034 and the guest would otherwise be left with no
+           code at all, because the caller sees "true" and skips the
+           voice/email fallbacks. Watch the status briefly and let a confirmed
+           failure fall through to the next provider. */
+        const deadline = Date.now() + 12000;
+        while (Date.now() < deadline){
+          await new Promise(done => setTimeout(done, 2000));
+          const s = await fetch(
+            `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_SID}/Messages/${sid}.json`,
+            { headers: { 'Authorization': twAuth } });
+          if (!s.ok) break;
+          const st = await s.json();
+          if (st.status === 'delivered' || st.status === 'sent') return true;
+          if (st.status === 'failed' || st.status === 'undelivered')
+            throw new Error('Twilio ' + st.status + (st.error_code ? ' (code ' + st.error_code + ')' : ''));
+          /* still queued/sending - keep watching */
+        }
+        /* still queued when the window closes: assume it is going to land
+           rather than cancel a message mid-flight */
         return true;
       }
       if (p === 'arkesel' && ARKESEL_KEY){
@@ -581,7 +606,9 @@ app.post('/api/otp/send', otpSendLimit, async (req, res) => {
   /* email channel — registration uses the typed email, sign-in uses the one on file;
      the call channel also collects it so a failed call can fall back to email */
   let emailTo = '';
-  if (channel === 'email' || channel === 'call'){
+  if (channel === 'email' || channel === 'call' || channel === 'sms'){
+    /* sign-in always uses the address on the check-in record; registration
+       uses the one just typed */
     emailTo = purpose === 'login'
       ? str(loginGuest?.email, 120).toLowerCase()
       : str(b.email, 120).toLowerCase();
@@ -620,6 +647,15 @@ app.post('/api/otp/send', otpSendLimit, async (req, res) => {
     }
   } else {
     sent = await sendSms(sendTo, msg + ' ❤');
+    /* Carriers can reject a destination long after we accepted the request,
+       so the guest would be stuck with no code. Route it to the email already
+       on their check-in instead of dropping straight through to "the couple
+       will read it out". */
+    if (!sent && emailTo && emailOtpEnabled()){
+      if (await sendEmail(emailTo, 'Your wedding entry code', msg + ' ❤')){
+        sent = true; delivered = 'email';
+      }
+    }
   }
   console.log(`[otp] ${purpose}/${channel} → ${sent ? delivered : 'undelivered'} — ${sendTo}`);
   /* nothing delivered → the couple gets it by push and reads it to the guest */
