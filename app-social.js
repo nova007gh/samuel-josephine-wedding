@@ -1671,6 +1671,7 @@ function openGiftFundEditor(f = null){
   if (!editor) return;
   const isEdit = !!f;
   editor.innerHTML = `
+    <div class="gr-form">
     <p class="gr-form-title">${isEdit ? 'Edit' : 'Add'} Gift Fund</p>
     <label class="gr-field"><span>ID *</span>
       <input data-gf-field="id" type="text" value="${escapeHTML(f?.id || '')}" placeholder="e.g. charity" ${isEdit ? 'readonly' : ''} maxlength="40" />
@@ -1697,7 +1698,8 @@ function openGiftFundEditor(f = null){
       <button class="aq-approve" data-gf-save type="button">SAVE</button>
       <button class="aq-reject" data-gf-cancel type="button">CANCEL</button>
     </div>
-    <small class="gr-form-status"></small>`;
+    <small class="gr-form-status"></small>
+    </div>`;
   editor.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
