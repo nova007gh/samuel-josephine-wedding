@@ -983,10 +983,21 @@ function switchView(name, fromHistory = false){
   if (ADMIN_VIEWS.has(name) && isAdmin() && typeof api === 'function')
     api('/admin/guests', { admin: true }).catch(() => {});
 
-  /* Render admin content views when navigated to directly */
-  if (name === 'adminmedia' && typeof renderAdminContentView === 'function') renderAdminContentView('adminmedia');
-  if (name === 'adminvoice' && typeof renderAdminContentView === 'function') renderAdminContentView('adminvoice');
-  if (name === 'adminvideo' && typeof renderAdminContentView === 'function') renderAdminContentView('adminvideo');
+  /* Render admin content views when navigated to directly.
+     Admin feeds (adminMemories, adminGuestbook) are loaded asynchronously after login.
+     If data isn't ready yet, trigger a refresh which will re-render when feeds arrive. */
+  if (name === 'adminmedia' && typeof renderAdminContentView === 'function'){
+    renderAdminContentView('adminmedia');
+    if (!adminMemories?.length && typeof startAdminListeners === 'function') startAdminListeners();
+  }
+  if (name === 'adminvoice' && typeof renderAdminContentView === 'function'){
+    renderAdminContentView('adminvoice');
+    if (!adminMemories?.length && typeof startAdminListeners === 'function') startAdminListeners();
+  }
+  if (name === 'adminvideo' && typeof renderAdminContentView === 'function'){
+    renderAdminContentView('adminvideo');
+    if (!adminMemories?.length && typeof startAdminListeners === 'function') startAdminListeners();
+  }
   if (name === 'gifts' && typeof updateGiftAdminVisibility === 'function') updateGiftAdminVisibility();
   const tabName = SUBVIEW_TAB[name] || name;
   $$('.view').forEach(v => v.classList.toggle('hidden', v.dataset.view !== name));

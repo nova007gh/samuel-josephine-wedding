@@ -11,6 +11,7 @@ const Database = require('better-sqlite3');
 const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
+const { spawn } = require('child_process');
 
 const PORT = Number(process.env.PORT || 3100);
 const HOST = process.env.HOST || '127.0.0.1';
@@ -174,6 +175,88 @@ const upload = multer({
     cb(ok ? null : new Error('Only image, video and audio files are allowed.'), ok);
   }
 });
+
+/* ---------- background video compression ----------
+   Phone videos arrive as 50–150MB .mov/.mp4 files — too heavy for guests
+   on mobile data. Uploads respond immediately, then a background ffmpeg
+   pass re-encodes the video to web-friendly H.264 mp4 (≤1080p, +faststart
+   so it streams before the download finishes). The DB row swaps to the
+   compressed file only after the encode succeeds; if ffmpeg is missing
+   or fails, the original keeps working. */
+const FFMPEG_BIN = process.env.FFMPEG_BIN || 'ffmpeg';
+const TRANSCODE_MIN_BYTES = 12 * 1024 * 1024;   /* shrink anything over 12MB */
+const WEB_SAFE_VIDEO_EXT = new Set(['.mp4', '.webm', '.m4v']);
+const transcodeQueue = [];
+const transcodeIds = new Set();
+let transcodeBusy = false;
+let ffmpegOk = null;
+
+try { require('child_process').execSync(`${FFMPEG_BIN} -version`, { stdio: 'ignore' }); ffmpegOk = true; }
+catch { ffmpegOk = false; console.warn('[video] ffmpeg not available — uploads served uncompressed'); }
+
+function queueTranscode(memoryId){
+  if (!ffmpegOk || transcodeIds.has(memoryId)) return;
+  const row = db.prepare('SELECT mediaUrl, type FROM memories WHERE id = ?').get(memoryId);
+  if (!row || !/^video\//.test(row.type || '') || !row.mediaUrl) return;
+  const src = path.join(UPLOADS_DIR, path.basename(row.mediaUrl));
+  let size = 0;
+  try { size = fs.statSync(src).size; } catch { return; }
+  /* small file in a browser-native container — nothing to gain */
+  if (size <= TRANSCODE_MIN_BYTES && WEB_SAFE_VIDEO_EXT.has(path.extname(src).toLowerCase())) return;
+  transcodeIds.add(memoryId);
+  transcodeQueue.push({ memoryId, src, srcUrl: row.mediaUrl, srcSize: size });
+  pumpTranscode();
+}
+
+function pumpTranscode(){
+  if (transcodeBusy) return;
+  const job = transcodeQueue.shift();
+  if (!job) return;
+  transcodeBusy = true;
+  const { memoryId, src, srcUrl, srcSize } = job;
+  const outName = `${path.basename(src).replace(/\.[^.]+$/, '')}.web.mp4`;
+  const tmpPath = `${src}.tc.mp4`;
+  const outPath = path.join(UPLOADS_DIR, outName);
+  console.log(`[video] transcoding ${path.basename(src)} (${(srcSize / 1048576).toFixed(1)}MB)…`);
+  const ff = spawn(FFMPEG_BIN, [
+    '-y', '-i', src,
+    '-vf', "scale='min(1920,iw)':'min(1920,ih)':force_original_aspect_ratio=decrease:force_divisible_by=2",
+    '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '27',
+    '-pix_fmt', 'yuv420p',
+    '-c:a', 'aac', '-b:a', '96k', '-ac', '2',
+    '-movflags', '+faststart',
+    tmpPath
+  ], { stdio: ['ignore', 'ignore', 'pipe'] });
+  let errTail = '';
+  let settled = false;
+  ff.stderr.on('data', d => { errTail = (errTail + d).slice(-2000); });
+  const finish = ok => {
+    if (settled) return;
+    settled = true;
+    transcodeBusy = false;
+    transcodeIds.delete(memoryId);
+    try {
+      const good = ok && fs.existsSync(tmpPath) && fs.statSync(tmpPath).size > 0;
+      /* the row can be deleted or re-uploaded while ffmpeg runs — only swap
+         when it still exists and still points at the file we encoded */
+      const row = db.prepare('SELECT mediaUrl FROM memories WHERE id = ?').get(memoryId);
+      if (good && row && row.mediaUrl === srcUrl){
+        fs.renameSync(tmpPath, outPath);
+        fs.unlinkSync(src);
+        const size = fs.statSync(outPath).size;
+        db.prepare('UPDATE memories SET mediaUrl = ?, type = ?, size = ? WHERE id = ?')
+          .run(`/uploads/${outName}`, 'video/mp4', size, memoryId);
+        console.log(`[video] ${path.basename(src)} → ${outName} (${(srcSize / 1048576).toFixed(1)}MB → ${(size / 1048576).toFixed(1)}MB)`);
+      } else {
+        try { fs.unlinkSync(tmpPath); } catch {}
+        if (!good && row) console.warn(`[video] transcode failed for ${memoryId} — original kept${errTail ? ` — ${errTail.slice(-300)}` : ''}`);
+      }
+    } catch(err){ console.warn('[video] transcode cleanup error:', err.message); }
+    setImmediate(pumpTranscode);
+  };
+  ff.on('close', code => finish(code === 0));
+  ff.on('error', err => { console.warn('[video] ffmpeg spawn failed:', err.message); finish(false); });
+}
 
 /* ---------- rate limiting (small in-memory buckets) ---------- */
 const buckets = new Map();
@@ -832,6 +915,7 @@ app.post('/api/memories', publicWrite, upload.single('file'), (req, res) => {
               VALUES (@id, @category, @caption, @guestName, @kind, @status, @type, @name, @size, @mediaUrl, @createdAt)`)
     .run(record);
   res.json(record);
+  queueTranscode(record.id);
   const what = { photo:'a photo', video:'a video', selfie:'a selfie', voice:'a voice message', videomsg:'a video message', music:'a song' }[record.kind] || 'a memory';
   notifyAll('New upload pending review', `${record.guestName || 'A guest'} shared ${what} — pending your approval`);
 });
@@ -860,6 +944,7 @@ app.post('/api/admin/gallery', requireAdmin, upload.single('file'), (req, res) =
               VALUES (@id, @category, @caption, @guestName, @kind, @status, @type, @name, @size, @mediaUrl, @createdAt)`)
     .run(record);
   res.json(record);
+  queueTranscode(record.id);
 });
 
 /* ---------- admin: full feeds ---------- */
@@ -1539,7 +1624,7 @@ app.delete('/api/admin/rsvps/:id', requireAdmin, (req, res) => {
 /* ---------- errors ---------- */
 app.use((err, req, res, next) => {
   if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE'){
-    return res.status(413).json({ error: 'File is too large (max 64MB).' });
+    return res.status(413).json({ error: `File is too large (max ${Math.round(MAX_UPLOAD / 1048576)}MB).` });
   }
   console.warn('Request error:', err.message);
   res.status(400).json({ error: err.message || 'Bad request.' });
@@ -1547,4 +1632,12 @@ app.use((err, req, res, next) => {
 
 app.listen(PORT, HOST, () => {
   console.log(`wedding-api listening on http://${HOST}:${PORT}`);
+  /* re-encode heavy videos that were uploaded before compression existed —
+     the row check in the transcode finish path keeps this idempotent */
+  setTimeout(() => {
+    try {
+      for (const row of db.prepare(`SELECT id FROM memories WHERE type LIKE 'video/%'`).all())
+        queueTranscode(row.id);
+    } catch(err){ console.warn('[video] startup sweep failed:', err.message); }
+  }, 5000);
 });

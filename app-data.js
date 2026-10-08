@@ -199,7 +199,7 @@ function renderGallery(memories){
      15s feed poll would cut playback off. Skip the rebuild when nothing
      visible has changed, and never interrupt media that is playing. */
   const key = activeGalleryFilter + '/' + activeGalleryKind + '#' +
-    items.map(m => (m.id || m.src) + ':' + (m.status || '') + ':' + (m.caption || '')).join('|');
+    items.map(m => (m.id || m.src) + ':' + (m.status || '') + ':' + (m.caption || '') + ':' + (m.mediaUrl || '')).join('|');
   if (key === galleryRenderKey && grid.children.length) return;
   const playing = [...grid.querySelectorAll('video, audio')].some(el => !el.paused && !el.ended);
   if (playing) return;
@@ -856,6 +856,7 @@ document.addEventListener('click', e => {
 });
 
 /* ---------- S&J Gallery panel on Our Story ---------- */
+let sjStoryRenderKey = '';
 function renderSjStoryPanel(){
   const grid = document.getElementById('sjStoryGrid');
   const empty = document.getElementById('sjStoryEmpty');
@@ -864,6 +865,14 @@ function renderSjStoryPanel(){
   const items = (latestMemories || [])
     .filter(m => m.status === 'approved' && m.category === 'sj-gallery' && m.mediaUrl)
     .sort((a, b) => toMillis(b.createdAt) - toMillis(a.createdAt)); // newest first
+
+  /* mediaUrl is in the key: the server swaps a video's URL once its
+     compressed mp4 is ready, and the grid must repaint to pick it up.
+     Never rebuild while something is playing — same rule as the main grid. */
+  const key = items.map(m => `${m.id}:${m.caption || ''}:${m.mediaUrl}`).join('|');
+  if (key === sjStoryRenderKey && grid.children.length) return;
+  if ([...grid.querySelectorAll('video, audio')].some(el => !el.paused && !el.ended)) return;
+  sjStoryRenderKey = key;
 
   empty.classList.toggle('hidden', items.length > 0);
   grid.innerHTML = items.map(m => {
