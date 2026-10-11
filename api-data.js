@@ -199,12 +199,12 @@ function onAllMemories(callback){
 }
 
 /* the couple's own album — admin-published, lands approved instantly */
-async function addCoupleMemory(file, caption){
+async function addCoupleMemory(file, caption, onProgress){
   const fd = new FormData();
   fd.append('file', file, file.name || 'memory');
   fd.append('caption', caption || '');
   fd.append('name', file.name || '');
-  return await api('/admin/gallery', { method: 'POST', form: fd, admin: true });
+  return await api('/admin/gallery', { method: 'POST', form: fd, admin: true, onProgress });
 }
 
 async function deleteMemory(id){

@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v172-gifts-hero-admin';
+const CACHE = 'sj-wedding-v173-admin-tabs-story-progress';
 const ASSETS = [
   './',
   './index.html',
@@ -13,6 +13,7 @@ const ASSETS = [
   './app.js',
   './app-data.js',
   './app-social.js',
+  './admin-dashboard.js',
   './api-data.js',
   './manifest.webmanifest',
   './assets/welcome-bg.jpg',

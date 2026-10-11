@@ -954,6 +954,29 @@
   padding:0 5px;
 }
 /* ---------- Gifts (Mobile Money) ---------- */
+.admin-section-tabs{
+  display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:18px 0 22px;
+}
+.admin-section-tabs button{
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
+  min-width:0; min-height:74px; padding:10px 5px; border:1px solid rgba(169,124,44,.23);
+  border-radius:12px; background:#fffaf2; color:#6a4d28; font-size:.65rem; font-weight:600; line-height:1.3;
+}
+.admin-section-tabs button > span{ font-size:1.35rem; line-height:1; }
+.admin-section-tabs button[aria-selected="true"]{
+  color:#fff9ed; border-color:#96702e; background:linear-gradient(135deg,#b58b45,#876020);
+  box-shadow:0 4px 12px rgba(126,87,28,.15);
+}
+.admin-section-tabs button:focus-visible{ outline:2px solid #88601e; outline-offset:3px; }
+.admin-section-panel > .settings-heading:first-child{ margin-top:6px; }
+.admin-section-panel:focus-visible{ outline:2px solid #b58b45; outline-offset:4px; }
+.sj-upload-progress{ display:grid; gap:6px; margin-top:14px; font-size:.7rem; color:#765b30; }
+.sj-upload-progress progress{ width:100%; height:12px; accent-color:#a77c32; }
+.sj-upload-progress progress::-webkit-progress-bar{ background:#ede2cf; border-radius:10px; }
+.sj-upload-progress progress::-webkit-progress-value{ background:linear-gradient(90deg,#c9a35e,#947028); border-radius:10px; }
+.sj-upload-progress progress::-moz-progress-bar{ background:#a77c32; border-radius:10px; }
+#sjPick:disabled,#sjClear:disabled,.sj-thumb-x:disabled{ opacity:.55; cursor:wait; }
+
 .gifts-title{
   font-family:var(--serif, Georgia, serif);
   font-size:clamp(2.6rem, 12vw, 3.6rem);

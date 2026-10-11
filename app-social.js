@@ -1218,6 +1218,8 @@ function renderSjAdminGrid(){
    label-wrapped hidden input can never swallow the tap on mobile. */
 const sjFiles = document.getElementById('sjFiles');
 let sjPending = [];
+let sjUploading = false;
+let sjStatusTimer;
 
 function renderSjPreview(){
   const host = document.getElementById('sjPreview');
@@ -1227,57 +1229,77 @@ function renderSjPreview(){
   host.classList.toggle('hidden', !sjPending.length);
   actions.classList.toggle('hidden', !sjPending.length);
   publish.textContent = sjPending.length ? `PUBLISH ${sjPending.length} TO S&J GALLERY` : 'PUBLISH TO S&J GALLERY';
+  publish.disabled = sjUploading;
   host.innerHTML = sjPending.map((p, i) => {
     const isVid = (p.file.type || '').startsWith('video/');
     return `<figure class="sj-thumb${isVid ? ' sj-thumb--vid' : ''}">
       ${isVid ? `<video src="${p.url}" muted playsinline preload="metadata"></video><span class="sj-vid-badge">&#9654;</span>` : `<img src="${p.url}" alt="">`}
-      <button class="sj-thumb-x" data-sj-rm="${i}" type="button" aria-label="Remove">&times;</button>
+      <button class="sj-thumb-x" data-sj-rm="${i}" type="button" aria-label="Remove" ${sjUploading ? 'disabled' : ''}>&times;</button>
     </figure>`;
   }).join('');
   host.querySelectorAll('[data-sj-rm]').forEach(b =>
     b.addEventListener('click', () => {
+      if (sjUploading) return;
       URL.revokeObjectURL(sjPending[+b.dataset.sjRm].url);
       sjPending.splice(+b.dataset.sjRm, 1);
       renderSjPreview();
     }));
 }
 
-document.getElementById('sjPick')?.addEventListener('click', () => sjFiles?.click());
+document.getElementById('sjPick')?.addEventListener('click', () => { if (!sjUploading && isAdmin()) sjFiles?.click(); });
 
 sjFiles?.addEventListener('change', e => {
+  if (sjUploading || !isAdmin()){ e.target.value = ''; return; }
   for (const f of e.target.files) sjPending.push({ file: f, url: URL.createObjectURL(f) });
   e.target.value = '';  /* re-picking the same file must still fire change */
   renderSjPreview();
 });
 
 document.getElementById('sjClear')?.addEventListener('click', () => {
+  if (sjUploading) return;
   sjPending.forEach(p => URL.revokeObjectURL(p.url));
   sjPending = [];
   renderSjPreview();
 });
 
 document.getElementById('sjPublish')?.addEventListener('click', async () => {
-  if (!sjPending.length) return;
+  if (!sjPending.length || sjUploading || !isAdmin()) return;
   const status = document.getElementById('sjUploadStatus');
   const captionEl = document.getElementById('sjCaption');
   const publish = document.getElementById('sjPublish');
   const caption = captionEl?.value.trim() || '';
-  const total = sjPending.length;
+  const batch = sjPending.slice();
+  const total = batch.length;
+  const progressWrap = document.getElementById('sjUploadProgress');
+  const progress = document.getElementById('sjUploadBar');
+  clearTimeout(sjStatusTimer);
+  sjUploading = true;
+  document.getElementById('sjPick').disabled = true;
+  document.getElementById('sjClear').disabled = true;
+  if (captionEl) captionEl.disabled = true;
+  renderSjPreview();
+  progressWrap?.classList.remove('hidden');
   status.classList.remove('hidden');
   publish.disabled = true;
   let saved = 0, failed = 0;
   const done = [];
-  for (let i = 0; i < sjPending.length; i++){
-    status.textContent = `Publishing ${saved + failed + 1} of ${total}…`;
+  let lastError = '';
+  for (let i = 0; i < batch.length; i++){
+    if (progress) progress.value = 0;
+    status.textContent = `File ${i + 1} of ${total} — Uploading 0%…`;
     try {
-      const record = await addCoupleMemory(sjPending[i].file, total === 1 ? caption : (caption ? `${caption} ${i + 1}` : ''));
+      const record = await addCoupleMemory(batch[i].file, total === 1 ? caption : (caption ? `${caption} ${i + 1}` : ''), percent => {
+        if (progress) progress.value = percent;
+        status.textContent = `File ${i + 1} of ${total} — ${percent < 100 ? `Uploading ${percent}%…` : '100% sent — saving…'}`;
+      });
       saved++;
       done.push(i);
       /* show it in the grid immediately — no waiting on the poll */
       adminMemories = [record, ...(adminMemories || [])];
       renderSjAdminGrid();
     } catch(err){
-      console.warn('S&J gallery upload failed:', sjPending[i].file.name, err);
+      console.warn('S&J gallery upload failed:', batch[i].file.name, err);
+      lastError = err.message || 'Check your connection and try again.';
       failed++;
     }
   }
@@ -1286,15 +1308,20 @@ document.getElementById('sjPublish')?.addEventListener('click', async () => {
     if (done.includes(i)){ URL.revokeObjectURL(p.url); return false; }
     return true;
   });
+  sjUploading = false;
+  document.getElementById('sjPick').disabled = false;
+  document.getElementById('sjClear').disabled = false;
+  if (captionEl) captionEl.disabled = false;
+  progressWrap?.classList.add('hidden');
   publish.disabled = false;
   renderSjPreview();
   if (failed && !saved){
-    status.textContent = 'Upload failed — check your connection and try again.';
+    status.textContent = `Upload failed — ${lastError} Your files are still staged for retry.`;
   } else {
     if (captionEl) captionEl.value = '';
     status.textContent = `${saved} ${saved === 1 ? 'memory' : 'memories'} published to the S&J Gallery${failed ? ` — ${failed} failed, still staged` : ''} — live for guests now.`;
   }
-  setTimeout(() => status.classList.add('hidden'), 8000);
+  if (!failed) sjStatusTimer = setTimeout(() => status.classList.add('hidden'), 8000);
 });
 
 // admin logout

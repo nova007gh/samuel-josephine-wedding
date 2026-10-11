@@ -18,12 +18,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Parisienne&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="assets/landing-invite.jpg" />
   <link rel="preload" as="image" href="assets/seal-pressed-320.png" />
-  <link rel="stylesheet" href="app.css?v=172" />
+  <link rel="stylesheet" href="app.css?v=173" />
 
-  <link rel="stylesheet" href="app-views.css?v=172" />
-  <link rel="stylesheet" href="app-forms.css?v=172" />
-  <link rel="stylesheet" href="app-social.css?v=172" />
-  <link rel="stylesheet" href="gifts.css?v=172" />
+  <link rel="stylesheet" href="app-views.css?v=173" />
+  <link rel="stylesheet" href="app-forms.css?v=173" />
+  <link rel="stylesheet" href="app-social.css?v=173" />
+  <link rel="stylesheet" href="gifts.css?v=173" />
   <script>
   /* a checked-in guest goes straight into the app — flag it before first
      paint so the invitation never flashes on their screen (mirrors
@@ -867,6 +867,20 @@
     <p id="adminFeedError" class="admin-feed-error hidden"></p>
     <button id="adminRefresh" class="aq-approve admin-refresh" type="button">REFRESH DATA</button>
 
+    <div class="admin-section-tabs" role="tablist" aria-label="Dashboard sections">
+      <button id="admin-tab-overview" role="tab" aria-selected="true" aria-controls="admin-panel-overview" data-admin-section="overview" type="button"><span aria-hidden="true">&#9638;</span>Overview</button>
+      <button id="admin-tab-guests" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-guests" data-admin-section="guests" type="button"><span aria-hidden="true">&#128101;</span>Guests &amp; RSVPs</button>
+      <button id="admin-tab-content" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-content" data-admin-section="content" type="button"><span aria-hidden="true">&#128247;</span>Guest Content</button>
+      <button id="admin-tab-photos" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-photos" data-admin-section="photos" type="button"><span aria-hidden="true">&#9835;</span>Photos &amp; Music</button>
+      <button id="admin-tab-wedding" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-wedding" data-admin-section="wedding" type="button"><span aria-hidden="true">&#128197;</span>Wedding Details</button>
+      <button id="admin-tab-story" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-story" data-admin-section="story" type="button"><span aria-hidden="true">&#9825;</span>Our Story</button>
+      <button id="admin-tab-announcements" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-announcements" data-admin-section="announcements" type="button"><span aria-hidden="true">&#128227;</span>Announcements</button>
+      <button id="admin-tab-gifts" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-gifts" data-admin-section="gifts" type="button"><span aria-hidden="true">&#127873;</span>Gifts &amp; MoMo</button>
+      <button id="admin-tab-access" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-access" data-admin-section="access" type="button"><span aria-hidden="true">&#128737;</span>Access &amp; Security</button>
+    </div>
+
+    <div id="admin-panel-overview" class="admin-section-panel" role="tabpanel" aria-labelledby="admin-tab-overview" tabindex="0">
+
     <h3 class="stats-group-label">&#128101; Guests &amp; RSVPs</h3>
     <div class="admin-stats" id="adminStats">
       <div class="admin-stat">
@@ -941,6 +955,8 @@
       <div id="guestBreakdownBody" class="guest-breakdown-body"></div>
     </article>
 
+    </div>
+    <div id="admin-panel-photos" class="admin-section-panel hidden" role="tabpanel" aria-labelledby="admin-tab-photos" tabindex="0">
     <h2 class="settings-heading">Site Settings</h2>
     <p class="page-sub">Photos &amp; song shown to every guest — only you can change them</p>
     <div id="settingsGrid" class="aq-list settings-grid"></div>
@@ -953,6 +969,8 @@
     <input id="sitePhotoInput" type="file" accept="image/*" class="hidden" />
     <input id="songFileInput" type="file" accept="audio/*" class="hidden" />
 
+    </div>
+    <div id="admin-panel-wedding" class="admin-section-panel hidden" role="tabpanel" aria-labelledby="admin-tab-wedding" tabindex="0">
     <h2 class="settings-heading">Wedding Details</h2>
     <p class="page-sub">Names, date, venue &amp; schedule — reuse this app for any wedding</p>
     <article class="aq-card">
@@ -989,6 +1007,8 @@
       <small id="wedSaveStatus"></small>
     </article>
 
+    </div>
+    <div id="admin-panel-story" class="admin-section-panel hidden" role="tabpanel" aria-labelledby="admin-tab-story" tabindex="0">
     <h2 class="settings-heading">Our Story Timeline</h2>
     <p class="page-sub">Dates &amp; captions on the Our Story page — guests can tap the hearts</p>
     <article class="aq-card">
@@ -1011,6 +1031,26 @@
       <small id="storySaveStatus"></small>
     </article>
 
+    <h2 class="settings-heading">S&amp;J Gallery</h2>
+    <p class="page-sub">Photos and videos for the Our Story album — published immediately.</p>
+    <article class="aq-card">
+      <label class="field">Caption <small class="field-opt">(optional)</small>
+        <input id="sjCaption" type="text" maxlength="200" placeholder="A little note about this memory" />
+      </label>
+      <button id="sjPick" class="upload-drop" type="button"><span>&#43;&nbsp; ADD PHOTOS OR VIDEOS</span></button>
+      <input id="sjFiles" type="file" accept="image/*,video/*" multiple class="hidden" />
+      <div id="sjPreview" class="sj-preview hidden"></div>
+      <div id="sjActions" class="aq-actions hidden">
+        <button id="sjPublish" class="aq-approve" type="button">PUBLISH TO S&amp;J GALLERY</button>
+        <button id="sjClear" class="aq-reject" type="button">CLEAR</button>
+      </div>
+      <div id="sjUploadProgress" class="sj-upload-progress hidden"><label for="sjUploadBar">Current file upload</label><progress id="sjUploadBar" value="0" max="100"></progress></div>
+      <p id="sjUploadStatus" class="upload-status hidden" role="status" aria-live="polite"></p>
+      <div id="sjGrid" class="mem-grid"></div>
+      <p id="sjEmpty" class="page-sub">Nothing here yet — add your first memory above.</p>
+    </article>
+    </div>
+    <div id="admin-panel-announcements" class="admin-section-panel hidden" role="tabpanel" aria-labelledby="admin-tab-announcements" tabindex="0">
     <h2 class="settings-heading">Announce to Guests</h2>
     <p class="page-sub">A glowing golden message that pops up on every guest's screen — and repeats on the interval you set</p>
     <article class="aq-card">
@@ -1072,26 +1112,8 @@
       <small id="announceStatus"></small>
     </article>
 
-    <h2 class="settings-heading">S&amp;J Gallery</h2>
-    <p class="page-sub">Your shared album — photos and videos go live instantly, no review needed.</p>
-    <article class="aq-card">
-      <label class="field">Caption <small class="field-opt">(optional)</small>
-        <input id="sjCaption" type="text" maxlength="200" placeholder="A little note about this memory" />
-      </label>
-      <button id="sjPick" class="upload-drop" type="button">
-        <span>&#43;&nbsp; ADD PHOTOS OR VIDEOS</span>
-      </button>
-      <input id="sjFiles" type="file" accept="image/*,video/*" multiple class="hidden" />
-      <div id="sjPreview" class="sj-preview hidden"></div>
-      <div id="sjActions" class="aq-actions hidden">
-        <button id="sjPublish" class="aq-approve" type="button">PUBLISH TO S&amp;J GALLERY</button>
-        <button id="sjClear" class="aq-reject" type="button">CLEAR</button>
-      </div>
-      <p id="sjUploadStatus" class="upload-status hidden"></p>
-      <div id="sjGrid" class="mem-grid"></div>
-      <p id="sjEmpty" class="page-sub">Nothing here yet — add your first memory above.</p>
-    </article>
-
+    </div>
+    <div id="admin-panel-access" class="admin-section-panel hidden" role="tabpanel" aria-labelledby="admin-tab-access" tabindex="0">
     <h2 class="settings-heading">Admin Access</h2>
     <p class="page-sub">Guests who check in with one of these emails get the admin sign-in when they tap the heart on Home</p>
     <article class="aq-card">
@@ -1104,12 +1126,35 @@
     </article>
 
     <div class="menu-list">
+      <button class="menu-item" data-goto="security" type="button">
+        <span class="menu-icon menu-icon--gold">&#128737;</span>
+        <span class="menu-text"><strong>Security Log <span id="securityBadge" class="pending-badge hidden"></span></strong><small>Sign-in attempts, blocks &amp; alerts</small></span>
+        <span class="menu-chev">&#10095;</span>
+      </button>
+      <button class="menu-item" id="adminLogout" type="button">
+        <span class="menu-icon menu-icon--gold">&#10162;</span>
+        <span class="menu-text"><strong>Log Out</strong><small>Exit admin view</small></span>
+        <span class="menu-chev">&#10095;</span>
+      </button>
+    </div>
+    </div>
+    <div id="admin-panel-guests" class="admin-section-panel hidden" role="tabpanel" aria-labelledby="admin-tab-guests" tabindex="0">
+    <div class="menu-list">
       <p class="menu-group-label">Guests</p>
       <button class="menu-item" data-goto="guestrsvp" type="button">
         <span class="menu-icon menu-icon--gold">&#128101;</span>
         <span class="menu-text"><strong>Guest &amp; RSVP List <span id="badgeGuests" class="menu-badge"></span></strong><small>View, search and manage all guests</small></span>
         <span class="menu-chev">&#10095;</span>
       </button>
+      <button class="menu-item" data-goto="rsvpAdmin" type="button">
+        <span class="menu-icon menu-icon--gold">&#9993;</span>
+        <span class="menu-text"><strong>RSVP Responses <span id="badgeRsvps" class="menu-badge"></span></strong><small>All RSVP responses</small></span>
+        <span class="menu-chev">&#10095;</span>
+      </button>
+    </div>
+    </div>
+    <div id="admin-panel-content" class="admin-section-panel hidden" role="tabpanel" aria-labelledby="admin-tab-content" tabindex="0">
+    <div class="menu-list">
       <button class="menu-item" data-goto="approvals" type="button">
         <span class="menu-icon menu-icon--gold">&#128338;</span>
         <span class="menu-text"><strong>Approval Queue <span id="pendingMenuBadge" class="pending-badge hidden"></span></strong><small>Review and approve photos, videos &amp; messages</small></span>
@@ -1138,22 +1183,12 @@
         <span class="menu-chev">&#10095;</span>
       </button>
 
-      <p class="menu-group-label">Site</p>
-      <button class="menu-item" data-goto="rsvpAdmin" type="button">
-        <span class="menu-icon menu-icon--gold">&#9993;</span>
-        <span class="menu-text"><strong>RSVP Responses <span id="badgeRsvps" class="menu-badge"></span></strong><small>All RSVP responses</small></span>
-        <span class="menu-chev">&#10095;</span>
-      </button>
-      <button class="menu-item" data-goto="security" type="button">
-        <span class="menu-icon menu-icon--gold">&#128737;</span>
-        <span class="menu-text"><strong>Security Log <span id="securityBadge" class="pending-badge hidden"></span></strong><small>Sign-in attempts, blocks &amp; alerts</small></span>
-        <span class="menu-chev">&#10095;</span>
-      </button>
-      <button class="menu-item" id="adminLogout" type="button">
-        <span class="menu-icon menu-icon--gold">&#10162;</span>
-        <span class="menu-text"><strong>Log Out</strong><small>Exit admin view</small></span>
-        <span class="menu-chev">&#10095;</span>
-      </button>
+    </div>
+    </div>
+    <div id="admin-panel-gifts" class="admin-section-panel hidden" role="tabpanel" aria-labelledby="admin-tab-gifts" tabindex="0">
+      <h2 class="settings-heading">Gifts &amp; MoMo</h2>
+      <p class="page-sub">Manage gift options, view confirmations and update the payment destination.</p>
+      <button class="menu-item" data-goto="gifts" type="button"><span class="menu-icon menu-icon--gold">&#127873;</span><span class="menu-text"><strong>Manage Gifts &amp; MoMo</strong><small>Funds, confirmations and MoMo settings</small></span><span class="menu-chev">&#10095;</span></button>
     </div>
   </section>
 
@@ -1497,9 +1532,10 @@ try{
   });
 }catch(e){}
 </script>
-<script src="api-data.js?v=172"></script>
-<script src="app.js?v=172"></script>
-<script src="app-data.js?v=172"></script>
-<script src="app-social.js?v=172"></script>
+<script src="api-data.js?v=173"></script>
+<script src="app.js?v=173"></script>
+<script src="app-data.js?v=173"></script>
+<script src="app-social.js?v=173"></script>
+<script src="admin-dashboard.js?v=173"></script>
 </body>
 </html>

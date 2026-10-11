@@ -1,5 +1,26 @@
 # snybena.com live audit — 11 October 2026
 
+## Dashboard sections and Our Story progress — v173
+
+The dashboard now has nine accessible icon tabs: Overview, Guests & RSVPs,
+Guest Content, Photos & Music, Wedding Details, Our Story, Announcements,
+Gifts & MoMo, and Access & Security. Editors remain mounted so tab changes
+preserve unsaved fields. Arrow/Home/End navigation and remembered section
+selection are supported. Existing admin routes and live badges remain intact.
+
+Our Story's S&J album uploads display file count and real transfer percentage
+with a native progress bar. At 100% the message says sent/saving until the API
+confirms publication. Picker/clear/remove controls lock during a batch; failed
+files remain staged, and error status is retained for retry.
+
+Checks: HTML has nine correctly nested dashboard panels and no duplicate IDs;
+all nine live browser tab selections, keyboard navigation and unsaved-text
+preservation passed. A mocked two-file batch confirmed 42% display, 100% saving
+state, control locking, partial failure retention and unlocked retry controls.
+No test photos or records were published on the live server. API progress and
+dashboard regression tests are `node tests/api-data.test.cjs` and
+`node tests/admin-dashboard.test.cjs`.
+
 ## Gifts hero-photo control — v172
 
 Admin Dashboard → Site Settings → **Gifts — Top-right Photo** → **CHANGE**
