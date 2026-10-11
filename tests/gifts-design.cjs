@@ -1,5 +1,5 @@
 /* Read-only live UI smoke test in an isolated Chrome profile.
-   Usage: node tests/gifts-design.cjs /absolute/output/directory [--dashboard]
+   Usage: node tests/gifts-design.cjs /absolute/output/directory [--dashboard|--admin-gifts]
    Dashboard mode mocks admin responses: no credentials or live writes. */
 const fs = require('node:fs');
 const path = require('node:path');
@@ -56,8 +56,8 @@ const delay = ms => new Promise(resolve=>setTimeout(resolve,ms));
     if(await evaluate('document.querySelectorAll(".gift-fund").length>0 && !!document.getElementById("giftMoMoNumber").value')) break;
     await delay(250);
   }
-  if (process.argv.includes('--dashboard')){
-    await require('./admin-browser-checks.cjs')({call,evaluate,errors});
+  if (process.argv.includes('--dashboard') || process.argv.includes('--admin-gifts')){
+    await require('./admin-browser-checks.cjs')({call,evaluate,errors,out});
     return;
   }
   for(const width of [320,375,430]){

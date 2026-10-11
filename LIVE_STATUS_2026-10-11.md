@@ -1,5 +1,21 @@
 # snybena.com live audit — 11 October 2026
 
+## Admin Gifts layout repair — v175
+
+A shared `.admin-only` menu style forced Manage Gift Funds and MoMo Settings
+into horizontal flex rows. These two sections now use scoped, full-width grid
+panels with stacked headings, descriptions and controls. Fund text has room to
+wrap naturally; Edit/Remove buttons stay together. MoMo fields use full-width,
+16px inputs, with a clearly placed Save action. The duplicate MoMo heading and
+empty fund-editor box were removed. Cancelling or saving clears the editor DOM.
+Guests still cannot see either admin panel, and `.hidden` remains respected.
+
+The layout regression test reproduced the old failure, then passed at 320, 375,
+430, 656 and 1024 pixels after deployment. Add/edit/cancel controls, guest hiding
+and reaching Save above the bottom navigation passed with mocked admin data and
+no live writes. Guest Gifts and dashboard/upload regression suites also passed.
+Run `node tests/gifts-design.cjs /absolute/output/directory --admin-gifts`.
+
 ## Gift Page Photo naming and shortcut — v174
 
 The photo control is now named **Gift Page Photo**, with an **UPLOAD / CHANGE

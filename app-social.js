@@ -1783,7 +1783,7 @@ function initGiftFundsAdmin(){
         const existing = (await getAdminGiftFunds()).find(x => x.id === id);
         if (existing) await updateGiftFund(id, { label, description, sortOrder, enabled });
         else await addGiftFund({ id, label, description, sortOrder, enabled });
-        form.innerHTML = '';
+        document.getElementById('giftFundEditor').replaceChildren();
         renderAdminGiftFunds();
         await loadGiftFunds();
         renderGiftOptions();
@@ -1794,7 +1794,7 @@ function initGiftFundsAdmin(){
       return;
     }
     if (e.target.matches('[data-gf-cancel]')){
-      e.target.closest('.gr-form').innerHTML = '';
+      document.getElementById('giftFundEditor').replaceChildren();
     }
   });
 }
@@ -1805,7 +1805,6 @@ function renderMomoSettingsAdmin(){
   if (!host) return;
   getMomoSettings().then(s => {
     host.innerHTML = `
-      <p class="gr-form-title">MoMo Settings (admin only)</p>
       <label class="gr-field"><span>Send-to Number *</span>
         <input id="momoNumberInput" type="tel" value="${escapeHTML(s.number)}" placeholder="+233 24 123 4567" required />
       </label>

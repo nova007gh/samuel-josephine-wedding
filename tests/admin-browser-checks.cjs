@@ -2,15 +2,21 @@ const assert = require('node:assert/strict');
 
 /* The real deployed UI, with isolated mock admin responses and uploads.
    This validates layout/interaction, not authentication or server writes. */
-module.exports = async ({call,evaluate,errors}) => {
+module.exports = async ({call,evaluate,errors,out}) => {
   await evaluate(`(()=>{
     const original=window.fetch;
     window.fetch=async(url,opts)=>String(url).startsWith('/api/admin/')
-      ? new Response(JSON.stringify([]),{status:200,headers:{'Content-Type':'application/json'}})
+      ? new Response(JSON.stringify(String(url)==='/api/admin/gift-funds'
+        ? [{id:'cash',label:'Cash Gift',description:'Send in your cherished wedding gifts.',sortOrder:0,enabled:1}] : []),
+        {status:200,headers:{'Content-Type':'application/json'}})
       : original(url,opts);
     setAdminToken('isolated-layout-fixture');
     switchView('admin');
   })()`);
+  if (process.argv.includes('--admin-gifts')){
+    await require('./admin-gifts-checks.cjs')({call,evaluate,errors,out});
+    return;
+  }
   for(const width of [320,375,430]){
     await call('Emulation.setDeviceMetricsOverride',{width,height:1100,deviceScaleFactor:1,mobile:true});
     const checks=await evaluate(`(()=>{
