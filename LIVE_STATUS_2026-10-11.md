@@ -83,6 +83,12 @@ Backups remain local to the VPS; off-site recovery is not configured.
   MoMo settings override environment defaults, and deleted funds stay empty.
   The live service was not restarted again for this persistence test.
 - No browser console errors during the guest/admin sweep.
+- After initial feeds settled, a live admin media card remained the same DOM
+  node across 86 seconds of polling. This confirms unchanged feeds no longer
+  continuously replace cards during playback.
+- An isolated database-copy test submitted a custom gift option and verified
+  its exact integer-cent amount and exclusion of phone/email/transaction reference
+  from the public feed. No real gift or financial transaction was created.
 
 ## Remaining limitations / required checks
 
