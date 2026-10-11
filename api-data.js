@@ -54,7 +54,12 @@ function onAdminAuth(callback){
 
 /* ---------- fetch helper ---------- */
 async function api(path, opts = {}){
-  const { method = 'GET', body, form = null, admin = false } = opts;
+  const { method = 'GET', body, form = null, admin = false, onProgress } = opts;
+  if (form){
+    const file = form.get('file') || form.get('selfie');
+    if (file instanceof Blob && file.size > 256 * 1024 * 1024)
+      throw new Error('The file exceeds the 256 MB upload limit. Trim or compress the video, then try again.');
+  }
   const headers = { 'X-Device-Id': DEVICE_ID, 'X-Network-Type': deviceNetType() };
   if (admin && adminToken) headers['Authorization'] = `Bearer ${adminToken}`;
   if (body !== undefined && !form) headers['Content-Type'] = 'application/json';
@@ -66,7 +71,26 @@ async function api(path, opts = {}){
   /* counted so an app-update reload never interrupts an upload */
   if (form) window.__uploadsInFlight = (window.__uploadsInFlight || 0) + 1;
   try {
-    res = await fetch(API_BASE + path, {
+    if (form){
+      await optimiseUploadImage(path, form);
+      res = await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open(method, API_BASE + path);
+        xhr.timeout = 15 * 60000;
+        Object.entries(headers).forEach(([key, value]) => xhr.setRequestHeader(key, value));
+        xhr.upload.onprogress = e => {
+          if (e.lengthComputable && onProgress) onProgress(Math.round(e.loaded / e.total * 100));
+        };
+        xhr.upload.onload = () => { if (onProgress) onProgress(100); };
+        xhr.onload = () => resolve({ ok: xhr.status >= 200 && xhr.status < 300,
+          status: xhr.status, json: async () => JSON.parse(xhr.responseText) });
+        xhr.onerror = () => reject(new Error('Network connection interrupted.'));
+        xhr.ontimeout = () => reject(new Error('Upload timed out. Try a smaller file or a stronger connection.'));
+        ctrl.signal.addEventListener('abort', () => xhr.abort(), { once: true });
+        xhr.onabort = () => reject(new Error('Upload timed out. Try a smaller file or a stronger connection.'));
+        xhr.send(form);
+      });
+    } else res = await fetch(API_BASE + path, {
       method,
       headers,
       body: form || (body !== undefined ? JSON.stringify(body) : undefined),
@@ -74,7 +98,8 @@ async function api(path, opts = {}){
       cache: 'no-store'
     });
   } catch(e){
-    const err = new Error('No connection. Please check your network and try again.');
+    const err = new Error(e.message && /Upload timed out/.test(e.message)
+      ? e.message : 'No connection. Please check your network and try again.');
     err.code = 'auth/network-request-failed';
     throw err;
   } finally {
@@ -98,18 +123,50 @@ async function api(path, opts = {}){
 
 /* Feeds poll the API so new approved content appears without realtime sockets.
    Returns an unsubscribe function, same contract as the old listeners. */
+async function optimiseUploadImage(path, form){
+  if (!['/memories', '/admin/gallery', '/guestbook'].includes(path) || typeof createImageBitmap !== 'function') return;
+  const key = form.has('file') ? 'file' : 'selfie';
+  const file = form.get(key);
+  if (!(file instanceof Blob) || file.size < 1024 * 1024 || !/^image\/(jpeg|webp)$/.test(file.type)) return;
+  let bitmap;
+  try {
+    bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, 2048 / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+    canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', .84));
+    if (blob && blob.size < file.size){
+      form.set(key, blob, (file.name || 'photo').replace(/\.[^.]+$/, '') + '.jpg');
+      if (form.has('size')) form.set('size', String(blob.size));
+      if (form.has('type')) form.set('type', blob.type);
+    }
+  } catch { /* Preserve the original if decoding or canvas export fails. */ }
+  finally { bitmap?.close(); }
+}
+
 function pollFeed(path, callback, admin){
   let stopped = false;
+  let busy = false;
+  let previous;
   async function tick(){
-    if (stopped) return;
+    if (stopped || busy || document.hidden || window.__uploadsInFlight > 0) return;
+    busy = true;
     try {
       const rows = await api(path, { admin });
-      callback(Array.isArray(rows) ? rows : []);
+      if (stopped) return;
+      const data = Array.isArray(rows) ? rows : [];
+      const signature = JSON.stringify(data);
+      if (signature !== previous){
+        previous = signature;
+        callback(data);
+      }
       if (admin && typeof reportAdminFeed === 'function') reportAdminFeed(path, null);
     } catch(err){
       console.warn('Feed unavailable:', err.message || err);
       if (admin && typeof reportAdminFeed === 'function') reportAdminFeed(path, err);
-    }
+    } finally { busy = false; }
   }
   tick();
   const timer = setInterval(tick, POLL_MS);
@@ -130,7 +187,7 @@ async function addMemory(record){
   fd.append('type', record.type || '');
   fd.append('name', record.name || '');
   if (record.size) fd.append('size', String(record.size));
-  return await api('/memories', { method: 'POST', form: fd });
+  return await api('/memories', { method: 'POST', form: fd, onProgress: record.onProgress });
 }
 
 function onMemories(callback){
@@ -286,7 +343,7 @@ async function deleteGiftFund(id){
 
 /* MoMo settings - admin only */
 async function getMomoSettings(){
-  return await api('/admin/momo-settings', { admin: true });
+  return await api('/momo-settings');
 }
 
 async function updateMomoSettings(data){

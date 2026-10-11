@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v167-video-compress';
+const CACHE = 'sj-wedding-v169-upload-performance';
 const ASSETS = [
   './',
   './index.html',

@@ -216,11 +216,11 @@ function renderGallery(memories){
     let media;
     if (item.type.startsWith('video/')){
       media = `<div class="mem-media">
-        <video controls playsinline preload="metadata" controlslist="nodownload" src="${url}"></video>
+        <video controls playsinline preload="none" controlslist="nodownload" src="${url}"></video>
         <button class="mem-expand" type="button" title="Watch full screen" aria-label="Watch full screen">&#9974;</button>
       </div>`;
     } else if (item.type.startsWith('audio/')){
-      media = `<div class="mem-audio"><span class="mem-audio-icon">&#127908;</span><audio controls preload="metadata" src="${url}"></audio></div>`;
+      media = `<div class="mem-audio"><span class="mem-audio-icon">&#127908;</span><audio controls preload="none" src="${url}"></audio></div>`;
     } else {
       media = `<img loading="lazy" decoding="async" src="${url}" alt="${escapeHTML(item.caption || 'Wedding memory')}">`;
     }
@@ -532,7 +532,7 @@ function renderSongList(){
     row.className = 'song-row';
     row.innerHTML = `
       <span class="song-num">${i + 1}</span>
-      <audio controls preload="metadata" src="${s.url}"></audio>
+      <audio controls preload="none" src="${s.url}"></audio>
       <span class="song-name">${escapeHTML(s.label || `Song ${i + 1}`)}</span>
       ${isAdmin() ? `<span class="song-actions">
         ${i === 0 ? '<span class="song-first-badge" title="This song opens the playlist">PLAYS 1ST</span>' : ''}
@@ -878,7 +878,7 @@ function renderSjStoryPanel(){
   grid.innerHTML = items.map(m => {
     const isVid = (m.type || '').startsWith('video/');
     const media = isVid
-      ? `<div class="mem-media"><video src="${m.mediaUrl}" controls playsinline preload="metadata"></video></div>`
+      ? `<div class="mem-media"><video src="${m.mediaUrl}" controls playsinline preload="none"></video></div>`
       : `<img loading="lazy" decoding="async" src="${m.mediaUrl}" alt="${escapeHTML(m.caption || 'S&J memory')}">`;
     return `<article class="mem-card">
       ${media}

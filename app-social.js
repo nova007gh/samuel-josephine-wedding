@@ -287,7 +287,11 @@ document.getElementById('shareForm')?.addEventListener('submit', async e => {
       type: pendingShare.type || 'application/octet-stream',
       name: `${pendingShare.kind}-${Date.now()}`,
       size: pendingShare.blob.size,
-      blob: pendingShare.blob
+      blob: pendingShare.blob,
+      onProgress: percent => {
+        if (submitBtn) submitBtn.textContent = percent < 100
+          ? `Uploading ${percent}%…` : 'Upload sent — saving…';
+      }
     });
     if (typeof rememberUpload === 'function') rememberUpload('memory', rec && rec.id);
     pendingShare = null;
@@ -299,7 +303,7 @@ document.getElementById('shareForm')?.addEventListener('submit', async e => {
     switchView('memories'); // show them their submission straight away
   } catch(err){
     console.warn('Memory upload failed:', err);
-    alert('Sorry, the upload failed. Please check your connection and try again.');
+    alert(err.message || 'Sorry, the upload failed. Please check your connection and try again.');
   } finally {
     if (submitBtn){ submitBtn.disabled = false; submitBtn.textContent = submitBtn.dataset.label || 'Submit'; }
   }
@@ -1192,7 +1196,7 @@ function renderSjAdminGrid(){
   sjGrid.innerHTML = items.map(m => {
     const isVid = (m.type || '').startsWith('video/');
     const media = isVid
-      ? `<div class="mem-media"><video src="${m.mediaUrl}" controls playsinline preload="metadata"></video></div>`
+      ? `<div class="mem-media"><video src="${m.mediaUrl}" controls playsinline preload="none"></video></div>`
       : `<img loading="lazy" decoding="async" src="${m.mediaUrl}" alt="${escapeHTML(m.caption || 'S&J memory')}">`;
     return `<article class="mem-card">
       ${media}
@@ -1547,11 +1551,7 @@ window.addEventListener('sj:entered', () => {
 /* =========================================================
    Gifts — Mobile Money (admin-managed funds + locked MoMo)
    ========================================================= */
-let GIFT_FUNDS = [
-  { id:'cash',      label:'Cash Gift',      desc:'Contribute any amount to support our new journey.' },
-  { id:'house',     label:'House Fund',     desc:'Help us build our future home together.' },
-  { id:'honeymoon', label:'Honeymoon Fund', desc:'Bless our first adventure as husband and wife.' }
-];
+let GIFT_FUNDS = [];
 const GIFT_AMOUNTS = [50, 100, 200, 500, 1000];
 const GIFT_PROVIDERS = [
   { id:'mtn',       label:'MTN MoMo',       short:'MTN' },
@@ -1566,11 +1566,12 @@ function giftCedi(cents){ return 'GHS ' + (Number(cents || 0) / 100).toLocaleStr
 async function loadGiftFunds(){
   try {
     const rows = await getGiftFunds();
-    if (Array.isArray(rows) && rows.length){
-      GIFT_FUNDS = rows;
+    if (Array.isArray(rows)){
+      GIFT_FUNDS = rows.map(f => ({ ...f, desc: f.description || '' }));
+      if (!GIFT_FUNDS.some(f => f.id === giftState.fund)) giftState.fund = GIFT_FUNDS[0]?.id || '';
     }
   } catch (e){
-    console.warn('Could not load gift funds, using defaults:', e);
+    console.warn('Could not load gift funds:', e);
   }
 }
 
@@ -1610,16 +1611,12 @@ function updateGiftPayButton(){
   if (!btn) return;
   const fund = GIFT_FUNDS.find(f => f.id === giftState.fund);
   const prov = GIFT_PROVIDERS.find(p => p.id === giftState.provider);
-  btn.innerHTML = `<span>&#8599; Open ${escapeHTML(prov.label)} to pay ${escapeHTML(giftCedi(giftState.amount * 100))}</span><span>&#10095;</span>`;
+  btn.innerHTML = `<span>Payment instructions · ${escapeHTML(prov.label)} · ${escapeHTML(giftCedi(giftState.amount * 100))}</span><span>&#10095;</span>`;
   btn.dataset.amount = giftState.amount;
   btn.dataset.fund = giftState.fund;
   btn.dataset.provider = giftState.provider;
-  btn.title = `${prov.label} · ${fund.label}`;
-}
-
-function moneyToMoMoDialString(cedi){
-  const amount = encodeURIComponent('*' + Number(cedi).toFixed(2) + '*');
-  return `%2A722%23%2A165%23${amount}%23`;
+  btn.title = `${prov.label} · ${fund?.label || 'No gift options available'}`;
+  btn.setAttribute('aria-disabled', String(!fund));
 }
 
 async function renderGiftList(){
@@ -1809,17 +1806,29 @@ function updateGiftAdminVisibility(){
   const momoNum = document.getElementById('giftMoMoNumber');
   const momoName = document.getElementById('giftMoMoName');
   if (momoNum && momoName){
-    momoNum.readOnly = !isAdm;
-    momoName.readOnly = !isAdm;
+    momoNum.readOnly = true;
+    momoName.readOnly = true;
     momoNum.style.opacity = isAdm ? '' : '0.7';
     momoName.style.opacity = isAdm ? '' : '0.7';
-    document.querySelector('[data-paste="giftMoMoNumber"]')?.classList.toggle('hidden', !isAdm);
-    document.querySelector('[data-paste="giftMoMoName"]')?.classList.toggle('hidden', !isAdm);
+    document.querySelector('[data-paste="giftMoMoNumber"]')?.classList.add('hidden');
+    document.querySelector('[data-paste="giftMoMoName"]')?.classList.add('hidden');
   }
 }
 
 async function initGifts(){
   updateGiftAdminVisibility();
+  document.getElementById('giftMoMoNumber').value = '';
+  document.getElementById('giftMoMoName').value = '';
+  initGiftFundsAdmin();
+  initMomoSettingsAdmin();
+  onAdminAuth(() => {
+    updateGiftAdminVisibility();
+    if (isAdmin()){ renderAdminGiftFunds(); renderMomoSettingsAdmin(); }
+  });
+  getMomoSettings().then(s => {
+    document.getElementById('giftMoMoNumber').value = s.number;
+    document.getElementById('giftMoMoName').value = s.accountName;
+  }).catch(err => console.warn('MoMo settings unavailable:', err.message));
   await loadGiftFunds();
   renderGiftOptions();
   renderGiftList();
@@ -1867,15 +1876,16 @@ async function initGifts(){
     });
   });
 
-  document.getElementById('giftPayBtn')?.addEventListener('click', e => {
+  document.getElementById('giftPayBtn')?.addEventListener('click', async e => {
     e.preventDefault();
     const cedi = giftState.amount;
     if (!cedi || cedi < 50){ flashGiftStatus('Choose an amount of at least GHS 50.'); return; }
     const num = (document.getElementById('giftMoMoNumber')?.value || '').replace(/\s+/g, '');
     if (!/^\+\d{9,15}$/.test(num)){ flashGiftStatus('Check the MoMo number — it should look like +233241234567.'); return; }
-    const dial = moneyToMoMoDialString(cedi);
-    window.location.href = `tel:${dial}`;
-    flashGiftStatus('Choose Mobile Money, MTN MoMo and enter your PIN to complete the payment.');
+    if (!giftState.fund){ flashGiftStatus('No gift options are currently available.'); return; }
+    try { await navigator.clipboard.writeText(num); } catch {}
+    const provider = GIFT_PROVIDERS.find(p => p.id === giftState.provider)?.label || 'MoMo';
+    flashGiftStatus(`Open your ${provider} app or its official payment menu and send GHS ${cedi} to ${num}. Verify the account name before confirming. This website does not process or verify the payment.`);
   });
 
   document.getElementById('giftForm')?.addEventListener('submit', async e => {
@@ -1899,7 +1909,7 @@ async function initGifts(){
         txnRef: document.getElementById('giftTxn')?.value || '',
         message: document.getElementById('giftMessage')?.value || ''
       }});
-      if (status) status.textContent = 'Thank you! Your gift has been recorded.';
+      if (status) status.textContent = 'Thank you! Your confirmation was recorded. The couple will verify the payment.';
       e.target.reset();
       await renderGiftList();
     } catch (err){
@@ -1910,15 +1920,7 @@ async function initGifts(){
     }
   });
 
-  /* admin sections */
-  if (isAdmin()){
-    document.getElementById(adminGiftFundsSection)?.classList.remove(hidden);
-    document.getElementById(momoSettingsSection)?.classList.remove(hidden);
-    renderAdminGiftFunds();
-    initGiftFundsAdmin();
-    renderMomoSettingsAdmin();
-    initMomoSettingsAdmin();
-  }
+  updateGiftAdminVisibility();
 
   /* lock MoMo fields for non-admins */
   const momoNum = document.getElementById('giftMoMoNumber');
@@ -1934,6 +1936,12 @@ async function initGifts(){
     document.querySelector('[data-paste="giftMoMoNumber"]')?.classList.add('hidden');
     document.querySelector('[data-paste="giftMoMoName"]')?.classList.add('hidden');
   }
+}
+
+function flashGiftStatus(text){
+  const status = document.getElementById('giftStatus');
+  if (status) status.textContent = text;
+  document.getElementById('giftConfirmWrap')?.setAttribute('open', '');
 }
 
 /* refresh the list each time the Gifts tab is opened */
@@ -1959,7 +1967,7 @@ function adminContentMedia(item){
   if (item.type && item.type.startsWith('image/') && item.mediaUrl)
     return `<img class="aq-media" src="${item.mediaUrl}" alt="" loading="lazy" />`;
   if (item.type && item.type.startsWith('video/') && item.mediaUrl)
-    return `<video class="aq-media" controls playsinline preload="metadata" src="${item.mediaUrl}"></video>`;
+    return `<video class="aq-media" controls playsinline preload="none" src="${item.mediaUrl}"></video>`;
   if (item.type && item.type.startsWith('audio/') && item.mediaUrl)
     return `<audio controls preload="none" src="${item.mediaUrl}"></audio>`;
   return '';

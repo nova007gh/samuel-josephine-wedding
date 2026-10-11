@@ -114,7 +114,9 @@ CREATE TABLE IF NOT EXISTS security_events (
 /* column added after launch — migrate existing databases safely */
 /* seed default gift funds if empty */
 (function seedGiftFunds(){
+  if (db.prepare('SELECT 1 FROM settings WHERE key = ?').get('giftFundsInitialised')) return;
   const count = db.prepare('SELECT COUNT(*) AS c FROM gift_funds').get().c;
+  db.prepare('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)').run('giftFundsInitialised', 'true');
   if (count > 0) return;
   const stmt = db.prepare('INSERT INTO gift_funds (id, label, description, sortOrder, enabled) VALUES (?, ?, ?, ?, ?)');
   stmt.run('cash', 'Cash Gift', 'Contribute any amount to support our new journey.', 10, 1);
@@ -1157,14 +1159,6 @@ app.post('/api/admin/settings/song/:index/move', requireAdmin, (req, res) => {
 /* ---------- gift funds (admin-managed) ---------- */
 app.get('/api/gift-funds', (req, res) => {
   const rows = db.prepare('SELECT id, label, description FROM gift_funds WHERE enabled = 1 ORDER BY sortOrder, label').all();
-  if (!rows.length){
-    res.json([
-      { id:'cash', label:'Cash Gift', description:'Contribute any amount to support our new journey.' },
-      { id:'house', label:'House Fund', description:'Help us build our future home together.' },
-      { id:'honeymoon', label:'Honeymoon Fund', description:'Bless our first adventure as husband and wife.' }
-    ]);
-    return;
-  }
   res.json(rows);
 });
 
@@ -1209,19 +1203,25 @@ app.delete('/api/admin/gift-funds/:id', requireAdmin, (req, res) => {
 });
 
 /* admin MoMo settings (number + account name) */
+function getGiftMomo(){
+  const saved = db.prepare('SELECT value FROM settings WHERE key = ?').get('giftMomo');
+  try { if (saved) return JSON.parse(saved.value); } catch {}
+  return { number: MOMO_NUMBER, accountName: MOMO_ACCOUNT_NAME };
+}
+app.get('/api/momo-settings', (req, res) => res.json(getGiftMomo()));
 app.get('/api/admin/momo-settings', requireAdmin, (req, res) => {
-  res.json({ number: MOMO_NUMBER, accountName: MOMO_ACCOUNT_NAME });
+  res.json(getGiftMomo());
 });
 
 app.patch('/api/admin/momo-settings', requireAdmin, (req, res) => {
   const b = req.body || {};
-  const number = b.number !== undefined ? str(b.number, 40).trim() : MOMO_NUMBER;
-  const accountName = b.accountName !== undefined ? str(b.accountName, 120).trim() : MOMO_ACCOUNT_NAME;
-  if (number && !/^\+\d{9,15}$/.test(number.replace(/\s+/g, '')))
+  const current = getGiftMomo();
+  const number = b.number !== undefined ? str(b.number, 40).trim() : current.number;
+  const accountName = b.accountName !== undefined ? str(b.accountName, 120).trim() : current.accountName;
+  if (!number || !accountName || !/^\+\d{9,15}$/.test(number.replace(/\s+/g, '')))
     return res.status(400).json({ error: 'Number must be in international format, e.g. +233241234567' });
-  MOMO_NUMBER = number;
-  MOMO_ACCOUNT_NAME = accountName;
-  res.json({ ok: true, number: MOMO_NUMBER, accountName: MOMO_ACCOUNT_NAME });
+  db.prepare(SET_SETTING).run('giftMomo', JSON.stringify({ number, accountName }));
+  res.json({ ok: true, number, accountName });
 });
 
 /* ---------- gifts (Mobile Money) ---------- */
@@ -1245,7 +1245,9 @@ app.post('/api/gifts', publicWrite, (req, res) => {
   const b = req.body || {};
   const name = str(b.name, 120);
   if (!name) return res.status(400).json({ error: 'Please enter your name.' });
-  const fund = GIFTS_PUBLIC[b.fund] ? b.fund : 'cash';
+  const selected = db.prepare('SELECT id, label FROM gift_funds WHERE id = ? AND enabled = 1').get(str(b.fund, 40));
+  if (!selected) return res.status(400).json({ error: 'Choose an available gift option.' });
+  const fund = selected.id;
   /* money travels as integer cents. The client may post amountCents
      directly, or a cedis "amount" — never accept a float and never divide,
      or a GHS 200 gift silently records as GHS 2. */
@@ -1253,7 +1255,7 @@ app.post('/api/gifts', publicWrite, (req, res) => {
   if (b.amountCents != null && b.amountCents !== '') cents = Math.round(Number(b.amountCents));
   else if (b.amount != null && b.amount !== '') cents = Math.round(Number(b.amount) * 100);
   if (!Number.isFinite(cents)) cents = 0;
-  if (cents < GIFTS_PUBLIC[fund].min || cents > GIFTS_PUBLIC[fund].max)
+  if (cents < 5000 || cents > 2000000)
     return res.status(400).json({ error: 'That amount is outside the allowed range.' });
   const provider = ['mtn', 'telecel', 'airteltigo'].includes(b.provider) ? b.provider : '';
   const id = uid();
@@ -1261,7 +1263,7 @@ app.post('/api/gifts', publicWrite, (req, res) => {
               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
     .run(id, name, str(b.phone, 40), str(b.email, 200), fund, cents,
          provider, str(b.txnRef, 80), str(b.message, 500), now());
-  notifyAll('Gift received', `${name} sent GHS ${(cents / 100).toFixed(2)} toward the ${GIFTS_PUBLIC[fund].label}`);
+  notifyAll('Gift confirmation submitted', `${name} reported GHS ${(cents / 100).toFixed(2)} toward the ${selected.label} — verify the payment in your MoMo account.`);
   res.json({ ok: true, id });
 });
 
