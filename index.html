@@ -18,12 +18,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Parisienne&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="assets/landing-invite.jpg" />
   <link rel="preload" as="image" href="assets/seal-pressed-320.png" />
-  <link rel="stylesheet" href="app.css?v=175" />
+  <link rel="stylesheet" href="app.css?v=176" />
 
-  <link rel="stylesheet" href="app-views.css?v=175" />
-  <link rel="stylesheet" href="app-forms.css?v=175" />
-  <link rel="stylesheet" href="app-social.css?v=175" />
-  <link rel="stylesheet" href="gifts.css?v=175" />
+  <link rel="stylesheet" href="app-views.css?v=176" />
+  <link rel="stylesheet" href="app-forms.css?v=176" />
+  <link rel="stylesheet" href="app-social.css?v=176" />
+  <link rel="stylesheet" href="gifts.css?v=176" />
   <script>
   /* a checked-in guest goes straight into the app — flag it before first
      paint so the invitation never flashes on their screen (mirrors
@@ -1190,6 +1190,21 @@
       <p class="page-sub">Manage gift options, view confirmations and update the payment destination.</p>
       <button class="menu-item" data-goto="gifts" type="button"><span class="menu-icon menu-icon--gold">&#127873;</span><span class="menu-text"><strong>Manage Gifts &amp; MoMo</strong><small>Funds, confirmations and MoMo settings</small></span><span class="menu-chev">&#10095;</span></button>
       <button class="menu-item" id="giftPhotoShortcut" type="button"><span class="menu-icon menu-icon--gold">&#128247;</span><span class="menu-text"><strong>Gift Page Photo</strong><small>Upload or change the top-right photo on the Gifts page</small></span><span class="menu-chev">&#10095;</span></button>
+      <form id="giftMessageForm" class="aq-card gift-message-card">
+        <h3 class="gr-form-title">Gift Page Message</h3>
+        <p class="page-sub">Edit the text beneath “Gifts”. Keep it short for the best fit. Changes are published when you save.</p>
+        <label class="field">Opening message
+          <textarea id="giftIntroInput" rows="3" maxlength="1000" placeholder="Your personal message to guests"></textarea>
+        </label>
+        <label class="field">Additional message (optional)
+          <textarea id="giftMessageInput" rows="3" maxlength="1000" placeholder="Gift instructions or a thank-you note"></textarea>
+        </label>
+        <div class="aq-actions">
+          <button id="giftMessageSave" class="aq-approve" type="submit">SAVE MESSAGE</button>
+          <button id="giftMessageDefaults" class="aq-neutral" type="button">USE DEFAULT TEXT</button>
+        </div>
+        <p id="giftMessageStatus" class="upload-status" role="status" aria-live="polite"></p>
+      </form>
     </div>
   </section>
 
@@ -1337,8 +1352,8 @@
       <div class="gifts-hero-copy">
         <h1 class="gifts-title">Gifts</h1>
         <div class="gifts-heart-rule" aria-hidden="true"><span></span><i>&#9829;</i><span></span></div>
-        <p>Your love, support and generosity<br>mean the world to us.</p>
-        <p>If you would like to bless us with a gift, you can do so conveniently through Mobile Money (MoMo).</p>
+        <p id="giftIntroText">Your love, support and generosity<br>mean the world to us.</p>
+        <p id="giftMessageText">If you would like to bless us with a gift, you can do so conveniently through Mobile Money (MoMo).</p>
       </div>
     </div>
 
@@ -1533,10 +1548,10 @@ try{
   });
 }catch(e){}
 </script>
-<script src="api-data.js?v=175"></script>
-<script src="app.js?v=175"></script>
-<script src="app-data.js?v=175"></script>
-<script src="app-social.js?v=175"></script>
-<script src="admin-dashboard.js?v=175"></script>
+<script src="api-data.js?v=176"></script>
+<script src="app.js?v=176"></script>
+<script src="app-data.js?v=176"></script>
+<script src="app-social.js?v=176"></script>
+<script src="admin-dashboard.js?v=176"></script>
 </body>
 </html>

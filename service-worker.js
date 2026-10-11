@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v175-admin-gifts-layout';
+const CACHE = 'sj-wedding-v176-editable-gift-message';
 const ASSETS = [
   './',
   './index.html',

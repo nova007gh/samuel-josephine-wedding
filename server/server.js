@@ -1331,7 +1331,8 @@ app.post('/api/home-like', publicWrite, (req, res) => {
 const TEXT_SETTING_KEYS = new Set([
   'weddingNameA', 'weddingNameB', 'weddingFormal',
   'weddingDateISO', 'weddingDateLabel', 'weddingVenue', 'weddingHashtag',
-  'weddingTagline', 'rsvpDeadline', 'storyText', 'events', 'mapUrl', 'storyItems'
+  'weddingTagline', 'rsvpDeadline', 'storyText', 'events', 'mapUrl', 'storyItems',
+  'giftIntroText', 'giftMessageText'
 ]);
 
 /* story timeline likes — a single JSON map { itemId: count } in settings;
@@ -1352,6 +1353,11 @@ app.post('/api/story-likes', (req, res) => {
 });
 
 app.patch('/api/admin/settings', requireAdmin, (req, res) => {
+  for (const key of ['giftIntroText','giftMessageText']){
+    if (req.body?.[key] === undefined) continue;
+    if (typeof req.body[key] !== 'string' || req.body[key].length > 1000)
+      return res.status(400).json({ error: 'Gift messages must be text of at most 1,000 characters.' });
+  }
   const stmt = db.prepare(`INSERT INTO settings (key, value) VALUES (?, ?)
                            ON CONFLICT(key) DO UPDATE SET value = excluded.value`);
   let saved = 0;

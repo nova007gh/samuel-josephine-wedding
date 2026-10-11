@@ -11,6 +11,67 @@ const SETTINGS_STORE = 'kv';
 /* Server-backed site settings (photos, song, wedding details).
    Declared first: gallery rendering below runs at parse time and reads it. */
 let siteSettings = {};
+const GIFT_MESSAGE_DEFAULTS = {
+  giftIntroText:'Your love, support and generosity\nmean the world to us.',
+  giftMessageText:'If you would like to bless us with a gift, you can do so conveniently through Mobile Money (MoMo).'
+};
+const GIFT_MESSAGE_INPUTS = {giftIntroInput:'giftIntroText',giftMessageInput:'giftMessageText'};
+let giftMessageDirty = false;
+let giftMessageSaving = false;
+
+function giftMessageValue(key){
+  return siteSettings[key] !== undefined ? String(siteSettings[key]) : GIFT_MESSAGE_DEFAULTS[key];
+}
+function applyGiftMessages(){
+  for (const key of Object.keys(GIFT_MESSAGE_DEFAULTS)){
+    const text = giftMessageValue(key);
+    const el = document.getElementById(key);
+    if (el){ el.textContent = text; el.classList.toggle('hidden', !text.trim()); }
+  }
+}
+function fillGiftMessageForm(force = false){
+  if (giftMessageDirty && !force) return;
+  for (const [id,key] of Object.entries(GIFT_MESSAGE_INPUTS)){
+    const el = document.getElementById(id);
+    if (el) el.value = giftMessageValue(key);
+  }
+}
+document.getElementById('giftMessageForm')?.addEventListener('input', () => { giftMessageDirty = true; });
+document.getElementById('giftMessageDefaults')?.addEventListener('click', () => {
+  if (!isAdmin() || giftMessageSaving) return;
+  for (const [id,key] of Object.entries(GIFT_MESSAGE_INPUTS)) document.getElementById(id).value = GIFT_MESSAGE_DEFAULTS[key];
+  giftMessageDirty = true;
+  document.getElementById('giftMessageStatus').textContent = 'Default text selected. Click Save Message to publish it.';
+});
+document.getElementById('giftMessageForm')?.addEventListener('submit', async e => {
+  e.preventDefault();
+  const status = document.getElementById('giftMessageStatus');
+  if (!isAdmin()){ status.textContent = 'Sign in as admin to change this message.'; return; }
+  if (giftMessageSaving) return;
+  const fields = Object.fromEntries(Object.entries(GIFT_MESSAGE_INPUTS).map(([id,key]) => [key,document.getElementById(id).value.trim()]));
+  if (!Object.values(fields).some(Boolean)){ status.textContent = 'Enter at least one message.'; return; }
+  if (Object.values(fields).some(text => text.length > 1000)){ status.textContent = 'Each message can contain up to 1,000 characters.'; return; }
+  const controls = [...e.currentTarget.elements];
+  const button = document.getElementById('giftMessageSave');
+  giftMessageSaving = true;
+  controls.forEach(el => { el.disabled = true; });
+  button.textContent = 'SAVING…';
+  status.textContent = '';
+  try {
+    const result = await patchSettings(fields);
+    if (result.saved !== 2) throw new Error('The message was not saved. Refresh the app and try again.');
+    Object.assign(siteSettings, fields);
+    giftMessageDirty = false;
+    applyGiftMessages();
+    fillGiftMessageForm(true);
+    status.textContent = 'Saved. Your message is live and updates automatically for guests.';
+  } catch(err){ status.textContent = err.message || 'Could not save. Your text is still here for retry.'; }
+  finally {
+    giftMessageSaving = false;
+    controls.forEach(el => { el.disabled = false; });
+    button.textContent = 'SAVE MESSAGE';
+  }
+});
 
 function openSettingsDB(){
   return new Promise((resolve, reject) => {
@@ -447,6 +508,8 @@ function showCouplePhoto(has){
   applySitePhotos();
   cacheSitePhotos();
   applyWeddingDetails();
+  applyGiftMessages();
+  fillGiftMessageForm();
   fillWeddingForm();
   syncSiteSettings();   // seeds the live-sync baseline
   if (couplePhoto) couplePhoto.src = sitePhoto('couple', 'assets/couple-home.jpg');
@@ -840,7 +903,8 @@ async function syncSiteSettings(){
     photos:  k => k === 'couplePhotoUrl' || k.startsWith('photo:'),
     details: k => k.startsWith('wedding') || ['events','mapUrl','rsvpDeadline','storyText'].includes(k),
     songs:   k => k === 'songs' || k === 'songUrl',
-    likes:   k => k === 'homeLikes'
+    likes:   k => k === 'homeLikes',
+    giftText: k => Object.keys(GIFT_MESSAGE_DEFAULTS).includes(k)
   };
   const changed = {};
   for (const [g, pick] of Object.entries(groups)){
@@ -855,6 +919,7 @@ async function syncSiteSettings(){
   if (changed.details) applyWeddingDetails();
   if (changed.songs && typeof loadSong === 'function') loadSong();
   if (changed.likes) renderHomeLikes();
+  if (changed.giftText){ applyGiftMessages(); fillGiftMessageForm(); }
   /* keep the admin's lists current, but never overwrite a field being typed in */
   if ((changed.story || changed.songs) && isAdmin() && !document.activeElement?.closest('[data-view="admin"]'))
     renderSiteSettings();

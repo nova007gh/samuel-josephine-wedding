@@ -38,6 +38,7 @@
 .gifts-heart-rule span:last-child{ transform:scaleX(-1); }
 .gifts-heart-rule i{ font-style:normal; font-size:20px; line-height:1; text-shadow:0 1px 1px #775019; }
 .gifts-hero-copy p{ font:500 16px/1.2 var(--gift-serif); margin:0 0 10px; text-wrap:pretty; }
+.gifts-hero-copy :is(#giftIntroText,#giftMessageText){ white-space:pre-line; overflow-wrap:anywhere; }
 .gifts-floral{ position:absolute; pointer-events:none; background:url('assets/gift-floral.svg') center/contain no-repeat; z-index:1; }
 .gifts-floral--left{ width:148px; height:224px; bottom:-8px; left:-35px; transform:rotate(-8deg); }
 .gifts-floral--right{ width:176px; height:246px; bottom:-21px; right:-20px; transform:scaleX(-1) rotate(-8deg); }

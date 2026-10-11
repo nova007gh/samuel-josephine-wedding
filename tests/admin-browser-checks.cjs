@@ -17,6 +17,10 @@ module.exports = async ({call,evaluate,errors,out}) => {
     await require('./admin-gifts-checks.cjs')({call,evaluate,errors,out});
     return;
   }
+  if (process.argv.includes('--gift-message')){
+    await require('./gift-message-checks.cjs')({evaluate,errors});
+    return;
+  }
   for(const width of [320,375,430]){
     await call('Emulation.setDeviceMetricsOverride',{width,height:1100,deviceScaleFactor:1,mobile:true});
     const checks=await evaluate(`(()=>{

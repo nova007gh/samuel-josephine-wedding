@@ -1,5 +1,24 @@
 # snybena.com live audit — 11 October 2026
 
+## Editable Gift Page Message — v176
+
+Admin Dashboard → Gifts & MoMo now contains a Gift Page Message form for the
+two paragraphs beneath Gifts. Each supports 1,000 characters and line breaks;
+the second can be blank. Default text remains in place until an admin saves.
+Use Default Text fills the editor without publishing. Save uses the existing
+authenticated settings route, persists in SQLite, renders as plain text and
+updates open guest pages via settings polling. Failed saves retain drafts;
+polling does not overwrite unsaved edits. Existing recipient details and gift
+records were not changed.
+
+Isolated database-copy tests passed for authenticated edits, unauthenticated
+401, public settings values, SQLite persistence and oversized-message 400.
+Deployed UI tests with mocked persistence passed for custom messages, line
+breaks, safe plain text, optional paragraphs, polling, draft/retry protection,
+defaults and the admin guard. Guest Gifts mobile checks and dashboard/upload
+regressions also passed. No test message was saved to the live database.
+Run `node tests/gifts-design.cjs /absolute/output/directory --gift-message`.
+
 ## Admin Gifts layout repair — v175
 
 A shared `.admin-only` menu style forced Manage Gift Funds and MoMo Settings

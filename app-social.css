@@ -970,6 +970,12 @@
 .admin-section-tabs button:focus-visible{ outline:2px solid #88601e; outline-offset:3px; }
 .admin-section-panel > .settings-heading:first-child{ margin-top:6px; }
 .admin-section-panel:focus-visible{ outline:2px solid #b58b45; outline-offset:4px; }
+.gift-message-card{ display:grid; gap:14px; margin-top:18px; }
+.gift-message-card .page-sub{ margin:0; text-align:left; font-size:.75rem; line-height:1.6; }
+.gift-message-card textarea{ font-size:16px; min-height:100px; resize:vertical; }
+.gift-message-card .aq-actions{ margin:0; flex-wrap:wrap; }
+#giftMessageStatus{ margin:0; }
+#giftMessageStatus:empty{ display:none; }
 .sj-upload-progress{ display:grid; gap:6px; margin-top:14px; font-size:.7rem; color:#765b30; }
 .sj-upload-progress progress{ width:100%; height:12px; accent-color:#a77c32; }
 .sj-upload-progress progress::-webkit-progress-bar{ background:#ede2cf; border-radius:10px; }
