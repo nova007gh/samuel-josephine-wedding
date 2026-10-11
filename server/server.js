@@ -200,6 +200,9 @@ function queueTranscode(memoryId){
   if (!ffmpegOk || transcodeIds.has(memoryId)) return;
   const row = db.prepare('SELECT mediaUrl, type FROM memories WHERE id = ?').get(memoryId);
   if (!row || !/^video\//.test(row.type || '') || !row.mediaUrl) return;
+  /* Our generated outputs are already compressed. Never recompress them on
+     each API restart, even when they remain larger than the transfer threshold. */
+  if (/\.web\.mp4$/i.test(row.mediaUrl)) return;
   const src = path.join(UPLOADS_DIR, path.basename(row.mediaUrl));
   let size = 0;
   try { size = fs.statSync(src).size; } catch { return; }
@@ -432,6 +435,8 @@ app.post('/api/admin/logout', requireAdmin, (req, res) => {
   res.json({ ok: true });
 });
 
+const competitionAuth = require('./competitions')({app,db,requireAdmin,publicWrite,multer,storage,uploadsDir:UPLOADS_DIR});
+
 /* ---------- guests (check-in) ---------- */
 app.post('/api/guests', publicWrite, (req, res) => {
   const g = req.body || {};
@@ -453,12 +458,14 @@ app.post('/api/guests', publicWrite, (req, res) => {
   if (existing){
     db.prepare(`UPDATE guests SET name=?, phone=?, email=?, relation=?, city=?, state=?, country=?, attending=?, tableGuests=?, checkedInAt=? WHERE id=?`)
       .run(...vals, existing.id);
+    competitionAuth.issueSession(res, existing.id);
     return res.json({ id: existing.id });
   }
   const id = uid();
   db.prepare(`INSERT INTO guests (id, name, phone, email, relation, city, state, country, attending, tableGuests, checkedInAt)
               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
     .run(id, ...vals);
+  competitionAuth.issueSession(res, id);
   res.json({ id });
   notifyAll('New guest checked in', `${name} just ${g.attending === false ? 'joined to explore' : 'checked in to attend'}${tableGuests ? ` — table of ${tableGuests + 1}` : ''} — pending your approval`);
 });
@@ -815,6 +822,7 @@ app.post('/api/guests/login', otpCheckLimit, (req, res) => {
   }
   const g = findGuestByPhone(r.tail);
   if (!g) return res.status(404).json({ error: 'No check-in found for that number.' });
+  competitionAuth.issueSession(res, g.id);
   res.json({ ok: true, guest: { id: g.id, name: g.name, phone: g.phone, email: g.email,
     relation: g.relation, city: g.city, state: g.state, country: g.country,
     attending: !!g.attending, tableGuests: g.tableGuests || 0 } });
@@ -1638,6 +1646,7 @@ app.delete('/api/admin/rsvps/:id', requireAdmin, (req, res) => {
 /* ---------- errors ---------- */
 app.use((err, req, res, next) => {
   if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE'){
+    if(req.path==='/api/admin/competition-photos') return res.status(413).json({error:'Photo is too large (max 10 MB).'});
     return res.status(413).json({ error: `File is too large (max ${Math.round(MAX_UPLOAD / 1048576)}MB).` });
   }
   console.warn('Request error:', err.message);

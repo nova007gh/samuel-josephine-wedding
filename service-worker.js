@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v176-editable-gift-message';
+const CACHE = 'sj-wedding-v177-competitions';
 const ASSETS = [
   './',
   './index.html',
@@ -9,6 +9,8 @@ const ASSETS = [
   './app-forms.css',
   './app-social.css',
   './gifts.css',
+  './competitions.css',
+  './competitions.js',
   './assets/gift-floral.svg',
   './app.js',
   './app-data.js',

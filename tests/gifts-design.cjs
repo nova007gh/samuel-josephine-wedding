@@ -1,5 +1,5 @@
 /* Read-only live UI smoke test in an isolated Chrome profile.
-   Usage: node tests/gifts-design.cjs /absolute/output/directory [--dashboard|--admin-gifts|--gift-message]
+   Usage: node tests/gifts-design.cjs /absolute/output/directory [--dashboard|--admin-gifts|--gift-message|--competitions]
    Dashboard mode mocks admin responses: no credentials or live writes. */
 const fs = require('node:fs');
 const path = require('node:path');
@@ -48,10 +48,14 @@ const delay = ms => new Promise(resolve=>setTimeout(resolve,ms));
   await call('Page.enable'); await call('Runtime.enable');
   await call('Emulation.setDeviceMetricsOverride',{width:430,height:1100,deviceScaleFactor:1,mobile:true});
   const loaded = new Promise(resolve=>events.set('Page.loadEventFired',resolve));
-  await call('Page.navigate',{url:'https://snybena.com/#gifts'});
+   await call('Page.navigate',{url:(process.env.WEDDING_TEST_URL||'https://snybena.com/')+'#gifts'});
   await Promise.race([loaded,delay(15000)]);
   /* Preview-only identity in this disposable profile; no check-in API call. */
   await evaluate('setGuest({name:"Design preview"});enterApp();switchView("gifts");document.fonts.ready.then(()=>true)');
+  if(process.argv.includes('--competitions')){
+    await require('./competitions-browser-checks.cjs')({call,evaluate,errors,out});
+    return;
+  }
   for(let i=0;i<30;i++){
     if(await evaluate('document.querySelectorAll(".gift-fund").length>0 && !!document.getElementById("giftMoMoNumber").value')) break;
     await delay(250);

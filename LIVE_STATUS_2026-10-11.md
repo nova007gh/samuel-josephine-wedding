@@ -1,5 +1,70 @@
 # snybena.com live audit — 11 October 2026
 
+## Wedding Games & Competitions — v177
+
+Added reference-inspired cream/gold guest competition lists, contestant/team
+photo cards, vote confirmation and live rankings, plus a Competitions dashboard
+category and management views. Guests enter from Home or Share; the existing
+seven navigation tabs and Gallery position remain unchanged. No sample games,
+contestants or votes are seeded. Admin can create/edit, reorder contestants,
+upload cover/contestant photos with percentage progress, save private drafts,
+publish, schedule start/end dates, pause/resume/close, duplicate without votes,
+delete with confirmation, share a guest link and export aggregate rankings as
+CSV. Voter names and pending comments are admin-only; optional comments need
+approval before they appear publicly. Guest result visibility and contestant
+photo display are configurable. Polling runs every 15 seconds only in visible
+competition views, pauses during uploads and preserves selections/drafts.
+
+Voting uses new hashed, 90-day guest sessions in HttpOnly/SameSite=Strict cookies
+(Secure on HTTPS), issued only by verified registration or OTP returning-guest
+login. Existing local guest IDs/names alone cannot vote. Old signed-in browsers
+must verify once again; real OTP provider delivery restrictions remain an
+external limitation and were not resolved or retested. The couple must approve
+guest registration before voting; attending-only and explicit selected approved
+guest groups are enforced server-side. Single choice is the default. Multiple
+choices means one selection per contestant per guest, not unlimited repeat
+votes. Vote changes replace the ballot atomically when enabled. Retry requests
+cannot inflate counts. Audience/mode are locked after votes; contestants with
+votes cannot be removed. Start/end/pause/close checks happen on each vote.
+Results use total selections and distinct guest voters; multi-choice percentages
+are shares of selections. CSV formula-shaped values are escaped. Uploaded but
+unused competition photos are retained; automated orphan cleanup is not added.
+
+Isolated full-API tests (disposable database, no live credentials/data) passed for
+CRUD, draft privacy, guest registration/login/logout cookies, approval/audience,
+dates, limits/changes/concurrent retries, result privacy, comment moderation,
+photos, CSV escaping, duplicate/delete and restart persistence. Mocked candidate
+browser tests passed at 320/375/430/1024px for layout, filters, voting/retry,
+editor/guest group/reordering, upload progress, management actions, navigation
+preservation and admin route guard. These do not prove real OTP delivery or a
+real multi-phone wedding vote flow. Test commands:
+
+`node tests/competitions-api.cjs /opt/wedding-api /opt/wedding-api/server-competitions-candidate.js`
+
+`node tests/competitions-ui.cjs /absolute/output/directory`
+
+`node tests/gifts-design.cjs /absolute/output/directory --competitions`
+
+Post-deploy live checks found a pre-existing restart bug: the startup compression
+sweep recompressed a large `.web.mp4` output, adding another `.web` suffix and
+updating its URL/size. A guard now excludes generated `.web.mp4` outputs from
+future passes. The existing memory ID/caption/status and resulting file were
+retained; no original record was deleted. A focused queue test verifies generated
+outputs never queue while original large videos still queue once. Pre-release
+snapshot had 7 guests, 1 RSVP, 30 memories, 0 guestbook entries, 1 gift and 1 fund;
+these differ from earlier audit counts and were treated as existing user data.
+
+Final deployed browser competition tests and existing Gift Page Message,
+admin Gifts layout and dashboard/upload regressions passed. Live public health,
+competition list/session endpoints returned 200; unauthenticated competition
+management and photo upload returned 401. A real admin read verified the new
+competition list was empty. Snapshot comparison verified guests, RSVPs,
+guestbook, gifts, gift funds and all 35 settings unchanged. All 30 memory records
+and referenced files were retained, with only the described background video
+compression changing URL/size; ffprobe confirmed the new H.264 stream and valid
+duration. SQLite integrity remained `ok`. The full isolated API suite was run
+again using the final deployed backend. No live competition or vote was created.
+
 ## Editable Gift Page Message — v176
 
 Admin Dashboard → Gifts & MoMo now contains a Gift Page Message form for the

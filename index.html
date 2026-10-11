@@ -18,12 +18,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Parisienne&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="assets/landing-invite.jpg" />
   <link rel="preload" as="image" href="assets/seal-pressed-320.png" />
-  <link rel="stylesheet" href="app.css?v=176" />
+  <link rel="stylesheet" href="app.css?v=177" />
 
-  <link rel="stylesheet" href="app-views.css?v=176" />
-  <link rel="stylesheet" href="app-forms.css?v=176" />
-  <link rel="stylesheet" href="app-social.css?v=176" />
-  <link rel="stylesheet" href="gifts.css?v=176" />
+  <link rel="stylesheet" href="app-views.css?v=177" />
+  <link rel="stylesheet" href="app-forms.css?v=177" />
+  <link rel="stylesheet" href="app-social.css?v=177" />
+  <link rel="stylesheet" href="gifts.css?v=177" />
+  <link rel="stylesheet" href="competitions.css?v=177" />
   <script>
   /* a checked-in guest goes straight into the app — flag it before first
      paint so the invitation never flashes on their screen (mirrors
@@ -323,6 +324,9 @@
     <button id="enterFromHome" class="enter-wide" type="button">
       ENTER OUR WEDDING <span aria-hidden="true">&#10095;</span>
     </button>
+    <button class="menu-item menu-item--wide" data-goto="competitions" type="button">
+      <span class="menu-icon menu-icon--gold">&#127918;</span><span class="menu-text"><strong>Wedding Games &amp; Competitions</strong><small>Join the fun, vote and see live results</small></span><span class="menu-chev">&#10095;</span>
+    </button>
   </section>
 
   <!-- ---------- SCREEN 4 — Our Story ---------- -->
@@ -576,6 +580,11 @@
     <p class="page-sub">Share your photos, videos &amp; wishes with the couple.</p>
 
     <div class="menu-list">
+      <button class="menu-item" data-goto="competitions" type="button">
+        <span class="menu-icon menu-icon--gold">&#127918;</span>
+        <span class="menu-text"><strong>Wedding Games &amp; Competitions</strong><small>Join the fun, vote and see results</small></span>
+        <span class="menu-chev">&#10095;</span>
+      </button>
       <button class="menu-item" data-goto="guestbook" type="button">
         <span class="menu-icon menu-icon--gold">&#128172;</span>
         <span class="menu-text"><strong>Guest Book</strong><small>Leave your love &amp; wishes</small></span>
@@ -877,6 +886,7 @@
       <button id="admin-tab-announcements" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-announcements" data-admin-section="announcements" type="button"><span aria-hidden="true">&#128227;</span>Announcements</button>
       <button id="admin-tab-gifts" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-gifts" data-admin-section="gifts" type="button"><span aria-hidden="true">&#127873;</span>Gifts &amp; MoMo</button>
       <button id="admin-tab-access" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-access" data-admin-section="access" type="button"><span aria-hidden="true">&#128737;</span>Access &amp; Security</button>
+      <button id="admin-tab-competitions" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-competitions" data-admin-section="competitions" type="button"><span aria-hidden="true">&#127918;</span>Competitions</button>
     </div>
 
     <div id="admin-panel-overview" class="admin-section-panel" role="tabpanel" aria-labelledby="admin-tab-overview" tabindex="0">
@@ -1206,6 +1216,38 @@
         <p id="giftMessageStatus" class="upload-status" role="status" aria-live="polite"></p>
       </form>
     </div>
+    <div id="admin-panel-competitions" class="admin-section-panel hidden" role="tabpanel" aria-labelledby="admin-tab-competitions" tabindex="0">
+      <h2 class="settings-heading">Wedding Competitions</h2>
+      <p class="page-sub">Create custom games, manage contestants and voting, and view live rankings.</p>
+      <button class="menu-item" data-goto="admincompetitions" type="button"><span class="menu-icon menu-icon--gold">&#127918;</span><span class="menu-text"><strong>Manage Wedding Competitions</strong><small>Create, publish, pause and export results</small></span><span class="menu-chev">&#10095;</span></button>
+      <button class="menu-item" data-goto="competitions" type="button"><span class="menu-icon menu-icon--gold">&#128065;</span><span class="menu-text"><strong>Guest Competition Page</strong><small>See what your guests see</small></span><span class="menu-chev">&#10095;</span></button>
+    </div>
+  </section>
+
+  <!-- Competitions have their own views; the seven main tabs stay unchanged. -->
+  <section class="view hidden comp-view" data-view="competitions">
+    <button class="comp-back" data-goto="more" type="button">&#8249; Back to Share</button>
+    <div class="comp-heading"><span aria-hidden="true">&#127918;</span><h1>Wedding Games<br>&amp; Competitions</h1><p>Join the fun, vote and make unforgettable memories!</p></div>
+    <div id="competitionFilters" class="comp-filters" role="group" aria-label="Competition status"></div>
+    <p id="competitionListStatus" class="comp-status" role="status"></p>
+    <div id="competitionList" class="comp-list"></div>
+  </section>
+  <section class="view hidden comp-view" data-view="competition">
+    <button class="comp-back" data-goto="competitions" type="button">&#8249; All competitions</button>
+    <div id="competitionDetail"></div>
+    <p id="competitionVoteStatus" class="comp-status" role="status" aria-live="polite"></p>
+  </section>
+  <section class="view hidden comp-view" data-view="admincompetitions">
+    <button class="comp-back" data-goto="admin" type="button">&#8249; Admin Dashboard</button>
+    <div class="comp-heading"><span aria-hidden="true">&#127918;</span><h1>Wedding Competitions</h1><p>Create, manage and view live results.</p></div>
+    <p id="competitionAdminStatus" class="comp-status" role="status" aria-live="polite"></p>
+    <div id="competitionAdminBrowse">
+      <button class="comp-btn comp-btn--gold comp-wide" data-comp-action="create" type="button">+ Create New Competition</button>
+      <div id="competitionAdminFilters" class="comp-filters" role="group" aria-label="Admin competition status"></div>
+      <div id="competitionAdminList" class="comp-list"></div>
+    </div>
+    <div id="competitionAdminManage" class="hidden"></div>
+    <form id="competitionEditor" class="comp-panel hidden"></form>
   </section>
 
   <!-- ---------- Guest & RSVP List (Admin) ---------- -->
@@ -1548,10 +1590,11 @@ try{
   });
 }catch(e){}
 </script>
-<script src="api-data.js?v=176"></script>
-<script src="app.js?v=176"></script>
-<script src="app-data.js?v=176"></script>
-<script src="app-social.js?v=176"></script>
-<script src="admin-dashboard.js?v=176"></script>
+<script src="api-data.js?v=177"></script>
+<script src="app.js?v=177"></script>
+<script src="app-data.js?v=177"></script>
+<script src="app-social.js?v=177"></script>
+<script src="admin-dashboard.js?v=177"></script>
+<script src="competitions.js?v=177"></script>
 </body>
 </html>

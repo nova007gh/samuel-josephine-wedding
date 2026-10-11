@@ -911,8 +911,10 @@ document.querySelectorAll('[data-pane]').forEach(b =>
   b.addEventListener('click', () => showPane(b.dataset.pane === 'back' ? (otpMode === 'login' ? 'return' : 'form') : 'form')));
 
 /* guest sign-out — clears this device's check-in; admin session untouched */
-$('#guestSignOut')?.addEventListener('click', () => {
+$('#guestSignOut')?.addEventListener('click', async () => {
   if (!confirm('Sign out of this device? You can sign back in anytime with your phone number.')) return;
+  try { await api('/guests/logout', {method:'POST'}); }
+  catch { alert('Could not securely sign out. Check your connection and try again.'); return; }
   clearGuest();
   location.href = '/';
 });
@@ -947,9 +949,10 @@ $('#enterFromHome')?.addEventListener('click', () => {
 const SUBVIEW_TAB = {
   guestbook:'more', rsvp:'more', voicemsg:'more', videomsg:'more',
   admin:'more', adminlogin:'more', approvals:'more', rsvpAdmin:'more', guestlist:'more',
-  guestrsvp:'more', adminmedia:'more', adminvoice:'more', adminvideo:'more', security:'more'
+  guestrsvp:'more', adminmedia:'more', adminvoice:'more', adminvideo:'more', security:'more',
+  competitions:'more', competition:'more', admincompetitions:'more'
 };
-const ADMIN_VIEWS = new Set(['admin', 'approvals', 'rsvpAdmin', 'guestlist', 'guestrsvp', 'adminmedia', 'adminvoice', 'adminvideo', 'security']);
+const ADMIN_VIEWS = new Set(['admin', 'approvals', 'rsvpAdmin', 'guestlist', 'guestrsvp', 'adminmedia', 'adminvoice', 'adminvideo', 'security', 'admincompetitions']);
 /* Views are pushed onto browser history so the device Back button moves
    between screens instead of leaving the page — leaving would reload the
    app and replay the invitation gates. */
@@ -1014,6 +1017,7 @@ function switchView(name, fromHistory = false){
     try { history.pushState({ view: name }, '', '#' + name); } catch {}
   }
   currentView = name;
+  window.dispatchEvent(new CustomEvent('wedding:view', {detail:{name}}));
 }
 
 window.addEventListener('popstate', e => {

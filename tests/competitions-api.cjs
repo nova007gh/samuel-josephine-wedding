@@ -1,0 +1,136 @@
+/* Disposable API/database test. Never reads live credentials or writes live data.
+   node tests/competitions-api.cjs /opt/wedding-api /opt/wedding-api/server-competitions-candidate.js */
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const os=require('node:os');
+const path=require('node:path');
+const crypto=require('node:crypto');
+const {spawn}=require('node:child_process');
+const root=process.argv[2]||path.join(__dirname,'../server');
+const server=process.argv[3]||path.join(root,'server.js');
+const Database=require(path.join(root,'node_modules/better-sqlite3'));
+const dir=fs.mkdtempSync(path.join(os.tmpdir(),'wedding-competitions-test-'));
+const base='http://127.0.0.1:3198/api';
+let child,db,token;
+async function start(){
+  child=spawn(process.execPath,[server],{env:{PATH:process.env.PATH,PORT:'3198',HOST:'127.0.0.1',DATA_DIR:dir,ADMIN_PASSWORD:'isolated-test-only',FFMPEG_BIN:'disabled-test-ffmpeg'}});
+  await new Promise((resolve,reject)=>{
+    const timer=setTimeout(()=>reject(new Error('Isolated API startup timed out')),10000);
+    child.stdout.on('data',chunk=>{if(String(chunk).includes('listening')){clearTimeout(timer);resolve();}});
+    child.once('exit',code=>{clearTimeout(timer);reject(new Error('Isolated API exited '+code));});
+  });
+}
+async function stop(){if(child&&child.exitCode===null){const closed=new Promise(r=>child.once('exit',r));child.kill();await closed;}}
+async function req(url,{method='GET',body,admin=false,cookie='',status=200,headers={}}={}){
+  const r=await fetch(base+url,{method,headers:{...(admin?{Authorization:'Bearer '+token}:{}),...(cookie?{Cookie:cookie}:{}),...(body instanceof FormData?{}:body?{'Content-Type':'application/json'}:{}),...headers},body:body instanceof FormData?body:body?JSON.stringify(body):undefined});
+  const data=(r.headers.get('content-type')||'').includes('json')?await r.json():await r.text();
+  assert.equal(r.status,status,method+' '+url+' '+JSON.stringify(data));
+  return {data,cookie:r.headers.get('set-cookie')?.split(';')[0],response:r};
+}
+async function register(name,n,attending=true){
+  const phone='+23324000000'+n,tail=phone.slice(-9),otpToken=crypto.randomBytes(16).toString('hex');
+  db.prepare('INSERT INTO otp_tokens VALUES (?,?,?)').run(otpToken,tail,Date.now()+60000);
+  const r=await req('/guests',{method:'POST',headers:{'X-Forwarded-Proto':'https'},body:{name,phone,otpToken,attending}});
+  assert.ok(r.cookie);assert.match(r.response.headers.get('set-cookie'),/HttpOnly/);assert.match(r.response.headers.get('set-cookie'),/SameSite=Strict/);
+  assert.match(r.response.headers.get('set-cookie'),/Secure/);
+  const raw=r.cookie.split('=')[1];
+  assert.equal(db.prepare('SELECT COUNT(*) AS n FROM guest_sessions WHERE tokenHash=?').get(raw).n,0);
+  assert.equal(db.prepare('SELECT COUNT(*) AS n FROM guest_sessions WHERE tokenHash=?').get(crypto.createHash('sha256').update(raw).digest('hex')).n,1);
+  return {id:r.data.id,phone,cookie:r.cookie};
+}
+const cfg=overrides=>({title:'Best Dressed',description:'A custom wedding competition',status:'active',audience:'all',guestIds:[],voteMode:'single',showResults:true,showPhotos:true,allowChange:false,commentsEnabled:true,choices:[{name:'Team Bride'},{name:'Team Groom'}],...overrides});
+async function create(overrides){return (await req('/admin/competitions',{method:'POST',admin:true,body:cfg(overrides),status:201})).data;}
+(async()=>{
+  try{
+    await start();db=new Database(path.join(dir,'wedding.db'));
+    token=(await req('/admin/login',{method:'POST',body:{password:'isolated-test-only'}})).data.token;
+    assert.deepEqual((await req('/competitions')).data,[]);
+    await req('/admin/competitions',{status:401});
+    await req('/admin/competitions',{method:'POST',body:cfg(),status:401});
+    await req('/admin/competition-photos',{method:'POST',status:401});
+    const a=await register('Guest A',1),b=await register('Guest B',2,false),pending=await register('Pending Guest',3);
+    db.prepare("UPDATE guests SET status='approved' WHERE id IN (?,?)").run(a.id,b.id);
+    assert.equal((await req('/competitions/session',{cookie:a.cookie})).data.verified,true);
+    const draft=await create({status:'draft'});
+    assert.equal((await req('/competitions')).data.length,0);
+    await req('/competitions/'+draft.id,{status:404});
+    const c=await create();const id=c.id,one=c.choices[0].id,two=c.choices[1].id;
+    await req('/competitions/'+id+'/vote',{method:'POST',body:{guestId:a.id,choices:[one]},status:401});
+    await req('/competitions/'+id+'/vote',{method:'POST',cookie:pending.cookie,body:{choices:[one]},status:403});
+    await req('/competitions/'+id+'/vote',{method:'POST',cookie:a.cookie,headers:{Origin:'https://untrusted.example'},body:{choices:[one]},status:403});
+    await req('/competitions/'+id+'/vote',{method:'POST',cookie:a.cookie,body:{choices:[one,two]},status:400});
+    await req('/competitions/'+id+'/vote',{method:'POST',cookie:a.cookie,body:{choices:['fake']},status:400});
+    const cast=await req('/competitions/'+id+'/vote',{method:'POST',cookie:a.cookie,body:{choices:[one],comment:'Congratulations!'}});
+    assert.equal(cast.data.results.totalVotes,1);assert.deepEqual(cast.data.myChoices,[one]);assert.equal(cast.data.comments.length,0);
+    await Promise.all(Array.from({length:3},()=>req('/competitions/'+id+'/vote',{method:'POST',cookie:a.cookie,body:{choices:[one]}})));
+    assert.equal((await req('/competitions/'+id)).data.results.totalVotes,1);
+    await req('/competitions/'+id+'/vote',{method:'POST',cookie:a.cookie,body:{choices:[two]},status:400});
+    await req('/admin/competitions/'+id,{method:'PATCH',admin:true,body:{voteMode:'multiple'},status:400});
+    await req('/admin/competitions/'+id,{method:'PATCH',admin:true,body:{choices:[{id:two,name:'Team Groom'},{name:'Extra'}]},status:400});
+    await req('/admin/competitions/'+id,{method:'PATCH',admin:true,body:{allowChange:true,showResults:false,showPhotos:false}});
+    await req('/competitions/'+id+'/vote',{method:'POST',cookie:a.cookie,body:{choices:[two]}});
+    const hidden=(await req('/competitions/'+id)).data;
+    assert.equal(hidden.results,null);assert.equal(hidden.config,undefined);assert.equal(hidden.guestIds,undefined);assert.deepEqual(hidden.myChoices,[]);
+    const adminResult=(await req('/admin/competitions/'+id,{admin:true})).data;
+    assert.equal(adminResult.results.totalVotes,1);assert.equal(adminResult.results.rankings[0].id,two);
+    const voters=(await req('/admin/competitions/'+id+'/voters',{admin:true})).data;
+    assert.equal(voters[0].name,'Guest A');assert.equal(voters[0].phone,undefined);
+    await req('/admin/competitions/'+id+'/voters',{status:401});
+    await req('/admin/competitions/'+id+'/comments/'+a.id,{admin:true,method:'PATCH',body:{status:'approved'}});
+    assert.equal((await req('/competitions/'+id)).data.comments[0].text,'Congratulations!');
+    await req('/admin/competitions/'+id+'/comments/'+a.id,{admin:true,method:'PATCH',body:{status:'rejected'}});
+    assert.equal((await req('/competitions/'+id)).data.comments.length,0);
+    await req('/admin/competitions/'+id,{admin:true,method:'PATCH',body:{status:'paused'}});
+    await req('/competitions/'+id+'/vote',{method:'POST',cookie:b.cookie,body:{choices:[one]},status:409});
+    await req('/admin/competitions/'+id,{admin:true,method:'PATCH',body:{status:'closed'}});
+    await req('/competitions/'+id+'/vote',{method:'POST',cookie:b.cookie,body:{choices:[one]},status:409});
+    const duplicate=(await req('/admin/competitions/'+id+'/duplicate',{admin:true,method:'POST',status:201})).data;
+    assert.equal(duplicate.status,'draft');assert.equal(duplicate.results.totalVotes,0);assert.notEqual(duplicate.choices[0].id,one);
+    const scheduled=await create({startAt:Date.now()+60000,endAt:Date.now()+120000});
+    assert.equal(scheduled.status,'upcoming');
+    await req('/competitions/'+scheduled.id+'/vote',{method:'POST',cookie:a.cookie,body:{choices:[scheduled.choices[0].id]},status:409});
+    const endSoon=await create({endAt:Date.now()+1000});
+    await new Promise(r=>setTimeout(r,1100));
+    assert.equal((await req('/competitions/'+endSoon.id)).data.status,'closed');
+    await req('/competitions/'+endSoon.id+'/vote',{method:'POST',cookie:a.cookie,body:{choices:[endSoon.choices[0].id]},status:409});
+    const attendance=await create({audience:'attending'});
+    await req('/competitions/'+attendance.id+'/vote',{method:'POST',cookie:b.cookie,body:{choices:[attendance.choices[0].id]},status:403});
+    const group=await create({audience:'group',guestIds:[a.id]});
+    await req('/competitions/'+group.id+'/vote',{method:'POST',cookie:b.cookie,body:{choices:[group.choices[0].id]},status:403});
+    await req('/competitions/'+group.id+'/vote',{method:'POST',cookie:a.cookie,body:{choices:[group.choices[0].id]}});
+    const multi=await create({voteMode:'multiple',allowChange:true,choices:[{name:'=FORMULA()'},{name:'Team B'},{name:'Team C'}]});
+    const m=multi.choices.map(x=>x.id);
+    await req('/competitions/'+multi.id+'/vote',{method:'POST',cookie:a.cookie,body:{choices:[m[0],m[1]]}});
+    const multiVote=(await req('/competitions/'+multi.id+'/vote',{method:'POST',cookie:b.cookie,body:{choices:[m[1]]}})).data;
+    assert.equal(multiVote.results.totalVotes,3);assert.equal(multiVote.results.uniqueVoters,2);assert.equal(multiVote.results.rankings[0].percentage,67);
+    await req('/competitions/'+multi.id+'/vote',{method:'POST',cookie:a.cookie,body:{choices:[m[0],m[0]]},status:400});
+    await req('/competitions/'+multi.id+'/vote',{method:'POST',cookie:a.cookie,body:{choices:[m[2]]}});
+    assert.equal((await req('/competitions/'+multi.id)).data.results.totalVotes,2);
+    const csv=(await req('/admin/competitions/'+multi.id+'/export',{admin:true})).data;
+    assert.ok(csv.includes("'=FORMULA()"));await req('/admin/competitions/'+multi.id+'/export',{status:401});
+    const photo=new FormData();photo.append('file',new Blob([Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aX1sAAAAASUVORK5CYII=','base64')],{type:'image/png'}),'test.png');
+    const uploaded=(await req('/admin/competition-photos',{admin:true,method:'POST',body:photo})).data.url;
+    const photos=await create({coverUrl:uploaded,choices:[{name:'Photo Choice',photoUrl:uploaded},{name:'Other'}],showPhotos:false});
+    assert.equal((await req('/competitions/'+photos.id)).data.choices[0].photoUrl,'');
+    assert.ok(fs.existsSync(dir+uploaded));
+    await req('/admin/competitions',{method:'POST',admin:true,body:cfg({title:''}),status:400});
+    await req('/admin/competitions',{method:'POST',admin:true,body:cfg({startAt:Date.now()+10000,endAt:Date.now()+1000}),status:400});
+    await req('/admin/competitions',{method:'POST',admin:true,body:cfg({coverUrl:'https://untrusted.example/x.png'}),status:400});
+    // Returning-guest OTP creates a new secure session without changing identity.
+    db.prepare('INSERT INTO otps (phone,code,expiresAt,attempts,sentAt) VALUES (?,?,?,?,?)').run(a.phone.slice(-9),crypto.createHash('sha256').update('123456').digest('hex'),Date.now()+60000,0,Date.now());
+    const login=await req('/guests/login',{method:'POST',body:{phone:a.phone,code:'123456'}});
+    assert.equal(login.data.guest.id,a.id);assert.ok(login.cookie);
+    await req('/guests/logout',{method:'POST',cookie:login.cookie});
+    assert.equal((await req('/competitions/session',{cookie:login.cookie})).data.verified,false);
+    await req('/competitions/'+multi.id+'/vote',{method:'POST',cookie:login.cookie,body:{choices:[m[0]]},status:401});
+    db.close();db=null;await stop();await start();
+    assert.equal((await req('/competitions/'+multi.id,{cookie:a.cookie})).data.results.totalVotes,2);
+    assert.deepEqual((await req('/competitions/'+multi.id,{cookie:a.cookie})).data.myChoices,[m[2]]);
+    token=(await req('/admin/login',{method:'POST',body:{password:'isolated-test-only'}})).data.token;
+    await req('/admin/competitions/'+multi.id,{method:'DELETE',admin:true});await req('/competitions/'+multi.id,{status:404});
+    db=new Database(path.join(dir,'wedding.db'));
+    assert.equal(db.prepare('SELECT COUNT(*) AS n FROM competition_votes WHERE competitionId=?').get(multi.id).n,0);
+    assert.equal(db.pragma('integrity_check',{simple:true}),'ok');
+    console.log('PASS competition CRUD, draft privacy, secure guest sessions, OTP login/logout, approval/audience, dates, voting limits/retries/changes, result privacy, comments, photos, CSV safety, duplication, deletion and restart persistence (isolated database)');
+  }finally{db?.close();await stop();fs.rmSync(dir,{recursive:true,force:true});}
+})().catch(err=>{console.error(err);process.exitCode=1;});

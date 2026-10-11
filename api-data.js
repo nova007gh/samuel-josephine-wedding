@@ -124,7 +124,7 @@ async function api(path, opts = {}){
 /* Feeds poll the API so new approved content appears without realtime sockets.
    Returns an unsubscribe function, same contract as the old listeners. */
 async function optimiseUploadImage(path, form){
-  if (!['/memories', '/admin/gallery', '/guestbook', '/admin/settings/photo/gifts-hero'].includes(path) || typeof createImageBitmap !== 'function') return;
+  if (!['/memories', '/admin/gallery', '/guestbook', '/admin/settings/photo/gifts-hero', '/admin/competition-photos'].includes(path) || typeof createImageBitmap !== 'function') return;
   const key = form.has('file') ? 'file' : 'selfie';
   const file = form.get(key);
   if (!(file instanceof Blob) || file.size < 1024 * 1024 || !/^image\/(jpeg|webp)$/.test(file.type)) return;
