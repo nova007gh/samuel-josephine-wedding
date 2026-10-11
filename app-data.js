@@ -365,6 +365,7 @@ document.querySelectorAll('.tl-photo img').forEach(img => {
    ========================================================= */
 const SITE_PHOTO_SLOTS = [
   { slot:'couple',          label:'Couple Photo (Home)',   def:'assets/couple-home.jpg' },
+  { slot:'gifts-hero',      label:'Gifts — Top-right Photo', def:'assets/couple-home.jpg' },
   { slot:'landing',         label:'Landing Page Art',      def:'assets/landing-invite.jpg' },
   { slot:'welcome',         label:'Welcome Background',    def:'assets/welcome-bg.jpg' },
   { slot:'attend',          label:'Enter Screen Art',      def:'assets/attend-bg.jpg' },
@@ -460,8 +461,8 @@ function showCouplePhoto(has){
 couplePhoto?.addEventListener('click', () => { if (isAdmin()) couplePhotoFile?.click(); });
 couplePlaceholder?.addEventListener('click', e => { if (!isAdmin()) e.preventDefault(); });
 
-async function saveSitePhoto(file, slot){
-  const res = await uploadSitePhoto(file, slot);
+async function saveSitePhoto(file, slot, onProgress){
+  const res = await uploadSitePhoto(file, slot, onProgress);
   siteSettings[slot === 'couple' ? 'couplePhotoUrl' : `photo:${slot}`] = res.url;
   applySitePhotos();
   cacheSitePhotos();
@@ -495,13 +496,17 @@ function renderSiteSettings(){
   for (const s of SITE_PHOTO_SLOTS){
     const card = document.createElement('article');
     card.className = 'aq-card';
+    card.dataset.photoSlot = s.slot;
     card.innerHTML = `
       <img class="aq-media${s.slot === 'admin-heart' ? ' heart-preview' : ''}" src="${sitePhoto(s.slot, s.def)}" alt="${escapeHTML(s.label)}">
       <small>${escapeHTML(s.label)}</small>
+      ${s.slot === 'gifts-hero' ? '<small>Upload a JPEG, PNG or WebP. Replaces only the top-right photo on Gifts; the floral design stays in place.</small>' : ''}
       <div class="aq-actions"><button class="aq-approve" type="button">CHANGE</button></div>`;
     card.querySelector('button').addEventListener('click', () => {
+      if (!isAdmin()) return;
       pendingPhotoSlot = s.slot;
       pendingPhotoCard = card;
+      if (sitePhotoInput) sitePhotoInput.accept = s.slot === 'gifts-hero' ? 'image/jpeg,image/png,image/webp' : 'image/*';
       sitePhotoInput?.click();
     });
     grid.appendChild(card);
@@ -579,20 +584,29 @@ sitePhotoInput?.addEventListener('change', async e => {
   const file = e.target.files?.[0];
   e.target.value = '';
   if (!file || !isAdmin()) return;
+  const slot = pendingPhotoSlot;
+  if (slot === 'gifts-hero' && !['image/jpeg', 'image/png', 'image/webp'].includes(file.type)){
+    alert('Please choose a JPEG, PNG or WebP photo for Gifts.');
+    return;
+  }
   // instant local preview + saving state while it uploads
   const img = pendingPhotoCard?.querySelector('img');
   const btn = pendingPhotoCard?.querySelector('button');
   const prevSrc = img?.src;
-  if (img) img.src = URL.createObjectURL(file);
+  const previewUrl = URL.createObjectURL(file);
+  if (img) img.src = previewUrl;
   if (btn){ btn.disabled = true; btn.textContent = 'SAVING…'; }
-  try { await saveSitePhoto(file, pendingPhotoSlot); }
+  try { await saveSitePhoto(file, slot, percent => {
+    if (btn) btn.textContent = percent < 100 ? `UPLOADING ${percent}%…` : 'SAVING…';
+  }); }
   catch(err){
     console.warn('Photo update failed:', err);
     if (img && prevSrc) img.src = prevSrc;
-    alert('Could not update the photo. Are you still signed in as admin?');
+    alert(err.message || 'Could not update the photo. Are you still signed in as admin?');
   } finally {
     if (btn){ btn.disabled = false; btn.textContent = 'CHANGE'; }
     pendingPhotoCard = null;
+    URL.revokeObjectURL(previewUrl);
   }
 });
 

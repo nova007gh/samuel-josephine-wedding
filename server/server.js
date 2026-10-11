@@ -1055,14 +1055,20 @@ const PHOTO_SLOTS = new Set([
   'couple', 'landing', 'welcome', 'attend',
   'sam-childhood', 'jossy-childhood', 'sam-adult', 'jossy-adult',
   'facetime', 'proposal', 'now',
-  'announce-a', 'announce-b', 'admin-heart'
+  'announce-a', 'announce-b', 'admin-heart', 'gifts-hero'
 ]);
 
 app.post('/api/admin/settings/photo/:slot?', requireAdmin, upload.single('file'), (req, res) => {
   const slot = req.params.slot || 'couple';
-  if (!PHOTO_SLOTS.has(slot)) return res.status(400).json({ error: 'Unknown photo slot.' });
+  if (!PHOTO_SLOTS.has(slot)){
+    if (req.file) unlinkUpload(`/uploads/${req.file.filename}`);
+    return res.status(400).json({ error: 'Unknown photo slot.' });
+  }
   if (!req.file) return res.status(400).json({ error: 'An image file is required.' });
-  if (!/^image\//.test(req.file.mimetype)) return res.status(400).json({ error: 'Photo must be an image.' });
+  if (!/^image\//.test(req.file.mimetype) || (slot === 'gifts-hero' && !['image/jpeg', 'image/png', 'image/webp'].includes(req.file.mimetype))){
+    unlinkUpload(`/uploads/${req.file.filename}`);
+    return res.status(400).json({ error: slot === 'gifts-hero' ? 'Choose a JPEG, PNG or WebP photo for Gifts.' : 'Photo must be an image.' });
+  }
   const key = slot === 'couple' ? 'couplePhotoUrl' : `photo:${slot}`;
   setSettingFile(res, req.file, key);
 });

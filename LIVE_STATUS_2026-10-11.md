@@ -1,5 +1,18 @@
 # snybena.com live audit — 11 October 2026
 
+## Gifts hero-photo control — v172
+
+Admin Dashboard → Site Settings → **Gifts — Top-right Photo** → **CHANGE**
+lets the admin upload a JPEG, PNG or WebP. The setting `photo:gifts-hero`
+persists in SQLite, updates the hero immediately for the uploader, and is
+picked up by other open guest pages through the existing 15-second settings
+sync. It does not change the Home photo or the floral overlay. Uploads show
+progress and reject unsupported formats. The endpoint requires admin auth.
+
+An isolated database-copy test passed upload, replacement, persisted setting,
+public settings visibility, unauthenticated rejection, and Home-photo isolation.
+The existing live photo was not replaced by a test image.
+
 ## Later frontend design update — v171
 
 Gifts now uses the supplied reference's cream/gold treatment: script title,
