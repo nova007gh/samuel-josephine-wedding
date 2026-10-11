@@ -18,6 +18,13 @@
   let initial = 'overview';
   try { initial = sessionStorage.getItem('sj_admin_section') || initial; } catch {}
   select(initial);
+  dashboard.querySelector('#giftPhotoShortcut')?.addEventListener('click', () => {
+    if (!isAdmin()) return;
+    select('photos');
+    const card = dashboard.querySelector('[data-photo-slot="gifts-hero"]');
+    card?.scrollIntoView({behavior:'smooth',block:'center'});
+    card?.querySelector('button')?.focus({preventScroll:true});
+  });
   list.addEventListener('click', e => {
     const tab = e.target.closest('[data-admin-section]');
     if (tab && isAdmin()) select(tab.dataset.adminSection);

@@ -365,7 +365,7 @@ document.querySelectorAll('.tl-photo img').forEach(img => {
    ========================================================= */
 const SITE_PHOTO_SLOTS = [
   { slot:'couple',          label:'Couple Photo (Home)',   def:'assets/couple-home.jpg' },
-  { slot:'gifts-hero',      label:'Gifts — Top-right Photo', def:'assets/couple-home.jpg' },
+  { slot:'gifts-hero',      label:'Gift Page Photo', def:'assets/couple-home.jpg' },
   { slot:'landing',         label:'Landing Page Art',      def:'assets/landing-invite.jpg' },
   { slot:'welcome',         label:'Welcome Background',    def:'assets/welcome-bg.jpg' },
   { slot:'attend',          label:'Enter Screen Art',      def:'assets/attend-bg.jpg' },
@@ -501,7 +501,7 @@ function renderSiteSettings(){
       <img class="aq-media${s.slot === 'admin-heart' ? ' heart-preview' : ''}" src="${sitePhoto(s.slot, s.def)}" alt="${escapeHTML(s.label)}">
       <small>${escapeHTML(s.label)}</small>
       ${s.slot === 'gifts-hero' ? '<small>Upload a JPEG, PNG or WebP. Replaces only the top-right photo on Gifts; the floral design stays in place.</small>' : ''}
-      <div class="aq-actions"><button class="aq-approve" type="button">CHANGE</button></div>`;
+      <div class="aq-actions"><button class="aq-approve" type="button">${s.slot === 'gifts-hero' ? 'UPLOAD / CHANGE PHOTO' : 'CHANGE'}</button></div>`;
     card.querySelector('button').addEventListener('click', () => {
       if (!isAdmin()) return;
       pendingPhotoSlot = s.slot;
@@ -592,6 +592,7 @@ sitePhotoInput?.addEventListener('change', async e => {
   // instant local preview + saving state while it uploads
   const img = pendingPhotoCard?.querySelector('img');
   const btn = pendingPhotoCard?.querySelector('button');
+  const originalLabel = btn?.textContent || 'CHANGE';
   const prevSrc = img?.src;
   const previewUrl = URL.createObjectURL(file);
   if (img) img.src = previewUrl;
@@ -604,7 +605,7 @@ sitePhotoInput?.addEventListener('change', async e => {
     if (img && prevSrc) img.src = prevSrc;
     alert(err.message || 'Could not update the photo. Are you still signed in as admin?');
   } finally {
-    if (btn){ btn.disabled = false; btn.textContent = 'CHANGE'; }
+    if (btn){ btn.disabled = false; btn.textContent = originalLabel; }
     pendingPhotoCard = null;
     URL.revokeObjectURL(previewUrl);
   }

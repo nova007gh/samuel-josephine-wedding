@@ -17,7 +17,11 @@ const panels = names.map(name => {
   }};
 });
 const list = {querySelectorAll:()=>tabs, addEventListener:(name,fn)=>{handlers[name]=fn;}};
-const dashboard = {querySelector:()=>list, querySelectorAll:()=>panels};
+let shortcutClick,scrolled=false,photoFocused=false;
+const shortcut={addEventListener:(name,fn)=>{if(name==='click')shortcutClick=fn;}};
+const photoCard={scrollIntoView(){scrolled=true;},querySelector:()=>({focus(){photoFocused=true;}})};
+const dashboard = {querySelector:selector=>selector==='.admin-section-tabs'?list
+  :selector==='#giftPhotoShortcut'?shortcut:selector==='[data-photo-slot="gifts-hero"]'?photoCard:null,querySelectorAll:()=>panels};
 vm.runInNewContext(fs.readFileSync(require('node:path').join(__dirname,'../admin-dashboard.js'),'utf8'), {
   document:{querySelector:()=>dashboard}, isAdmin:()=>admin,
   sessionStorage:{getItem:k=>saved.get(k),setItem:(k,v)=>saved.set(k,v)}
@@ -35,7 +39,10 @@ handlers.keydown({target:tabs[8],key:'ArrowRight',preventDefault(){prevented=tru
 assert.equal(prevented,true);
 assert.equal(tabs[0].attrs['aria-selected'],'true');
 assert.equal(tabs[0].focused,true);
+shortcutClick();
+assert.equal(tabs[3].attrs['aria-selected'],'true');
+assert.equal(scrolled,true);assert.equal(photoFocused,true);
 admin=false;
 handlers.click({target:tabs[5]});
-assert.equal(tabs[0].attrs['aria-selected'],'true','Unauthenticated clicks cannot operate dashboard tabs');
-console.log('PASS: all nine sections, one visible panel, ARIA/keyboard navigation, remembered selection and admin guard');
+assert.equal(tabs[3].attrs['aria-selected'],'true','Unauthenticated clicks cannot operate dashboard tabs');
+console.log('PASS: all nine sections, ARIA/keyboard navigation, Gift Page Photo shortcut and admin guard');

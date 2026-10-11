@@ -32,6 +32,34 @@ module.exports = async ({call,evaluate,errors}) => {
     }
     console.log('PASS nine dashboard categories at',width,'pixels (mock admin responses)');
   }
+  const photo=await evaluate(`(async()=>{
+    document.getElementById('admin-tab-gifts').click();
+    document.getElementById('giftPhotoShortcut').click();
+    const card=document.querySelector('[data-photo-slot="gifts-hero"]');
+    const selected=document.getElementById('admin-tab-photos').getAttribute('aria-selected')==='true';
+    const labelled=card.textContent.includes('Gift Page Photo')&&card.textContent.includes('UPLOAD / CHANGE PHOTO');
+    const input=document.getElementById('sitePhotoInput'),click=input.click,original=uploadSitePhoto;
+    const home=document.getElementById('couplePhoto').src;
+    let picker=false,slotSeen,progressLabel;
+    const image='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aX1sAAAAASUVORK5CYII=';
+    try{
+      input.click=()=>{picker=true;};
+      uploadSitePhoto=async(file,slot,progress)=>{
+        slotSeen=slot;progress(43);progressLabel=card.querySelector('button').textContent;
+        progress(100);return {url:image};
+      };
+      card.querySelector('button').click();
+      const dt=new DataTransfer();dt.items.add(new File(['test'],'mock-photo.png',{type:'image/png'}));
+      input.files=dt.files;input.dispatchEvent(new Event('change',{bubbles:true}));
+      await new Promise(resolve=>setTimeout(resolve,100));
+      return {selected,labelled,picker,correctSlot:slotSeen==='gifts-hero',progress:progressLabel==='UPLOADING 43%…',
+        heroUpdated:document.querySelector('.gifts-hero-photo').src===image,
+        homeUnchanged:document.getElementById('couplePhoto').src===home,
+        buttonRestored:document.querySelector('[data-photo-slot="gifts-hero"] button').textContent==='UPLOAD / CHANGE PHOTO'};
+    }finally{input.click=click;uploadSitePhoto=original;}
+  })()`);
+  for(const [name,passed] of Object.entries(photo))assert.equal(passed,true,'Gift Page Photo '+name);
+  console.log('PASS Gift Page Photo shortcut, picker, percentage and hero update; home unchanged (upload mocked)');
   const upload=await evaluate(`(async()=>{
     document.getElementById('admin-tab-story').click();
     const original=addCoupleMemory;

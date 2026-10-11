@@ -1,5 +1,17 @@
 # snybena.com live audit — 11 October 2026
 
+## Gift Page Photo naming and shortcut — v174
+
+The photo control is now named **Gift Page Photo**, with an **UPLOAD / CHANGE
+PHOTO** button. Admin Dashboard → Gifts & MoMo → Gift Page Photo opens its
+photo-settings card; it is also available under Photos & Music. It continues
+using the persisted `photo:gifts-hero` setting and admin-only upload endpoint.
+No current photo or Home image was replaced by this UI change.
+
+Mobile UI tests confirmed the shortcut, file picker, upload percentage, updated
+Gifts hero and unchanged Home image with a mocked upload. Existing API permission
+and persistence behaviour is unchanged. Successful real uploads save automatically.
+
 ## Dashboard sections and Our Story progress — v173
 
 The dashboard now has nine accessible icon tabs: Overview, Guests & RSVPs,
