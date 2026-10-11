@@ -1,0 +1,135 @@
+/* Gifts: cream stationery, botanical hero and warm metallic details. */
+.gifts-menu-button{ display:none; }
+.app:has([data-view="gifts"]:not(.hidden)){
+  background:linear-gradient(140deg,#fbf5ec,#f6ecdf);
+  padding-top:calc(64px + env(safe-area-inset-top));
+}
+.app:has([data-view="gifts"]:not(.hidden))::before,
+.app:has([data-view="gifts"]:not(.hidden))::after{ display:none; }
+.app:has([data-view="gifts"]:not(.hidden)) .app-header{ background:rgba(250,244,234,.88); justify-content:space-between; }
+.app:has([data-view="gifts"]:not(.hidden)) .app-brand .brand-mark{ display:none; }
+.app:has([data-view="gifts"]:not(.hidden)) .app-brand::after{
+  content:"S&J"; font:500 36px/1 "Cormorant Garamond",Georgia,serif; color:#62411d;
+}
+.app:has([data-view="gifts"]:not(.hidden)) .header-actions .admin-heart{ display:none; }
+.app:has([data-view="gifts"]:not(.hidden)) .gifts-menu-button{
+  display:grid; place-items:center; width:40px; height:40px; padding:8px; border:0; background:none; color:#6b481f;
+}
+.gifts-menu-button svg{ width:25px; height:25px; }
+[data-view="gifts"]{
+  --gift-ink:#302719;
+  --gift-serif:"Cormorant Garamond",Georgia,serif;
+  padding:0 20px 32px; color:var(--gift-ink);
+}
+.gifts-hero{ position:relative; min-height:268px; margin:0 -20px 6px; isolation:isolate; overflow:hidden; }
+.gifts-hero-photo{
+  position:absolute; top:-10px; right:-3px; width:65%; height:260px;
+  object-fit:cover; object-position:58% center;
+  mask-image:linear-gradient(to right,transparent,black 48%),linear-gradient(to bottom,black 70%,transparent 100%);
+  mask-composite:intersect;
+  -webkit-mask-image:linear-gradient(to right,transparent,black 48%),linear-gradient(to bottom,black 70%,transparent 100%);
+  -webkit-mask-composite:source-in;
+  opacity:.94; z-index:-1;
+}
+.gifts-hero-copy{ position:relative; z-index:2; width:60%; padding:12px 0 18px 22px; text-align:center; }
+.gifts-title{ font:400 clamp(76px,20vw,104px)/.92 "Parisienne",cursive; color:#8c641e; letter-spacing:-.04em; margin:8px 0 5px; }
+.gifts-heart-rule{ display:flex; align-items:center; justify-content:center; gap:7px; margin:3px auto 10px; width:78%; color:#c99a3e; }
+.gifts-heart-rule span{ height:1px; flex:1; background:linear-gradient(to right,transparent,#9e7838); }
+.gifts-heart-rule span:last-child{ transform:scaleX(-1); }
+.gifts-heart-rule i{ font-style:normal; font-size:20px; line-height:1; text-shadow:0 1px 1px #775019; }
+.gifts-hero-copy p{ font:500 16px/1.2 var(--gift-serif); margin:0 0 10px; text-wrap:pretty; }
+.gifts-floral{ position:absolute; pointer-events:none; background:url('assets/gift-floral.svg') center/contain no-repeat; z-index:1; }
+.gifts-floral--left{ width:148px; height:224px; bottom:-8px; left:-35px; transform:rotate(-8deg); }
+.gifts-floral--right{ width:176px; height:246px; bottom:-21px; right:-20px; transform:scaleX(-1) rotate(-8deg); }
+[data-view="gifts"] .gifts-heading{
+  display:flex; align-items:center; justify-content:center; gap:11px;
+  font:600 14px/1.2 var(--gift-serif); letter-spacing:.075em; color:#694821; margin:20px 0 12px;
+}
+[data-view="gifts"] .gifts-heading::before,
+[data-view="gifts"] .gifts-heading::after{ content:""; height:1px; flex:1; background:linear-gradient(to right,transparent,#9d7b48); }
+[data-view="gifts"] .gifts-heading::after{ transform:scaleX(-1); }
+.gift-funds{ grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; }
+.gift-fund{
+  padding:10px 7px 12px; gap:5px; min-width:0; border:1px solid rgba(149,111,62,.1); border-radius:12px;
+  background:rgba(255,252,247,.78); box-shadow:0 3px 10px rgba(79,50,19,.07);
+}
+.gift-fund.is-on{ border-color:rgba(154,115,47,.25); box-shadow:0 3px 10px rgba(79,50,19,.09); }
+.gift-fund-icon{ display:grid; place-items:center; width:45px; height:45px; border-radius:50%; color:#9c732c; background:linear-gradient(145deg,#f5ead9,#eee0cc); }
+.gift-fund-icon svg{ width:23px; height:23px; filter:drop-shadow(0 1px 0 #fff1ca); }
+.gift-fund-label{ font:600 17px/1.05 var(--gift-serif); color:#231e17; }
+.gift-fund-desc{ font-size:10px; font-weight:400; line-height:1.45; color:#332e26; flex:1; }
+.gift-radio{ width:16px; height:16px; margin-top:4px; border:1px solid #b8b0a2; background:#fffdf9; }
+.gift-fund.is-on .gift-radio{ background:#a27a2d; border:1.5px solid #856125; box-shadow:inset 0 0 0 2px #fff7e8; }
+.gift-funds:has(> :only-child){ grid-template-columns:1fr; }
+.gift-funds > :only-child{ width:100%; max-width:255px; justify-self:center; }
+.gift-funds > :only-child .gift-fund-desc{ max-width:195px; font-size:12px; }
+.gift-amounts{ display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:5px; }
+.gift-amount{ min-width:0; padding:11px 2px; font:600 17px/1 var(--gift-serif); border-radius:8px; background:#fffaf3; border-color:#e0d5c5; color:#29241c; }
+.gift-amount.is-on{ background:linear-gradient(125deg,#b08a3b,#936619); border-color:#926519; color:#fffaf0; }
+.gift-payment-panel{ padding:7px; border:1px solid #eee3d3; border-radius:12px; background:rgba(255,252,246,.75); box-shadow:0 2px 12px rgba(90,62,28,.06); }
+.gift-providers{ grid-template-columns:repeat(3,minmax(0,1fr)); gap:5px; }
+.gift-provider{ padding:6px; min-width:0; gap:6px; min-height:48px; border-radius:8px; border-color:#e8dccb; color:#312c24; }
+.gift-provider.is-on{ background:linear-gradient(120deg,#b08a49,#8b5e22); color:#fff9ec; border-color:#9d7438; }
+.gift-provider-label{ font:500 13px/1.1 var(--gift-serif); text-align:left; }
+.gift-provider-logo{ flex:0 0 29px; height:34px; display:flex; align-items:center; justify-content:center; flex-direction:column; border-radius:4px; background:#fffdf8; }
+.gift-provider-logo b{ font-family:Arial,sans-serif; }
+.gift-provider-logo small{ font:700 5px/1.5 Arial,sans-serif; }
+.gift-provider-logo--mtn{ background:#ffce00; border:1px solid #ffed9b; }
+.gift-provider-logo--mtn b{ color:#124f91; font-size:10px; font-style:italic; border:1.3px solid #124f91; border-radius:50%; padding:2px; }
+.gift-provider-logo--telecel b{ display:grid; place-items:center; width:23px; height:23px; background:#cf1429; color:white; border-radius:50%; font-size:23px; }
+.gift-provider-logo--telecel small{ color:#333; }
+.gift-provider-logo--airteltigo{ color:#db2031; }
+.gift-provider-logo--airteltigo b{ font-size:27px; font-style:italic; line-height:22px; }
+.gift-momo{ margin-top:7px; padding:10px 7px 0; background:transparent; border:0; }
+.gift-momo-row{ grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:15px; }
+.gift-field{ min-width:0; gap:5px; }
+.gift-field + .gift-field{ border-left:1px solid #cab99c; padding-left:12px; }
+.gift-field > span:first-child{ font:500 13px/1.2 var(--gift-serif); letter-spacing:0; color:#45392a; }
+.gift-input-wrap input{ min-width:0; width:100%; padding:9px 30px 9px 7px; font-size:11px; border-color:#e7dccb; border-radius:7px; background:#fffaf2; opacity:1 !important; color:#302719; }
+#giftMoMoName{ font:600 14px/1.2 var(--gift-serif); padding-left:5px; }
+.gift-copy{ position:absolute; top:0; bottom:0; right:0; width:28px; display:grid; place-items:center; padding:5px; border:1px solid #e7dccb; border-radius:0 7px 7px 0; background:#fffaf2; color:#79551e; }
+.gift-copy svg{ width:16px; height:16px; }
+.gift-copy.is-ok{ background:#e7ecd9; }
+.gift-pay-btn{ display:grid; grid-template-columns:24px 1fr 15px; align-items:center; gap:5px; margin-top:13px; padding:12px 13px; background:linear-gradient(130deg,#ae874a,#855b20); border:1px solid #906a33; border-radius:8px; box-shadow:none; color:#fff8e8; font:600 16px/1.2 var(--gift-serif); text-align:center; text-transform:uppercase; }
+.gift-pay-arrow{ font:400 24px/1 Georgia,serif; }
+.gift-pay-btn[aria-disabled="true"]{ opacity:.55; }
+.gift-payment-note{ margin:6px 4px 0; font-size:9px; line-height:1.5; color:#786449; text-align:center; }
+.gift-confirm{ padding:11px 13px; margin-top:12px; border-radius:10px; background:rgba(249,240,224,.6); border-color:#e8dcca; }
+.gift-confirm summary{ display:flex; align-items:center; gap:12px; font:500 15px/1.2 var(--gift-serif); color:#42331f; list-style:none; }
+.gift-confirm summary::-webkit-details-marker{ display:none; }
+.gift-confirm-icon{ width:24px; height:29px; flex-shrink:0; color:#886121; }
+.gift-confirm-chevron{ margin-left:auto; font-size:15px; transition:transform .2s; }
+.gift-confirm[open] .gift-confirm-chevron{ transform:rotate(90deg); }
+.gift-confirm form{ font-size:12px; }
+.gift-list{ gap:4px; }
+.gift-item{ gap:10px; padding:10px 12px; border-color:#f0e6d8; border-radius:10px; background:rgba(255,252,246,.75); box-shadow:0 3px 8px rgba(79,50,19,.04); }
+.gift-avatar{ width:37px; height:37px; background:#f1e4d0; font:500 18px/1 var(--gift-serif); color:#302719; }
+.gift-item-body{ flex:1; }
+.gift-item-body p{ font:600 16px/1.1 var(--gift-serif); color:#251f17; }
+.gift-item-body small{ font-size:9px; line-height:1.5; color:#605646; margin-top:4px; }
+.gift-item-note{ flex:0 1 42%; border-left:1px solid #e9dfd0; padding-left:10px; min-width:0; }
+.gift-item-note time{ display:block; font:500 12px/1.2 var(--gift-serif); white-space:normal; color:#695b49; }
+.gift-msg{ display:block; margin-top:4px; font-size:9px; line-height:1.4; overflow-wrap:anywhere; color:#554837 !important; }
+.gift-msg span{ color:#bb8830; }
+[data-view="gifts"] :is(button,a,summary,input,textarea):focus-visible{ outline:2px solid #926719; outline-offset:3px; }
+@media(min-width:430px){
+  .gifts-hero{ min-height:268px; }
+  .gifts-hero-photo{ height:268px; }
+  .gifts-hero-copy p{ font-size:18px; }
+  .gift-fund-desc{ font-size:11px; }
+  .gift-provider-label{ font-size:15px; }
+  .gift-input-wrap input{ font-size:12px; }
+  #giftMoMoName{ font-size:16px; }
+}
+@media(max-width:359px){
+  [data-view="gifts"]{ padding-left:14px; padding-right:14px; }
+  .gifts-hero{ margin-left:-14px; margin-right:-14px; }
+  .gifts-hero-copy{ padding-left:14px; }
+  .gifts-hero-copy p{ font-size:14px; }
+  .gift-provider{ padding:5px 3px; gap:3px; }
+  .gift-provider-label{ font-size:11px; }
+  .gift-fund-label{ font-size:15px; }
+  .gift-momo-row{ gap:8px; }
+  .gift-field + .gift-field{ padding-left:7px; }
+}
+@media(prefers-reduced-motion:reduce){ .gift-confirm-chevron{ transition:none; } }

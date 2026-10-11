@@ -18,11 +18,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Parisienne&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="assets/landing-invite.jpg" />
   <link rel="preload" as="image" href="assets/seal-pressed-320.png" />
-  <link rel="stylesheet" href="app.css?v=169" />
+  <link rel="stylesheet" href="app.css?v=171" />
 
-  <link rel="stylesheet" href="app-views.css?v=169" />
-  <link rel="stylesheet" href="app-forms.css?v=169" />
-  <link rel="stylesheet" href="app-social.css?v=169" />
+  <link rel="stylesheet" href="app-views.css?v=171" />
+  <link rel="stylesheet" href="app-forms.css?v=171" />
+  <link rel="stylesheet" href="app-social.css?v=171" />
+  <link rel="stylesheet" href="gifts.css?v=171" />
   <script>
   /* a checked-in guest goes straight into the app — flag it before first
      paint so the invitation never flashes on their screen (mirrors
@@ -261,6 +262,9 @@
       </button>
     </div>
     <div class="header-actions">
+      <button class="gifts-menu-button" data-goto="more" type="button" aria-label="Open menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M3 5h18M3 12h18M3 19h18"/></svg>
+      </button>
       <button id="homeHeart" class="admin-heart" type="button" aria-label="Send love to Sam and Jossy">
         <img src="assets/couple-home.jpg" data-site-photo="admin-heart" alt="Sam and Jossy" draggable="false" />
         <span class="heart-badge" id="homeLikeCount">0</span>
@@ -1290,11 +1294,17 @@
 
   <!-- ---------- Gifts (Mobile Money) ---------- -->
   <section class="view hidden" data-view="gifts">
-    <h1 class="gifts-title">Gifts</h1>
-    <div class="divider"><span></span><i>&#10084;</i><span></span></div>
-    <p class="page-sub">Your love, support and generosity mean the world to us.<br>
-      If you would like to bless us with a gift, you can do so conveniently
-      through Mobile Money (MoMo).</p>
+    <div class="gifts-hero">
+      <img class="gifts-hero-photo" src="assets/couple-home.jpg" alt="Sam and Jossy together" loading="lazy" decoding="async" />
+      <span class="gifts-floral gifts-floral--left" aria-hidden="true"></span>
+      <span class="gifts-floral gifts-floral--right" aria-hidden="true"></span>
+      <div class="gifts-hero-copy">
+        <h1 class="gifts-title">Gifts</h1>
+        <div class="gifts-heart-rule" aria-hidden="true"><span></span><i>&#9829;</i><span></span></div>
+        <p>Your love, support and generosity<br>mean the world to us.</p>
+        <p>If you would like to bless us with a gift, you can do so conveniently through Mobile Money (MoMo).</p>
+      </div>
+    </div>
 
     <h2 class="settings-heading gifts-heading">Choose a gift option</h2>
     <div class="gift-funds" id="giftFunds" role="radiogroup" aria-label="Gift fund"></div>
@@ -1306,21 +1316,22 @@
     </div>
 
     <h2 class="settings-heading gifts-heading">Pay with Mobile Money (MoMo)</h2>
+    <div class="gift-payment-panel">
     <div class="gift-providers" id="giftProviders" role="radiogroup" aria-label="MoMo provider"></div>
     <div class="gift-momo">
       <div class="gift-momo-row">
         <label class="gift-field">
           <span>Send to this number</span>
           <span class="gift-input-wrap">
-            <input id="giftMoMoNumber" type="tel" value="+233 24 123 4567" inputmode="tel" autocomplete="off" />
-            <button class="gift-paste" data-paste="giftMoMoNumber" type="button" aria-label="Paste number">&#128203;</button>
+            <input id="giftMoMoNumber" type="tel" value="" readonly inputmode="tel" autocomplete="off" />
+            <button class="gift-copy" data-gift-copy="giftMoMoNumber" type="button" aria-label="Copy MoMo number"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="8" y="7" width="11" height="14" rx="2"/><path d="M15 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h3"/></svg></button>
           </span>
         </label>
         <label class="gift-field">
           <span>Account Name</span>
           <span class="gift-input-wrap">
-            <input id="giftMoMoName" type="text" value="Samuel &amp; Josephine" autocomplete="off" />
-            <button class="gift-paste" data-paste="giftMoMoName" type="button" aria-label="Paste name">&#128203;</button>
+            <input id="giftMoMoName" type="text" value="" readonly autocomplete="off" />
+            <button class="gift-copy" data-gift-copy="giftMoMoName" type="button" aria-label="Copy account name"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="8" y="7" width="11" height="14" rx="2"/><path d="M15 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h3"/></svg></button>
           </span>
         </label>
       </div>
@@ -1329,9 +1340,11 @@
         <span>&#10095;</span>
       </a>
     </div>
+    </div>
+    <p class="gift-payment-note" id="giftPaymentNote" role="status" aria-live="polite">Pay in your provider’s app or official MoMo menu. Confirm the recipient before sending.</p>
 
     <details class="gift-confirm" id="giftConfirmWrap">
-      <summary>After payment, fill in the confirmation form so we can acknowledge your gift</summary>
+      <summary><svg class="gift-confirm-icon" viewBox="0 0 32 36" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M16 2 29 8v10c0 8-6 13-13 16C9 31 3 26 3 18V8Z"/><path d="m10 17 4 4 8-10"/></svg><span>After payment, kindly fill in the confirmation form below so we can acknowledge your gift.</span><span class="gift-confirm-chevron" aria-hidden="true">&#10095;</span></summary>
       <form id="giftForm" class="aq-list" autocomplete="off">
         <div class="field-label">Your name</div>
         <input id="giftName" type="text" required maxlength="120" placeholder="e.g. Ama &amp; Kofi" />
@@ -1484,9 +1497,9 @@ try{
   });
 }catch(e){}
 </script>
-<script src="api-data.js?v=169"></script>
-<script src="app.js?v=169"></script>
-<script src="app-data.js?v=169"></script>
-<script src="app-social.js?v=169"></script>
+<script src="api-data.js?v=171"></script>
+<script src="app.js?v=171"></script>
+<script src="app-data.js?v=171"></script>
+<script src="app-social.js?v=171"></script>
 </body>
 </html>

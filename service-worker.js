@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v169-upload-performance';
+const CACHE = 'sj-wedding-v171-gifts-design';
 const ASSETS = [
   './',
   './index.html',
@@ -8,6 +8,8 @@ const ASSETS = [
   './app-views.css',
   './app-forms.css',
   './app-social.css',
+  './gifts.css',
+  './assets/gift-floral.svg',
   './app.js',
   './app-data.js',
   './app-social.js',

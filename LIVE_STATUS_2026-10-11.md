@@ -1,5 +1,19 @@
 # snybena.com live audit — 11 October 2026
 
+## Later frontend design update — v171
+
+Gifts now uses the supplied reference's cream/gold treatment: script title,
+couple-photo/floral hero, illustrated gift cards, provider badges, copyable
+read-only destination fields, confirmation accordion and dated gift entries.
+The existing couple photo and enabled funds are retained; no reference sample
+gifts, removed funds or recipient details were inserted. Seven-tab navigation
+is retained. Payment wording remains instructions, not verified payment processing.
+
+Mobile layout/interaction checks at 320, 375 and 430 pixels passed. A mocked
+confirmation-form request checks exact cents without creating a live gift.
+Run `node tests/gifts-design.cjs /absolute/output/directory` on macOS with Chrome
+for the isolated-profile mobile smoke test and screenshot.
+
 ## Current status
 
 The live nginx and wedding-api services are active. CPU load was 0.01–0.02;

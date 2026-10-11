@@ -1580,6 +1580,7 @@ function renderGiftOptions(){
   if (funds) funds.innerHTML = GIFT_FUNDS.map(f => `
     <button class="gift-fund${giftState.fund === f.id ? ' is-on' : ''}" data-fund="${f.id}"
             type="button" role="radio" aria-checked="${giftState.fund === f.id}">
+      <span class="gift-fund-icon" aria-hidden="true">${giftFundIcon(f.id)}</span>
       <span class="gift-fund-label">${escapeHTML(f.label)}</span>
       <span class="gift-fund-desc">${escapeHTML(f.desc)}</span>
       <span class="gift-radio" aria-hidden="true"></span>
@@ -1599,11 +1600,20 @@ function renderGiftOptions(){
   if (provs) provs.innerHTML = GIFT_PROVIDERS.map(p => `
     <button class="gift-provider${giftState.provider === p.id ? ' is-on' : ''}" data-provider="${p.id}"
             type="button" role="radio" aria-checked="${giftState.provider === p.id}">
-      <span class="gift-provider-short">${escapeHTML(p.short)}</span>
-      <span>${escapeHTML(p.label)}</span>
+      <span class="gift-provider-logo gift-provider-logo--${p.id}" aria-hidden="true">${p.id === 'mtn' ? '<b>MTN</b>' : p.id === 'telecel' ? '<b>t</b><small>Telecel</small>' : '<b>a</b><small>AirtelTigo</small>'}</span>
+      <span class="gift-provider-label">${escapeHTML(p.label)}</span>
     </button>`).join('');
 
   updateGiftPayButton();
+}
+
+function giftFundIcon(id){
+  const shape = id === 'house'
+    ? '<path d="m3 12 9-9 9 9h-3v9h-5v-6h-3v6H5v-9Z"/>'
+    : id === 'honeymoon'
+      ? '<path d="m21 3-2-1-6 6-8-2-2 2 7 4-4 4-4-1-1 2 5 2 2 5 2-1-1-4 4-4 4 7 2-2-2-8Z"/>'
+      : '<path d="M12 21 3.5 12.6C-2 6.8 5.8-.6 12 6c6.2-6.6 14 0 8.5 6.6Z"/>';
+  return `<svg viewBox="0 0 24 24" fill="currentColor">${shape}</svg>`;
 }
 
 function updateGiftPayButton(){
@@ -1611,7 +1621,8 @@ function updateGiftPayButton(){
   if (!btn) return;
   const fund = GIFT_FUNDS.find(f => f.id === giftState.fund);
   const prov = GIFT_PROVIDERS.find(p => p.id === giftState.provider);
-  btn.innerHTML = `<span>Payment instructions · ${escapeHTML(prov.label)} · ${escapeHTML(giftCedi(giftState.amount * 100))}</span><span>&#10095;</span>`;
+  btn.innerHTML = `<span class="gift-pay-arrow" aria-hidden="true">&#8599;</span><span>MoMo payment instructions</span><span aria-hidden="true">&#10095;</span>`;
+  btn.setAttribute('aria-label', `Payment instructions for ${prov.label}, ${giftCedi(giftState.amount * 100)}`);
   btn.dataset.amount = giftState.amount;
   btn.dataset.fund = giftState.fund;
   btn.dataset.provider = giftState.provider;
@@ -1629,16 +1640,24 @@ async function renderGiftList(){
       return;
     }
     const fundLabel = id => (GIFT_FUNDS.find(f => f.id === id) || {}).label || 'Gift';
-    host.innerHTML = rows.map(g => `
+    host.innerHTML = rows.map(g => {
+      const initials = (g.name || '?').trim().split(/\s+/).filter(p => p !== '&').slice(0, 2).map(p => p.charAt(0)).join('').toUpperCase();
+      const date = g.createdAt ? new Date(g.createdAt) : null;
+      const validDate = date && Number.isFinite(date.getTime());
+      const dateLabel = validDate ? date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Recently';
+      return `
       <article class="gift-item">
-        <span class="gift-avatar" aria-hidden="true">${escapeHTML((g.name || '?').trim().charAt(0).toUpperCase())}</span>
+        <span class="gift-avatar" aria-hidden="true">${escapeHTML(initials)}</span>
         <div class="gift-item-body">
           <p><b>${escapeHTML(g.name)}</b></p>
           <small>${escapeHTML(giftCedi(g.amountCents))} &middot; ${escapeHTML(fundLabel(g.fund))}</small>
-          ${g.message ? `<small class="gift-msg">&#10084; ${escapeHTML(g.message)}</small>` : ''}
         </div>
-        <time>${escapeHTML(g.createdAt ? timeAgo(g.createdAt) : '')}</time>
-      </article>`).join('');
+        <div class="gift-item-note">
+          <time${validDate ? ` datetime="${date.toISOString()}"` : ''}>${escapeHTML(dateLabel)}</time>
+          ${g.message ? `<small class="gift-msg"><span aria-hidden="true">&#9829;</span> ${escapeHTML(g.message)}</small>` : '<small class="gift-msg">Gift confirmation <span aria-hidden="true">&#9829;</span></small>'}
+        </div>
+      </article>`;
+    }).join('');
   } catch {
     host.innerHTML = '<p class="page-sub">Could not load gifts right now.</p>';
   }
@@ -1865,14 +1884,18 @@ async function initGifts(){
     renderGiftOptions();
   });
 
-  document.querySelectorAll('[data-paste]')?.forEach(btn => {
+  document.querySelectorAll('[data-gift-copy]').forEach(btn => {
     btn.addEventListener('click', async () => {
-      const input = document.getElementById(btn.dataset.paste);
-      if (!input) return;
+      const input = document.getElementById(btn.dataset.giftCopy);
+      if (!input?.value) return;
       try {
-        const text = await navigator.clipboard.readText();
-        if (text) { input.value = text.trim(); btn.classList.add('is-ok'); setTimeout(() => btn.classList.remove('is-ok'), 900); }
-      } catch { input.focus(); }
+        await navigator.clipboard.writeText(input.value);
+        btn.classList.add('is-ok');
+        document.getElementById('giftPaymentNote').textContent = 'Copied to clipboard.';
+        setTimeout(() => btn.classList.remove('is-ok'), 1500);
+      } catch {
+        document.getElementById('giftPaymentNote').textContent = 'Copy unavailable. Press and hold the number or account name to copy it.';
+      }
     });
   });
 
@@ -1939,7 +1962,7 @@ async function initGifts(){
 }
 
 function flashGiftStatus(text){
-  const status = document.getElementById('giftStatus');
+  const status = document.getElementById('giftPaymentNote');
   if (status) status.textContent = text;
   document.getElementById('giftConfirmWrap')?.setAttribute('open', '');
 }
