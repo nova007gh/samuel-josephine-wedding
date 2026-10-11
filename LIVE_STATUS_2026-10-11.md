@@ -21,6 +21,14 @@ No test photos or records were published on the live server. API progress and
 dashboard regression tests are `node tests/api-data.test.cjs` and
 `node tests/admin-dashboard.test.cjs`.
 
+Follow-up checks: all nine dashboard categories fit at 320, 375 and 430 pixels
+without horizontal overflow. An isolated Chrome profile with mocked admin
+responses/uploads confirmed that switching categories or navigating to Our
+Story and back retains 37% progress and both selected files; duplicate submit
+is blocked, and completion restores the controls. This is a UI regression test,
+not a real upload or authentication test; no live records or login state changed.
+Run `node tests/gifts-design.cjs /absolute/output/directory --dashboard`.
+
 ## Gifts hero-photo control — v172
 
 Admin Dashboard → Site Settings → **Gifts — Top-right Photo** → **CHANGE**
