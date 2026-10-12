@@ -1,5 +1,51 @@
 # snybena.com live audit — 11 October 2026
 
+## Refresh-photo and transition fix — v183 (12 October)
+
+Root cause: HTML initially assigned the bundled `assets/couple-home.jpg`;
+the footer then applied a device-local `sj_site_photos` map, and only afterwards
+did fresh API settings replace those images. Either earlier photo could paint.
+The startup couple/Gifts/heart slots now use a neutral ivory/gold SVG. A head
+style masks all configurable photos before scripts run. Fresh settings resolve
+their URLs; images fade in only after a matching URL successfully loads.
+Changing a slot hides its previous image while the new URL loads. Failed images
+use the neutral SVG, not an old couple photo. Failed settings leave photo slots
+neutral/hidden; successful subsequent polling restores current photos/albums.
+The legacy photo map is no longer applied and is removed when settings resolve.
+Home/admin/album couple defaults also use the neutral SVG. Existing uploaded
+photos, saved URLs, user identity and live settings are not changed.
+
+Transitions now use a shorter non-blocking seal pulse and subtle page fade.
+Each new pulse cancels the previous delayed-hide timer so rapid taps cannot
+interrupt the newer transition. Reduced-motion preference disables these
+effects and photo fading. There is no forced page reload or sign-out.
+
+Worker precache no longer includes the old couple photo. Install fetches reload
+assets; activation deletes only older `sj-wedding-` caches, then claims clients.
+Online HTML/JS/CSS remain network-first, API/uploads remain uncached by the
+worker. Offline fallback is restricted to the active cache: navigation may use
+the offline app, missing JS/CSS returns 503 rather than receiving index.html.
+Cache writes are lifetime-bound and tolerate quota failures. This does not
+promise fresh server content while offline; neutral photos are intentional
+when settings cannot be confirmed. Uploaded-media HTTP behaviour is unchanged.
+
+New browser test: `node tests/competitions-ui.cjs <output-dir> --refresh`.
+It seeds a stale device photo map, delays fresh settings, observes paints,
+verifies loaded-current-image reveal, exercises rapid transitions and reduced
+motion, reloads with failed settings and verifies subsequent recovery.
+Settings/image identities are fixtures; no live writes. New worker VM test:
+`node tests/service-worker.test.cjs`. Both pass. Actual disposable browser/API
+end-to-end and candidate dashboard/upload, Gift Message, Share and mobile-width
+regressions also pass. Tests do not establish every real-device cache state.
+Deployed read-only initial/reload test (`gifts-design.cjs <output-dir>
+--live-refresh`) confirmed the Home image is loaded and matches fresh server
+settings, no bundled couple startup source remains and the legacy map is
+removed. Deployed Share/seven-page/mobile, dashboard/photo/upload and Gift
+Message regressions passed. Health/public feeds 200, admin guards 401,
+API/nginx active, SQLite integrity `ok`. Pre-v183 snapshot retained 7 guests,
+1 RSVP, 30 media records/files, 0 guestbook entries, 1 gift, 2 live funds,
+35 settings and all 3 competitions. No API restart or live data change.
+
 ## Listed-screen enhancements — v182 (12 October)
 
 Events now includes the same days/hours/minutes/seconds countdown as Home,

@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v182-screen-actions-countdown';
+const CACHE = 'sj-wedding-v183-fresh-photos-transitions';
 const ASSETS = [
   './',
   './index.html',
@@ -27,7 +27,7 @@ const ASSETS = [
   './assets/seal-embossed.svg',
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png',
-  './assets/couple-home.jpg',
+  './assets/photo-placeholder.svg',
   './assets/leaf-sprig.png',
   './assets/story/sam-childhood.jpg',
   './assets/story/jossy-childhood.jpg',
@@ -39,15 +39,16 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', event => {
-  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));
+  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS.map(url => new Request(url, {cache:'reload'})))));
   self.skipWaiting();
 });
 
 self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
-  );
-  self.clients.claim();
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys.filter(k => k.startsWith('sj-wedding-') && k !== CACHE).map(k => caches.delete(k)));
+    await self.clients.claim();
+  })());
 });
 
 self.addEventListener('fetch', event => {
@@ -69,10 +70,16 @@ self.addEventListener('fetch', event => {
       fetch(event.request, { cache: 'no-cache' }).then(response => {
         if (response.ok){
           const copy = response.clone();
-          caches.open(CACHE).then(cache => cache.put(event.request, copy));
+          event.waitUntil(caches.open(CACHE).then(cache => cache.put(event.request, copy)).catch(() => {}));
         }
         return response;
-      }).catch(() => caches.match(event.request).then(c => c || caches.match('./index.html')))
+      }).catch(async () => {
+        const cache = await caches.open(CACHE);
+        const cached = await cache.match(event.request, {ignoreSearch:true});
+        if (cached) return cached;
+        if (event.request.mode === 'navigate') return await cache.match('./index.html') || Response.error();
+        return new Response('Asset unavailable offline', {status:503,headers:{'Content-Type':'text/plain'}});
+      })
     );
     return;
   }
@@ -82,7 +89,7 @@ self.addEventListener('fetch', event => {
     caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
       if (response.ok){
         const copy = response.clone();
-        caches.open(CACHE).then(cache => cache.put(event.request, copy));
+        event.waitUntil(caches.open(CACHE).then(cache => cache.put(event.request, copy)).catch(() => {}));
       }
       return response;
     }))

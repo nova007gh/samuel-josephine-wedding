@@ -968,15 +968,17 @@ const ADMIN_VIEWS = new Set(['admin', 'approvals', 'rsvpAdmin', 'guestlist', 'gu
 let currentView = 'home';
 /* brief seal pulse between pages — visual only, never blocks taps */
 function flashPageLoader(){
+  if (window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) return;
   const pl = document.getElementById('pageLoader');
   if (!pl) return;
+  clearTimeout(flashPageLoader._hide);
   pl.classList.remove('hidden');
   requestAnimationFrame(() => pl.classList.add('show'));
   clearTimeout(flashPageLoader._t);
   flashPageLoader._t = setTimeout(() => {
     pl.classList.remove('show');
-    setTimeout(() => pl.classList.add('hidden'), 200);
-  }, 420);
+    flashPageLoader._hide = setTimeout(() => pl.classList.add('hidden'), 200);
+  }, 180);
 }
 
 function switchView(name, fromHistory = false){

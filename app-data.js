@@ -11,6 +11,7 @@ const SETTINGS_STORE = 'kv';
 /* Server-backed site settings (photos, song, wedding details).
    Declared first: gallery rendering below runs at parse time and reads it. */
 let siteSettings = {};
+let photosConfirmed = false;
 const GIFT_MESSAGE_DEFAULTS = {
   giftIntroText:'Your love, support and generosity\nmean the world to us.',
   giftMessageText:'If you would like to bless us with a gift, you can do so conveniently through Mobile Money (MoMo).'
@@ -127,7 +128,7 @@ const GALLERY_ALBUMS = [
   { id:'adulthood',      label:'Adulthood',      cover:'assets/story/sam-adult.jpg',     photoKey:'sam-adult' },
   { id:'first-together', label:'First Together', cover:'assets/story/facetime.jpg',      photoKey:'facetime' },
   { id:'engagement',     label:'Engagement',     cover:'assets/story/proposal.jpg',      photoKey:'proposal' },
-  { id:'wedding-photos', label:'Wedding Photos', cover:'assets/couple-home.jpg',         photoKey:'couple' },
+  { id:'wedding-photos', label:'Wedding Photos', cover:'assets/photo-placeholder.svg', photoKey:'couple' },
   { id:'wedding-videos', label:'Wedding Videos', cover:'assets/story/now.jpg',           photoKey:'now' },
   { id:'voice-messages', label:'Voice & Music',  cover:'assets/story/facetime.jpg',      photoKey:'facetime' },
   { id:'video-messages', label:'Video Messages', cover:'assets/story/proposal.jpg',      photoKey:'proposal' }
@@ -157,7 +158,7 @@ const SEED_MEMORIES = [
   { src:'assets/story/facetime.jpg',        photoKey:'facetime',        category:'first-together', caption:'Late-night FaceTime calls across the ocean.' },
   { src:'assets/story/now.jpg',             photoKey:'now',             category:'first-together', caption:'Together at last.' },
   { src:'assets/story/proposal.jpg',        photoKey:'proposal',        category:'engagement',     caption:'She said YES! Accra, on her birthday.' },
-  { src:'assets/couple-home.jpg',           photoKey:'couple',          category:'engagement',     caption:'#AlwaysAndForever' }
+  { src:'assets/photo-placeholder.svg', photoKey:'couple', category:'engagement', caption:'#AlwaysAndForever' }
 ];
 
 let activeGalleryFilter = 'all';   // album id, or 'all'
@@ -440,8 +441,8 @@ document.querySelectorAll('.tl-photo img').forEach(img => {
    Admin changes them from the dashboard; every guest sees the result.
    ========================================================= */
 const SITE_PHOTO_SLOTS = [
-  { slot:'couple',          label:'Couple Photo (Home)',   def:'assets/couple-home.jpg' },
-  { slot:'gifts-hero',      label:'Gift Page Photo', def:'assets/couple-home.jpg' },
+  { slot:'couple',          label:'Couple Photo (Home)',   def:'assets/photo-placeholder.svg' },
+  { slot:'gifts-hero',      label:'Gift Page Photo', def:'assets/photo-placeholder.svg' },
   { slot:'landing',         label:'Landing Page Art',      def:'assets/landing-invite.jpg' },
   { slot:'welcome',         label:'Welcome Background',    def:'assets/welcome-bg.jpg' },
   { slot:'attend',          label:'Enter Screen Art',      def:'assets/attend-bg.jpg' },
@@ -452,7 +453,7 @@ const SITE_PHOTO_SLOTS = [
   { slot:'facetime',        label:'FaceTime',              def:'assets/story/facetime.jpg' },
   { slot:'proposal',        label:'The Proposal',          def:'assets/story/proposal.jpg' },
   { slot:'now',             label:'Engaged Now',           def:'assets/story/now.jpg' },
-  { slot:'admin-heart',     label:'Home Heart Photo',      def:'assets/couple-home.jpg' }
+  { slot:'admin-heart',     label:'Home Heart Photo',      def:'assets/photo-placeholder.svg' }
 ];
 const SLOT_DEFS = Object.fromEntries(SITE_PHOTO_SLOTS.map(s => [s.slot, s.def]));
 
@@ -469,6 +470,7 @@ const DEFAULT_STORY_ITEMS = [
 ];
 
 function sitePhoto(slot, fallback){
+  if (!photosConfirmed) return 'assets/photo-placeholder.svg';
   if (!slot) return fallback;
   const key = slot === 'couple' ? 'couplePhotoUrl' : `photo:${slot}`;
   /* the admin heart follows the couple photo until it gets its own */
@@ -477,8 +479,34 @@ function sitePhoto(slot, fallback){
 }
 
 function applySitePhotos(){
+  if (!photosConfirmed) return;
   document.querySelectorAll('[data-site-photo]').forEach(img => {
-    img.src = sitePhoto(img.dataset.sitePhoto, SLOT_DEFS[img.dataset.sitePhoto] || img.getAttribute('src'));
+    const fallback = ['couple','admin-heart','gifts-hero'].includes(img.dataset.sitePhoto)
+      ? 'assets/photo-placeholder.svg' : SLOT_DEFS[img.dataset.sitePhoto] || img.getAttribute('src');
+    const url = new URL(sitePhoto(img.dataset.sitePhoto, fallback), location.href).href;
+    if (img.dataset.photoTarget === url) return;
+    img._clearPhotoHandlers?.();
+    img.dataset.photoTarget = url;
+    delete img.dataset.photoReady;
+    const ready = () => {
+      if (img.src === url && img.complete && img.naturalWidth && img.currentSrc === url){
+        img.dataset.photoReady = 'true';
+        img.removeEventListener('load', ready);
+        img.removeEventListener('error', failed);
+      }
+    };
+    const failed = () => {
+      img.removeEventListener('load', ready);
+      img.removeEventListener('error', failed);
+      if (img.dataset.photoTarget !== url) return;
+      img.src = 'assets/photo-placeholder.svg';
+      img.dataset.photoReady = 'true';
+    };
+    img.addEventListener('load', ready);
+    img.addEventListener('error', failed);
+    img._clearPhotoHandlers = () => {img.removeEventListener('load', ready);img.removeEventListener('error', failed);};
+    img.src = url;
+    ready();
   });
   /* the landing screen shows the bundled invitation art; uploading Landing
      Page Art in Site Settings replaces it, and the code-rendered card
@@ -493,13 +521,10 @@ function applySitePhotos(){
   }
 }
 
-/* remember which photo is in each slot so the next page load can apply it
-   before the network answers — otherwise the bundled default flashes first */
+/* Retire the legacy photo map: only confirmed settings determine visible photos. */
 function cacheSitePhotos(){
   try {
-    const map = {};
-    document.querySelectorAll('[data-site-photo]').forEach(img => { map[img.dataset.sitePhoto] = img.src; });
-    localStorage.setItem('sj_site_photos', JSON.stringify(map));
+    localStorage.removeItem('sj_site_photos');
   } catch {}
 }
 
@@ -515,6 +540,7 @@ function showCouplePhoto(has){
 (async () => {
   try {
     siteSettings = await getSettings();
+    photosConfirmed = true;
   } catch(err){
     console.warn('Site settings unavailable:', err);
     siteSettings = {};
@@ -527,7 +553,6 @@ function showCouplePhoto(has){
   fillGiftMessageForm();
   fillWeddingForm();
   syncSiteSettings();   // seeds the live-sync baseline
-  if (couplePhoto) couplePhoto.src = sitePhoto('couple', 'assets/couple-home.jpg');
   showCouplePhoto(true);
   renderAlbums();
   renderGallery();
@@ -544,7 +569,6 @@ async function saveSitePhoto(file, slot, onProgress){
   siteSettings[slot === 'couple' ? 'couplePhotoUrl' : `photo:${slot}`] = res.url;
   applySitePhotos();
   cacheSitePhotos();
-  if (couplePhoto) couplePhoto.src = sitePhoto('couple', 'assets/couple-home.jpg');
   renderAlbums();
   renderGallery();
   renderSiteSettings();
@@ -916,6 +940,7 @@ async function syncSiteSettings(){
   try {
   let fresh;
   try { fresh = await getSettings(); } catch { return; }
+  if (!photosConfirmed){photosConfirmed = true;siteSettings = fresh;applySitePhotos();renderAlbums();renderGallery();}
   const groups = {
     story:   k => k === 'storyItems' || k === 'storyLikes',
     photos:  k => k === 'couplePhotoUrl' || k.startsWith('photo:'),

@@ -46,10 +46,24 @@ const delay = ms => new Promise(resolve=>setTimeout(resolve,ms));
     return r.result.value;
   };
   await call('Page.enable'); await call('Runtime.enable');
+  if(process.argv.includes('--refresh')){
+    await require('./refresh-browser-checks.cjs').setup({call});
+  }
+  if(process.argv.includes('--live-refresh')){
+    await call('Page.addScriptToEvaluateOnNewDocument',{source:`localStorage.setItem('sj_guest',JSON.stringify({name:'Read-only refresh preview'}));localStorage.setItem('sj_entered','1');localStorage.setItem('sj_site_photos',JSON.stringify({couple:location.origin+'/assets/couple-home.jpg'}));`});
+  }
   await call('Emulation.setDeviceMetricsOverride',{width:430,height:1100,deviceScaleFactor:1,mobile:true});
   const loaded = new Promise(resolve=>events.set('Page.loadEventFired',resolve));
    await call('Page.navigate',{url:(process.env.WEDDING_TEST_URL||'https://snybena.com/')+'#gifts'});
   await Promise.race([loaded,delay(15000)]);
+  if(process.argv.includes('--refresh')){
+    await require('./refresh-browser-checks.cjs').check({call,evaluate,errors,out});
+    return;
+  }
+  if(process.argv.includes('--live-refresh')){
+    await require('./refresh-browser-checks.cjs').checkLive({call,evaluate,errors,out});
+    return;
+  }
   /* Preview-only identity in this disposable profile; no check-in API call. */
   await evaluate('setGuest({name:"Design preview"});enterApp();switchView("gifts");Promise.race([document.fonts.ready,new Promise(resolve=>setTimeout(resolve,5000))]).then(()=>true)');
   if(process.argv.includes('--e2e')){

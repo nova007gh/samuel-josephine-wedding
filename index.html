@@ -13,18 +13,24 @@
   <link rel="icon" type="image/png" href="assets/seal-logo.png" />
   <title>Sam &amp; Jossy | January 9, 2027</title>
   <meta name="description" content="The wedding celebration of Samuel Nana Yaw Obeng and Josephine Abena Owusua Appiah." />
+  <style>
+    /* Before scripts or network settings arrive, never paint bundled/cached photos. */
+    [data-site-photo]{opacity:0;transition:opacity .2s ease;background:#f7efe4;}
+    [data-site-photo][data-photo-ready="true"]{opacity:1;}
+    @media(prefers-reduced-motion:reduce){[data-site-photo]{transition:none;}}
+  </style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Parisienne&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="assets/landing-invite.jpg" />
   <link rel="preload" as="image" href="assets/seal-pressed-320.png" />
-  <link rel="stylesheet" href="app.css?v=182" />
+  <link rel="stylesheet" href="app.css?v=183" />
 
-  <link rel="stylesheet" href="app-views.css?v=182" />
-  <link rel="stylesheet" href="app-forms.css?v=182" />
-  <link rel="stylesheet" href="app-social.css?v=182" />
-  <link rel="stylesheet" href="gifts.css?v=182" />
-  <link rel="stylesheet" href="competitions.css?v=182" />
+  <link rel="stylesheet" href="app-views.css?v=183" />
+  <link rel="stylesheet" href="app-forms.css?v=183" />
+  <link rel="stylesheet" href="app-social.css?v=183" />
+  <link rel="stylesheet" href="gifts.css?v=183" />
+  <link rel="stylesheet" href="competitions.css?v=183" />
   <script>
   /* a checked-in guest goes straight into the app — flag it before first
      paint so the invitation never flashes on their screen (mirrors
@@ -267,7 +273,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M3 5h18M3 12h18M3 19h18"/></svg>
       </button>
       <button id="homeHeart" class="admin-heart" type="button" aria-label="Send love to Sam and Jossy">
-        <img src="assets/couple-home.jpg" data-site-photo="admin-heart" alt="Sam and Jossy" draggable="false" />
+        <img src="assets/photo-placeholder.svg" data-site-photo="admin-heart" alt="Sam and Jossy" draggable="false" />
         <span class="heart-badge" id="homeLikeCount">0</span>
       </button>
     </div>
@@ -309,7 +315,7 @@
     </div>
 
     <figure class="couple-photo">
-        <img id="couplePhoto" src="assets/couple-home.jpg" data-site-photo="couple" alt="Sam and Jossy" />
+        <img id="couplePhoto" src="assets/photo-placeholder.svg" data-site-photo="couple" alt="Sam and Jossy" />
       <label id="couplePlaceholder" class="photo-placeholder hidden">
         <strong>Sam &amp; Jossy</strong>
         <span>TAP TO ADD YOUR PHOTO</span>
@@ -730,7 +736,7 @@
 
     <div class="rec-page-card">
       <div class="couple-circle">
-        <img src="assets/couple-home.jpg" data-site-photo="couple" alt="Sam and Jossy" />
+        <img src="assets/photo-placeholder.svg" data-site-photo="couple" alt="Sam and Jossy" />
         <span class="couple-circle-heart">&#10084;</span>
       </div>
       <label class="field">Your Name
@@ -764,7 +770,7 @@
 
     <div class="rec-page-card">
       <div class="couple-circle">
-        <img src="assets/couple-home.jpg" data-site-photo="couple" alt="Sam and Jossy" />
+        <img src="assets/photo-placeholder.svg" data-site-photo="couple" alt="Sam and Jossy" />
         <span class="couple-circle-heart">&#10084;</span>
       </div>
       <label class="field">Your Name
@@ -772,7 +778,7 @@
       </label>
 
       <div class="viewfinder" id="vmViewfinder">
-        <img class="vf-backdrop" src="assets/couple-home.jpg" data-site-photo="couple" alt="" aria-hidden="true" />
+        <img class="vf-backdrop" src="assets/photo-placeholder.svg" data-site-photo="couple" alt="" aria-hidden="true" />
         <video id="vmPreview" playsinline muted></video>
         <span class="vf-corner vf-corner--tl"></span>
         <span class="vf-corner vf-corner--tr"></span>
@@ -1398,7 +1404,7 @@
   <!-- ---------- Gifts (Mobile Money) ---------- -->
   <section class="view hidden" data-view="gifts">
     <div class="gifts-hero">
-      <img class="gifts-hero-photo" src="assets/couple-home.jpg" data-site-photo="gifts-hero" alt="Gift page photo" loading="lazy" decoding="async" />
+      <img class="gifts-hero-photo" src="assets/photo-placeholder.svg" data-site-photo="gifts-hero" alt="Gift page photo" loading="lazy" decoding="async" />
       <span class="gifts-floral gifts-floral--left" aria-hidden="true"></span>
       <span class="gifts-floral gifts-floral--right" aria-hidden="true"></span>
       <div class="gifts-hero-copy">
@@ -1582,23 +1588,11 @@
 
 <audio id="backgroundMusic" preload="none"></audio>
 <script>
-/* one-time cache purge + SW refresh — guarantees every device loads fresh assets */
+/* Request a worker update; its activation cleans only this app's old caches. */
 try{
-  if (localStorage.getItem('sj_cache_reset') !== 'v135'){
-    localStorage.setItem('sj_cache_reset', 'v135');
-    if ('caches' in window) caches.keys().then(ks => Promise.all(ks.map(k => caches.delete(k))));
-  }
   if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.update()));
 }catch(e){}
-/* apply the last-known site photos before first paint — otherwise each
-   refresh shows the bundled default image, then flashes to the uploaded one */
-try{
-  const map = JSON.parse(localStorage.getItem('sj_site_photos') || 'null');
-  if (map) document.querySelectorAll('[data-site-photo]').forEach(img => {
-    const u = map[img.dataset.sitePhoto];
-    if (u && u !== img.src) img.src = u;
-  });
-}catch(e){}
+/* Photo URLs are resolved from fresh settings, not the last device's photo map. */
 </script>
 <div id="installHelpSheet" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="installHelpTitle">
   <div class="sheet-card">
@@ -1610,12 +1604,12 @@ try{
     <div class="sheet-actions"><button class="sheet-cancel" data-close-sheet type="button">Close</button></div>
   </div>
 </div>
-<script src="api-data.js?v=182"></script>
-<script src="app.js?v=182"></script>
-<script src="app-data.js?v=182"></script>
-<script src="app-social.js?v=182"></script>
-<script src="admin-dashboard.js?v=182"></script>
-<script src="competitions.js?v=182"></script>
-<script src="competition-notices.js?v=182"></script>
+<script src="api-data.js?v=183"></script>
+<script src="app.js?v=183"></script>
+<script src="app-data.js?v=183"></script>
+<script src="app-social.js?v=183"></script>
+<script src="admin-dashboard.js?v=183"></script>
+<script src="competitions.js?v=183"></script>
+<script src="competition-notices.js?v=183"></script>
 </body>
 </html>
