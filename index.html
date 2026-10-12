@@ -24,13 +24,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Parisienne&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="assets/landing-invite.jpg" />
   <link rel="preload" as="image" href="assets/seal-pressed-320.png" />
-  <link rel="stylesheet" href="app.css?v=185" />
+  <link rel="stylesheet" href="app.css?v=186" />
 
-  <link rel="stylesheet" href="app-views.css?v=185" />
-  <link rel="stylesheet" href="app-forms.css?v=185" />
-  <link rel="stylesheet" href="app-social.css?v=185" />
-  <link rel="stylesheet" href="gifts.css?v=185" />
-  <link rel="stylesheet" href="competitions.css?v=185" />
+  <link rel="stylesheet" href="app-views.css?v=186" />
+  <link rel="stylesheet" href="app-forms.css?v=186" />
+  <link rel="stylesheet" href="app-social.css?v=186" />
+  <link rel="stylesheet" href="gifts.css?v=186" />
+  <link rel="stylesheet" href="competitions.css?v=186" />
   <script>
   /* a checked-in guest goes straight into the app — flag it before first
      paint so the invitation never flashes on their screen (mirrors
@@ -750,7 +750,7 @@
       <button id="voiceRecBtn" class="mic-button" type="button" aria-label="Start or stop recording">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8.5 21h7"/></svg>
       </button>
-      <p id="voiceHint" class="rec-hint">Tap to start recording</p>
+      <p id="voiceHint" class="rec-hint" role="status" aria-live="polite">Tap to start recording</p>
       <div id="voiceReview" class="rec-review hidden"></div>
 
       <div class="notice-card">
@@ -1573,6 +1573,7 @@
         <option value="childhood">Childhood</option>
       </select>
     </label>
+    <p id="shareUploadStatus" class="upload-status" role="status" aria-live="polite"></p>
     <div class="sheet-actions">
       <button type="button" class="sheet-cancel" data-close-sheet>Cancel</button>
       <button type="submit" class="map-button">SHARE</button>
@@ -1604,12 +1605,12 @@ try{
     <div class="sheet-actions"><button class="sheet-cancel" data-close-sheet type="button">Close</button></div>
   </div>
 </div>
-<script src="api-data.js?v=185"></script>
-<script src="app.js?v=185"></script>
-<script src="app-data.js?v=185"></script>
-<script src="app-social.js?v=185"></script>
-<script src="admin-dashboard.js?v=185"></script>
-<script src="competitions.js?v=185"></script>
-<script src="competition-notices.js?v=185"></script>
+<script src="api-data.js?v=186"></script>
+<script src="app.js?v=186"></script>
+<script src="app-data.js?v=186"></script>
+<script src="app-social.js?v=186"></script>
+<script src="admin-dashboard.js?v=186"></script>
+<script src="competitions.js?v=186"></script>
+<script src="competition-notices.js?v=186"></script>
 </body>
 </html>

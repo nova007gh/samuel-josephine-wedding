@@ -1,5 +1,61 @@
 # snybena.com live audit — 11 October 2026
 
+## Voice recording and audio upload audit — v186 (12 October)
+
+Fixed microphone-request and stop-callback races. A discarded recording's late
+permission grant stops its tracks, and discarded stop callbacks cannot recreate
+its preview. Single-flight microphone setup and finalising-state guards prevent
+overlapping recorders. Recorder/chunks are captured per session; final Blob MIME
+uses that recorder's actual format (normalised audio/webm, audio/mp4 or audio/ogg),
+not a now-cleared global recorder with a WebM fallback. Supported MIME selection
+is browser-aware. Unsupported browsers, denied permission, missing microphone,
+recorder failures and empty recordings get inline feedback and leave controls
+recoverable. Waveform/AudioContext failure does not block recording, and older
+canvas implementations fall back from roundRect to rect.
+
+Recording elapsed time clamps to 02:00 and auto-stops at the limit. Backgrounding
+the document stops an active voice recording, preserving its captured preview;
+an outstanding permission request is invalidated. Interrupted audio tracks stop
+the recorder. Navigating away via existing Back/menu/tab actions still discards
+the recording, but now cannot resurrect it. Tracks, waveform timer/animation,
+AudioContext, chunks and preview URLs are released at the appropriate lifecycle.
+
+The shared voice/audio/photo/video submission form now snapshots the upload,
+guards duplicate submissions, requires a nonblank name, protects fields and
+dismissal during upload, displays accessible percentage/save/error feedback,
+and retains the same Blob and draft after failure for SHARE retry. Successful
+uploads clear preview URLs and recorder state. Opening another share uses its
+own name rather than a prior submitter's lingering name. Existing moderation
+and device upload tracking are unchanged. Cancelled sheets retain their draft
+until replaced; navigating away still follows existing recorder-discard rules.
+
+Expanded actual-browser/disposable-API test uses Chrome's synthetic microphone
+with actual MediaRecorder (not a mocked recorder). It passed permission denial
+and recovery, delayed grant after Back/track cleanup, actual recording/manual
+stop, accelerated elapsed-clock two-minute auto-stop, user-gesture preview
+playback, correct MIME/name/album, upload failure retention, duplicate/dismissal
+guards, one pending voice record, playback of saved upload bytes, successful
+cleanup, and a separate uploaded-audio-file pending record. These are not tests
+of a physical microphone, acoustic fidelity, Safari/iPhone recording, OS
+permissions, background suspension timing or uninterrupted real two-minute
+capture. Those still require real-device verification.
+
+Run `node tests/isolated-e2e.cjs <output-dir>` after updating the isolated VPS
+helper; it creates no live submissions. Candidate Share/mobile/dashboard and
+dashboard/feed/push-feedback/sign-out/transcode regressions also pass. Initial
+runs exposed harness device startup/timing and no-user-gesture playback issues;
+clean serial reruns with an explicit playback gesture passed. No live audio
+records, media files, guest names, settings or competitions are altered.
+Discard/replacement/success explicitly pause preview audio before removing its
+elements. The browser harness now waits up to 30 seconds for a nonempty valid
+Chrome debugging port instead of reading a missing/partially written file.
+Final expanded disposable voice/audio/competition test passed. Deployed Share/
+seven-page/mobile, dashboard/upload, current-photo reload and worker regressions
+passed. Health/public feeds 200, admin guards 401, services active and SQLite
+`ok`. Pre-v186 comparison retained 7 guests, 1 RSVP, 31 media records/files,
+0 guestbook entries, 3 gifts, 2 funds, 35 settings and 3 competitions. No API
+restart or database migration was required.
+
 ## Best Dresses photo feedback — v185 (12 October)
 
 Read-only checks confirmed the Best Dresses cover exists (HTTP 200 image/png,

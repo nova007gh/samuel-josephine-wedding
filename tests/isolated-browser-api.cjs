@@ -10,8 +10,8 @@ const dir=fs.mkdtempSync('/root/wedding-browser-e2e-');
 const media=http.createServer((req,res)=>{
   const name=path.basename(new URL(req.url,'http://localhost').pathname);
   const file=path.join(dir,'uploads',name);
-  if(!/^[a-f0-9-]+\.(jpg|jpeg|png|webp|mp3|m4a|mp4)$/.test(name)||!fs.existsSync(file)){res.writeHead(404);res.end();return;}
-  const types={'.jpg':'image/jpeg','.png':'image/png','.webp':'image/webp','.mp3':'audio/mpeg','.m4a':'audio/mp4','.mp4':'video/mp4'};
+  if(!/^[a-f0-9-]+\.(jpg|jpeg|png|webp|mp3|m4a|mp4|weba|webm|ogg|wav|aac)$/.test(name)||!fs.existsSync(file)){res.writeHead(404);res.end();return;}
+  const types={'.jpg':'image/jpeg','.png':'image/png','.webp':'image/webp','.mp3':'audio/mpeg','.m4a':'audio/mp4','.mp4':'video/mp4','.weba':'audio/webm','.webm':'video/webm','.ogg':'audio/ogg','.wav':'audio/wav','.aac':'audio/aac'};
   res.setHeader('Content-Type',types[path.extname(name)]||'application/octet-stream');fs.createReadStream(file).pipe(res);
 });
 media.listen(3195,'127.0.0.1');

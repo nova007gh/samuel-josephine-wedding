@@ -12,14 +12,24 @@ const profile = fs.mkdtempSync(path.join(out, 'chrome-profile-'));
 const chrome = spawn('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', [
   '--headless=new', '--no-first-run', '--no-default-browser-check',
   '--remote-debugging-port=0', '--remote-debugging-address=127.0.0.1',
-  '--user-data-dir='+profile, 'about:blank'
+  '--user-data-dir='+profile,
+  ...(process.argv.includes('--e2e')?['--use-fake-ui-for-media-stream','--use-fake-device-for-media-stream']:[]),
+  'about:blank'
 ]);
 let socket;
 const delay = ms => new Promise(resolve=>setTimeout(resolve,ms));
 (async()=>{
   const active = path.join(profile, 'DevToolsActivePort');
-  for (let i=0; !fs.existsSync(active) && i<80; i++) await delay(100);
-  const port = fs.readFileSync(active,'utf8').split('\n')[0];
+  let port;
+  for (let i=0; i<300; i++){
+    if(fs.existsSync(active)){
+      const candidate=fs.readFileSync(active,'utf8').split('\n')[0];
+      if(/^\d+$/.test(candidate)&&Number(candidate)>0){port=candidate;break;}
+    }
+    if(chrome.exitCode!==null)throw new Error('Test Chrome exited before its debugging port became ready');
+    await delay(100);
+  }
+  if(!port)throw new Error('Test Chrome debugging port did not become ready within 30 seconds');
   const tabs = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json();
   const tab = tabs.find(t=>t.type==='page');
   socket = new WebSocket(tab.webSocketDebuggerUrl);

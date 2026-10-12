@@ -18,7 +18,8 @@ function openSheet(id){
   document.getElementById(id)?.classList.remove('hidden');
   document.body.classList.add('locked');
 }
-function closeSheet(id){
+function closeSheet(id, force=false){
+  if (id==='shareModal' && shareUploading && !force) return;
   document.getElementById(id)?.classList.add('hidden');
   document.body.classList.remove('locked');
 }
@@ -220,18 +221,23 @@ subscribeGuestbook();
    Share memories — files go through a details sheet
    ========================================================= */
 let pendingShare = null; // { blob, type, kind }
+let shareUploading = false, sharePreviewUrl = null;
 const shareKindLabels = {
   photo:'Share Photo', video:'Share Video', selfie:'Share Selfie',
   voice:'Voice Message', videomsg:'Video Message', music:'Share Audio'
 };
 
 function openShareSheet(blob, type, kind, guestName=''){
+  if (shareUploading || !blob?.size) return;
   pendingShare = { blob, type, kind };
+  document.getElementById('shareUploadStatus').textContent='';
   document.getElementById('shareTitle').textContent = shareKindLabels[kind] || 'Share Memory';
 
   const preview = document.getElementById('sharePreview');
+  preview.querySelectorAll('audio,video').forEach(media=>media.pause());
   preview.innerHTML = '';
-  const url = URL.createObjectURL(blob);
+  if (sharePreviewUrl) URL.revokeObjectURL(sharePreviewUrl);
+  const url = sharePreviewUrl = URL.createObjectURL(blob);
   if (type.startsWith('image/')) preview.innerHTML = `<img src="${url}" alt="">`;
   else if (type.startsWith('video/')) preview.innerHTML = `<video src="${url}" controls playsinline></video>`;
   else if (type.startsWith('audio/')) preview.innerHTML = `<audio src="${url}" controls></audio>`;
@@ -245,7 +251,7 @@ function openShareSheet(blob, type, kind, guestName=''){
   }
 
   const nameInput = document.querySelector('#shareForm input[name="shareName"]');
-  if (nameInput && !nameInput.value)
+  if (nameInput)
     nameInput.value = guestName || (typeof getGuest === 'function' && getGuest()?.name) || '';
   openSheet('shareModal');
 }
@@ -273,8 +279,19 @@ document.getElementById('shareTypeAudio')?.addEventListener('change', e => {
 
 document.getElementById('shareForm')?.addEventListener('submit', async e => {
   e.preventDefault();
-  if (!pendingShare) return;
+  if (!pendingShare || shareUploading) return;
   const fd = new FormData(e.target);
+  if (!String(fd.get('shareName') || '').trim()){
+    e.target.querySelector('[name="shareName"]')?.focus();return;
+  }
+  const upload = pendingShare;
+  shareUploading = true;
+  e.target.setAttribute('aria-busy','true');
+  const uploadStatus=document.getElementById('shareUploadStatus');
+  uploadStatus.textContent='Uploading…';
+  const controls = [...e.target.elements];
+  const disabled = controls.map(el => el.disabled);
+  controls.forEach(el => { el.disabled = true; });
   const submitBtn = e.target.querySelector('[type="submit"]');
   if (submitBtn){ submitBtn.disabled = true; submitBtn.dataset.label = submitBtn.textContent; submitBtn.textContent = 'Uploading…'; }
   try {
@@ -282,29 +299,38 @@ document.getElementById('shareForm')?.addEventListener('submit', async e => {
       category: fd.get('shareCategory'),
       caption: fd.get('shareCaption').trim(),
       guestName: fd.get('shareName').trim(),
-      kind: pendingShare.kind,
+      kind: upload.kind,
       status: 'pending',
-      type: pendingShare.type || 'application/octet-stream',
-      name: `${pendingShare.kind}-${Date.now()}`,
-      size: pendingShare.blob.size,
-      blob: pendingShare.blob,
+      type: upload.type || 'application/octet-stream',
+      name: `${upload.kind}-${Date.now()}`,
+      size: upload.blob.size,
+      blob: upload.blob,
       onProgress: percent => {
+        uploadStatus.textContent=percent<100?`Uploading ${percent}%…`:'Upload sent — saving…';
         if (submitBtn) submitBtn.textContent = percent < 100
           ? `Uploading ${percent}%…` : 'Upload sent — saving…';
       }
     });
     if (typeof rememberUpload === 'function') rememberUpload('memory', rec && rec.id);
     pendingShare = null;
+    if (sharePreviewUrl) URL.revokeObjectURL(sharePreviewUrl);
+    sharePreviewUrl = null;
+    const preview=document.getElementById('sharePreview');
+    preview.querySelectorAll('audio,video').forEach(media=>media.pause());
+    preview.innerHTML = '';
     e.target.reset();
-    closeSheet('shareModal');
+    closeSheet('shareModal', true);
     teardownRecorders();
     renderMyUploads();
     alert('Your memory has been sent to the couple for approval. You can see it under "Your uploads" — once approved it appears in the Gallery for everyone.');
     switchView('memories'); // show them their submission straight away
   } catch(err){
     console.warn('Memory upload failed:', err);
-    alert(err.message || 'Sorry, the upload failed. Please check your connection and try again.');
+    uploadStatus.textContent=(err.message || 'The upload failed.')+' Your recording or file is still here. Tap SHARE to retry.';
   } finally {
+    shareUploading = false;
+    e.target.removeAttribute('aria-busy');
+    controls.forEach((el,i) => { el.disabled = disabled[i]; });
     if (submitBtn){ submitBtn.disabled = false; submitBtn.textContent = submitBtn.dataset.label || 'Submit'; }
   }
 });
@@ -330,6 +356,7 @@ const voiceSubmit = document.getElementById('voiceSubmit');
 
 let vStream = null, vRecorder = null, vChunks = [], vBlob = null;
 let vTick = null, vStart = 0, vAudioCtx = null, vAnalyser = null, vRaf = null;
+let vGeneration = 0, vStarting = false, vPreviewUrl = null;
 
 function drawWaveBars(levels){
   if (!voiceCtx2d) return;
@@ -342,7 +369,8 @@ function drawWaveBars(levels){
     const bh = Math.max(5, lvl * h);
     const x = gap + i * (barW + gap);
     voiceCtx2d.beginPath();
-    voiceCtx2d.roundRect(x, (h - bh) / 2, barW, bh, 3);
+    if(voiceCtx2d.roundRect)voiceCtx2d.roundRect(x, (h - bh) / 2, barW, bh, 3);
+    else voiceCtx2d.rect(x, (h - bh) / 2, barW, bh);
     voiceCtx2d.fill();
   });
 }
@@ -367,6 +395,7 @@ function animateVoiceWave(){
 }
 
 function stopVoice(discard){
+  if (discard){vGeneration++;vStarting=false;if(vRecorder){vRecorder.onstop=null;vRecorder.ondataavailable=null;}}
   if (vRecorder && vRecorder.state === 'recording') vRecorder.stop();
   clearInterval(vTick);
   cancelAnimationFrame(vRaf);
@@ -377,9 +406,12 @@ function stopVoice(discard){
   vAudioCtx?.close().catch(() => {});
   vAudioCtx = null;
   voiceRecBtn?.classList.remove('recording');
+  if (voiceRecBtn){voiceRecBtn.disabled=false;voiceRecBtn.setAttribute('aria-label','Start voice recording');}
   if (discard){
     vBlob = null;
-    if (voiceReview){ voiceReview.classList.add('hidden'); voiceReview.innerHTML = ''; }
+    vChunks = [];
+    if(vPreviewUrl)URL.revokeObjectURL(vPreviewUrl);vPreviewUrl=null;
+    if (voiceReview){ voiceReview.querySelectorAll('audio').forEach(audio=>audio.pause());voiceReview.classList.add('hidden'); voiceReview.innerHTML = ''; }
     if (voiceSubmit) voiceSubmit.disabled = true;
     if (voiceElapsed) voiceElapsed.textContent = '00:00';
     if (voiceHint) voiceHint.textContent = 'Tap to start recording';
@@ -388,51 +420,75 @@ function stopVoice(discard){
 }
 
 voiceRecBtn?.addEventListener('click', async () => {
+  if (vStarting || shareUploading) return;
+  if (vRecorder?.state === 'inactive') return; // final data is still being delivered
   if (vRecorder && vRecorder.state === 'recording'){
+    voiceRecBtn.disabled=true;voiceHint.textContent='Finishing recording…';
     vRecorder.stop();
     return;
   }
-  try {
-    vStream = await navigator.mediaDevices.getUserMedia({ audio:true });
-  } catch {
-    alert('We need microphone access to record your voice message. Please allow it and try again.');
-    return;
+  if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined'){
+    voiceHint.textContent='Recording is not supported here. Open this site in Safari or Chrome, or use Upload Audio.';return;
   }
-  vAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  vAnalyser = vAudioCtx.createAnalyser();
-  vAnalyser.fftSize = 256;
-  vAudioCtx.createMediaStreamSource(vStream).connect(vAnalyser);
-  animateVoiceWave();
-
-  vChunks = [];
-  vRecorder = new MediaRecorder(vStream);
-  vRecorder.ondataavailable = e => { if (e.data.size) vChunks.push(e.data); };
-  vRecorder.onstop = () => {
-    vBlob = new Blob(vChunks, { type: vRecorder?.mimeType || 'audio/webm' });
+  stopVoice(true);
+  const generation=++vGeneration;
+  vStarting=true;voiceRecBtn.disabled=true;voiceHint.textContent='Allow microphone access to start recording…';
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio:true });
+    if(generation!==vGeneration){stream.getTracks().forEach(t=>t.stop());return;}
+    vStream=stream;
+    try {
+      const AudioCtx=window.AudioContext||window.webkitAudioContext;
+      if(AudioCtx){vAudioCtx=new AudioCtx();vAnalyser=vAudioCtx.createAnalyser();vAnalyser.fftSize=256;vAudioCtx.createMediaStreamSource(stream).connect(vAnalyser);vAudioCtx.resume().catch(()=>{});animateVoiceWave();}
+    } catch { /* A waveform failure must not prevent an audio recording. */ }
+    const mime=['audio/webm;codecs=opus','audio/mp4','audio/ogg;codecs=opus','audio/webm'].find(t=>MediaRecorder.isTypeSupported?.(t));
+    const recorder = new MediaRecorder(stream,mime?{mimeType:mime}:undefined);
+    vRecorder=recorder;
+    const chunks=[];vChunks=chunks;
+    recorder.ondataavailable = e => { if (generation===vGeneration&&e.data.size) chunks.push(e.data); };
+    recorder.onerror = () => {if(generation!==vGeneration)return;stopVoice(true);voiceHint.textContent='Recording stopped unexpectedly. Please record again.';};
+    stream.getAudioTracks().forEach(track=>track.addEventListener('ended',()=>{if(generation===vGeneration&&recorder.state==='recording')recorder.stop();}));
+    recorder.onstop = () => {
+    if(generation!==vGeneration)return;
+    vBlob = new Blob(chunks, { type: (recorder.mimeType||chunks[0]?.type||'audio/webm').split(';')[0] });
     stopVoice(false);
-    const url = URL.createObjectURL(vBlob);
+    if(!vBlob.size){voiceHint.textContent='No audio was captured. Please record again.';voiceSubmit.disabled=true;return;}
+    const url = vPreviewUrl = URL.createObjectURL(vBlob);
     voiceReview.classList.remove('hidden');
     voiceReview.innerHTML = `<audio src="${url}" controls></audio>`;
     voiceHint.textContent = 'Listen back, then submit or re-record';
     voiceSubmit.disabled = false;
   };
-  vRecorder.start();
+    recorder.start(1000);
   vStart = Date.now();
   vTick = setInterval(() => {
     const ms = Date.now() - vStart;
-    voiceElapsed.textContent = fmtTime(ms);
+    voiceElapsed.textContent = fmtTime(Math.min(ms,MAX_REC_MS));
     if (ms >= MAX_REC_MS && vRecorder?.state === 'recording') vRecorder.stop();
   }, 200);
   voiceRecBtn.classList.add('recording');
+  voiceRecBtn.setAttribute('aria-label','Stop voice recording');
   voiceReview.classList.add('hidden');
   voiceHint.textContent = 'Tap to stop recording';
   voiceSubmit.disabled = true;
+  } catch(err){
+    if(generation!==vGeneration)return;
+    stopVoice(true);
+    voiceHint.textContent=err.name==='NotAllowedError'?'Microphone access was denied. Allow it in your browser settings, then try again.':err.name==='NotFoundError'?'No microphone was found. Connect one or use Upload Audio.':'Could not start recording. Please try again or use Upload Audio.';
+  } finally {
+    if(generation===vGeneration){vStarting=false;voiceRecBtn.disabled=false;}
+  }
 });
 
 voiceSubmit?.addEventListener('click', () => {
   if (!vBlob) return;
   openShareSheet(vBlob, vBlob.type || 'audio/webm', 'voice',
     document.getElementById('voiceName')?.value.trim() || '');
+});
+document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden)return;
+  if(vStarting)stopVoice(true);
+  else if(vRecorder?.state==='recording')vRecorder.stop();
 });
 
 /* ---------- video message page ---------- */

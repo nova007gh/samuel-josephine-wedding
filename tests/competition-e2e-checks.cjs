@@ -29,12 +29,14 @@ module.exports=async({call,evaluate,errors,out})=>{
   const gallerySubmissions=(await request('/admin/memories',{admin:true})).data.filter(m=>m.caption==='Isolated gallery action test');
   assert.equal(gallerySubmissions.length,1,'Gallery double event writes only one actual API record');
   assert.equal(gallerySubmissions[0].status,'pending','Guest upload requires admin review');
+  await require('./voice-recording-checks.cjs')({call,evaluate,wait,request});
+  await evaluate(`switchView('admincompetitions')`);
   await wait(`document.querySelector('#competitionAdminBrowse [data-comp-action="create"]')!==null`);
   // A delayed real guest-list response must not allow two editor initialisations.
   await evaluate(`(()=>{const original=api;window.__e2e.originalApi=original;window.__e2e.guestReads=0;const held=new Promise(r=>window.__e2e.releaseEditor=r);
     api=async(p,o)=>{const result=await original(p,o);if(p==='/admin/guests'){window.__e2e.guestReads++;await held;}return result;};
     const button=document.querySelector('[data-comp-action="create"]');button.click();button.click();})()`);
-  await new Promise(r=>setTimeout(r,400));
+  await wait(`window.__e2e.guestReads>0`);
   assert.equal(await evaluate('window.__e2e.guestReads'),1,'Repeated Create clicks must not start multiple editor requests');
   await evaluate(`window.__e2e.releaseEditor();api=window.__e2e.originalApi`);
   await wait(`!document.getElementById('competitionEditor').classList.contains('hidden')`);

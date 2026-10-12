@@ -1,0 +1,50 @@
+const assert=require('node:assert/strict');
+/* Real Chrome MediaRecorder with its synthetic microphone; disposable API only. */
+module.exports=async({call,evaluate,wait,request})=>{
+  await evaluate(`window.__voiceAlerts=[];window.__voiceOriginalAlert=alert;window.alert=t=>window.__voiceAlerts.push(t);switchView('voicemsg');window.__realGetUserMedia=navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);`);
+  // Permission error is inline and leaves the recorder reusable.
+  await evaluate(`navigator.mediaDevices.getUserMedia=async()=>{throw new DOMException('Denied','NotAllowedError');};document.getElementById('voiceRecBtn').click()`);
+  await wait(`document.getElementById('voiceHint').textContent.includes('denied')&&!document.getElementById('voiceRecBtn').disabled`);
+  // A late permission grant after navigation must not leave the mic running.
+  await evaluate(`navigator.mediaDevices.getUserMedia=async()=>{try{const stream=await window.__realGetUserMedia({audio:true});window.__lateVoiceStream=stream;await new Promise(r=>window.__releaseVoice=r);return stream;}catch(err){window.__voiceDeviceError=err.name+': '+err.message;throw err;}};document.getElementById('voiceRecBtn').click();document.getElementById('voiceRecBtn').dispatchEvent(new MouseEvent('click',{bubbles:true}));`);
+  await wait(`typeof window.__releaseVoice==='function'||!!window.__voiceDeviceError`);
+  assert.equal(await evaluate(`window.__voiceDeviceError||null`),null,'Synthetic microphone is available');
+  await evaluate(`document.querySelector('[data-view="voicemsg"] .back-link').click();window.__releaseVoice();navigator.mediaDevices.getUserMedia=window.__realGetUserMedia`);
+  await wait(`window.__lateVoiceStream.getTracks().every(t=>t.readyState==='ended')`);
+  assert.equal(await evaluate(`vBlob===null&&document.getElementById('voiceReview').classList.contains('hidden')`),true,'Discarded late recording cannot recreate a preview');
+  await evaluate(`switchView('voicemsg');document.getElementById('voiceName').value='Synthetic Voice Test';document.getElementById('voiceRecBtn').click()`);
+  await wait(`vRecorder?.state==='recording'`);
+  await new Promise(r=>setTimeout(r,1200));
+  await evaluate(`document.getElementById('voiceRecBtn').click()`);
+  await wait(`vBlob?.size>0&&!document.getElementById('voiceSubmit').disabled`);
+  assert.equal(await evaluate(`vBlob.type.startsWith('audio/')&&!vBlob.type.includes(';')&&vStream===null`),true,'Final blob uses the recorder format and releases microphone');
+  await evaluate(`document.getElementById('voiceRecBtn').click()`);
+  await wait(`vRecorder?.state==='recording'`);
+  await new Promise(r=>setTimeout(r,600));
+  await evaluate(`vStart=Date.now()-MAX_REC_MS-100`);
+  await wait(`vBlob?.size>0&&vRecorder===null`);
+  assert.equal(await evaluate(`document.getElementById('voiceElapsed').textContent==='02:00'`),true,'Two-minute limit auto-stops and clamps elapsed time');
+  const playback=await call('Runtime.evaluate',{expression:`(async()=>{const audio=document.querySelector('#voiceReview audio');audio.muted=true;await audio.play();audio.pause();return true;})()`,awaitPromise:true,returnByValue:true,userGesture:true});
+  assert.equal(playback.exceptionDetails,undefined,'Audio preview plays with an explicit user gesture');
+  await evaluate(`document.getElementById('voiceSubmit').click()`);
+  assert.equal(await evaluate(`document.querySelector('#shareForm [name="shareName"]').value==='Synthetic Voice Test'&&document.querySelector('#shareForm [name="shareCategory"]').value==='voice-messages'`),true,'Voice name and album carry into submission');
+  await evaluate(`window.__savedVoiceBlob=pendingShare.blob;window.__voiceAddMemory=addMemory;addMemory=async()=>{throw new Error('Synthetic network failure');};document.getElementById('shareForm').requestSubmit()`);
+  await wait(`document.getElementById('shareUploadStatus').textContent.includes('Tap SHARE to retry')&&!shareUploading`);
+  assert.equal(await evaluate(`pendingShare.blob===window.__savedVoiceBlob&&vBlob===window.__savedVoiceBlob&&!document.getElementById('shareModal').classList.contains('hidden')`),true,'Failed upload retains the recording for retry');
+  await evaluate(`(()=>{const original=window.__voiceAddMemory;window.__voiceUploads=0;const held=new Promise(r=>window.__releaseVoiceUpload=r);addMemory=async record=>{window.__voiceUploads++;await held;return original(record);};document.querySelector('#shareForm [name="shareCaption"]').value='Actual recorder disposable upload';const form=document.getElementById('shareForm');form.requestSubmit();form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));closeSheet('shareModal');})()`);
+  assert.equal(await evaluate(`window.__voiceUploads===1&&shareUploading&&!document.getElementById('shareModal').classList.contains('hidden')`),true,'Duplicate submission and dismissal are guarded while uploading');
+  await evaluate(`window.__releaseVoiceUpload()`);
+  await wait(`!shareUploading&&pendingShare===null&&document.querySelector('.view:not(.hidden)').dataset.view==='memories'`);
+  await evaluate(`addMemory=window.__voiceAddMemory`);
+  const rows=(await request('/admin/memories',{admin:true})).data.filter(x=>x.caption==='Actual recorder disposable upload');
+  assert.equal(rows.length,1);assert.equal(rows[0].kind,'voice');assert.equal(rows[0].status,'pending');assert.equal(rows[0].guestName,'Synthetic Voice Test');assert.match(rows[0].type,/^audio\//);assert.ok(rows[0].size>0);
+  const savedPlayback=await call('Runtime.evaluate',{expression:`(async()=>{const audio=new Audio(${JSON.stringify(rows[0].mediaUrl)});audio.muted=true;await audio.play();audio.pause();audio.removeAttribute('src');return true;})()`,awaitPromise:true,returnByValue:true,userGesture:true});
+  assert.equal(savedPlayback.exceptionDetails,undefined,'Uploaded audio bytes remain playable after persistence');
+  assert.equal(await evaluate(`vBlob===null&&vPreviewUrl===null&&sharePreviewUrl===null`),true,'Successful submission releases preview resources');
+  await evaluate(`(()=>{const dt=new DataTransfer();dt.items.add(new File([window.__savedVoiceBlob],'recorded-audio.webm',{type:window.__savedVoiceBlob.type}));const input=document.getElementById('shareTypeAudio');input.files=dt.files;input.dispatchEvent(new Event('change',{bubbles:true}));document.querySelector('#shareForm [name="shareName"]').value='Audio File Test';document.querySelector('#shareForm [name="shareCaption"]').value='Isolated audio-file upload';document.getElementById('shareForm').requestSubmit();})()`);
+  await wait(`!shareUploading&&pendingShare===null`);
+  const files=(await request('/admin/memories',{admin:true})).data.filter(x=>x.caption==='Isolated audio-file upload');
+  assert.equal(files.length,1);assert.equal(files[0].kind,'music');assert.equal(files[0].category,'voice-messages');assert.equal(files[0].status,'pending');
+  await evaluate(`window.alert=window.__voiceOriginalAlert`);
+  console.log('PASS actual MediaRecorder audio, permission denial/recovery, late mic grant cleanup, stop/format/preview, name/album, failed-upload retention, duplicate guard and real isolated pending voice upload (synthetic mic; physical-phone microphone not tested)');
+};
