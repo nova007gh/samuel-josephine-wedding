@@ -24,6 +24,7 @@ module.exports=async({call,evaluate,errors,out})=>{
         return original(p,opts);
       }
       state.calls.push({path:p,method:opts.method||'GET'});
+      if(p==='/competitions/notices')return structuredClone(state.notices||[]);
       if(p==='/admin/competition-photos'){opts.onProgress?.(43);if(state.photoWait)await state.photoWait;opts.onProgress?.(100);return {url:'assets/couple-home.jpg'};}
       if(p==='/competitions/session')return {verified:true,approved:true};
       const admin=p.startsWith('/admin/');
@@ -144,6 +145,33 @@ module.exports=async({call,evaluate,errors,out})=>{
   const guestShot=await call('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(out,'competitions-guest-preview.png'),Buffer.from(guestShot.data,'base64'));
   await evaluate(`setAdminToken(null);switchView('admincompetitions')`);
   assert.equal(await evaluate(`document.querySelector('.view:not(.hidden)').dataset.view`),'adminlogin');
+  await evaluate(`window.__competitionFixture.notices=[{id:'mock-team',title:'New game <b>with love</b>',status:'active',publishedAt:123,startAt:null,canVote:true}];switchView('home')`);
+  await wait(`!!document.querySelector('.competition-toast')`);
+  assert.equal(await evaluate(`document.querySelector('.competition-toast p').textContent==='New game <b>with love</b>'&&!document.querySelector('.competition-toast p b')&&document.querySelector('.competition-toast-open').textContent==='Vote Now'`),true,'Toast safely renders title and vote action');
+  for(const width of [320,375,430]){
+    await call('Emulation.setDeviceMetricsOverride',{width,height:1100,deviceScaleFactor:1,mobile:true});
+    assert.equal(await evaluate(`(()=>{const r=document.querySelector('.competition-toast').getBoundingClientRect();return r.left>=0&&r.right<=innerWidth+.5;})()`),true,'Toast fits '+width);
+  }
+  await evaluate(`(async()=>{await new Promise(r=>setTimeout(r,700));document.getElementById('pageLoader').classList.add('hidden');scrollTo(0,0);})()`);
+  const noticeShot=await call('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(out,'competition-toast-preview.png'),Buffer.from(noticeShot.data,'base64'));
+  await evaluate(`document.querySelector('.competition-toast-open').click()`);
+  await wait(`document.querySelector('#competitionDetail h1')?.textContent==='Team Bride vs Team Groom'`);
+  await evaluate(`window.dispatchEvent(new CustomEvent('wedding:view'))`);
+  await new Promise(r=>setTimeout(r,100));
+  assert.equal(await evaluate(`!document.querySelector('.competition-toast')&&JSON.parse(localStorage.getItem('sj_competition_notices:guest-one')).includes('mock-team:123:active')`),true,'Notice is saved and not repeated');
+  await evaluate(`window.__competitionFixture.notices=[{id:'mock-team',title:'Scheduled game',status:'upcoming',publishedAt:124,startAt:Date.now()+60000,canVote:false}];switchView('home')`);
+  await wait(`document.querySelector('.competition-toast-open')?.textContent==='View Competition'`);
+  await evaluate(`document.querySelector('.competition-toast-close').click();window.__competitionFixture.notices[0].status='active';window.__competitionFixture.notices[0].canVote=true;window.dispatchEvent(new CustomEvent('wedding:view'))`);
+  await wait(`document.querySelector('.competition-toast b')?.textContent==='Wedding competition is open!'`);
+  await evaluate(`window.__competitionFixture.notices=[];window.dispatchEvent(new CustomEvent('wedding:view'))`);
+  await wait(`!document.querySelector('.competition-toast')`);
+  const callsBefore=await evaluate(`window.__competitionFixture.calls.filter(x=>x.path==='/competitions/notices').length`);
+  await evaluate(`window.__uploadsInFlight=1;window.dispatchEvent(new CustomEvent('wedding:view'))`);
+  assert.equal(await evaluate(`window.__competitionFixture.calls.filter(x=>x.path==='/competitions/notices').length`),callsBefore,'Notices pause during uploads');
+  await evaluate(`window.__uploadsInFlight=0;setAdminToken('mock-admin');window.__competitionFixture.notices=[{id:'mock-team',title:'Admin should not see this',status:'active',publishedAt:125}];window.dispatchEvent(new CustomEvent('wedding:view'))`);
+  assert.equal(await evaluate(`!document.querySelector('.competition-toast')`),true,'Guest toasts do not appear for admin');
+  await evaluate(`window.__competitionFixture.notices=[];setAdminToken(null)`);
+  console.log('PASS competition toasts across guest pages, safe titles, mobile fit, Vote Now navigation, per-guest dedup, scheduled opening alert, removed-game cleanup, upload pause and admin suppression (API mocked)');
   await evaluate(`window.__competitionFixture.unverified=true;switchView('competitions')`);
   await wait(`document.querySelector('#competitionList [data-id="mock-team"]')!==null`);
   await evaluate(`document.querySelector('#competitionList [data-id="mock-team"]').click()`);

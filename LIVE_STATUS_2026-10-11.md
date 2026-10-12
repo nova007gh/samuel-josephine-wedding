@@ -1,5 +1,35 @@
 # snybena.com live audit — 11 October 2026
 
+## Guest competition toasts — v178
+
+A lightweight `/api/competitions/notices` feed is now polled on all guest pages
+every 15 seconds while the app is visible and entered, outside uploads. New
+published games show a dismissible cream/gold toast with their title and a
+Vote Now / View Competition button opening that specific game. Upcoming games
+announce their start time and get a separate alert when voting opens. Active
+games are also discovered by guests returning later. Per-guest/device local
+storage remembers shown events (also checked across tabs). Drafts, duplicates
+saved as drafts, paused and closed games do not appear in the feed; ordinary
+edits do not regenerate the publication event. Publishing from draft uses a
+new server-owned timestamp. No ballot, group IDs or hidden results are exposed.
+Admin pages and invitation/check-in gates do not show these guest toasts.
+Multiple announcements display one at a time, with dismissal or a 15-second
+timeout (the toast remains while hovered/focused). This is in-app discovery,
+not guaranteed background/closed-app push delivery. Existing verified guest
+voting rules and OTP-provider limitations are unchanged.
+
+Isolated API tests passed for published/scheduled notices, draft/paused/closed
+privacy, audience-sensitive action labels, stable timestamps on edits and new
+timestamps on republishing. Mocked browser tests passed for notices on Home,
+safe plain-text titles, mobile fit, direct competition navigation, persistent
+dedup, scheduled opening alerts, removal cleanup, upload pause and admin
+suppression. No live competition, publication or vote was created for testing.
+Deployed UI and Gift Page Message regressions passed; live notices returned 200.
+At this release a real competition was already present (1 admin record), so it
+was preserved rather than replaced with fixtures. Existing guest/media/gift
+records and settings passed comparison against the pre-v178 SQLite snapshot;
+all referenced memory files existed and database integrity remained `ok`.
+
 ## Wedding Games & Competitions — v177
 
 Added reference-inspired cream/gold guest competition lists, contestant/team

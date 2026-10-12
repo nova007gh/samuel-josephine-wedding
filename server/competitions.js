@@ -141,8 +141,21 @@ module.exports = function installCompetitions({app,db,requireAdmin,publicWrite,m
       if(removed.some(x=>db.prepare('SELECT 1 FROM competition_votes WHERE competitionId=? AND choiceId=? LIMIT 1').get(c.id,x.id)))
         throw new Error('A contestant with votes cannot be removed. Close or duplicate the competition instead.');
     }
+    c.publishedAt=old?.publishedAt||null;
+    if(c.status==='active'&&(!old||old.status==='draft'||!c.publishedAt))
+      c.publishedAt=Math.max(Date.now(),(old?.publishedAt||0)+1);
     return c;
   }
+  /* Lightweight discovery feed: never exposes drafts, ballots or private results. */
+  app.get('/api/competitions/notices',(req,res)=>{
+    res.set('Cache-Control','no-store');
+    const g=guest(req);
+    const notices=db.prepare('SELECT id FROM competitions ORDER BY createdAt DESC').all().map(r=>{const c=load(r.id);return {c,status:phase(c)};})
+      .filter(({status})=>['active','upcoming'].includes(status)).map(({c,status})=>({id:c.id,title:c.title,status,
+        publishedAt:c.publishedAt||c.createdAt,startAt:c.startAt,
+        canVote:status==='active'&&!eligible(c,g)&&(!db.prepare('SELECT 1 FROM competition_votes WHERE competitionId=? AND guestId=? LIMIT 1').get(c.id,g.id)||c.allowChange)}));
+    res.json(notices);
+  });
   app.get('/api/competitions',(req,res)=>{
     res.set('Cache-Control','no-store');
     const g=guest(req);
@@ -204,7 +217,7 @@ module.exports = function installCompetitions({app,db,requireAdmin,publicWrite,m
   app.post('/api/admin/competitions/:id/duplicate',requireAdmin,(req,res)=>{
     const old=load(req.params.id);
     if(!old) return res.status(404).json({error:'Competition not found.'});
-    const c={...old,id:uid(),title:(old.title+' (copy)').slice(0,120),status:'draft',startAt:null,endAt:null,createdAt:Date.now(),choices:old.choices.map(x=>({...x,id:uid()}))};
+    const c={...old,id:uid(),title:(old.title+' (copy)').slice(0,120),status:'draft',publishedAt:null,startAt:null,endAt:null,createdAt:Date.now(),choices:old.choices.map(x=>({...x,id:uid()}))};
     save(c);res.status(201).json(present(c,null,true));
   });
   app.delete('/api/admin/competitions/:id',requireAdmin,(req,res)=>{

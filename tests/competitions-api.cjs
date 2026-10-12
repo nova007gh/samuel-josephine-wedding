@@ -53,8 +53,13 @@ async function create(overrides){return (await req('/admin/competitions',{method
     assert.equal((await req('/competitions/session',{cookie:a.cookie})).data.verified,true);
     const draft=await create({status:'draft'});
     assert.equal((await req('/competitions')).data.length,0);
+    assert.deepEqual((await req('/competitions/notices')).data,[],'Drafts never generate notices');
     await req('/competitions/'+draft.id,{status:404});
     const c=await create();const id=c.id,one=c.choices[0].id,two=c.choices[1].id;
+    const notice=(await req('/competitions/notices')).data.find(n=>n.id===id);
+    assert.equal(notice.title,c.title);assert.equal(notice.status,'active');assert.equal(notice.publishedAt,c.config.publishedAt);
+    assert.equal(notice.canVote,false);assert.equal(notice.results,undefined);assert.equal(notice.choices,undefined);assert.equal(notice.guestIds,undefined);
+    assert.equal((await req('/competitions/notices',{cookie:a.cookie})).data.find(n=>n.id===id).canVote,true);
     await req('/competitions/'+id+'/vote',{method:'POST',body:{guestId:a.id,choices:[one]},status:401});
     await req('/competitions/'+id+'/vote',{method:'POST',cookie:pending.cookie,body:{choices:[one]},status:403});
     await req('/competitions/'+id+'/vote',{method:'POST',cookie:a.cookie,headers:{Origin:'https://untrusted.example'},body:{choices:[one]},status:403});
@@ -68,6 +73,7 @@ async function create(overrides){return (await req('/admin/competitions',{method
     await req('/admin/competitions/'+id,{method:'PATCH',admin:true,body:{voteMode:'multiple'},status:400});
     await req('/admin/competitions/'+id,{method:'PATCH',admin:true,body:{choices:[{id:two,name:'Team Groom'},{name:'Extra'}]},status:400});
     await req('/admin/competitions/'+id,{method:'PATCH',admin:true,body:{allowChange:true,showResults:false,showPhotos:false}});
+    assert.equal((await req('/competitions/notices')).data.find(n=>n.id===id).publishedAt,notice.publishedAt,'Normal edits do not resend publication notices');
     await req('/competitions/'+id+'/vote',{method:'POST',cookie:a.cookie,body:{choices:[two]}});
     const hidden=(await req('/competitions/'+id)).data;
     assert.equal(hidden.results,null);assert.equal(hidden.config,undefined);assert.equal(hidden.guestIds,undefined);assert.deepEqual(hidden.myChoices,[]);
@@ -81,13 +87,20 @@ async function create(overrides){return (await req('/admin/competitions',{method
     await req('/admin/competitions/'+id+'/comments/'+a.id,{admin:true,method:'PATCH',body:{status:'rejected'}});
     assert.equal((await req('/competitions/'+id)).data.comments.length,0);
     await req('/admin/competitions/'+id,{admin:true,method:'PATCH',body:{status:'paused'}});
+    assert.equal((await req('/competitions/notices')).data.some(n=>n.id===id),false,'Paused games are not announced');
     await req('/competitions/'+id+'/vote',{method:'POST',cookie:b.cookie,body:{choices:[one]},status:409});
     await req('/admin/competitions/'+id,{admin:true,method:'PATCH',body:{status:'closed'}});
+    assert.equal((await req('/competitions/notices')).data.some(n=>n.id===id),false,'Closed games are not announced');
     await req('/competitions/'+id+'/vote',{method:'POST',cookie:b.cookie,body:{choices:[one]},status:409});
     const duplicate=(await req('/admin/competitions/'+id+'/duplicate',{admin:true,method:'POST',status:201})).data;
     assert.equal(duplicate.status,'draft');assert.equal(duplicate.results.totalVotes,0);assert.notEqual(duplicate.choices[0].id,one);
+    assert.equal((await req('/competitions/notices')).data.some(n=>n.id===duplicate.id),false,'Duplicated drafts are private');
+    await req('/admin/competitions/'+id,{admin:true,method:'PATCH',body:{status:'draft'}});
+    await req('/admin/competitions/'+id,{admin:true,method:'PATCH',body:{status:'active',publishedAt:1}});
+    assert.ok((await req('/competitions/notices')).data.find(n=>n.id===id).publishedAt>notice.publishedAt,'Republishing from draft creates a new server-owned notice event');
     const scheduled=await create({startAt:Date.now()+60000,endAt:Date.now()+120000});
     assert.equal(scheduled.status,'upcoming');
+    assert.equal((await req('/competitions/notices')).data.find(n=>n.id===scheduled.id).status,'upcoming');
     await req('/competitions/'+scheduled.id+'/vote',{method:'POST',cookie:a.cookie,body:{choices:[scheduled.choices[0].id]},status:409});
     const endSoon=await create({endAt:Date.now()+1000});
     await new Promise(r=>setTimeout(r,1100));
@@ -131,6 +144,6 @@ async function create(overrides){return (await req('/admin/competitions',{method
     db=new Database(path.join(dir,'wedding.db'));
     assert.equal(db.prepare('SELECT COUNT(*) AS n FROM competition_votes WHERE competitionId=?').get(multi.id).n,0);
     assert.equal(db.pragma('integrity_check',{simple:true}),'ok');
-    console.log('PASS competition CRUD, draft privacy, secure guest sessions, OTP login/logout, approval/audience, dates, voting limits/retries/changes, result privacy, comments, photos, CSV safety, duplication, deletion and restart persistence (isolated database)');
+    console.log('PASS competition CRUD, publication notices/draft privacy, secure guest sessions, OTP login/logout, approval/audience, dates, voting limits/retries/changes, result privacy, comments, photos, CSV safety, duplication, deletion and restart persistence (isolated database)');
   }finally{db?.close();await stop();fs.rmSync(dir,{recursive:true,force:true});}
 })().catch(err=>{console.error(err);process.exitCode=1;});

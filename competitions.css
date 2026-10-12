@@ -69,6 +69,14 @@
 .comp-voter{ padding:14px 0; border-bottom:1px solid #e5d3b6; overflow-wrap:anywhere; }
 .comp-voter small{ display:block; line-height:1.6; font-size:12px; margin-top:5px; }
 .comp-view :is(button,input,select,textarea,a):focus-visible{ outline:2px solid #94661c; outline-offset:3px; }
+.competition-toast{ pointer-events:auto; border-radius:14px; align-items:flex-start; position:relative; padding:14px 36px 14px 12px; }
+.activity-toast .competition-toast-icon{ font-size:26px; line-height:1; margin-top:3px; flex:none; }
+.competition-toast-copy{ min-width:0; }
+.competition-toast p{ margin:6px 0; font-size:13px; line-height:1.4; color:#614821; overflow-wrap:anywhere; }
+.competition-toast .competition-toast-sub{ font-size:12px; color:#826844; }
+.competition-toast-open{ border:0; border-radius:8px; background:linear-gradient(135deg,#b18439,#845716); color:#fff; min-height:40px; padding:9px 14px; font:inherit; font-size:13px; margin-top:4px; }
+.competition-toast-close{ position:absolute; right:5px; top:5px; min-width:32px; min-height:32px; border:0; background:none; color:#765329; font-size:24px; }
+.competition-toast button:focus-visible{ outline:2px solid #94661c; outline-offset:3px; }
 @media(max-width:360px){
   .comp-panel{ padding:13px; }
   .comp-card{ grid-template-columns:50px minmax(0,1fr); }
