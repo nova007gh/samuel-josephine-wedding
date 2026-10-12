@@ -1,5 +1,55 @@
 # snybena.com live audit — 11 October 2026
 
+## Listed-screen enhancements — v182 (12 October)
+
+Events now includes the same days/hours/minutes/seconds countdown as Home,
+using the same saved wedding date and existing time interpretation. Admin date
+changes update both immediately; past dates clamp to zero, invalid dates do
+not overwrite the target. Countdown DOM writes skip unchanged values, stop
+while the document is hidden and reconcile when visible again. No wedding
+date, event schedule, timezone or venue was changed.
+
+Admin login has a single-flight guard (including synthetic repeated submit
+events), accessible busy status and polite error announcements. Real browser
+tests exercised wrong-password feedback, recovery and successful login using
+the actual form and disposable credentials. Existing production credentials
+and email requirements were not altered or used in tests.
+
+Gallery uploads now guard repeated file-change events, protect category and
+caption while sending, display per-file percentages, retain the caption after
+partial failure, show the server/network/size error on total failure, and cancel
+an older completion timer before a new batch starts. A real disposable upload
+with repeated change events produced exactly one pending-review API record.
+Settings polling is single-flight and pauses during uploads; tests verify
+both behaviours. Admin review videos use preload=none. Navigation pauses media
+in pages being hidden without resetting its playback position or stopping
+the background wedding song. These are bounded resource-saving changes,
+not a measured universal speed improvement or resumable-upload implementation.
+
+Expanded isolated end-to-end checks cover Home/Share games links and Back,
+all four Story tabs, View Map URL/new-window wiring, Gallery album/Back/type
+filters and Upload panel, guest-upload persistence/duplicate protection,
+voice-page/Back/shared-gallery navigation, file-picker wiring, matching Home/
+Events countdown, settings polling guards and media pause on navigation.
+Existing real competition/API/cookie tests pass, including verification button
+opening/focusing guest login. Candidate competition, mobile/seven-page Share,
+Gift Message and dashboard/feed/push-feedback/transcode tests also passed.
+
+Competition verification choices remain per-game and unchanged: a verification
+prompt is expected for verification-on games; optional games remain browser-
+limited. Live activity, names, captions, dates, gifts, likes and vote totals are
+not replaced. Remaining real-device limitations from v181 still apply, including
+OTP delivery, notifications, native file/camera/microphone/install/share prompts
+and large-video transfer. No live ballot, admin credential test, upload or gift
+confirmation is submitted during this release's tests.
+Deployed Share/seven-page/mobile, competition, dashboard, Gifts and Gift Message
+checks passed. Post-release health/public feeds were 200 and unauthenticated
+admin guards 401; API/nginx remained active and SQLite integrity was `ok`.
+Snapshot comparison retained guests, RSVP, all 30 media records/files, guestbook,
+gift and fund. A concurrent `giftMomo` settings change was observed and preserved,
+not overwritten. All three competition configs and the two existing ballot
+rows were unchanged. This frontend-only release required no API restart.
+
 ## Deep action audit — v181 (12 October)
 
 Fixed duplicate competition-editor opening on rapid clicks, stale polling

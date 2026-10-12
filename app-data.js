@@ -316,9 +316,14 @@ function renderGallery(memories){
   });
 }
 
+let galleryUploading = false;
+let galleryStatusTimer;
 document.getElementById('memoryFiles')?.addEventListener('change', async event => {
+  if (galleryUploading) return;
   const files = [...event.target.files];
   if (!files.length) return;
+  galleryUploading = true;
+  clearTimeout(galleryStatusTimer);
 
   const category = document.getElementById('memoryCategory').value;
   const captionEl = document.getElementById('memoryCaption');
@@ -327,9 +332,12 @@ document.getElementById('memoryFiles')?.addEventListener('change', async event =
 
   status.classList.remove('hidden');
   event.target.disabled = true;
+  captionEl.disabled = true;
+  document.getElementById('memoryCategory').disabled = true;
 
   let saved = 0;
   let failed = 0;
+  let lastError = '';
   for (let i = 0; i < files.length; i++){
     const file = files[i];
     status.textContent = `Saving ${i + 1} of ${files.length}…`;
@@ -342,24 +350,31 @@ document.getElementById('memoryFiles')?.addEventListener('change', async event =
         size: file.size,
         blob: file,
         status: 'pending',
-        guestName: (typeof getGuest === 'function' ? getGuest()?.name : '') || ''
+        guestName: (typeof getGuest === 'function' ? getGuest()?.name : '') || '',
+        onProgress: percent => {
+          status.textContent = `${i + 1} of ${files.length}: ${percent}%${percent === 100 ? ' sent — saving…' : ' uploaded'}`;
+        }
       });
       saved++;
     } catch(err){
       console.warn('Upload failed:', file.name, err);
       failed++;
+      lastError = err.message;
     }
   }
 
   event.target.disabled = false;
+  captionEl.disabled = false;
+  document.getElementById('memoryCategory').disabled = false;
+  galleryUploading = false;
   event.target.value = '';
   if (failed && !saved){
-    status.textContent = 'Upload failed. Please check your connection and try again.';
+    status.textContent = lastError || 'Upload failed. Please check your connection and try again.';
   } else {
-    captionEl.value = '';
+    if (!failed) captionEl.value = '';
     status.textContent = `${saved} ${saved === 1 ? 'memory' : 'memories'} saved${failed ? ` (${failed} failed)` : ''}. Pending approval — Samuel & Jossy will review shortly.`;
   }
-  setTimeout(() => status.classList.add('hidden'), 6000);
+  galleryStatusTimer = setTimeout(() => status.classList.add('hidden'), 6000);
 });
 
 document.querySelectorAll('#galleryChips .chip').forEach(chip => {
@@ -891,11 +906,14 @@ function renderTimeline(){
 
 /* ---------- live sync — admin edits reach every open phone ---------- */
 const liveSnap = {};
+let settingsSyncBusy = false;
 function snapOf(s, pick){
   return JSON.stringify(Object.keys(s).filter(pick).sort().map(k => [k, s[k]]));
 }
 async function syncSiteSettings(){
-  if (document.visibilityState === 'hidden') return;
+  if (settingsSyncBusy || document.visibilityState === 'hidden' || window.__uploadsInFlight > 0) return;
+  settingsSyncBusy = true;
+  try {
   let fresh;
   try { fresh = await getSettings(); } catch { return; }
   const groups = {
@@ -923,6 +941,7 @@ async function syncSiteSettings(){
   /* keep the admin's lists current, but never overwrite a field being typed in */
   if ((changed.story || changed.songs) && isAdmin() && !document.activeElement?.closest('[data-view="admin"]'))
     renderSiteSettings();
+  } finally { settingsSyncBusy = false; }
 }
 setInterval(syncSiteSettings, 15000);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') syncSiteSettings(); });

@@ -1012,6 +1012,11 @@ function switchView(name, fromHistory = false){
   }
   if (name === 'gifts' && typeof updateGiftAdminVisibility === 'function') updateGiftAdminVisibility();
   const tabName = SUBVIEW_TAB[name] || name;
+  /* Do not keep guest media playing invisibly after leaving its page.
+     Preserve playback position and leave the wedding background song alone. */
+  $$('.view').filter(v => v.dataset.view !== name).forEach(v => {
+    v.querySelectorAll('video, audio').forEach(media => { if (!media.paused) media.pause(); });
+  });
   $$('.view').forEach(v => v.classList.toggle('hidden', v.dataset.view !== name));
   $$('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tabName));
 
@@ -1080,6 +1085,7 @@ let weddingDateMs = Date.parse('2027-01-09T10:00:00');
 window.setWeddingDate = iso => {
   const t = Date.parse(iso);
   if (!Number.isNaN(t)) weddingDateMs = t;
+  updateCountdown();
 };
 function updateCountdown(){
   const diff = Math.max(0, weddingDateMs - Date.now());
@@ -1087,14 +1093,19 @@ function updateCountdown(){
   const h = Math.floor((diff % 86400000) / 3600000);
   const m = Math.floor((diff % 3600000) / 60000);
   const s = Math.floor((diff % 60000) / 1000);
-  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  const set = (id, val) => { const el = document.getElementById(id); if (el && el.textContent !== val) el.textContent = val; };
   set('days', String(d));
   set('hours', String(h).padStart(2, '0'));
   set('minutes', String(m).padStart(2, '0'));
   set('seconds', String(s).padStart(2, '0'));
+  set('eventDays', String(d));
+  set('eventHours', String(h).padStart(2, '0'));
+  set('eventMinutes', String(m).padStart(2, '0'));
+  set('eventSeconds', String(s).padStart(2, '0'));
 }
 updateCountdown();
-setInterval(updateCountdown, 1000);
+setInterval(() => { if (!document.hidden) updateCountdown(); }, 1000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) updateCountdown(); });
 
 /* ---------------------------------------------------------
    Music toggle

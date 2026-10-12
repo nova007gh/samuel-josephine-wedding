@@ -592,8 +592,12 @@ const ADMIN_LOGIN_MESSAGES = {
   'auth/configuration-not-found': 'Admin sign-in is not enabled yet for this project.'
 };
 
+let adminLoginBusy = false;
 adminLoginForm?.addEventListener('submit', async e => {
   e.preventDefault();
+  if (adminLoginBusy) return;
+  adminLoginBusy = true;
+  adminLoginForm.setAttribute('aria-busy', 'true');
   const email = (adminEmail?.value || '').trim();
   const pass = adminPassword?.value || '';
   const submitBtn = adminLoginForm.querySelector('[type="submit"]');
@@ -611,6 +615,8 @@ adminLoginForm?.addEventListener('submit', async e => {
     adminLoginError.textContent = ADMIN_LOGIN_MESSAGES[err.code] || 'Sign-in failed. Please try again.';
     adminPassword?.select();
   } finally {
+    adminLoginBusy = false;
+    adminLoginForm.removeAttribute('aria-busy');
     if (submitBtn){
       submitBtn.disabled = false;
       if (submitBtn.dataset.label) submitBtn.innerHTML = submitBtn.dataset.label;
@@ -843,7 +849,7 @@ function renderApprovalQueue(){
     } else if (item.type && item.type.startsWith('image/') && item.mediaUrl){
       media = `<img class="aq-media" src="${item.mediaUrl}" alt="">`;
     } else if (item.type && item.type.startsWith('video/') && item.mediaUrl){
-      media = `<video class="aq-media" controls playsinline src="${item.mediaUrl}"></video>`;
+      media = `<video class="aq-media" controls playsinline preload="none" src="${item.mediaUrl}"></video>`;
     } else if (item.type && item.type.startsWith('audio/') && item.mediaUrl){
       media = `<audio controls src="${item.mediaUrl}"></audio>`;
     }
@@ -1390,7 +1396,7 @@ async function renderMyUploads(){
     const type = item.type || '';
     const thumb = item._kind === 'memory' && item.mediaUrl
       ? /^image\//.test(type) ? `<img class="aq-media" src="${item.mediaUrl}" alt="">`
-      : /^video\//.test(type) ? `<video class="aq-media" controls playsinline src="${item.mediaUrl}"></video>`
+      : /^video\//.test(type) ? `<video class="aq-media" controls playsinline preload="none" src="${item.mediaUrl}"></video>`
       : /^audio\//.test(type) ? `<audio controls src="${item.mediaUrl}"></audio>` : ''
       : '';
     card.innerHTML = `

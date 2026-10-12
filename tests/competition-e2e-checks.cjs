@@ -17,8 +17,18 @@ module.exports=async({call,evaluate,errors,out})=>{
     for(let i=0;i<120;i++){if(await evaluate(expr))return;await new Promise(r=>setTimeout(r,40));}
     throw new Error('End-to-end UI wait failed: '+expr);
   };
-  await evaluate(`(async()=>{await adminSignIn('', 'isolated-browser-only');switchView('admincompetitions');window.__e2e={};})()`);
+  await require('./page-actions-checks.cjs')({evaluate,wait});
+  await evaluate(`switchView('adminlogin');document.getElementById('adminEmail').value='test@example.com';document.getElementById('adminPassword').value='incorrect-test-password';document.getElementById('adminLoginForm').requestSubmit()`);
+  await wait(`document.getElementById('adminLoginError').textContent.includes('Incorrect')&&!document.querySelector('#adminLoginForm [type="submit"]').disabled`);
+  await evaluate(`(()=>{const original=api;window.__loginReads=0;api=async(p,o)=>{if(p==='/admin/login')window.__loginReads++;return original(p,o);};document.getElementById('adminPassword').value='isolated-browser-only';const form=document.getElementById('adminLoginForm');form.requestSubmit();form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));window.__loginOriginalApi=original;})()`);
+  await wait(`isAdmin()&&document.querySelector('.view:not(.hidden)').dataset.view==='admin'`);
+  assert.equal(await evaluate('window.__loginReads'),1,'Admin form ignores duplicate submission');
+  assert.equal(await evaluate(`document.getElementById('adminPassword').value===''&&!document.getElementById('adminLoginForm').hasAttribute('aria-busy')`),true);
+  await evaluate(`api=window.__loginOriginalApi;switchView('admincompetitions');window.__e2e={}`);
   controllerToken=(await request('/admin/login',{method:'POST',body:{password:'isolated-browser-only'}})).data.token;
+  const gallerySubmissions=(await request('/admin/memories',{admin:true})).data.filter(m=>m.caption==='Isolated gallery action test');
+  assert.equal(gallerySubmissions.length,1,'Gallery double event writes only one actual API record');
+  assert.equal(gallerySubmissions[0].status,'pending','Guest upload requires admin review');
   await wait(`document.querySelector('#competitionAdminBrowse [data-comp-action="create"]')!==null`);
   // A delayed real guest-list response must not allow two editor initialisations.
   await evaluate(`(()=>{const original=api;window.__e2e.originalApi=original;window.__e2e.guestReads=0;const held=new Promise(r=>window.__e2e.releaseEditor=r);
@@ -52,6 +62,9 @@ module.exports=async({call,evaluate,errors,out})=>{
   await evaluate(`document.querySelector('#competitionList [data-id="${verifiedId}"]').click()`);
   await wait(`!!document.querySelector('#competitionDetail [data-comp-action="verify"]')`);
   assert.equal(await evaluate(`document.querySelectorAll('#competitionDetail [name="competition-choice"]:disabled').length`),2);
+  await evaluate(`document.querySelector('#competitionDetail [data-comp-action="verify"]').click()`);
+  assert.equal(await evaluate(`gateShowing()&&document.getElementById('returnPhone')===document.activeElement`),true,'Verification action opens and focuses the guest sign-in screen');
+  await evaluate(`enterApp();switchView('competition')`);
   await evaluate(`(async()=>{const r=await guestLogin('+233240000001','123456');setGuest(r.guest);enterApp();})()`);
   await wait(`!!document.getElementById('competitionSubmit')`);
   await evaluate(`(()=>{const input=document.querySelector('[name="competition-choice"]');input.checked=true;input.dispatchEvent(new Event('change',{bubbles:true}));document.getElementById('competitionComment').value='Verified guest blessing';document.getElementById('competitionSubmit').click();document.getElementById('competitionSubmit').dispatchEvent(new MouseEvent('click',{bubbles:true}));})()`);

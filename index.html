@@ -18,13 +18,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Parisienne&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="assets/landing-invite.jpg" />
   <link rel="preload" as="image" href="assets/seal-pressed-320.png" />
-  <link rel="stylesheet" href="app.css?v=181" />
+  <link rel="stylesheet" href="app.css?v=182" />
 
-  <link rel="stylesheet" href="app-views.css?v=181" />
-  <link rel="stylesheet" href="app-forms.css?v=181" />
-  <link rel="stylesheet" href="app-social.css?v=181" />
-  <link rel="stylesheet" href="gifts.css?v=181" />
-  <link rel="stylesheet" href="competitions.css?v=181" />
+  <link rel="stylesheet" href="app-views.css?v=182" />
+  <link rel="stylesheet" href="app-forms.css?v=182" />
+  <link rel="stylesheet" href="app-social.css?v=182" />
+  <link rel="stylesheet" href="gifts.css?v=182" />
+  <link rel="stylesheet" href="competitions.css?v=182" />
   <script>
   /* a checked-in guest goes straight into the app — flag it before first
      paint so the invitation never flashes on their screen (mirrors
@@ -539,6 +539,15 @@
     </div>
 
     <div class="schedule">
+      <div class="bigday events-countdown">
+        <p class="bigday-label">COUNTDOWN TO OUR BIG DAY</p>
+        <div class="countdown" role="timer" aria-label="Time until the wedding">
+          <div><strong id="eventDays">0</strong><span>DAYS</span></div>
+          <div><strong id="eventHours">00</strong><span>HRS</span></div>
+          <div><strong id="eventMinutes">00</strong><span>MINS</span></div>
+          <div><strong id="eventSeconds">00</strong><span>SECS</span></div>
+        </div>
+      </div>
       <div id="schedRows">
         <div class="sched-row">
           <span class="sched-icon">&#9962;</span>
@@ -862,7 +871,7 @@
       <label class="field">Password
         <input id="adminPassword" type="password" placeholder="Enter admin password" autocomplete="current-password" required />
       </label>
-      <p id="adminLoginError" class="upload-status" style="color:#b03a2e; margin-top:6px;"></p>
+      <p id="adminLoginError" class="upload-status" role="status" aria-live="polite" style="color:#b03a2e; margin-top:6px;"></p>
       <button class="map-button rsvp-submit" type="submit">UNLOCK DASHBOARD</button>
     </form>
   </section>
@@ -1601,12 +1610,12 @@ try{
     <div class="sheet-actions"><button class="sheet-cancel" data-close-sheet type="button">Close</button></div>
   </div>
 </div>
-<script src="api-data.js?v=181"></script>
-<script src="app.js?v=181"></script>
-<script src="app-data.js?v=181"></script>
-<script src="app-social.js?v=181"></script>
-<script src="admin-dashboard.js?v=181"></script>
-<script src="competitions.js?v=181"></script>
-<script src="competition-notices.js?v=181"></script>
+<script src="api-data.js?v=182"></script>
+<script src="app.js?v=182"></script>
+<script src="app-data.js?v=182"></script>
+<script src="app-social.js?v=182"></script>
+<script src="admin-dashboard.js?v=182"></script>
+<script src="competitions.js?v=182"></script>
+<script src="competition-notices.js?v=182"></script>
 </body>
 </html>
