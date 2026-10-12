@@ -1,5 +1,56 @@
 # snybena.com live audit — 11 October 2026
 
+## Deep action audit — v181 (12 October)
+
+Fixed duplicate competition-editor opening on rapid clicks, stale polling
+responses overwriting newer admin changes or guest ballots, stale voter-list
+responses after navigation/auth changes, and outdated voting controls after
+a failed submission to a paused/deleted game. Removed/private competitions
+now clear obsolete voting controls and provide a return-to-list action.
+Revision guards discard pre-mutation/pre-auth-change responses; editor loading
+is single-flight and ignores responses after navigation or auth changes.
+
+Added `tests/isolated-e2e.cjs`, `tests/isolated-browser-api.cjs` and
+`tests/competition-e2e-checks.cjs`: actual frontend plus actual Express/SQLite
+API over loopback-only SSH tunnels, disposable database/uploads, test-only
+credentials and seeded OTP hashes. No live environment secrets, records or
+submissions are used. Real uploaded image bytes are served from the disposable
+upload directory. The runner removes only its own temporary directory after
+stopping its child API and has a ten-minute maximum lifetime. It is VPS-specific;
+copy the helper to `/opt/wedding-api/isolated-browser-api.cjs` before running
+`node tests/isolated-e2e.cjs <absolute-output-directory>` locally.
+
+Passing real-browser/API checks: repeated Create clicks, cover upload/render,
+draft privacy/publish, delayed-list overwrite protection, verified OTP session
+and vote, duplicate submission protection, pending/approved comment moderation,
+public-result privacy, optional-verification cookie ballots, browser-labelled
+counts, live rankings preserving selected ballot/comment focus, pause feedback
+and deleted-game recovery. OTP hashes are seeded: these checks do not establish
+real SMS/email delivery. One final runner startup timed out; a clean rerun passed.
+
+Also passed candidate competition/mobile/toast tests, live read-only Gifts UI,
+mocked ten-category dashboard/upload controls, admin Gifts layout/editor,
+Gift Page Message drafts/retries, Share controls and all seven page widths,
+plus dashboard/feed/Share-sign-out/push-feedback/video-transcode unit suites.
+Mocked tests do not prove live writes or OS permission/delivery behaviour.
+
+Live audit: health/public feeds 200; unauthenticated admin guards 401; services
+active; SQLite integrity `ok`; disk 41% used (11 GB available). Live activity
+changed guest records and added a third competition since the older v180
+snapshot; those changes were not reverted. A fresh pre-v181 baseline retained
+7 guests, 1 RSVP, 30 memories with referenced files, 0 guestbook entries,
+1 gift, 1 fund, 35 settings and 3 competitions. No live voting policy changed.
+Release is frontend-only; no API restart or database migration is required.
+Deployed competition/Share/mobile reruns passed and the pre-v181 comparison
+retained all baseline records/files with SQLite integrity `ok`. The new tunnel
+runner disables shared SSH control sockets and bounds connection/startup waits
+to avoid the intermittent harness SSH stalls observed during this audit.
+
+Still unverified: real-phone OTP delivery, background push delivery, device
+camera/microphone permissions, large-video transfer/transcoding, native install
+and sharing. Real MoMo recipient remains unconfirmed. Pending-content ownership
+hardening, resumable uploads and off-site backups remain known follow-up work.
+
 ## Optional competition sign-in verification — v180 (12 October)
 
 Competition setup/edit → Voting Settings now includes **Require verified guest

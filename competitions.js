@@ -9,6 +9,7 @@
   try { selectedId ||= sessionStorage.getItem('sj_competition'); } catch {}
   let detail=null,selected=new Set(),selectionDirty=false,voting=false,submitted=false;
   let busy=false,mutating=false,editorDirty=false,editorId=null,photoBusy=false,votersOpen=false;
+  let editorOpening=false,revision=0;
   const editor=$('competitionEditor');
   const current=()=>document.querySelector('.view:not(.hidden)')?.dataset.view;
   const message=(id,text)=>{ $(id).textContent=text; };
@@ -98,9 +99,14 @@
       ${photoControl(x.photoUrl,'choice')}<div class="comp-actions">${action('up','Move Up')}${action('down','Move Down')}${action('remove-choice','Remove Contestant','','comp-btn--danger')}</div></div>`;
   }
   async function openEditor(c){
+    if(editorOpening) return;
     if(editorDirty&&!confirm('Discard the unsaved competition edits?')) return;
-    const guests=await api('/admin/guests',{admin:true});
-    if(!isAdmin()) return;
+    editorOpening=true;
+    const version=revision,view=current();
+    let guests;
+    try{guests=await api('/admin/guests',{admin:true});}
+    finally{editorOpening=false;}
+    if(!isAdmin()||version!==revision||current()!==view) return;
     const config=c?.config||{title:'',description:'',choices:[{},{}],audience:'all',voteMode:'single',guestIds:[],showPhotos:true,showResults:true,allowChange:false,commentsEnabled:false};
     editorId=c?.id||null;editorDirty=false;
     $('competitionAdminBrowse').classList.add('hidden');$('competitionAdminManage').classList.add('hidden');editor.classList.remove('hidden');
@@ -152,9 +158,9 @@
     });
   }
   async function showVoters(){
-    const id=adminId;
+    const id=adminId,version=revision;
     const rows=await api('/admin/competitions/'+id+'/voters',{admin:true});
-    if(id!==adminId||!isAdmin()) return;
+    if(id!==adminId||!isAdmin()||version!==revision||current()!=='admincompetitions') return;
     votersOpen=true;
     const box=$('competitionVoters');if(!box) return;box.classList.remove('hidden');
     box.innerHTML='<h2>Voters &amp; Comments</h2>'+(rows.length?rows.map(v=>`<div class="comp-voter"><strong>${esc(v.name)}</strong><small>${esc(v.choices.join(', '))}<br>${esc(date(v.createdAt))}</small>
@@ -162,6 +168,7 @@
   }
   async function refresh(){
     const view=current();
+    const version=revision;
     const requestedId=selectedId;
     if(busy||mutating||voting||photoBusy||document.hidden||gateShowing()||window.__uploadsInFlight>0||!['competitions','competition','admincompetitions'].includes(view)) return;
     busy=true;
@@ -169,7 +176,7 @@
       if(view==='admincompetitions'){
         if(!isAdmin()) return;
         const rows=await api('/admin/competitions',{admin:true});
-        if(!isAdmin()||current()!==view) return;
+        if(!isAdmin()||current()!==view||version!==revision||mutating) return;
         adminRows=rows;renderLists();
         if(adminId&&editor.classList.contains('hidden')){
           if(!rows.some(c=>c.id===adminId)){adminId=null;$('competitionAdminManage').classList.add('hidden');$('competitionAdminBrowse').classList.remove('hidden');}
@@ -177,13 +184,13 @@
         }
       }else if(view==='competitions'){
         const rows=await api('/competitions');
-        if(current()!==view) return;
+        if(current()!==view||version!==revision) return;
         guestRows=rows;renderLists();message('competitionListStatus','');
       }else{
         const id=selectedId;
         if(!id){$('competitionDetail').innerHTML='<div class="comp-notice">Choose a competition from the list first.</div>';return;}
         const c=await api('/competitions/'+encodeURIComponent(id));
-        if(current()!==view||id!==selectedId) return;
+        if(current()!==view||id!==selectedId||version!==revision||voting) return;
         const signature=JSON.stringify(c);
         if(signature!==JSON.stringify(detail)){
           const sameForm=detail&&detail.status===c.status&&detail.canVote===c.canVote&&detail.votingReason===c.votingReason
@@ -196,8 +203,15 @@
           else renderDetail();
         }
       }
-    }catch(err){message(view==='admincompetitions'?'competitionAdminStatus':view==='competitions'?'competitionListStatus':'competitionVoteStatus',err.message);}
-    finally {busy=false;if(current()!==view||(view==='competition'&&requestedId!==selectedId)) queueMicrotask(refresh);}
+    }catch(err){
+      if(current()!==view||version!==revision||(view==='competition'&&requestedId!==selectedId)) return;
+      if(view==='competition'&&requestedId===selectedId&&err.message==='Competition not found.'){
+        detail=null;selected.clear();selectionDirty=false;submitted=false;
+        $('competitionDetail').innerHTML='<div class="comp-notice">Competition not found. It may have been removed or made private.</div>'+action('all','All Competitions');
+      }
+      message(view==='admincompetitions'?'competitionAdminStatus':view==='competitions'?'competitionListStatus':'competitionVoteStatus',err.message);
+    }
+    finally {busy=false;if(current()!==view||version!==revision||(view==='competition'&&requestedId!==selectedId)) queueMicrotask(refresh);}
   }
   async function runAction(el){
     const name=el.dataset.compAction,id=el.dataset.id;
@@ -218,16 +232,18 @@
       if(voting||!detail?.canVote) return;
       if(!selected.size){message('competitionVoteStatus','Choose a contestant before submitting.');return;}
       const voteId=detail.id,comment=$('competitionComment')?.value||'';
-      voting=true;el.disabled=true;el.textContent='Submitting…';message('competitionVoteStatus','');
+       revision++;voting=true;el.disabled=true;el.textContent='Submitting…';message('competitionVoteStatus','');
       try{
         const c=await api('/competitions/'+voteId+'/vote',{method:'POST',body:{choices:[...selected],comment}});
         if(selectedId===voteId){detail=c;selectionDirty=false;submitted=true;selected=new Set(c.myChoices);voting=false;renderDetail();message('competitionVoteStatus','Your vote has been counted.');}
-      }catch(err){message('competitionVoteStatus',err.message);}
+      }catch(err){
+        if(selectedId===voteId){voting=false;await refresh();message('competitionVoteStatus',err.message);}
+      }
       finally{voting=false;const submit=$('competitionSubmit');if(submit){submit.disabled=false;submit.textContent=detail?.myChoices.length?'Update Vote':'Submit Vote';}}
       return;
     }
     if(!isAdmin()) return;
-    if(photoBusy||mutating) return;
+    if(photoBusy||mutating||editorOpening) return;
     if(name==='create'){await openEditor();return;}
     if(name==='manage'){
       adminId=id;votersOpen=false;$('competitionAdminBrowse').classList.add('hidden');editor.classList.add('hidden');$('competitionAdminManage').classList.remove('hidden');renderManage();return;
@@ -271,7 +287,7 @@
     if(name==='voters'){await showVoters();$('competitionVoters').scrollIntoView({behavior:'smooth'});return;}
     if(name==='delete'&&!confirm('Delete this competition and all its votes and comments? This cannot be undone.')) return;
     if(name==='close'&&!confirm('Close voting for this competition? Existing votes will be kept.')) return;
-    mutating=true;el.disabled=true;
+    revision++;mutating=true;el.disabled=true;
     try{
       if(name==='approve-comment'||name==='reject-comment'){
         await api('/admin/competitions/'+adminId+'/comments/'+id,{admin:true,method:'PATCH',body:{status:name==='approve-comment'?'approved':'rejected'}});await showVoters();return;
@@ -322,7 +338,7 @@
   editor.addEventListener('submit',async e=>{
     e.preventDefault();if(!isAdmin()||mutating||photoBusy) return;
     const body=collect();body.status=e.submitter?.value||'draft';
-    mutating=true;editorControls(true);message('competitionEditorStatus','Saving…');
+    revision++;mutating=true;editorControls(true);message('competitionEditorStatus','Saving…');
     try{
       const c=await api('/admin/competitions'+(editorId?'/'+editorId:''),{admin:true,method:editorId?'PATCH':'POST',body});
       if(!isAdmin()) return;
@@ -333,6 +349,7 @@
     finally{mutating=false;editorControls(false);}
   });
   onAdminAuth(signedIn=>{
+    revision++;
     if(!signedIn){adminRows=[];adminId=null;editorDirty=false;editor.innerHTML='';editor.classList.add('hidden');$('competitionAdminManage').innerHTML='';$('competitionAdminBrowse').classList.remove('hidden');renderLists();}
   });
   window.addEventListener('wedding:view',refresh);
