@@ -1,5 +1,60 @@
 # snybena.com live audit — 11 October 2026
 
+## Editable voting countdown — v187 (12 October)
+
+Guest and admin competition lists, guest detail and admin management now show
+days/hours/minutes/seconds countdowns. Upcoming polls count to opening; active
+polls count to their saved closing time. Expired/manually closed polls show
+**Completed — voting closed**, clamp time to zero and retain votes/results.
+Drafts are labelled private/not published. Existing games without an end date
+show **No closing time set**; no deadline is invented for live games.
+
+Admin management includes **Edit Countdown / Closing Time**, opening the
+Voting Countdown & Period portion of the existing editor. Dates remain editable
+before and after votes, without changing locked verification/audience/mode.
+Duration shortcuts set 15 minutes, 30 minutes, 1 hour or 24 hours from a future
+scheduled start or from now if already open. Custom end dates are supported.
+Saving a later deadline for a time-expired active poll can reopen its timed
+window; a manually closed poll remains closed until Resume / Reopen. An end
+date must be in the future when publishing/reopening and after a scheduled
+start. Pausing does not freeze the deadline; this is labelled explicitly.
+Date entry/display uses the device's existing local timezone interpretation.
+
+API presentations include serverNow; the frontend calibrates a clock offset
+using request midpoint and strips that transient field before polling-signature
+comparison. One visible-page timer updates countdown text without rebuilding
+the vote form every second. At deadline the UI immediately disables/removes
+voting controls and refreshes authoritative state. Countdown expiry does not
+erase ballots or bypass results privacy. The server already enforces endAt;
+closed/upcoming/paused submission rejection now happens before asking for a
+guest identity, and completed pages do not invite needless verification.
+Hidden tabs resume reconciliation on visibility. Clock/network latency may
+slightly affect displayed seconds; the server is authoritative for acceptance.
+
+Expanded isolated API tests passed: server time, completed reason, deadline
+changes after votes, extensions/shortening, late-vote rejection and preserved
+totals. Added `tests/countdown-e2e-checks.cjs`: actual admin setup/duration/live
+editing, guest/admin timer, immediate zero/closed controls, server late-vote
+rejection and retention of an existing ballot all pass in disposable SQLite.
+Focused command: `WEDDING_E2E_COUNTDOWN_ONLY=1 WEDDING_E2E_SERVER=<candidate>
+node tests/isolated-e2e.cjs <output-dir>`. Candidate API lives separately under
+`/root/wedding-countdown-candidate` with existing dependencies; no live runtime
+module is changed before tests. The runner accepts a validated optional server
+path. Existing full-suite runs hit unrelated microphone/poll-fixture timing;
+focused countdown and candidate mobile competition tests passed. Browser wait
+limits were increased and the delayed-list fixture retries while polling is busy.
+Final full actual-browser/disposable-API suite passed, including recording/audio,
+voting/moderation/privacy/photo and the new countdown tests. Candidate Share/
+mobile, worker and sign-out/push-feedback regressions passed. Deployed competition
+and Share/seven-page/mobile reruns passed. The optional read-only Best Dresses
+photo test could not run because that title no longer exists: the pre-v187
+snapshot and authenticated live audit both contained **0 competition records**.
+No live game was created to work around this; both empty lists were preserved.
+Health/public feeds 200, admin guards 401, services active and SQLite `ok`.
+Baseline retained 7 guests, 1 RSVP, 32 media records/files, 0 guestbook entries,
+3 gifts, 2 funds and 35 settings. API restarted for the additive presentation/
+phase check changes; no table migration or data rewrite was needed.
+
 ## Voice recording and audio upload audit — v186 (12 October)
 
 Fixed microphone-request and stop-callback races. A discarded recording's late

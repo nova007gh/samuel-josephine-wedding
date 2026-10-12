@@ -14,9 +14,14 @@ module.exports=async({call,evaluate,errors,out})=>{
     assert.equal(response.status,status,p+' '+JSON.stringify(data));return {data,cookie:response.headers.get('set-cookie')?.split(';')[0]};
   };
   const wait=async(expr)=>{
-    for(let i=0;i<120;i++){if(await evaluate(expr))return;await new Promise(r=>setTimeout(r,40));}
+    for(let i=0;i<300;i++){if(await evaluate(expr))return;await new Promise(r=>setTimeout(r,40));}
     throw new Error('End-to-end UI wait failed: '+expr);
   };
+  if(process.env.WEDDING_E2E_COUNTDOWN_ONLY==='1'){
+    controllerToken=(await request('/admin/login',{method:'POST',body:{password:'isolated-browser-only'}})).data.token;
+    await require('./countdown-e2e-checks.cjs')({evaluate,wait,request});
+    await request('/admin/logout',{method:'POST',admin:true});return;
+  }
   await require('./page-actions-checks.cjs')({evaluate,wait});
   await evaluate(`switchView('adminlogin');document.getElementById('adminEmail').value='test@example.com';document.getElementById('adminPassword').value='incorrect-test-password';document.getElementById('adminLoginForm').requestSubmit()`);
   await wait(`document.getElementById('adminLoginError').textContent.includes('Incorrect')&&!document.querySelector('#adminLoginForm [type="submit"]').disabled`);
@@ -52,8 +57,9 @@ module.exports=async({call,evaluate,errors,out})=>{
   await request('/competitions/'+verifiedId,{status:404});
   // Hold a real list snapshot from before publish and release it afterwards.
   await evaluate(`(()=>{const original=api;window.__e2e.originalApi=original;window.__e2e.listHeld=false;const held=new Promise(r=>window.__e2e.releaseList=r);
-    api=async(p,o)=>{const result=await original(p,o);if(p==='/admin/competitions'&&!window.__e2e.listHeld){window.__e2e.listHeld=true;await held;}return result;};window.dispatchEvent(new CustomEvent('wedding:view'));})()`);
+    api=async(p,o)=>{const result=await original(p,o);if(p==='/admin/competitions'&&!window.__e2e.listHeld){window.__e2e.listHeld=true;await held;}return result;};window.__listRetry=setInterval(()=>window.dispatchEvent(new CustomEvent('wedding:view')),100);window.dispatchEvent(new CustomEvent('wedding:view'));})()`);
   await wait('window.__e2e.listHeld');
+  await evaluate(`clearInterval(window.__listRetry)`);
   await evaluate(`document.querySelector('#competitionAdminManage [data-comp-action="publish"]').click()`);
   await wait(`document.querySelector('#competitionAdminManage .comp-badge')?.textContent==='active'`);
   await evaluate(`window.__e2e.releaseList();api=window.__e2e.originalApi`);
@@ -138,6 +144,7 @@ module.exports=async({call,evaluate,errors,out})=>{
   await new Promise(r=>setTimeout(r,700));
   assert.equal(await evaluate(`document.documentElement.scrollWidth===innerWidth&&!gateShowing()`),true);
   const shot=await call('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(out,'isolated-e2e-preview.png'),Buffer.from(shot.data,'base64'));
+  await require('./countdown-e2e-checks.cjs')({evaluate,wait,request});
   await request('/admin/logout',{method:'POST',admin:true});
   console.log('PASS real-browser/real-API end-to-end: editor races, photo upload/render, draft/publish, stale polling, verified OTP session/vote, duplicate guard, moderation/privacy, optional cookie ballots, live selection preservation, pause feedback and deleted-game recovery (disposable database; OTP delivery not tested)');
 };

@@ -106,11 +106,12 @@ module.exports = function installCompetitions({app,db,requireAdmin,publicWrite,m
     const comments=c.commentsEnabled ? db.prepare(`SELECT c.text,c.createdAt,g.name FROM competition_comments c
       LEFT JOIN guests g ON g.id=c.guestId WHERE c.competitionId=? AND c.status='approved' ORDER BY c.createdAt DESC LIMIT 100`).all(c.id) : [];
     const visible={id:c.id,title:c.title,description:c.description,coverUrl:c.coverUrl,status:p,startAt:c.startAt,endAt:c.endAt,
+      serverNow:Date.now(),
       requireVerified:verifiedRequired(c),
       voteMode:c.voteMode,allowChange:c.allowChange,showResults:c.showResults,showPhotos:c.showPhotos,commentsEnabled:c.commentsEnabled,
       choices:c.choices.map(x=>({id:x.id,name:x.name,photoUrl:c.showPhotos||admin ? x.photoUrl : ''})),myChoices,
       canVote:!reason&&p==='active'&&(!myChoices.length||c.allowChange),
-      votingReason:reason || (p!=='active' ? 'Voting is not open.' : myChoices.length&&!c.allowChange ? 'Your vote is already counted. Changes are disabled.' : ''),
+      votingReason:p==='closed' ? 'Voting has ended. Poll completed.' : p!=='active' ? 'Voting is not open.' : reason || (myChoices.length&&!c.allowChange ? 'Your vote is already counted. Changes are disabled.' : ''),
       results:c.showResults||admin ? results(c) : null,comments:comments.map(x=>({...x,name:x.name||(verifiedRequired(c)?'Guest':'Guest (unverified)')}))};
     if(visible.results&&!c.showPhotos&&!admin) visible.results.rankings.forEach(x=>{x.photoUrl='';});
     if(admin) return {...visible,config:c};
@@ -202,11 +203,11 @@ module.exports = function installCompetitions({app,db,requireAdmin,publicWrite,m
   app.post('/api/competitions/:id/vote',sameOrigin,publicWrite,(req,res)=>{
     const c=load(req.params.id);
     if(!c||c.status==='draft') return res.status(404).json({error:'Competition not found.'});
+    if(phase(c)!=='active') return res.status(409).json({error:'Voting is not open for this competition.'});
     const g=voter(c,req);
     const reason=eligible(c,g);
     if(reason) return res.status(g ? 403 : 401).json({error:reason});
     if(!g)return res.status(401).json({error:'Allow voting cookies and reload this competition before submitting. No verified sign-in is required for this game.'});
-    if(phase(c)!=='active') return res.status(409).json({error:'Voting is not open for this competition.'});
     try{
       const choices=req.body?.choices;
       if(!Array.isArray(choices)||!choices.length||choices.length>c.choices.length||new Set(choices).size!==choices.length

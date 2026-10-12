@@ -10,6 +10,47 @@
   let detail=null,selected=new Set(),selectionDirty=false,voting=false,submitted=false;
   let busy=false,mutating=false,editorDirty=false,editorId=null,photoBusy=false,votersOpen=false;
   let editorOpening=false,revision=0;
+  let serverOffset=0;
+  const timerEvents=new Set();
+  async function competitionApi(path,opts){
+    const started=Date.now(),data=await api(path,opts);
+    const rows=Array.isArray(data)?data:[data];
+    const sample=rows.find(c=>Number.isFinite(c?.serverNow));
+    if(sample)serverOffset=sample.serverNow-(started+Date.now())/2;
+    rows.forEach(c=>{if(c&&typeof c==='object')delete c.serverNow;});
+    return data;
+  }
+  const votingNow=()=>Date.now()+serverOffset;
+  function countdown(c){
+    return `<div class="comp-countdown" role="timer" aria-label="Voting countdown" data-countdown-id="${esc(c.id)}" data-start="${c.startAt||''}" data-end="${c.endAt||''}" data-status="${esc(c.status)}"><strong data-countdown-label></strong><div class="comp-clock">${['Days','Hrs','Mins','Secs'].map(unit=>`<span><b data-countdown-unit="${unit}">00</b><small>${unit}</small></span>`).join('')}</div><small data-countdown-note></small></div>`;
+  }
+  function tickCountdowns(){
+    if(document.hidden)return;
+    const now=votingNow();let changed=false;
+    const close=c=>{
+      if(!c||c.status==='draft'||c.status==='closed'||!c.endAt||now<c.endAt)return;
+      c.status='closed';c.canVote=false;c.votingReason='Voting has ended. Poll completed.';changed=true;
+    };
+    close(detail);guestRows.forEach(close);adminRows.forEach(close);
+    if(changed){revision++;if(current()==='competition')renderDetail();if(current()==='admincompetitions')renderManage();renderLists();queueMicrotask(refresh);}
+    document.querySelectorAll('[data-countdown-id]').forEach(box=>{
+      const status=box.dataset.status,start=Number(box.dataset.start),end=Number(box.dataset.end);
+      const completed=status==='closed'||status!=='draft'&&end>0&&now>=end;
+      const upcoming=status==='upcoming';
+      const target=upcoming?start:end;
+      const remaining=status==='draft'||completed?0:Math.max(0,target-now);
+      const seconds=Math.ceil(remaining/1000),values=[Math.floor(seconds/86400),Math.floor(seconds%86400/3600),Math.floor(seconds%3600/60),seconds%60];
+      const label=completed?'Completed — voting closed':status==='draft'?'Draft — not published':upcoming?'Voting opens in':!end?'No closing time set':status==='paused'?'Paused — scheduled close in':'Voting ends in';
+      const labelEl=box.querySelector('[data-countdown-label]');if(labelEl.textContent!==label)labelEl.textContent=label;
+      box.querySelector('.comp-clock').hidden=!target||status==='draft';
+      box.querySelectorAll('[data-countdown-unit]').forEach((el,i)=>{const value=String(values[i]).padStart(2,'0');if(el.textContent!==value)el.textContent=value;});
+      const note=completed?'Existing votes and results are retained.':status==='paused'&&end?'Pausing does not extend the closing time.':end?'Closes '+date(end):'';
+      const noteEl=box.querySelector('[data-countdown-note]');if(noteEl.textContent!==note)noteEl.textContent=note;
+      if(upcoming&&start&&now>=start&&!timerEvents.has(box.dataset.countdownId+':'+start)){
+        timerEvents.add(box.dataset.countdownId+':'+start);queueMicrotask(refresh);
+      }
+    });
+  }
   const editor=$('competitionEditor');
   const current=()=>document.querySelector('.view:not(.hidden)')?.dataset.view;
   const message=(id,text)=>{ $(id).textContent=text; };
@@ -26,7 +67,7 @@
     const timing=c.status==='upcoming' ? 'Starts '+date(c.startAt) : c.endAt ? (c.status==='closed'?'Ended ':'Closes ')+date(c.endAt) : 'No closing date set';
     const counts=c.results ? c.results.totalVotes+' votes' : 'Results hidden';
     return `<article class="comp-card">${image(c.coverUrl,'comp-thumb',c.title)}<div><h2>${esc(c.title)}</h2>${badge(c.status)}<small>${esc(counts)} &middot; ${esc(timing)}</small></div>
-      ${action(admin?'manage':'open',admin?'Manage':c.canVote?'Vote Now':'View',c.id,'comp-btn--gold')}</article>`;
+      ${action(admin?'manage':'open',admin?'Manage':c.canVote?'Vote Now':'View',c.id,'comp-btn--gold')}${countdown(c)}</article>`;
   }
   function renderLists(){
     $('competitionFilters').innerHTML=filterMarkup(guestRows,guestFilter,false);
@@ -35,6 +76,7 @@
     $('competitionAdminFilters').innerHTML=filterMarkup(adminRows,adminFilter,true);
     const admins=adminRows.filter(c=>adminFilter==='all'||c.status===adminFilter);
     $('competitionAdminList').innerHTML=admins.length ? admins.map(c=>card(c,true)).join('') : '<div class="comp-notice">No competitions here yet. Create your first custom competition above.</div>';
+    queueMicrotask(tickCountdowns);
   }
   function resultMarkup(c,admin=false){
     if(!c.results) return '<div class="comp-notice">The couple has chosen to keep results private for now.</div>';
@@ -58,15 +100,17 @@
       <label class="comp-choice-vote"><input name="competition-choice" type="${c.voteMode==='single'?'radio':'checkbox'}" value="${esc(x.id)}" ${selected.has(x.id)?'checked':''} ${!c.canVote||voting?'disabled':''}>${esc(x.name)}</label></div>`).join('');
     $('competitionDetail').innerHTML=`<div class="comp-heading"><h1>${esc(c.title)}</h1><p>${esc(c.description).replace(/\n/g,'<br>')}</p>${badge(c.status)}</div>
       ${c.coverUrl?image(c.coverUrl,'comp-cover',c.title):''}<p class="comp-status">${esc(c.startAt?'Starts '+date(c.startAt):'')}${c.endAt?'<br>Closes '+esc(date(c.endAt)):''}</p>
+      ${countdown(c)}
       ${submitted?'<div class="comp-success"><b aria-hidden="true">&#10003;</b><h2>Vote Submitted!</h2><p>Thank you for participating. Your vote has been counted.</p>'+action('results','View Results')+action('all','Vote in Another Competition')+'</div>':''}
       ${c.myChoices.length&&!submitted?'<div class="comp-notice">Your vote is counted.'+(c.allowChange?' You can change it while voting is open.':' Vote changes are disabled.')+'</div>':''}
        <p class="comp-status">${c.voteMode==='single'?'Choose one contestant.':'Choose one or more contestants. '+(c.requireVerified===false?'Each browser':'Each guest')+' can vote once per contestant.'}</p>
       ${c.requireVerified===false?'<div class="comp-notice">No verified sign-in needed for this game. Voting is limited per browser. Clearing cookies or using another browser can allow another vote.</div>':''}
       <div class="comp-choices">${choices}</div>
-      ${c.canVote ? `${c.commentsEnabled?'<label class="comp-field">Comment (optional, reviewed before sharing)<textarea id="competitionComment" rows="2" maxlength="300">'+esc(draftComment)+'</textarea></label>':''}
-         <button id="competitionSubmit" class="comp-btn comp-btn--gold comp-wide" data-comp-action="vote" type="button" ${voting?'disabled':''}>${voting?'Submitting…':c.myChoices.length?'Update Vote':'Submit Vote'}</button>` : `<div class="comp-notice">${esc(c.votingReason)}</div>${c.requireVerified!==false&&(!getGuest()?.id||/Verify/.test(c.votingReason))?action('verify','Verify Guest Sign-in'):''}`}
+       ${c.canVote ? `${c.commentsEnabled?'<label class="comp-field">Comment (optional, reviewed before sharing)<textarea id="competitionComment" rows="2" maxlength="300">'+esc(draftComment)+'</textarea></label>':''}
+         <button id="competitionSubmit" class="comp-btn comp-btn--gold comp-wide" data-comp-action="vote" type="button" ${voting?'disabled':''}>${voting?'Submitting…':c.myChoices.length?'Update Vote':'Submit Vote'}</button>` : `<div class="comp-notice">${esc(c.votingReason)}</div>${c.status==='active'&&c.requireVerified!==false&&(!getGuest()?.id||/Verify/.test(c.votingReason))?action('verify','Verify Guest Sign-in'):''}`}
       <div id="competitionResults">${resultMarkup(c)}</div>
       ${c.commentsEnabled&&c.comments.length?'<div class="comp-panel"><h2>Guest Comments</h2>'+c.comments.map(x=>`<div class="comp-comment"><strong>${esc(x.name||'Guest')}</strong><p>${esc(x.text)}</p></div>`).join('')+'</div>':''}`;
+    queueMicrotask(tickCountdowns);
   }
   function renderManage(){
     const c=adminRows.find(x=>x.id===adminId);
@@ -75,8 +119,9 @@
       ${c.coverUrl?image(c.coverUrl,'comp-cover',c.title):''}${badge(c.status)}<p>${esc(c.description)}</p>
       <p>${c.results.totalVotes} votes &middot; ${c.results.uniqueVoters} ${c.requireVerified===false?'voting browsers':'voters'}${c.endAt?' &middot; Closes '+esc(date(c.endAt)):''}</p>
       <p>${c.requireVerified===false?'Verification off — voting is limited per browser.':'Verified guest sign-in required.'}</p>
+      ${countdown(c)}${action('timer','Edit Countdown / Closing Time',c.id)}
       <div class="comp-actions">${action('edit','&#9998; Edit',c.id)}
-      ${c.config.status==='active'?action('pause','&#10074;&#10074; Pause',c.id):action('publish',c.config.status==='draft'?'Publish':'Resume / Reopen',c.id,'comp-btn--gold')}
+      ${c.config.status==='active'&&c.status!=='closed'?action('pause','&#10074;&#10074; Pause',c.id):action('publish',c.config.status==='draft'?'Publish':'Resume / Reopen',c.id,'comp-btn--gold')}
       ${c.config.status!=='closed'?action('close','Close',c.id,'comp-btn--danger'):''}</div>
       <div class="comp-actions">${action('duplicate','Duplicate',c.id)}${action('delete','Delete',c.id,'comp-btn--danger')}</div>
       <div class="comp-actions">${action('contestants','Manage Contestants',c.id)}${action('settings','Voting Settings',c.id)}</div>
@@ -84,6 +129,7 @@
       <div class="comp-actions">${action('share','Share to Guests',c.id)}${action('export','Export Results (CSV)',c.id)}</div>
       ${c.config.status==='draft'?'<p>Drafts are private. Publish before sharing with guests.</p>':''}</div>
       <div id="competitionAdminResults">${resultMarkup(c,true)}</div><div id="competitionVoters" class="comp-panel ${votersOpen?'':'hidden'}"></div>`;
+    queueMicrotask(tickCountdowns);
   }
   function localDate(ms){
     if(!ms) return '';
@@ -118,9 +164,10 @@
       <label class="comp-field">Cover Image</label>${photoControl(config.coverUrl,'cover')}
       <h3 id="competitionChoicesHeading" style="margin-top:22px">Choices / Contestants</h3><p>Add 2–30 contestants or teams. Photos are optional. Move Up / Down controls set their order.</p>
       <div id="competitionChoicesEditor">${config.choices.map(choiceEditor).join('')}</div>${action('add-choice','+ Add Another Contestant')}
-      <h3 style="margin-top:24px">Voting Period</h3><p>Dates use your device’s local time zone. Leave blank to open immediately or keep voting open.</p>
+      <h3 id="competitionPeriodHeading" style="margin-top:24px">Voting Countdown &amp; Period</h3><p>Set or edit the closing time before or during voting. The countdown automatically ends the poll; existing votes remain. Dates use your device’s local time zone. Leave the end blank only if you want no automatic closing time.</p>
       <div class="comp-fields"><label class="comp-field">Start Date<input type="datetime-local" name="startAt" value="${localDate(config.startAt)}"></label>
-      <label class="comp-field">End Date<input type="datetime-local" name="endAt" value="${localDate(config.endAt)}"></label></div>
+      <label class="comp-field">Voting closes (countdown ends)<input type="datetime-local" name="endAt" value="${localDate(config.endAt)}"></label></div>
+      <div class="comp-actions">${[15,30,60,1440].map(min=>`<button type="button" class="comp-btn" data-comp-action="duration" data-minutes="${min}">${min===1440?'24 hours':min===60?'1 hour':min+' minutes'}</button>`).join('')}</div><p>Duration buttons set the end from the scheduled start, or from now if voting has started. Pausing does not freeze the deadline. Manually closed polls remain closed until you choose Resume / Reopen.</p>
       <h3 id="competitionVotingHeading">Voting Settings</h3>${hasVotes?'<div class="comp-notice">Votes have been cast. Verification, audience and vote limit are locked. Duplicate the competition to change these settings. Contestants with votes cannot be removed.</div>':''}
       <label class="comp-check"><input name="requireVerified" type="checkbox" data-locked="${hasVotes}" ${config.requireVerified!==false?'checked':''} ${hasVotes||config.audience!=='all'?'disabled':''}>Require verified guest sign-in before voting</label>
       <p>On: approved, verified guests only. Off: no extra sign-in verification for this game; limits use a browser cookie, not verified people. Another browser or cleared cookies can vote again. Attending-only and selected-group voting require this option on.</p>
@@ -176,7 +223,7 @@
     try{
       if(view==='admincompetitions'){
         if(!isAdmin()) return;
-        const rows=await api('/admin/competitions',{admin:true});
+        const rows=await competitionApi('/admin/competitions',{admin:true});
         if(!isAdmin()||current()!==view||version!==revision||mutating) return;
         adminRows=rows;renderLists();
         if(adminId&&editor.classList.contains('hidden')){
@@ -184,13 +231,13 @@
           else {renderManage();if(votersOpen) await showVoters();}
         }
       }else if(view==='competitions'){
-        const rows=await api('/competitions');
+        const rows=await competitionApi('/competitions');
         if(current()!==view||version!==revision) return;
         guestRows=rows;renderLists();message('competitionListStatus','');
       }else{
         const id=selectedId;
         if(!id){$('competitionDetail').innerHTML='<div class="comp-notice">Choose a competition from the list first.</div>';return;}
-        const c=await api('/competitions/'+encodeURIComponent(id));
+        const c=await competitionApi('/competitions/'+encodeURIComponent(id));
         if(current()!==view||id!==selectedId||version!==revision||voting) return;
         const signature=JSON.stringify(c);
         if(signature!==JSON.stringify(detail)){
@@ -246,7 +293,7 @@
       const voteId=detail.id,comment=$('competitionComment')?.value||'';
        revision++;voting=true;el.disabled=true;el.textContent='Submitting…';message('competitionVoteStatus','');
       try{
-        const c=await api('/competitions/'+voteId+'/vote',{method:'POST',body:{choices:[...selected],comment}});
+        const c=await competitionApi('/competitions/'+voteId+'/vote',{method:'POST',body:{choices:[...selected],comment}});
         if(selectedId===voteId){detail=c;selectionDirty=false;submitted=true;selected=new Set(c.myChoices);voting=false;renderDetail();message('competitionVoteStatus','Your vote has been counted.');}
       }catch(err){
         if(selectedId===voteId){voting=false;await refresh();message('competitionVoteStatus',err.message);}
@@ -266,9 +313,15 @@
       if(name==='cancel-editor'&&adminId){$('competitionAdminManage').classList.remove('hidden');renderManage();}
       else{adminId=null;$('competitionAdminManage').classList.add('hidden');$('competitionAdminBrowse').classList.remove('hidden');}return;
     }
-    if(['edit','contestants','settings'].includes(name)){
+    if(name==='duration'){
+      const start=editor.elements.namedItem('startAt').value;
+      const base=Math.max(votingNow(),start?new Date(start).getTime():0);
+      editor.elements.namedItem('endAt').value=localDate(base+Number(el.dataset.minutes)*60000);
+      editorDirty=true;return;
+    }
+    if(['edit','contestants','settings','timer'].includes(name)){
       await openEditor(adminRows.find(c=>c.id===id));
-      if(name!=='edit') $(name==='contestants'?'competitionChoicesHeading':'competitionVotingHeading')?.scrollIntoView({behavior:'smooth',block:'center'});
+      if(name!=='edit') $(name==='contestants'?'competitionChoicesHeading':name==='timer'?'competitionPeriodHeading':'competitionVotingHeading')?.scrollIntoView({behavior:'smooth',block:'center'});
       return;
     }
     if(name==='add-choice'){
@@ -306,11 +359,11 @@
       }
       const path='/admin/competitions/'+id;
       if(name==='duplicate'){
-        const c=await api(path+'/duplicate',{admin:true,method:'POST'});adminRows.unshift(c);adminId=c.id;votersOpen=false;renderManage();message('competitionAdminStatus','Duplicated as a private draft. No votes were copied.');
+        const c=await competitionApi(path+'/duplicate',{admin:true,method:'POST'});adminRows.unshift(c);adminId=c.id;votersOpen=false;renderManage();message('competitionAdminStatus','Duplicated as a private draft. No votes were copied.');
       }else if(name==='delete'){
         await api(path,{admin:true,method:'DELETE'});adminRows=adminRows.filter(c=>c.id!==id);adminId=null;$('competitionAdminManage').classList.add('hidden');$('competitionAdminBrowse').classList.remove('hidden');renderLists();message('competitionAdminStatus','Competition deleted.');
       }else if(['pause','publish','close'].includes(name)){
-        const c=await api(path,{admin:true,method:'PATCH',body:{status:{pause:'paused',publish:'active',close:'closed'}[name]}});
+        const c=await competitionApi(path,{admin:true,method:'PATCH',body:{status:{pause:'paused',publish:'active',close:'closed'}[name]}});
         adminRows=adminRows.map(x=>x.id===c.id?c:x);renderManage();renderLists();message('competitionAdminStatus','Competition updated.');
       }
     }finally{mutating=false;el.disabled=false;}
@@ -363,7 +416,7 @@
     const body=collect();body.status=e.submitter?.value||'draft';
     revision++;mutating=true;editorControls(true);message('competitionEditorStatus','Saving…');
     try{
-      const c=await api('/admin/competitions'+(editorId?'/'+editorId:''),{admin:true,method:editorId?'PATCH':'POST',body});
+      const c=await competitionApi('/admin/competitions'+(editorId?'/'+editorId:''),{admin:true,method:editorId?'PATCH':'POST',body});
       if(!isAdmin()) return;
       adminRows=adminRows.filter(x=>x.id!==c.id);adminRows.unshift(c);adminId=c.id;editorDirty=false;votersOpen=false;
       editor.classList.add('hidden');$('competitionAdminManage').classList.remove('hidden');renderLists();renderManage();
@@ -386,4 +439,6 @@
   });
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});
   setInterval(refresh,15000);renderLists();refresh();
+  setInterval(tickCountdowns,1000);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)tickCountdowns();});
 })();

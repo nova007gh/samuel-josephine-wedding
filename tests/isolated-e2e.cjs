@@ -6,7 +6,9 @@ const path=require('node:path');
 const {spawn}=require('node:child_process');
 const root=path.resolve(__dirname,'..');
 const types={'.html':'text/html','.js':'text/javascript','.css':'text/css','.jpg':'image/jpeg','.png':'image/png','.svg':'image/svg+xml','.webmanifest':'application/manifest+json'};
-const tunnel=spawn('ssh',['-T','-o','ControlMaster=no','-o','ControlPath=none','-o','ConnectTimeout=15','-o','ExitOnForwardFailure=yes','-L','127.0.0.1:3197:127.0.0.1:3196','-L','127.0.0.1:3194:127.0.0.1:3195','snybena','node /opt/wedding-api/isolated-browser-api.cjs /opt/wedding-api/server.js']);
+const candidate=process.env.WEDDING_E2E_SERVER||'/opt/wedding-api/server.js';
+if(!/^\/[a-zA-Z0-9/_-]+\.js$/.test(candidate))throw new Error('Invalid isolated server path');
+const tunnel=spawn('ssh',['-T','-o','ControlMaster=no','-o','ControlPath=none','-o','ConnectTimeout=15','-o','ExitOnForwardFailure=yes','-L','127.0.0.1:3197:127.0.0.1:3196','-L','127.0.0.1:3194:127.0.0.1:3195','snybena','node /opt/wedding-api/isolated-browser-api.cjs '+candidate]);
 let child,server;
 const ready=new Promise((resolve,reject)=>{
   let output='';
