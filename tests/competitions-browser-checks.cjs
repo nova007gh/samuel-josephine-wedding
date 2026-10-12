@@ -6,15 +6,15 @@ const path=require('node:path');
 module.exports=async({call,evaluate,errors,out})=>{
   await evaluate(`(()=>{
     const original=api;
-    const base={description:'Vote for your favourite wedding look!',coverUrl:'assets/couple-home.jpg',status:'active',audience:'all',guestIds:[],voteMode:'single',showResults:true,showPhotos:true,allowChange:false,commentsEnabled:true,startAt:null,endAt:null};
+    const base={description:'Vote for your favourite wedding look!',coverUrl:'assets/couple-home.jpg',status:'active',audience:'all',guestIds:[],voteMode:'single',requireVerified:true,showResults:true,showPhotos:true,allowChange:false,commentsEnabled:true,startAt:null,endAt:null};
     const state=window.__competitionFixture={rows:[{...base,id:'mock-active',title:'Best Dressed Guest',choices:[{id:'one',name:'Guest One',photoUrl:'assets/story/sam-adult.jpg'},{id:'two',name:'Guest Two',photoUrl:'assets/story/jossy-adult.jpg'}]},
       {...base,id:'mock-team',title:'Team Bride vs Team Groom',choices:[{id:'bride',name:'Team Bride',photoUrl:'assets/story/jossy-adult.jpg'},{id:'groom',name:'Team Groom',photoUrl:'assets/story/sam-adult.jpg'}]},
       {...base,id:'mock-future',title:'Wedding Selfie',status:'upcoming',startAt:Date.now()+86400000,choices:[{id:'f1',name:'Choice One'},{id:'f2',name:'Choice Two'}]},
       {...base,id:'mock-closed',title:'Best Dance Moves',status:'closed',choices:[{id:'c1',name:'Choice One'},{id:'c2',name:'Choice Two'}]}],votes:{},calls:[],counter:0};
     const decorate=(c,admin)=>{
       const votes=state.votes[c.id]||[];
-      return {...c,config:admin?structuredClone(c):undefined,myChoices:admin?[]:votes,canVote:!state.unverified&&c.status==='active'&&(!votes.length||c.allowChange),
-        votingReason:state.unverified?'Verify your guest sign-in before voting.':c.status!=='active'?'Voting is not open.':votes.length&&!c.allowChange?'Your vote is already counted. Changes are disabled.':'',comments:[],
+      return {...c,config:admin?structuredClone(c):undefined,myChoices:admin?[]:votes,canVote:(!state.unverified||c.requireVerified===false)&&c.status==='active'&&(!votes.length||c.allowChange),
+        votingReason:state.unverified&&c.requireVerified!==false?'Verify your guest sign-in before voting.':c.status!=='active'?'Voting is not open.':votes.length&&!c.allowChange?'Your vote is already counted. Changes are disabled.':'',comments:[],
         results:c.showResults||admin?{totalVotes:votes.length,uniqueVoters:votes.length?1:0,rankings:c.choices.map(x=>({...x,votes:votes.includes(x.id)?1:0,percentage:votes.includes(x.id)?Math.round(100/votes.length):0})).sort((a,b)=>b.votes-a.votes)}:null};
     };
     api=async(p,opts={})=>{
@@ -99,6 +99,7 @@ module.exports=async({call,evaluate,errors,out})=>{
   await wait(`document.querySelectorAll('#competitionAdminList .comp-card').length===4`);
   await evaluate(`document.querySelector('[data-comp-action="create"]').click()`);
   await wait(`!document.getElementById('competitionEditor').classList.contains('hidden')`);
+  assert.equal(await evaluate(`document.getElementById('competitionEditor').elements.requireVerified.checked`),true,'New competitions default to verified sign-in');
   await evaluate(`(()=>{const f=document.getElementById('competitionEditor');f.elements.title.value='Custom Wedding Game';f.elements.description.value='Our own competition message';f.dispatchEvent(new Event('input',{bubbles:true}));
     const names=f.querySelectorAll('[data-choice-name]');names[0].value='Team One';names[1].value='Team Two';f.elements.audience.value='group';f.elements.audience.dispatchEvent(new Event('change',{bubbles:true}));f.querySelector('[data-comp-guest]').checked=true;})()`);
   for(const width of [320,375,430,1024]){
@@ -137,6 +138,26 @@ module.exports=async({call,evaluate,errors,out})=>{
   const shot=await call('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(out,'competitions-admin-preview.png'),Buffer.from(shot.data,'base64'));
   await evaluate(`const originalConfirm=window.confirm;window.confirm=()=>true;document.querySelector('#competitionAdminManage [data-comp-action="delete"]').click();window.confirm=originalConfirm`);
   await wait(`!window.__competitionFixture.rows.some(x=>x.title==='Custom Wedding Game (copy)')`);
+  await evaluate(`document.querySelector('[data-comp-action="create"]').click()`);
+  await wait(`!document.getElementById('competitionEditor').classList.contains('hidden')`);
+  await evaluate(`(()=>{const form=document.getElementById('competitionEditor');form.elements.title.value='Verification Optional';const names=form.querySelectorAll('[data-choice-name]');names[0].value='Male';names[1].value='Female';form.elements.requireVerified.checked=false;form.dispatchEvent(new Event('input',{bubbles:true}));form.querySelector('button[value="active"]').click();})()`);
+  await wait(`document.querySelector('#competitionAdminManage h2')?.textContent==='Verification Optional'`);
+  assert.equal(await evaluate(`window.__competitionFixture.rows[0].requireVerified`),false,'Unchecked verification is saved');
+  await evaluate(`window.__optionalCompetitionId=window.__competitionFixture.rows[0].id;window.__competitionFixture.unverified=true;setAdminToken(null);switchView('competitions')`);
+  await wait(`document.querySelector('#competitionList [data-id="'+window.__optionalCompetitionId+'"]')!==null`);
+  await evaluate(`document.querySelector('#competitionList [data-id="'+window.__optionalCompetitionId+'"]').click()`);
+  await wait(`document.querySelector('#competitionDetail h1')?.textContent==='Verification Optional'&&!!document.getElementById('competitionSubmit')`);
+  assert.equal(await evaluate(`!document.querySelector('#competitionDetail [data-comp-action="verify"]')&&document.querySelector('#competitionDetail').textContent.includes('No verified sign-in needed')`),true,'Optional mode removes the verification gate');
+  await evaluate(`(()=>{const input=document.querySelector('[name="competition-choice"]');input.checked=true;input.dispatchEvent(new Event('change',{bubbles:true}));document.getElementById('competitionSubmit').click();})()`);
+  await wait(`!!document.querySelector('#competitionDetail .comp-success')`);
+  assert.equal(await evaluate(`document.getElementById('competitionResults').textContent.includes('Voting Browsers')`),true,'Browser counts are labelled honestly');
+  await evaluate(`setAdminToken('mock-admin');switchView('admincompetitions')`);
+  await wait(`!!document.querySelector('#competitionAdminList [data-id="'+window.__optionalCompetitionId+'"]')`);
+  await evaluate(`document.querySelector('#competitionAdminList [data-id="'+window.__optionalCompetitionId+'"]').click();document.querySelector('#competitionAdminManage [data-comp-action="edit"]').click()`);
+  await wait(`!document.getElementById('competitionEditor').classList.contains('hidden')`);
+  assert.equal(await evaluate(`document.getElementById('competitionEditor').elements.requireVerified.disabled&&!document.getElementById('competitionEditor').elements.requireVerified.checked`),true,'Verification policy is locked after votes');
+  await evaluate(`document.querySelector('#competitionEditor [data-comp-action="cancel-editor"]').click()`);
+  console.log('PASS verification checkbox defaults/save, optional guest voting without sign-in, browser-count labels and policy lock after votes (API mocked)');
   await evaluate(`switchView('competitions');document.querySelector('#competitionFilters [data-comp-filter="all"]').click()`);
   await wait(`document.querySelector('#competitionList [data-id="mock-team"]')!==null`);
   await evaluate(`document.querySelector('#competitionList [data-id="mock-team"]').click()`);

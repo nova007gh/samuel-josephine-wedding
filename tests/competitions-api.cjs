@@ -129,6 +129,46 @@ async function create(overrides){return (await req('/admin/competitions',{method
     await req('/admin/competitions',{method:'POST',admin:true,body:cfg({title:''}),status:400});
     await req('/admin/competitions',{method:'POST',admin:true,body:cfg({startAt:Date.now()+10000,endAt:Date.now()+1000}),status:400});
     await req('/admin/competitions',{method:'POST',admin:true,body:cfg({coverUrl:'https://untrusted.example/x.png'}),status:400});
+    // Verification is configurable per game; optional voting uses a separate
+    // browser identity, never a body-supplied guest ID or a verified cookie.
+    const optional=await create({requireVerified:false,commentsEnabled:true});
+    const optionalPage=await req('/competitions/'+optional.id,{headers:{'X-Forwarded-Proto':'https'}});
+    assert.equal(optionalPage.data.requireVerified,false);assert.equal(optionalPage.data.canVote,true);
+    assert.match(optionalPage.cookie,/^sj_voting_browser=/);assert.match(optionalPage.response.headers.get('set-cookie'),/HttpOnly/);assert.match(optionalPage.response.headers.get('set-cookie'),/Secure/);
+    const browserCookie=optionalPage.cookie,optionOne=optional.choices[0].id,optionTwo=optional.choices[1].id;
+    await req('/competitions/'+optional.id+'/vote',{method:'POST',body:{guestId:a.id,choices:[optionOne]},status:401});
+    const optionalVote=(await req('/competitions/'+optional.id+'/vote',{method:'POST',cookie:browserCookie,body:{guestId:a.id,choices:[optionOne],comment:'Browser blessing'}})).data;
+    assert.equal(optionalVote.results.totalVotes,1);assert.deepEqual(optionalVote.myChoices,[optionOne]);
+    await Promise.all(Array.from({length:3},()=>req('/competitions/'+optional.id+'/vote',{method:'POST',cookie:browserCookie,body:{choices:[optionOne]}})));
+    assert.equal((await req('/competitions/'+optional.id,{cookie:browserCookie})).data.results.totalVotes,1);
+    await req('/competitions/'+optional.id+'/vote',{method:'POST',cookie:browserCookie,body:{choices:[optionTwo]},status:400});
+    await req('/competitions/'+optional.id+'/vote',{method:'POST',cookie:browserCookie+'; '+a.cookie,body:{choices:[optionTwo]},status:400});
+    await req('/competitions/'+id+'/vote',{method:'POST',cookie:browserCookie,body:{choices:[one]},status:401});
+    await req('/admin/competitions/'+optional.id,{method:'PATCH',admin:true,body:{requireVerified:true},status:400});
+    await req('/admin/competitions/'+id,{method:'PATCH',admin:true,body:{requireVerified:false},status:400});
+    const optionalVoters=(await req('/admin/competitions/'+optional.id+'/voters',{admin:true})).data;
+    assert.equal(optionalVoters[0].name,'Browser guest (unverified)');assert.match(optionalVoters[0].guestId,/^browser:/);assert.notEqual(optionalVoters[0].guestId,a.id);
+    await req('/admin/competitions/'+optional.id+'/comments/'+optionalVoters[0].guestId,{admin:true,method:'PATCH',body:{status:'approved'}});
+    assert.equal((await req('/competitions/'+optional.id,{cookie:browserCookie})).data.comments[0].name,'Guest (unverified)');
+    await req('/admin/competitions/'+optional.id,{method:'PATCH',admin:true,body:{allowChange:true}});
+    await req('/competitions/'+optional.id+'/vote',{method:'POST',cookie:browserCookie,body:{choices:[optionTwo]}});
+    assert.equal((await req('/competitions/'+optional.id)).data.results.totalVotes,1);
+    const secondBrowser=(await req('/competitions/'+optional.id)).cookie;
+    assert.notEqual(secondBrowser,browserCookie);
+    await req('/competitions/'+optional.id+'/vote',{method:'POST',cookie:secondBrowser,body:{choices:[optionOne]}});
+    assert.equal((await req('/competitions/'+optional.id,{cookie:browserCookie})).data.results.uniqueVoters,2);
+    assert.ok((await req('/admin/competitions/'+optional.id+'/export',{admin:true})).data.includes('Voting browsers (unverified)'));
+    await req('/admin/competitions',{method:'POST',admin:true,body:cfg({requireVerified:false,audience:'attending'}),status:400});
+    await req('/admin/competitions',{method:'POST',admin:true,body:cfg({requireVerified:false,audience:'group',guestIds:[a.id]}),status:400});
+    await req('/admin/competitions',{method:'POST',admin:true,body:cfg({requireVerified:'false'}),status:400});
+    const toggle=await create();
+    await req('/admin/competitions/'+toggle.id,{method:'PATCH',admin:true,body:{requireVerified:false}});
+    assert.equal((await req('/competitions/'+toggle.id)).data.requireVerified,false);
+    await req('/admin/competitions/'+toggle.id,{method:'PATCH',admin:true,body:{requireVerified:true}});
+    assert.equal((await req('/competitions/'+toggle.id)).data.requireVerified,true);
+    await req('/competitions/'+toggle.id+'/vote',{method:'POST',cookie:browserCookie,body:{choices:[toggle.choices[0].id]},status:401});
+    const crossCookie=await req('/competitions/'+optional.id,{headers:{'sec-fetch-site':'cross-site'}});assert.equal(crossCookie.cookie,undefined,'Cross-site GET cannot reset browser voter cookies');
+    console.log('PASS optional verification policy, separate secure browser ballots, retries/changes, no guest-ID spoofing, verified-game isolation, policy lock and audience restrictions (isolated database)');
     // Returning-guest OTP creates a new secure session without changing identity.
     db.prepare('INSERT INTO otps (phone,code,expiresAt,attempts,sentAt) VALUES (?,?,?,?,?)').run(a.phone.slice(-9),crypto.createHash('sha256').update('123456').digest('hex'),Date.now()+60000,0,Date.now());
     const login=await req('/guests/login',{method:'POST',body:{phone:a.phone,code:'123456'}});
@@ -137,6 +177,8 @@ async function create(overrides){return (await req('/admin/competitions',{method
     assert.equal((await req('/competitions/session',{cookie:login.cookie})).data.verified,false);
     await req('/competitions/'+multi.id+'/vote',{method:'POST',cookie:login.cookie,body:{choices:[m[0]]},status:401});
     db.close();db=null;await stop();await start();
+    assert.deepEqual((await req('/competitions/'+optional.id,{cookie:browserCookie})).data.myChoices,[optionTwo]);
+    assert.equal((await req('/competitions/'+optional.id,{cookie:browserCookie})).data.requireVerified,false);
     assert.equal((await req('/competitions/'+multi.id,{cookie:a.cookie})).data.results.totalVotes,2);
     assert.deepEqual((await req('/competitions/'+multi.id,{cookie:a.cookie})).data.myChoices,[m[2]]);
     token=(await req('/admin/login',{method:'POST',body:{password:'isolated-test-only'}})).data.token;

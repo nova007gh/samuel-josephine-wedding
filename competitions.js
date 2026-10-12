@@ -44,8 +44,8 @@
         <div><strong>${esc(x.name)}</strong><div class="comp-bar"><i style="width:${x.percentage}%"></i></div></div><div><b>${x.percentage}%</b><small>${x.votes} votes</small></div></div>`;
     }).join('');
     return `<div class="comp-panel"><h2>${c.status==='active'?'Live':'Voting'} Results ${admin?'(Admin View)':''}</h2>
-      <p>${r.totalVotes?'Rankings refresh every 15 seconds while this page is visible.':'No votes yet. Rankings will appear as guests vote.'}${c.voteMode==='multiple'?' Percentages are shares of all contestant selections.':''}</p>
-      ${rankings}<div class="comp-totals"><div>Total Votes<b>${r.totalVotes}</b></div><div>Unique Voters<b>${r.uniqueVoters}</b></div></div></div>`;
+      <p>${r.totalVotes?'Rankings refresh every 15 seconds while this page is visible.':'No votes yet. Rankings will appear as guests vote.'}${c.voteMode==='multiple'?' Percentages are shares of all contestant selections.':''}${c.requireVerified===false?' Voters are counted by browser, not verified people.':''}</p>
+      ${rankings}<div class="comp-totals"><div>Total Votes<b>${r.totalVotes}</b></div><div>${c.requireVerified===false?'Voting Browsers':'Unique Voters'}<b>${r.uniqueVoters}</b></div></div></div>`;
   }
   function renderDetail(){
     if(!detail) return;
@@ -58,10 +58,11 @@
       ${c.coverUrl?image(c.coverUrl,'comp-cover'):''}<p class="comp-status">${esc(c.startAt?'Starts '+date(c.startAt):'')}${c.endAt?'<br>Closes '+esc(date(c.endAt)):''}</p>
       ${submitted?'<div class="comp-success"><b aria-hidden="true">&#10003;</b><h2>Vote Submitted!</h2><p>Thank you for participating. Your vote has been counted.</p>'+action('results','View Results')+action('all','Vote in Another Competition')+'</div>':''}
       ${c.myChoices.length&&!submitted?'<div class="comp-notice">Your vote is counted.'+(c.allowChange?' You can change it while voting is open.':' Vote changes are disabled.')+'</div>':''}
-      <p class="comp-status">${c.voteMode==='single'?'Choose one contestant.':'Choose one or more contestants. Each guest can vote once per contestant.'}</p>
+       <p class="comp-status">${c.voteMode==='single'?'Choose one contestant.':'Choose one or more contestants. '+(c.requireVerified===false?'Each browser':'Each guest')+' can vote once per contestant.'}</p>
+      ${c.requireVerified===false?'<div class="comp-notice">No verified sign-in needed for this game. Voting is limited per browser. Clearing cookies or using another browser can allow another vote.</div>':''}
       <div class="comp-choices">${choices}</div>
       ${c.canVote ? `${c.commentsEnabled?'<label class="comp-field">Comment (optional, reviewed before sharing)<textarea id="competitionComment" rows="2" maxlength="300">'+esc(draftComment)+'</textarea></label>':''}
-        <button id="competitionSubmit" class="comp-btn comp-btn--gold comp-wide" data-comp-action="vote" type="button" ${voting?'disabled':''}>${voting?'Submitting…':c.myChoices.length?'Update Vote':'Submit Vote'}</button>` : `<div class="comp-notice">${esc(c.votingReason)}</div>${!getGuest()?.id||/Verify/.test(c.votingReason)?action('verify','Verify Guest Sign-in'):''}`}
+         <button id="competitionSubmit" class="comp-btn comp-btn--gold comp-wide" data-comp-action="vote" type="button" ${voting?'disabled':''}>${voting?'Submitting…':c.myChoices.length?'Update Vote':'Submit Vote'}</button>` : `<div class="comp-notice">${esc(c.votingReason)}</div>${c.requireVerified!==false&&(!getGuest()?.id||/Verify/.test(c.votingReason))?action('verify','Verify Guest Sign-in'):''}`}
       <div id="competitionResults">${resultMarkup(c)}</div>
       ${c.commentsEnabled&&c.comments.length?'<div class="comp-panel"><h2>Guest Comments</h2>'+c.comments.map(x=>`<div class="comp-comment"><strong>${esc(x.name||'Guest')}</strong><p>${esc(x.text)}</p></div>`).join('')+'</div>':''}`;
   }
@@ -70,7 +71,8 @@
     if(!c||!editor.classList.contains('hidden')) return;
     $('competitionAdminManage').innerHTML=`${action('browse','&#8249; All Competitions')}<div class="comp-panel"><h2>${esc(c.title)}</h2>
       ${c.coverUrl?image(c.coverUrl,'comp-cover'):''}${badge(c.status)}<p>${esc(c.description)}</p>
-      <p>${c.results.totalVotes} votes &middot; ${c.results.uniqueVoters} voters${c.endAt?' &middot; Closes '+esc(date(c.endAt)):''}</p>
+      <p>${c.results.totalVotes} votes &middot; ${c.results.uniqueVoters} ${c.requireVerified===false?'voting browsers':'voters'}${c.endAt?' &middot; Closes '+esc(date(c.endAt)):''}</p>
+      <p>${c.requireVerified===false?'Verification off — voting is limited per browser.':'Verified guest sign-in required.'}</p>
       <div class="comp-actions">${action('edit','&#9998; Edit',c.id)}
       ${c.config.status==='active'?action('pause','&#10074;&#10074; Pause',c.id):action('publish',c.config.status==='draft'?'Publish':'Resume / Reopen',c.id,'comp-btn--gold')}
       ${c.config.status!=='closed'?action('close','Close',c.id,'comp-btn--danger'):''}</div>
@@ -112,9 +114,11 @@
       <h3 style="margin-top:24px">Voting Period</h3><p>Dates use your device’s local time zone. Leave blank to open immediately or keep voting open.</p>
       <div class="comp-fields"><label class="comp-field">Start Date<input type="datetime-local" name="startAt" value="${localDate(config.startAt)}"></label>
       <label class="comp-field">End Date<input type="datetime-local" name="endAt" value="${localDate(config.endAt)}"></label></div>
-      <h3 id="competitionVotingHeading">Voting Settings</h3>${hasVotes?'<div class="comp-notice">Votes have been cast. Audience and vote limit are locked. Contestants with votes cannot be removed.</div>':''}
+      <h3 id="competitionVotingHeading">Voting Settings</h3>${hasVotes?'<div class="comp-notice">Votes have been cast. Verification, audience and vote limit are locked. Duplicate the competition to change these settings. Contestants with votes cannot be removed.</div>':''}
+      <label class="comp-check"><input name="requireVerified" type="checkbox" data-locked="${hasVotes}" ${config.requireVerified!==false?'checked':''} ${hasVotes||config.audience!=='all'?'disabled':''}>Require verified guest sign-in before voting</label>
+      <p>On: approved, verified guests only. Off: no extra sign-in verification for this game; limits use a browser cookie, not verified people. Another browser or cleared cookies can vote again. Attending-only and selected-group voting require this option on.</p>
       <label class="comp-field">Who can vote?<select name="audience" ${hasVotes?'disabled':''}>
-        ${[['all','All approved invited guests'],['attending','Only approved attending guests'],['group','Selected approved guest group']].map(([v,l])=>`<option value="${v}" ${config.audience===v?'selected':''}>${l}</option>`).join('')}</select></label>
+         ${[['all','All guests (approved if verification is on)'],['attending','Only approved attending guests'],['group','Selected approved guest group']].map(([v,l])=>`<option value="${v}" ${config.audience===v?'selected':''}>${l}</option>`).join('')}</select></label>
       <div id="competitionGuestGroup" class="${config.audience==='group'?'':'hidden'}"><p>Select the guests allowed to vote:</p><div class="comp-groups">
       ${guests.filter(g=>g.status==='approved').map(g=>`<label class="comp-check"><input type="checkbox" data-comp-guest value="${esc(g.id)}" ${config.guestIds.includes(g.id)?'checked':''} ${hasVotes?'disabled':''}>${esc(g.name)}</label>`).join('')||'<p>No approved guests yet. Approve guests first or use All Guests.</p>'}
       ${config.guestIds.filter(id=>!guests.some(g=>g.id===id&&g.status==='approved')).map(id=>`<label class="comp-check"><input type="checkbox" data-comp-guest value="${esc(id)}" checked ${hasVotes?'disabled':''}>Previously selected guest (no longer approved)</label>`).join('')}</div></div>
@@ -126,13 +130,19 @@
       <button class="comp-btn comp-btn--gold" type="submit" name="saveAction" value="${c&&config.status!=='draft'?config.status:'active'}">${c&&config.status!=='draft'?'Save Changes':'Publish Competition'}</button>${action('cancel-editor','Cancel')}</div>
       <p id="competitionEditorStatus" class="comp-status" role="status" aria-live="polite"></p>`;
     editor.querySelector('[name="title"]').focus({preventScroll:true});
+    refreshVerificationLabels();
+  }
+  function refreshVerificationLabels(){
+    const unit=editor.elements.namedItem('requireVerified')?.checked?'guest':'browser';
+    const options=editor.elements.namedItem('voteMode')?.options;
+    if(options){options[0].textContent='One contestant per '+unit+' (recommended)';options[1].textContent='Multiple choices — once per contestant per '+unit;}
   }
   function collect(){
     const field=name=>editor.elements.namedItem(name);
     return {title:field('title').value,description:field('description').value,coverUrl:editor.querySelector('[data-photo-target="cover"]').dataset.photoUrl,
       startAt:field('startAt').value?new Date(field('startAt').value).getTime():null,endAt:field('endAt').value?new Date(field('endAt').value).getTime():null,
       audience:field('audience').value,voteMode:field('voteMode').value,guestIds:[...editor.querySelectorAll('[data-comp-guest]:checked')].map(el=>el.value),
-      ...Object.fromEntries(['showResults','allowChange','showPhotos','commentsEnabled'].map(key=>[key,field(key).checked])),
+      ...Object.fromEntries(['requireVerified','showResults','allowChange','showPhotos','commentsEnabled'].map(key=>[key,field(key).checked])),
       choices:[...editor.querySelectorAll('.comp-contestant')].map(row=>({id:row.dataset.choiceId||undefined,name:row.querySelector('[data-choice-name]').value,photoUrl:row.querySelector('[data-photo-target]').dataset.photoUrl}))};
   }
   function editorControls(disabled){
@@ -178,7 +188,7 @@
         if(signature!==JSON.stringify(detail)){
           const sameForm=detail&&detail.status===c.status&&detail.canVote===c.canVote&&detail.votingReason===c.votingReason
             &&detail.title===c.title&&detail.description===c.description&&detail.coverUrl===c.coverUrl
-            &&detail.commentsEnabled===c.commentsEnabled&&detail.voteMode===c.voteMode&&detail.startAt===c.startAt&&detail.endAt===c.endAt
+            &&detail.commentsEnabled===c.commentsEnabled&&detail.requireVerified===c.requireVerified&&detail.voteMode===c.voteMode&&detail.startAt===c.startAt&&detail.endAt===c.endAt
             &&JSON.stringify(detail.choices)===JSON.stringify(c.choices)&&JSON.stringify(detail.myChoices)===JSON.stringify(c.myChoices)
             &&JSON.stringify(detail.comments)===JSON.stringify(c.comments);
           detail=c;
@@ -292,7 +302,14 @@
   });
   editor.addEventListener('input',()=>{editorDirty=true;});
   editor.addEventListener('change',async e=>{
-    if(e.target.name==='audience') $('competitionGuestGroup').classList.toggle('hidden',e.target.value!=='group');
+    if(e.target.name==='audience'){
+      $('competitionGuestGroup').classList.toggle('hidden',e.target.value!=='group');
+      const verification=editor.elements.namedItem('requireVerified');
+      if(e.target.value!=='all')verification.checked=true;
+      verification.disabled=verification.dataset.locked==='true'||e.target.value!=='all';
+      refreshVerificationLabels();
+    }
+    if(e.target.name==='requireVerified')refreshVerificationLabels();
     if(!e.target.matches('[data-comp-photo]')||!e.target.files[0]||!isAdmin()||photoBusy) return;
     const file=e.target.files[0],box=e.target.closest('[data-photo-target]'),status=box.querySelector('.comp-photo-status');
     if(file.size>10*1024*1024){status.textContent='Photo must be under 10 MB.';return;}

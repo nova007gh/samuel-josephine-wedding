@@ -1,5 +1,49 @@
 # snybena.com live audit — 11 October 2026
 
+## Optional competition sign-in verification — v180 (12 October)
+
+Competition setup/edit → Voting Settings now includes **Require verified guest
+sign-in before voting**. It defaults to checked for new and existing games.
+Unchecking it permits browser-based voting without the extra verified sign-in
+step or approved-guest requirement for that game. The wedding app’s existing
+entry/check-in gates are not removed. Attending-only and selected-group policies
+still require verification; choosing either checks/locks the checkbox, and the
+server rejects an incompatible combination. Once any votes exist, verification
+is locked alongside audience/mode to avoid changing voter identity semantics.
+Duplicate the game to choose another policy without disturbing existing votes.
+No existing live policy is changed automatically.
+
+Optional voting uses a separate 90-day HttpOnly/SameSite=Strict browser cookie
+(Secure on HTTPS) backed by hashed tokens in the additive `competition_browsers`
+table. The vote route does not accept a guest ID supplied in the body as proof,
+does not create fresh identities during vote retries, and does not unlock other
+verified games. GET of an optional active/upcoming game prepares the cookie;
+blocked cookies produce a clear reload/allow-cookies error, not a sign-in prompt.
+Cross-site GETs cannot issue replacement voting cookies. Browser identities are
+used even after later guest verification, so the same cookie cannot gain an
+extra ballot simply by signing in. Optional voter/comment names are explicitly
+marked unverified, and results/CSV use **Voting Browsers** rather than claiming
+unique verified people. Clearing cookies, expiry, private windows, another
+browser/device or deliberate cookie resets can allow extra votes; this weaker
+protection is explained in setup and on the guest page. This is not strong
+anti-fraud voting or a substitute for verification in restricted audiences.
+
+Isolated full-API tests passed for defaults, on/off persistence, optional ballot
+cookies, retries/changes, forged guest-ID rejection, verified-game isolation,
+restricted audience validation, policy locking, comment/CSV labels, browser
+identity after later sign-in and restart persistence. Mocked UI checks passed
+for checkbox default/save, removal of the verification gate, optional vote
+submission, honest browser counts and locking after votes, alongside the
+existing mobile competitions/toast suite. No live setting, vote or competition
+was created or changed for testing. Commands remain the competition API/UI
+commands above; existing OTP restrictions still affect verification-on games.
+Final deployed competition/verification/toast and Share/seven-page-width checks
+passed. Existing unit/regression suites also passed. Live health/public feeds
+returned 200 and unauthenticated admin guards returned 401. Pre-v180 snapshot
+comparison retained both existing competitions and all guest, media, gift and
+setting records; SQLite integrity was `ok`. Existing verification policies were
+not changed, and no live ballot was submitted.
+
 ## Share page and navigation audit — v179 (12 October)
 
 Audited every Share hub link and the seven main tabs, in guest and admin modes.

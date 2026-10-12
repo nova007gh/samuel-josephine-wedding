@@ -8,6 +8,7 @@ module.exports = function installCompetitions({app,db,requireAdmin,publicWrite,m
   db.exec(`
     CREATE TABLE IF NOT EXISTS guest_sessions (tokenHash TEXT PRIMARY KEY, guestId TEXT NOT NULL, expiresAt INTEGER NOT NULL);
     CREATE INDEX IF NOT EXISTS guest_sessions_guest ON guest_sessions(guestId);
+    CREATE TABLE IF NOT EXISTS competition_browsers (id TEXT PRIMARY KEY, tokenHash TEXT UNIQUE NOT NULL, expiresAt INTEGER NOT NULL);
     CREATE TABLE IF NOT EXISTS competitions (id TEXT PRIMARY KEY, config TEXT NOT NULL, createdAt INTEGER NOT NULL);
     CREATE TABLE IF NOT EXISTS competition_votes (
       competitionId TEXT NOT NULL, guestId TEXT NOT NULL, choiceId TEXT NOT NULL, createdAt INTEGER NOT NULL,
@@ -31,6 +32,21 @@ module.exports = function installCompetitions({app,db,requireAdmin,publicWrite,m
     return token ? db.prepare(`SELECT g.* FROM guest_sessions s JOIN guests g ON g.id=s.guestId
       WHERE s.tokenHash=? AND s.expiresAt>?`).get(hash(token),Date.now()) : null;
   }
+  function browserVoter(req,res){
+    const token=/(?:^|;\s*)sj_voting_browser=([a-f0-9]{64})(?:;|$)/.exec(req.headers.cookie||'')?.[1];
+    const row=token&&db.prepare('SELECT id FROM competition_browsers WHERE tokenHash=? AND expiresAt>?').get(hash(token),Date.now());
+    if(row)return row;
+    if(!res)return null;
+    if(req.headers['sec-fetch-site']==='cross-site')return null;
+    if(req.headers.origin){try{if(new URL(req.headers.origin).host!==req.get('host'))return null;}catch{return null;}}
+    const newToken=crypto.randomBytes(32).toString('hex'),id='browser:'+uid();
+    db.prepare('DELETE FROM competition_browsers WHERE expiresAt<?').run(Date.now());
+    db.prepare('INSERT INTO competition_browsers VALUES (?,?,?)').run(id,hash(newToken),Date.now()+ttl);
+    res.cookie('sj_voting_browser',newToken,{httpOnly:true,secure:req.secure,sameSite:'strict',path:'/api',maxAge:ttl});
+    return {id};
+  }
+  const verifiedRequired=c=>c.requireVerified!==false;
+  const voter=(c,req,res)=>verifiedRequired(c)?guest(req):browserVoter(req,res);
   function sameOrigin(req,res,next){
     if (req.headers['sec-fetch-site'] === 'cross-site') return res.status(403).json({error:'Open voting from the wedding app.'});
     if (req.headers.origin){
@@ -67,6 +83,7 @@ module.exports = function installCompetitions({app,db,requireAdmin,publicWrite,m
     return 'active';
   }
   function eligible(c,g){
+    if(!verifiedRequired(c))return '';
     if(!g) return 'Verify your guest sign-in before voting.';
     if(g.status!=='approved') return 'Voting opens after the couple approves your guest registration.';
     if(c.audience==='attending'&&!g.attending) return 'This competition is for attending guests only.';
@@ -89,11 +106,12 @@ module.exports = function installCompetitions({app,db,requireAdmin,publicWrite,m
     const comments=c.commentsEnabled ? db.prepare(`SELECT c.text,c.createdAt,g.name FROM competition_comments c
       LEFT JOIN guests g ON g.id=c.guestId WHERE c.competitionId=? AND c.status='approved' ORDER BY c.createdAt DESC LIMIT 100`).all(c.id) : [];
     const visible={id:c.id,title:c.title,description:c.description,coverUrl:c.coverUrl,status:p,startAt:c.startAt,endAt:c.endAt,
+      requireVerified:verifiedRequired(c),
       voteMode:c.voteMode,allowChange:c.allowChange,showResults:c.showResults,showPhotos:c.showPhotos,commentsEnabled:c.commentsEnabled,
       choices:c.choices.map(x=>({id:x.id,name:x.name,photoUrl:c.showPhotos||admin ? x.photoUrl : ''})),myChoices,
       canVote:!reason&&p==='active'&&(!myChoices.length||c.allowChange),
       votingReason:reason || (p!=='active' ? 'Voting is not open.' : myChoices.length&&!c.allowChange ? 'Your vote is already counted. Changes are disabled.' : ''),
-      results:c.showResults||admin ? results(c) : null,comments};
+      results:c.showResults||admin ? results(c) : null,comments:comments.map(x=>({...x,name:x.name||(verifiedRequired(c)?'Guest':'Guest (unverified)')}))};
     if(visible.results&&!c.showPhotos&&!admin) visible.results.rankings.forEach(x=>{x.photoUrl='';});
     if(admin) return {...visible,config:c};
     return visible;
@@ -112,10 +130,13 @@ module.exports = function installCompetitions({app,db,requireAdmin,publicWrite,m
     const c={id:old?.id||uid(),createdAt:old?.createdAt||Date.now(),title:text(body.title,120,'Title'),
       description:text(body.description||'',1000,'Description'),coverUrl:photo(body.coverUrl),
       status:body.status||'draft',audience:body.audience||'all',voteMode:body.voteMode||'single',guestIds:[],choices:[],
+      requireVerified:body.requireVerified!==false,
       showResults:body.showResults===true,showPhotos:body.showPhotos!==false,allowChange:body.allowChange===true,commentsEnabled:body.commentsEnabled===true};
     if(!c.title) throw new Error('Enter a competition title.');
     if(!['draft','active','paused','closed'].includes(c.status)) throw new Error('Invalid competition status.');
     if(!['all','attending','group'].includes(c.audience)||!['single','multiple'].includes(c.voteMode)) throw new Error('Invalid voting settings.');
+    if(body.requireVerified!==undefined&&typeof body.requireVerified!=='boolean')throw new Error('Verification setting must be on or off.');
+    if(!c.requireVerified&&c.audience!=='all')throw new Error('Attending-only and selected-group voting require verified sign-in. Select All guests to disable verification.');
     if(!Array.isArray(body.guestIds)||body.guestIds.length>1000||body.guestIds.some(id=>typeof id!=='string')) throw new Error('Invalid guest group.');
     c.guestIds=[...new Set(body.guestIds)];
     if(c.audience==='group'&&!c.guestIds.length) throw new Error('Select at least one guest for this group.');
@@ -135,6 +156,7 @@ module.exports = function installCompetitions({app,db,requireAdmin,publicWrite,m
     });
     if(new Set(c.choices.map(x=>x.id)).size!==c.choices.length) throw new Error('Duplicate contestants are not allowed.');
     if(old&&db.prepare('SELECT 1 FROM competition_votes WHERE competitionId=? LIMIT 1').get(old.id)){
+      if(verifiedRequired(old)!==c.requireVerified)throw new Error('Verification cannot change after votes are cast. Duplicate the competition to change this setting without resetting voter identities.');
       if(old.audience!==c.audience||old.voteMode!==c.voteMode||JSON.stringify([...old.guestIds].sort())!==JSON.stringify([...c.guestIds].sort()))
         throw new Error('Voting audience and vote limit cannot change after votes are cast. Duplicate the competition to start fresh.');
       const removed=old.choices.filter(x=>!c.choices.some(y=>y.id===x.id));
@@ -149,23 +171,21 @@ module.exports = function installCompetitions({app,db,requireAdmin,publicWrite,m
   /* Lightweight discovery feed: never exposes drafts, ballots or private results. */
   app.get('/api/competitions/notices',(req,res)=>{
     res.set('Cache-Control','no-store');
-    const g=guest(req);
     const notices=db.prepare('SELECT id FROM competitions ORDER BY createdAt DESC').all().map(r=>{const c=load(r.id);return {c,status:phase(c)};})
-      .filter(({status})=>['active','upcoming'].includes(status)).map(({c,status})=>({id:c.id,title:c.title,status,
+      .filter(({status})=>['active','upcoming'].includes(status)).map(({c,status})=>{const g=voter(c,req);return {id:c.id,title:c.title,status,
         publishedAt:c.publishedAt||c.createdAt,startAt:c.startAt,
-        canVote:status==='active'&&!eligible(c,g)&&(!db.prepare('SELECT 1 FROM competition_votes WHERE competitionId=? AND guestId=? LIMIT 1').get(c.id,g.id)||c.allowChange)}));
+        canVote:status==='active'&&!eligible(c,g)&&(!g||!db.prepare('SELECT 1 FROM competition_votes WHERE competitionId=? AND guestId=? LIMIT 1').get(c.id,g.id)||c.allowChange)};});
     res.json(notices);
   });
   app.get('/api/competitions',(req,res)=>{
     res.set('Cache-Control','no-store');
-    const g=guest(req);
-    res.json(db.prepare('SELECT id FROM competitions ORDER BY createdAt DESC').all().map(r=>load(r.id)).filter(c=>c.status!=='draft').map(c=>present(c,g)));
+    res.json(db.prepare('SELECT id FROM competitions ORDER BY createdAt DESC').all().map(r=>load(r.id)).filter(c=>c.status!=='draft').map(c=>present(c,voter(c,req))));
   });
   app.get('/api/competitions/:id',(req,res)=>{
     res.set('Cache-Control','no-store');
     const c=load(req.params.id);
     if(!c||c.status==='draft') return res.status(404).json({error:'Competition not found.'});
-    res.json(present(c,guest(req)));
+    res.json(present(c,voter(c,req,['active','upcoming'].includes(phase(c))?res:undefined)));
   });
   const voteTransaction=db.transaction((c,g,choices,comment)=>{
     const existing=db.prepare('SELECT choiceId FROM competition_votes WHERE competitionId=? AND guestId=?').all(c.id,g.id).map(r=>r.choiceId);
@@ -180,10 +200,12 @@ module.exports = function installCompetitions({app,db,requireAdmin,publicWrite,m
       ON CONFLICT(competitionId,guestId) DO UPDATE SET text=excluded.text,status='pending',createdAt=excluded.createdAt`).run(c.id,g.id,comment,Date.now());
   });
   app.post('/api/competitions/:id/vote',sameOrigin,publicWrite,(req,res)=>{
-    const c=load(req.params.id),g=guest(req);
+    const c=load(req.params.id);
     if(!c||c.status==='draft') return res.status(404).json({error:'Competition not found.'});
+    const g=voter(c,req);
     const reason=eligible(c,g);
     if(reason) return res.status(g ? 403 : 401).json({error:reason});
+    if(!g)return res.status(401).json({error:'Allow voting cookies and reload this competition before submitting. No verified sign-in is required for this game.'});
     if(phase(c)!=='active') return res.status(409).json({error:'Voting is not open for this competition.'});
     try{
       const choices=req.body?.choices;
@@ -238,7 +260,7 @@ module.exports = function installCompetitions({app,db,requireAdmin,publicWrite,m
     const comments=db.prepare('SELECT guestId,text,status FROM competition_comments WHERE competitionId=?').all(c.id);
     const voters=new Map();
     rows.forEach(r=>{
-      if(!voters.has(r.guestId)) voters.set(r.guestId,{guestId:r.guestId,name:r.name||'Removed guest',choices:[],createdAt:r.createdAt,comment:comments.find(x=>x.guestId===r.guestId)||null});
+      if(!voters.has(r.guestId)) voters.set(r.guestId,{guestId:r.guestId,name:r.name||(r.guestId.startsWith('browser:')?'Browser guest (unverified)':'Removed guest'),choices:[],createdAt:r.createdAt,comment:comments.find(x=>x.guestId===r.guestId)||null});
       voters.get(r.guestId).choices.push(c.choices.find(x=>x.id===r.choiceId)?.name||'Removed contestant');
     });
     res.json([...voters.values()]);
@@ -254,7 +276,7 @@ module.exports = function installCompetitions({app,db,requireAdmin,publicWrite,m
     if(!c) return res.status(404).json({error:'Competition not found.'});
     const r=results(c);
     const cell=v=>{const s=String(v);return '"'+(/^[\s]*[=+\-@]/.test(s)||/^[\t\r]/.test(s)?"'":'')+s.replace(/"/g,'""')+'"';};
-    const lines=[['Competition',c.title],['Total votes',r.totalVotes],['Unique voters',r.uniqueVoters],[],['Rank','Contestant','Votes','Percentage']];
+    const lines=[['Competition',c.title],['Total votes',r.totalVotes],[verifiedRequired(c)?'Unique voters':'Voting browsers (unverified)',r.uniqueVoters],[],['Rank','Contestant','Votes','Percentage']];
     let previous=-1,rank=0;
     r.rankings.forEach((x,i)=>{if(x.votes!==previous){rank=i+1;previous=x.votes;}lines.push([rank,x.name,x.votes,x.percentage+'%']);});
     res.set({'Content-Type':'text/csv; charset=utf-8','Content-Disposition':'attachment; filename="competition-results.csv"','Cache-Control':'no-store'});

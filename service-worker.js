@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v179-share-audit';
+const CACHE = 'sj-wedding-v180-optional-vote-verification';
 const ASSETS = [
   './',
   './index.html',
