@@ -18,13 +18,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Parisienne&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="assets/landing-invite.jpg" />
   <link rel="preload" as="image" href="assets/seal-pressed-320.png" />
-  <link rel="stylesheet" href="app.css?v=178" />
+  <link rel="stylesheet" href="app.css?v=179" />
 
-  <link rel="stylesheet" href="app-views.css?v=178" />
-  <link rel="stylesheet" href="app-forms.css?v=178" />
-  <link rel="stylesheet" href="app-social.css?v=178" />
-  <link rel="stylesheet" href="gifts.css?v=178" />
-  <link rel="stylesheet" href="competitions.css?v=178" />
+  <link rel="stylesheet" href="app-views.css?v=179" />
+  <link rel="stylesheet" href="app-forms.css?v=179" />
+  <link rel="stylesheet" href="app-social.css?v=179" />
+  <link rel="stylesheet" href="gifts.css?v=179" />
+  <link rel="stylesheet" href="competitions.css?v=179" />
   <script>
   /* a checked-in guest goes straight into the app — flag it before first
      paint so the invitation never flashes on their screen (mirrors
@@ -577,7 +577,7 @@
   <section class="view hidden" data-view="more">
     <h1 class="page-title">Share Moments</h1>
     <div class="divider"><span></span><i>&#10084;</i><span></span></div>
-    <p class="page-sub">Share your photos, videos &amp; wishes with the couple.</p>
+    <p class="page-sub">Share memories and wishes, join competitions, and keep up with the celebration.</p>
 
     <div class="menu-list">
       <button class="menu-item" data-goto="competitions" type="button">
@@ -605,12 +605,12 @@
         <span class="menu-text"><strong>Admin Dashboard</strong><small>Samuel &amp; Josephine only</small></span>
         <span class="menu-chev">&#10095;</span>
       </button>
-      <label class="menu-item hidden" id="songMenuItem">
+      <button class="menu-item hidden" id="songMenuItem" type="button">
         <span class="menu-icon menu-icon--purple">&#9835;</span>
         <span class="menu-text"><strong>Choose Wedding Song</strong><small id="songLabel">Tap to upload your song</small></span>
         <span class="menu-chev">&#10095;</span>
-        <input id="songUpload" type="file" accept="audio/*" class="hidden" />
-      </label>
+      </button>
+      <input id="songUpload" type="file" accept="audio/*" class="hidden" />
       <button class="menu-item" id="guestSignOut" type="button">
         <span class="menu-icon menu-icon--purple">&#128682;</span>
         <span class="menu-text"><strong>Sign Out</strong><small>Switch guest — sign back in with your phone</small></span>
@@ -620,8 +620,9 @@
 
     <div class="more-actions">
       <button id="addToCalendar" class="enter-wide" type="button">ADD TO CALENDAR</button>
-      <button id="installButton" class="enter-wide hidden" type="button">INSTALL APP</button>
+       <button id="installButton" class="enter-wide" type="button">INSTALL APP</button>
     </div>
+    <p id="shareActionStatus" class="upload-status" role="status" aria-live="polite"></p>
 
     <div class="hash-bar">
       <span class="heart">&#10084;</span>
@@ -1590,12 +1591,22 @@ try{
   });
 }catch(e){}
 </script>
-<script src="api-data.js?v=178"></script>
-<script src="app.js?v=178"></script>
-<script src="app-data.js?v=178"></script>
-<script src="app-social.js?v=178"></script>
-<script src="admin-dashboard.js?v=178"></script>
-<script src="competitions.js?v=178"></script>
-<script src="competition-notices.js?v=178"></script>
+<div id="installHelpSheet" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="installHelpTitle">
+  <div class="sheet-card">
+    <h2 id="installHelpTitle" class="sheet-title">Install the Wedding App</h2>
+    <p class="page-sub">Keep the celebration a tap away on your home screen.</p>
+    <p class="install-help"><strong>iPhone / iPad:</strong> Open this site in Safari, tap Share, then Add to Home Screen.</p>
+    <p class="install-help"><strong>Android:</strong> Open this site in Chrome, tap the menu (&#8942;), then Install app or Add to Home screen.</p>
+    <p class="install-help"><strong>Computer:</strong> Use Chrome or Edge and look for Install in the address bar or browser menu. Installation options depend on your browser.</p>
+    <div class="sheet-actions"><button class="sheet-cancel" data-close-sheet type="button">Close</button></div>
+  </div>
+</div>
+<script src="api-data.js?v=179"></script>
+<script src="app.js?v=179"></script>
+<script src="app-data.js?v=179"></script>
+<script src="app-social.js?v=179"></script>
+<script src="admin-dashboard.js?v=179"></script>
+<script src="competitions.js?v=179"></script>
+<script src="competition-notices.js?v=179"></script>
 </body>
 </html>

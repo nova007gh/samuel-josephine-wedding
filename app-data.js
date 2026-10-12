@@ -1336,26 +1336,40 @@ rsvpForm?.addEventListener('submit', async e => {
 function buildICS(){
   const det = window.weddingDetails || {};
   const dt = d => d.toISOString().replace(/[-:]/g,'').split('.')[0] + 'Z';
+  const escapeText=value=>String(value||'').replace(/\\/g,'\\\\').replace(/\r\n|\r|\n/g,'\\n').replace(/,/g,'\\,').replace(/;/g,'\\;');
+  const fold=line=>{
+    const encoder=new TextEncoder();let lines=[],part='',bytes=0;
+    for(const char of line){
+      const size=encoder.encode(char).length;
+      if(bytes+size>75){lines.push(part);part=' ';bytes=1;}
+      part+=char;bytes+=size;
+    }
+    lines.push(part);return lines.join('\r\n');
+  };
   const start = new Date(det.weddingDateISO || '2027-01-09T10:00');
+  if(!Number.isFinite(start.getTime()))throw new Error('Wedding date is invalid. Ask the couple to update Wedding Details.');
   const end   = new Date(start.getTime() + 12 * 3600 * 1000);
   let events = [];
   try { events = JSON.parse(det.events || '[]'); } catch {}
-  const desc = events.map(ev => `${ev.name} ${ev.time}`).join(' / ');
+  if(!Array.isArray(events))events=[];
+  const desc = events.filter(ev=>ev&&typeof ev==='object').map(ev => `${ev.name||''} ${ev.time||''}`.trim()).join(' / ');
   return [
     'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//S&J Wedding//EN','BEGIN:VEVENT',
-    `UID:sj-wedding-${Date.now()}@wedding`,
+    `UID:sj-wedding@${location.hostname||'wedding'}`,
     `DTSTAMP:${dt(new Date())}`,
     `DTSTART:${dt(start)}`,
     `DTEND:${dt(end)}`,
-    `SUMMARY:${det.weddingFormal || 'Wedding'}`,
-    `DESCRIPTION:${[desc, det.weddingHashtag].filter(Boolean).join('. ')}`,
-    `LOCATION:${det.weddingVenue || ''}`,
+    `SUMMARY:${escapeText(det.weddingFormal || 'Wedding')}`,
+    `DESCRIPTION:${escapeText([desc, det.weddingHashtag].filter(Boolean).join('. '))}`,
+    `LOCATION:${escapeText(det.weddingVenue || '')}`,
     'END:VEVENT','END:VCALENDAR'
-  ].join('\r\n');
+  ].map(fold).join('\r\n')+'\r\n';
 }
 
 document.getElementById('addToCalendar')?.addEventListener('click', () => {
-  const blob = new Blob([buildICS()], { type:'text/calendar' });
+  let content;const status=document.getElementById('shareActionStatus');
+  try{content=buildICS();}catch(err){if(status)status.textContent=err.message;return;}
+  const blob = new Blob([content], { type:'text/calendar;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -1363,6 +1377,7 @@ document.getElementById('addToCalendar')?.addEventListener('click', () => {
   document.body.appendChild(a);
   a.click();
   a.remove();
+  if(status)status.textContent='Calendar file downloaded. Open it to add the wedding to your calendar.';
   setTimeout(() => URL.revokeObjectURL(url), 4000);
 });
 
@@ -1371,19 +1386,40 @@ document.getElementById('addToCalendar')?.addEventListener('click', () => {
    ========================================================= */
 let deferredPrompt = null;
 const installButton = document.getElementById('installButton');
+let installBusy=false;
+const standaloneMode=window.matchMedia('(display-mode: standalone)');
+let appInstalled=standaloneMode.matches||navigator.standalone===true;
+function refreshInstallButton(){installButton?.classList.toggle('hidden',appInstalled||standaloneMode.matches||navigator.standalone===true);}
+refreshInstallButton();
+standaloneMode.addEventListener?.('change',refreshInstallButton);
+function showInstallHelp(){
+  openSheet('installHelpSheet');
+  document.querySelector('#installHelpSheet [data-close-sheet]')?.focus();
+}
 
 window.addEventListener('beforeinstallprompt', event => {
   event.preventDefault();
   deferredPrompt = event;
-  installButton?.classList.remove('hidden');
+  refreshInstallButton();
 });
 
 installButton?.addEventListener('click', async () => {
-  if (!deferredPrompt) return;
-  deferredPrompt.prompt();
-  await deferredPrompt.userChoice;
-  deferredPrompt = null;
-  installButton.classList.add('hidden');
+  if(installBusy)return;
+  if (!deferredPrompt){showInstallHelp();return;}
+  installBusy=true;installButton.disabled=true;
+  const prompt=deferredPrompt;deferredPrompt=null;
+  try {
+    await prompt.prompt();
+    const choice=await prompt.userChoice;
+    document.getElementById('shareActionStatus').textContent=choice.outcome==='accepted'?'Installation accepted — follow your browser’s instructions.':'Installation cancelled. You can try again from your browser menu.';
+  }catch(err){document.getElementById('shareActionStatus').textContent='Could not open installation. Use the steps below.';showInstallHelp();}
+  finally{installBusy=false;installButton.disabled=false;refreshInstallButton();}
 });
 
-window.addEventListener('appinstalled', () => installButton?.classList.add('hidden'));
+window.addEventListener('appinstalled', () => {appInstalled=true;deferredPrompt=null;installButton?.classList.add('hidden');});
+document.querySelector('#installHelpSheet [data-close-sheet]')?.addEventListener('click',()=>installButton?.focus());
+document.addEventListener('keydown',e=>{
+  const sheet=document.getElementById('installHelpSheet');if(!sheet||sheet.classList.contains('hidden'))return;
+  if(e.key==='Escape'){e.preventDefault();closeSheet('installHelpSheet');installButton?.focus();}
+  if(e.key==='Tab'){e.preventDefault();sheet.querySelector('[data-close-sheet]')?.focus();}
+});

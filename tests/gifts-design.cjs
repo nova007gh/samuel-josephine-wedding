@@ -1,5 +1,5 @@
 /* Read-only live UI smoke test in an isolated Chrome profile.
-   Usage: node tests/gifts-design.cjs /absolute/output/directory [--dashboard|--admin-gifts|--gift-message|--competitions]
+   Usage: node tests/gifts-design.cjs /absolute/output/directory [--dashboard|--admin-gifts|--gift-message|--competitions|--share]
    Dashboard mode mocks admin responses: no credentials or live writes. */
 const fs = require('node:fs');
 const path = require('node:path');
@@ -51,7 +51,11 @@ const delay = ms => new Promise(resolve=>setTimeout(resolve,ms));
    await call('Page.navigate',{url:(process.env.WEDDING_TEST_URL||'https://snybena.com/')+'#gifts'});
   await Promise.race([loaded,delay(15000)]);
   /* Preview-only identity in this disposable profile; no check-in API call. */
-  await evaluate('setGuest({name:"Design preview"});enterApp();switchView("gifts");document.fonts.ready.then(()=>true)');
+   await evaluate('setGuest({name:"Design preview"});enterApp();switchView("gifts");Promise.race([document.fonts.ready,new Promise(resolve=>setTimeout(resolve,5000))]).then(()=>true)');
+  if(process.argv.includes('--share')){
+    await require('./share-browser-checks.cjs')({call,evaluate,errors,out});
+    return;
+  }
   if(process.argv.includes('--competitions')){
     await require('./competitions-browser-checks.cjs')({call,evaluate,errors,out});
     return;
@@ -132,7 +136,10 @@ const delay = ms => new Promise(resolve=>setTimeout(resolve,ms));
   console.log('Screenshot:',file);
 })().catch(err=>{console.error(err);process.exitCode=1;}).finally(async()=>{
   socket?.close();
-  const stopped = new Promise(resolve=>chrome.once('exit',resolve));
-  chrome.kill(); await stopped;
-  fs.rmSync(profile,{recursive:true,force:true});
+   if(chrome.exitCode===null&&chrome.signalCode===null){
+     const stopped = new Promise(resolve=>chrome.once('exit',resolve));
+     chrome.kill();await Promise.race([stopped,delay(5000)]);
+     if(chrome.exitCode===null&&chrome.signalCode===null){chrome.kill('SIGKILL');await Promise.race([stopped,delay(5000)]);}
+   }
+   if(chrome.exitCode!==null||chrome.signalCode!==null)fs.rmSync(profile,{recursive:true,force:true});
 });

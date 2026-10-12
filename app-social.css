@@ -24,7 +24,7 @@
 .menu-list{ display:grid; gap:12px; margin:16px 0 0; }
 .menu-item{
   display:grid;
-  grid-template-columns:48px 1fr auto;
+  grid-template-columns:48px minmax(0,1fr) auto;
   align-items:center;
   gap:14px;
   width:100%;
@@ -50,9 +50,16 @@
 .menu-icon--red{ background:#fdeaea; }
 .menu-icon--green{ background:#e8f6ea; }
 .menu-icon--gold{ background:#f7ecd8; }
-.menu-text{ display:grid; gap:2px; }
+.menu-text{ display:grid; gap:3px; min-width:0; overflow-wrap:anywhere; }
 .menu-text strong{ font-size:.92rem; color:#4a3a24; }
-.menu-text small{ font-size:.74rem; color:#8b7355; }
+.menu-text small{ font-size:.74rem; color:#8b7355; line-height:1.5; }
+body.is-admin [data-view="more"] .admin-only{ display:grid !important; }
+body.is-admin [data-view="more"] .admin-only.hidden{ display:none !important; }
+[data-view="more"] .more-actions{ display:grid; gap:12px; margin-top:20px; }
+[data-view="more"] .more-actions .enter-wide{ margin:0; }
+#shareActionStatus:empty{ display:none; }
+.install-help{ font-size:.85rem; line-height:1.7; margin:14px 0; color:#6b5437; }
+.menu-item:focus-visible{ outline:2px solid #a17a35; outline-offset:3px; }
 .menu-chev{ color:#b49763; font-size:.9rem; }
 .menu-item--wide{ margin-top:16px; }
 

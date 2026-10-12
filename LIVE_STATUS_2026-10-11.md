@@ -1,5 +1,68 @@
 # snybena.com live audit — 11 October 2026
 
+## Share page and navigation audit — v179 (12 October)
+
+Audited every Share hub link and the seven main tabs, in guest and admin modes.
+Menu columns now allow wrapping instead of overflowing on long song names;
+the admin dashboard item uses the intended grid layout rather than the shared
+admin-only flex override. Copy includes competitions as well as sharing.
+Admin-only dashboard/song controls remain hidden from guests.
+
+Share Sign Out now distinguishes admin mode from guest mode. Sign Out Admin
+revokes the admin session, leaves the guest check-in untouched and returns to
+Share. Guest sign-out revokes its secure session before clearing local identity.
+Failed requests retain access state for retry; duplicate clicks are guarded and
+sign-out is blocked during uploads. The dashboard’s separate existing admin
+logout remains unchanged. Song selection is a keyboard-accessible button, with
+percentage/saving feedback, duplicate/size/type checks and readable errors; no
+real song was replaced during testing.
+
+Notification feedback distinguishes blocked, dismissed, unsupported and
+connection-error cases. Existing push subscriptions are reused and re-saved to
+the server. Readiness is bounded to 8 seconds for enabling; label queries no
+longer wait indefinitely for a service worker. Errors are retryable rather than
+being described as unsupported. These tests mock permissions/push registration;
+they do not establish actual background phone delivery.
+
+Install App is visible in browser mode, with Safari/Android/desktop instructions
+when no native prompt exists. Native cancellation remains actionable, failures
+show instructions, and installed/standalone mode hides the control. Instructions
+support Escape, keyboard focus and returning focus to the install button.
+Calendar downloads escape user-controlled text, fold UTF-8 lines to 75 octets,
+use a stable event UID, and report invalid dates instead of throwing. Existing
+configured date/time interpretation is preserved; no new timezone setting was
+introduced. The number on the couple-heart button is the existing love counter.
+
+Candidate browser tests passed at 320/375/430/1024px in both modes, including
+long filenames, all Share routes, seven-tab selection, calendar content/error
+handling, notification states/duplicate guards, install help/cancellation,
+song picker/progress/failure and admin sign-out. Isolated VM tests cover admin
+and guest logout/failure/duplicates/upload guards, push subscription reuse,
+permissions/offline cases and service-worker timeouts. No live submissions,
+song upload, permission prompt or install operation was performed. Camera/mic,
+large videos, actual push delivery and OTP restrictions remain outside these
+mocked UI checks. Commands:
+
+`node tests/share-actions.test.cjs`
+
+`node tests/competitions-ui.cjs /absolute/output/directory --share`
+
+`node tests/gifts-design.cjs /absolute/output/directory --share`
+
+Post-deploy Share, seven-page-width, competition/toast, dashboard/upload and
+Gift Page Message checks passed. Initial parallel Chrome runs exceeded their
+timeouts; serial reruns passed, and the test harness now bounds font readiness
+and Chrome shutdown. Live health/competition endpoints remained 200 and admin
+guards remained 401. Snapshot checks retained 7 guests, 1 RSVP, all 30 memories
+and referenced files, 0 guestbook entries, 1 gift, 1 fund and all 35 settings.
+The existing competition’s publication timestamp changed during the checks;
+its title, contestants and other settings were unchanged and the timestamp was
+retained rather than overwritten. No testing code writes live competitions.
+The live competition list also grew from 1 to 2 during the checks; the new
+competition was left in place as live activity, not treated as a test fixture.
+SQLite integrity was `ok`. This release changes only frontend files; the API
+was not restarted and no new records or real song upload were used for tests.
+
 ## Guest competition toasts — v178
 
 A lightweight `/api/competitions/notices` feed is now polled on all guest pages

@@ -18,6 +18,6 @@ const server=http.createServer((req,res)=>{
   res.setHeader('Content-Type',types[path.extname(file)]||'application/octet-stream');fs.createReadStream(file).pipe(res);
 });
 server.listen(0,'127.0.0.1',()=>{
-  const child=spawn(process.execPath,[path.join(__dirname,'gifts-design.cjs'),process.argv[2],'--competitions'],{stdio:'inherit',env:{...process.env,WEDDING_TEST_URL:'http://127.0.0.1:'+server.address().port+'/'}});
+  const child=spawn(process.execPath,[path.join(__dirname,'gifts-design.cjs'),process.argv[2],process.argv[3]||'--competitions'],{stdio:'inherit',env:{...process.env,WEDDING_TEST_URL:'http://127.0.0.1:'+server.address().port+'/'}});
   child.on('exit',code=>{server.close();process.exitCode=code||0;});
 });

@@ -662,6 +662,11 @@ onAdminAuth(signedIn => {
   adminSignedIn = signedIn;
   document.body.classList.toggle('is-admin', signedIn);
   document.getElementById('songMenuItem')?.classList.toggle('hidden', !signedIn);
+  const signOut=document.getElementById('guestSignOut');
+  if(signOut){
+    signOut.querySelector('strong').textContent=signedIn?'Sign Out Admin':'Sign Out';
+    signOut.querySelector('small').textContent=signedIn?'Exit admin mode; your guest check-in is kept':'Switch guest — sign back in with your phone';
+  }
 
   if (signedIn) startAdminListeners();
   else stopAdminListeners();
@@ -1426,22 +1431,35 @@ renderMyUploads();
    ========================================================= */
 const notifToggle = document.getElementById('notifToggle');
 const notifStatus = document.getElementById('notifStatus');
+let notificationBusy=false;
+let notificationLabelVersion=0;
 
 async function refreshNotifLabel(){
   if (!notifStatus) return;
   if (typeof notificationsEnabled !== 'function') return;
+  if(notificationBusy)return;
+  const version=++notificationLabelVersion;
   const on = await notificationsEnabled();
-  notifStatus.textContent = on ? 'On — you will get updates on new memories' : 'Tap to get updates on new memories';
+  if(notificationBusy||version!==notificationLabelVersion)return;
+  notifStatus.textContent = on ? 'Enabled on this device — wedding updates' : 'Tap to enable wedding updates';
 }
 refreshNotifLabel();
 
 notifToggle?.addEventListener('click', async () => {
+  if(notificationBusy)return;
+  notificationBusy=true;notificationLabelVersion++;notifToggle.disabled=true;
   if (notifStatus) notifStatus.textContent = 'Enabling…';
-  const res = await enableNotifications();
-  if (notifStatus) notifStatus.textContent =
-    res === 'on' ? 'On — you will get updates on new memories'
-    : res === 'denied' ? 'Blocked — enable notifications in your browser settings'
-    : 'Notifications are not supported on this device';
+  try {
+    const res = await enableNotifications();
+    if (notifStatus) notifStatus.textContent =
+      res === 'on' ? 'Enabled — device registered for wedding updates'
+      : res === 'denied' ? 'Blocked — allow notifications in your browser settings'
+      : res === 'dismissed' ? 'Not enabled yet — tap again to allow notifications'
+      : res === 'error' ? 'Could not connect — check your network and tap to retry'
+      : 'Not available in this browser. On iPhone/iPad, install the app first.';
+  } catch {
+    if(notifStatus)notifStatus.textContent='Could not enable notifications — tap to retry';
+  } finally {notificationBusy=false;notifToggle.disabled=false;}
 });
 
 /* =========================================================

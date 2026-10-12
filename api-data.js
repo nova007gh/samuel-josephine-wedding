@@ -361,11 +361,11 @@ async function uploadSitePhoto(file, slot = 'couple', onProgress){
   return await api(`/admin/settings/photo/${encodeURIComponent(slot)}`, { method: 'POST', form: fd, admin: true, onProgress });
 }
 
-async function uploadSiteSong(file, label){
+async function uploadSiteSong(file, label, onProgress){
   const fd = new FormData();
   fd.append('file', file, file.name || 'song');
   if (label) fd.append('label', label);
-  return await api('/admin/settings/song', { method: 'POST', form: fd, admin: true });
+  return await api('/admin/settings/song', { method: 'POST', form: fd, admin: true, onProgress });
 }
 async function deleteSiteSong(index){
   return await api(`/admin/settings/song/${index}`, { method: 'DELETE', admin: true });
@@ -467,8 +467,8 @@ function urlB64ToUint8Array(base64String){
 async function subscribePush(){
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) return false;
   const { key } = await api('/push/vapid');
-  const reg = await navigator.serviceWorker.ready;
-  const sub = await reg.pushManager.subscribe({
+  const reg = await pushRegistration();
+  const sub = await reg.pushManager.getSubscription() || await reg.pushManager.subscribe({
     userVisibleOnly: true,
     applicationServerKey: urlB64ToUint8Array(key)
   });
@@ -476,21 +476,34 @@ async function subscribePush(){
   return true;
 }
 
+async function pushRegistration(){
+  let timer;
+  try {
+    return await Promise.race([navigator.serviceWorker.ready,new Promise((_,reject)=>{
+      timer=setTimeout(()=>reject(new Error('The app is not ready for notifications. Refresh and try again.')),8000);
+    })]);
+  } finally { clearTimeout(timer); }
+}
+
 async function enableNotifications(){
-  if (!('Notification' in window)) return 'unsupported';
-  if (Notification.permission === 'denied') return 'denied';
-  if (Notification.permission !== 'granted' && await Notification.requestPermission() !== 'granted')
-    return 'denied';
-  try { return (await subscribePush()) ? 'on' : 'unsupported'; }
+  if (!('Notification' in window)||!('serviceWorker' in navigator)||!('PushManager' in window)) return 'unsupported';
+  try {
+    if (Notification.permission === 'denied') return 'denied';
+    if (Notification.permission !== 'granted'){
+      const permission=await Notification.requestPermission();
+      if(permission!=='granted')return permission==='denied'?'denied':'dismissed';
+    }
+    return (await subscribePush()) ? 'on' : 'unsupported';
+  }
   catch(err){ console.warn('Push subscribe failed:', err); return 'error'; }
 }
 
 async function notificationsEnabled(){
-  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return false;
+  if (!('Notification' in window)||!('serviceWorker' in navigator) || !('PushManager' in window)) return false;
   if (Notification.permission !== 'granted') return false;
   try {
-    const reg = await navigator.serviceWorker.ready;
-    return !!(await reg.pushManager.getSubscription());
+    const reg = await navigator.serviceWorker.getRegistration();
+    return !!(await reg?.pushManager.getSubscription());
   } catch { return false; }
 }
 

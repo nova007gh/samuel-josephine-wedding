@@ -911,12 +911,21 @@ document.querySelectorAll('[data-pane]').forEach(b =>
   b.addEventListener('click', () => showPane(b.dataset.pane === 'back' ? (otpMode === 'login' ? 'return' : 'form') : 'form')));
 
 /* guest sign-out — clears this device's check-in; admin session untouched */
-$('#guestSignOut')?.addEventListener('click', async () => {
-  if (!confirm('Sign out of this device? You can sign back in anytime with your phone number.')) return;
-  try { await api('/guests/logout', {method:'POST'}); }
-  catch { alert('Could not securely sign out. Check your connection and try again.'); return; }
-  clearGuest();
-  location.href = '/';
+$('#guestSignOut')?.addEventListener('click', async e => {
+  const button=e.currentTarget;
+  if(button.disabled)return;
+  if(window.__uploadsInFlight>0){const status=$('#shareActionStatus');if(status)status.textContent='Wait for the current upload to finish before signing out.';return;}
+  const admin=isAdmin();
+  if (!confirm(admin?'Sign out of admin mode? Your guest check-in will be kept.':'Sign out of this device? You can sign back in anytime with your phone number.')) return;
+  button.disabled=true;
+  try {
+    await api(admin?'/admin/logout':'/guests/logout',{method:'POST',admin});
+    if(admin){setAdminToken(null);switchView('more');}
+    else {clearGuest();location.href='/';}
+  } catch(err){
+    if(admin&&!isAdmin())switchView('more');
+    else {const status=$('#shareActionStatus');if(status)status.textContent='Could not securely sign out. Check your connection and try again.';}
+  } finally{button.disabled=false;}
 });
 
 /* ---- Update UI based on guest session ---- */
@@ -1142,22 +1151,33 @@ $('#musicNext')?.addEventListener('click', () => stepSong(1));
 window.addEventListener('DOMContentLoaded', loadSong);
 
 /* only the couple (admin) can change the song — it plays for all guests */
+let songSaving=false;
 async function saveSong(file){
-  if (!isAdmin()) return;
+  if (!isAdmin()||songSaving) return;
+  const button=$('#songMenuItem'),input=$('#songUpload'),label=$('#songLabel'),status=$('#shareActionStatus');
+  const previous=label?.textContent;
+  if(file.size>256*1024*1024){if(status)status.textContent='Song exceeds the 256 MB upload limit. Choose a smaller file.';return;}
+  songSaving=true;if(button)button.disabled=true;if(input)input.disabled=true;if(status)status.textContent='';
   try {
-    await uploadSiteSong(file, file.name);
+    await uploadSiteSong(file, file.name,p=>{if(label)label.textContent=p===100?'100% sent — saving…':`Uploading song ${p}%…`;});
     await loadSong();
+    if(status)status.textContent='Wedding song uploaded. Your playlist has been updated.';
     /* admin just picked it — start it straight away so they hear it */
     if (music && music.src) music.play().then(() => $('#musicToggle')?.classList.add('is-on')).catch(() => {});
   } catch(err){
     console.warn('Song upload failed:', err);
-    alert('Could not upload the song. Are you still signed in as admin?');
+    if(label)label.textContent=previous||'Tap to upload your song';
+    if(status)status.textContent=err.message||'Could not upload the song. Please try again.';
+  } finally{
+    songSaving=false;if(button)button.disabled=false;if(input)input.disabled=false;
   }
 }
+$('#songMenuItem')?.addEventListener('click',()=>{if(isAdmin()&&!songSaving)$('#songUpload')?.click();});
 
 document.getElementById('songUpload')?.addEventListener('change', e => {
   const file = e.target.files?.[0];
-  if (file && (file.type.startsWith('audio/') || /\.(mp3|m4a|wav|ogg|aac|flac|m4b)$/i.test(file.name || ''))) saveSong(file);
+  if (file && (file.type.startsWith('audio/') || /\.(mp3|m4a|wav|ogg|aac|weba|flac|m4b)$/i.test(file.name || ''))) saveSong(file);
+  else if(file){const status=$('#shareActionStatus');if(status)status.textContent='Choose an audio file such as MP3, M4A or WAV.';}
   e.target.value = '';
 });
 
