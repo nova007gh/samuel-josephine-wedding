@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v187-voting-countdown';
+const CACHE = 'sj-wedding-v188-voting-hours-minutes-seconds';
 const ASSETS = [
   './',
   './index.html',

@@ -22,7 +22,7 @@
   }
   const votingNow=()=>Date.now()+serverOffset;
   function countdown(c){
-    return `<div class="comp-countdown" role="timer" aria-label="Voting countdown" data-countdown-id="${esc(c.id)}" data-start="${c.startAt||''}" data-end="${c.endAt||''}" data-status="${esc(c.status)}"><strong data-countdown-label></strong><div class="comp-clock">${['Days','Hrs','Mins','Secs'].map(unit=>`<span><b data-countdown-unit="${unit}">00</b><small>${unit}</small></span>`).join('')}</div><small data-countdown-note></small></div>`;
+    return `<div class="comp-countdown" role="timer" aria-label="Voting countdown" data-countdown-id="${esc(c.id)}" data-start="${c.startAt||''}" data-end="${c.endAt||''}" data-status="${esc(c.status)}"><strong data-countdown-label></strong><div class="comp-clock">${['Hrs','Mins','Secs'].map(unit=>`<span><b data-countdown-unit="${unit}">00</b><small>${unit}</small></span>`).join('')}</div><small data-countdown-note></small></div>`;
   }
   function tickCountdowns(){
     if(document.hidden)return;
@@ -39,7 +39,7 @@
       const upcoming=status==='upcoming';
       const target=upcoming?start:end;
       const remaining=status==='draft'||completed?0:Math.max(0,target-now);
-      const seconds=Math.ceil(remaining/1000),values=[Math.floor(seconds/86400),Math.floor(seconds%86400/3600),Math.floor(seconds%3600/60),seconds%60];
+      const seconds=Math.ceil(remaining/1000),values=[Math.floor(seconds/3600),Math.floor(seconds%3600/60),seconds%60];
       const label=completed?'Completed — voting closed':status==='draft'?'Draft — not published':upcoming?'Voting opens in':!end?'No closing time set':status==='paused'?'Paused — scheduled close in':'Voting ends in';
       const labelEl=box.querySelector('[data-countdown-label]');if(labelEl.textContent!==label)labelEl.textContent=label;
       box.querySelector('.comp-clock').hidden=!target||status==='draft';

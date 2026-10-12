@@ -46,7 +46,7 @@
 .comp-countdown{grid-column:1/-1;padding:12px;margin:10px 0;border:1px solid #dfceb0;border-radius:12px;background:#faf1df;text-align:center;min-width:0;}
 .comp-countdown>strong{display:block;font-size:14px;color:#765328;}
 .comp-countdown>small{display:block;font-size:11px;line-height:1.5;margin-top:6px;overflow-wrap:anywhere;}
-.comp-clock{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:10px auto;max-width:420px;}
+.comp-clock{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:10px auto;max-width:420px;}
 .comp-clock[hidden]{display:none;}
 .comp-clock span{display:grid;gap:3px;min-width:0;}
 .comp-clock b{font-size:24px;color:#765328;font-variant-numeric:tabular-nums;}

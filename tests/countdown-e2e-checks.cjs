@@ -10,6 +10,10 @@ module.exports=async({evaluate,wait,request})=>{
   const saved=(await request('/admin/competitions/'+id,{admin:true})).data;
   assert.ok(saved.endAt>Date.now()+13*60000&&saved.endAt<Date.now()+16*60000,'Duration shortcut saves a closing time');
   await wait(`document.querySelector('#competitionAdminManage [data-countdown-label]').textContent==='Voting ends in'`);
+  assert.equal(await evaluate(`document.querySelectorAll('#competitionAdminManage [data-countdown-unit]').length===3&&!document.querySelector('#competitionAdminManage [data-countdown-unit="Days"]')`),true,'Countdown shows hours, minutes and seconds only');
+  await request('/admin/competitions/'+id,{admin:true,method:'PATCH',body:{endAt:Date.now()+49*3600000}});
+  await evaluate(`window.dispatchEvent(new CustomEvent('wedding:view'))`);
+  await wait(`Number(document.querySelector('#competitionAdminManage [data-countdown-unit="Hrs"]').textContent)>=48`);
   await evaluate(`document.querySelector('#competitionAdminManage [data-comp-action="timer"]').click()`);
   await wait(`!document.getElementById('competitionEditor').classList.contains('hidden')`);
   await evaluate(`document.querySelector('#competitionEditor [data-comp-action="duration"][data-minutes="30"]').click();document.querySelector('#competitionEditor .comp-btn--gold[type="submit"]').click()`);

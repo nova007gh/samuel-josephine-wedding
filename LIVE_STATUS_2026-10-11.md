@@ -1,5 +1,23 @@
 # snybena.com live audit — 11 October 2026
 
+## Hours/minutes/seconds voting countdown — v188 (12 October)
+
+Competition timers now have three columns: Hrs, Mins, Secs. Hours are total
+remaining hours (24 hours instead of 1 day, 49 hours instead of 2 days plus an
+hour); minutes/seconds still roll normally. This applies to guest/admin lists,
+guest detail, and admin management, including completed 00:00:00 timers.
+The Home and Events wedding countdowns keep their existing day columns.
+No closing time, vote, competition config or automatic-expiry behaviour changes.
+Focused actual disposable countdown tests passed for three units, a greater-
+than-24-hour timer, admin edits, guest/admin expiry and preserved votes.
+Candidate mobile competition tests passed at 320/375/430/1024 widths.
+Only the changed competition assets receive v188 URLs; unchanged assets keep
+their existing v187 versions. Worker cache is v188. Frontend-only release.
+Deployed mobile competition and worker reruns passed. Health/public routes 200,
+admin guards 401, services active and SQLite `ok`. Snapshot retained the live
+competition and all guest/RSVP/media/gift/fund/setting records and referenced
+files. No API restart or live deadline change was required.
+
 ## Editable voting countdown — v187 (12 October)
 
 Guest and admin competition lists, guest detail and admin management now show
