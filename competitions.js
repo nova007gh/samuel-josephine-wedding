@@ -16,8 +16,8 @@
   const date=value=>value ? new Date(value).toLocaleString([], {dateStyle:'medium',timeStyle:'short'}) : '';
   const badge=status=>`<span class="comp-badge comp-badge--${esc(status)}">${esc(status)}</span>`;
   const action=(name,label,id='',extra='')=>`<button class="comp-btn ${extra}" data-comp-action="${name}" data-id="${esc(id)}" type="button">${label}</button>`;
-  const photo=(url,cls='',caption='Competition photo')=>`<button class="comp-photo-button ${cls==='comp-cover'?'comp-photo-button--cover':''}" type="button" data-comp-action="photo" data-photo-url="${esc(url)}" data-photo-caption="${esc(caption)}" aria-label="${esc('View full photo: '+caption)}"><img class="${cls}" src="${esc(url)}" alt="${esc(caption)}" loading="lazy" decoding="async"></button>`;
-  const image=(url,cls='comp-thumb')=>url ? photo(url,cls) : '<span class="comp-placeholder" aria-hidden="true">&#127918;</span>';
+  const photo=(url,cls='',caption='Competition photo')=>`<button class="comp-photo-button ${cls==='comp-cover'?'comp-photo-button--cover':''}" type="button" data-comp-action="photo" data-photo-state="loading" data-photo-url="${esc(url)}" data-photo-caption="${esc(caption)}" aria-label="${esc('View full photo: '+caption)}"><img class="${cls}" src="${esc(url)}" alt="${esc(caption)}" loading="${cls==='comp-cover'?'eager':'lazy'}" decoding="async"><span class="comp-photo-feedback" aria-hidden="true">Loading photo…</span></button>`;
+  const image=(url,cls='comp-thumb',caption='Competition photo')=>url ? photo(url,cls,caption) : '<span class="comp-placeholder" aria-hidden="true">&#127918;</span>';
   function filterMarkup(rows,filter,admin){
     const types=admin ? ['all','active','upcoming','paused','closed','draft'] : ['all','active','upcoming','paused','closed'];
     return types.map(type=>`<button type="button" data-comp-filter="${type}" data-admin="${admin}" aria-pressed="${filter===type}">${type[0].toUpperCase()+type.slice(1)} (${type==='all'?rows.length:rows.filter(c=>c.status===type).length})</button>`).join('');
@@ -25,7 +25,7 @@
   function card(c,admin){
     const timing=c.status==='upcoming' ? 'Starts '+date(c.startAt) : c.endAt ? (c.status==='closed'?'Ended ':'Closes ')+date(c.endAt) : 'No closing date set';
     const counts=c.results ? c.results.totalVotes+' votes' : 'Results hidden';
-    return `<article class="comp-card">${image(c.coverUrl)}<div><h2>${esc(c.title)}</h2>${badge(c.status)}<small>${esc(counts)} &middot; ${esc(timing)}</small></div>
+    return `<article class="comp-card">${image(c.coverUrl,'comp-thumb',c.title)}<div><h2>${esc(c.title)}</h2>${badge(c.status)}<small>${esc(counts)} &middot; ${esc(timing)}</small></div>
       ${action(admin?'manage':'open',admin?'Manage':c.canVote?'Vote Now':'View',c.id,'comp-btn--gold')}</article>`;
   }
   function renderLists(){
@@ -57,7 +57,7 @@
     const choices=c.choices.map(x=>`<div class="comp-choice">${x.photoUrl?photo(x.photoUrl,'',x.name):''}
       <label class="comp-choice-vote"><input name="competition-choice" type="${c.voteMode==='single'?'radio':'checkbox'}" value="${esc(x.id)}" ${selected.has(x.id)?'checked':''} ${!c.canVote||voting?'disabled':''}>${esc(x.name)}</label></div>`).join('');
     $('competitionDetail').innerHTML=`<div class="comp-heading"><h1>${esc(c.title)}</h1><p>${esc(c.description).replace(/\n/g,'<br>')}</p>${badge(c.status)}</div>
-      ${c.coverUrl?image(c.coverUrl,'comp-cover'):''}<p class="comp-status">${esc(c.startAt?'Starts '+date(c.startAt):'')}${c.endAt?'<br>Closes '+esc(date(c.endAt)):''}</p>
+      ${c.coverUrl?image(c.coverUrl,'comp-cover',c.title):''}<p class="comp-status">${esc(c.startAt?'Starts '+date(c.startAt):'')}${c.endAt?'<br>Closes '+esc(date(c.endAt)):''}</p>
       ${submitted?'<div class="comp-success"><b aria-hidden="true">&#10003;</b><h2>Vote Submitted!</h2><p>Thank you for participating. Your vote has been counted.</p>'+action('results','View Results')+action('all','Vote in Another Competition')+'</div>':''}
       ${c.myChoices.length&&!submitted?'<div class="comp-notice">Your vote is counted.'+(c.allowChange?' You can change it while voting is open.':' Vote changes are disabled.')+'</div>':''}
        <p class="comp-status">${c.voteMode==='single'?'Choose one contestant.':'Choose one or more contestants. '+(c.requireVerified===false?'Each browser':'Each guest')+' can vote once per contestant.'}</p>
@@ -72,7 +72,7 @@
     const c=adminRows.find(x=>x.id===adminId);
     if(!c||!editor.classList.contains('hidden')) return;
     $('competitionAdminManage').innerHTML=`${action('browse','&#8249; All Competitions')}<div class="comp-panel"><h2>${esc(c.title)}</h2>
-      ${c.coverUrl?image(c.coverUrl,'comp-cover'):''}${badge(c.status)}<p>${esc(c.description)}</p>
+      ${c.coverUrl?image(c.coverUrl,'comp-cover',c.title):''}${badge(c.status)}<p>${esc(c.description)}</p>
       <p>${c.results.totalVotes} votes &middot; ${c.results.uniqueVoters} ${c.requireVerified===false?'voting browsers':'voters'}${c.endAt?' &middot; Closes '+esc(date(c.endAt)):''}</p>
       <p>${c.requireVerified===false?'Verification off — voting is limited per browser.':'Verified guest sign-in required.'}</p>
       <div class="comp-actions">${action('edit','&#9998; Edit',c.id)}
@@ -216,7 +216,17 @@
   }
   async function runAction(el){
     const name=el.dataset.compAction,id=el.dataset.id;
-    if(name==='photo'){openLightbox(el.dataset.photoUrl,el.dataset.photoCaption);return;}
+    if(name==='photo'){
+      const img=el.querySelector('img');
+      if(el.dataset.photoState==='error'){
+        el.dataset.photoState='loading';el.querySelector('.comp-photo-feedback').textContent='Retrying photo…';
+        el.setAttribute('aria-label','Retrying photo: '+el.dataset.photoCaption);
+        const url=new URL(el.dataset.photoUrl,location.href);url.searchParams.set('photoRetry',String(Date.now()));img.src=url.href;
+        return;
+      }
+      if(!img.complete||!img.naturalWidth)return;
+      openLightbox(img.currentSrc||img.src,el.dataset.photoCaption);return;
+    }
     if(name==='open'){
       selectedId=id;detail=null;selected.clear();selectionDirty=false;submitted=false;
       try{sessionStorage.setItem('sj_competition',id);}catch{}
@@ -305,6 +315,17 @@
       }
     }finally{mutating=false;el.disabled=false;}
   }
+  document.addEventListener('load',e=>{
+    const button=e.target.closest?.('.comp-photo-button');
+    if(!button||e.target.tagName!=='IMG'||!e.target.naturalWidth)return;
+    button.dataset.photoState='ready';button.setAttribute('aria-label','View full photo: '+button.dataset.photoCaption);
+  },true);
+  document.addEventListener('error',e=>{
+    const button=e.target.closest?.('.comp-photo-button');
+    if(!button||e.target.tagName!=='IMG')return;
+    button.dataset.photoState='error';button.querySelector('.comp-photo-feedback').textContent='Photo unavailable. Tap to retry.';
+    button.setAttribute('aria-label','Photo unavailable. Retry: '+button.dataset.photoCaption);
+  },true);
   document.addEventListener('click',e=>{
     const filter=e.target.closest('[data-comp-filter]');
     if(filter){if(filter.dataset.admin==='true')adminFilter=filter.dataset.compFilter;else guestFilter=filter.dataset.compFilter;renderLists();return;}

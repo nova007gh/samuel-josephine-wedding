@@ -66,6 +66,9 @@ const delay = ms => new Promise(resolve=>setTimeout(resolve,ms));
   }
   /* Preview-only identity in this disposable profile; no check-in API call. */
   await evaluate('setGuest({name:"Design preview"});enterApp();switchView("gifts");Promise.race([document.fonts.ready,new Promise(resolve=>setTimeout(resolve,5000))]).then(()=>true)');
+  if(process.argv.includes('--live-competition')){
+    await require('./live-competition-photo.cjs')({call,evaluate,errors,out});return;
+  }
   if(process.argv.includes('--e2e')){
     if(!process.env.WEDDING_TEST_URL?.startsWith('http://127.0.0.1:'))throw new Error('End-to-end writes require the isolated local proxy.');
     await require('./competition-e2e-checks.cjs')({call,evaluate,errors,out});

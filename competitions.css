@@ -11,10 +11,15 @@
 .comp-filters button[aria-pressed="true"]{ background:#8e6327; color:#fff; border-color:#8e6327; }
 .comp-card{ display:grid; grid-template-columns:65px minmax(0,1fr) auto; align-items:center; gap:11px; padding:12px; border:1px solid #e6d6bd; border-radius:12px; background:rgba(255,250,240,.94); }
 .comp-thumb,.comp-placeholder{ width:65px; height:72px; object-fit:contain; border-radius:8px; background:#f1e2c9; }
-.comp-photo-button{display:block;padding:0;border:0;background:#f7efe4;border-radius:8px;cursor:zoom-in;min-width:0;max-width:100%;}
+.comp-photo-button{position:relative;display:block;padding:0;border:0;background:#f7efe4;border-radius:8px;cursor:zoom-in;min-width:0;max-width:100%;}
 .comp-photo-button:focus-visible{outline:3px solid #a7752c;outline-offset:3px;}
 .comp-photo-button img{display:block;}
 .comp-photo-button--cover{width:100%;margin:10px 0;}
+.comp-photo-button:not([data-photo-state="ready"]) img{opacity:0;}
+.comp-photo-button--cover:not([data-photo-state="ready"]){min-height:200px;}
+.comp-photo-button[data-photo-state="error"]{min-height:72px;cursor:pointer;}
+.comp-photo-feedback{position:absolute;inset:0;display:grid;place-items:center;padding:5px;color:#765e39;font-size:11px;text-align:center;overflow-wrap:anywhere;}
+.comp-photo-button[data-photo-state="ready"] .comp-photo-feedback{display:none;}
 .comp-placeholder{ display:grid; place-items:center; color:#ac8140; font-size:27px; }
 .comp-card h2{ font:600 20px/1.15 'Cormorant Garamond',Georgia,serif; margin:0 0 7px; overflow-wrap:anywhere; }
 .comp-card small{ display:block; line-height:1.5; font-size:11px; color:#7c674e; margin-top:5px; }

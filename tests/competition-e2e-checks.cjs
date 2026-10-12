@@ -64,6 +64,12 @@ module.exports=async({call,evaluate,errors,out})=>{
   await evaluate(`document.querySelector('#competitionList [data-id="${verifiedId}"]').click()`);
   await wait(`!!document.querySelector('#competitionDetail [data-comp-action="verify"]')`);
   assert.equal(await evaluate(`document.querySelectorAll('#competitionDetail [name="competition-choice"]:disabled').length`),2);
+  await wait(`document.querySelector('#competitionDetail .comp-photo-button--cover').dataset.photoState==='ready'`);
+  await evaluate(`document.querySelector('#competitionDetail .comp-photo-button--cover img').dispatchEvent(new Event('error'))`);
+  assert.equal(await evaluate(`document.querySelector('#competitionDetail .comp-photo-button--cover').textContent.includes('Tap to retry')`),true,'Failed photo has explicit recovery control');
+  await evaluate(`document.querySelector('#competitionDetail .comp-photo-button--cover').click()`);
+  await wait(`document.querySelector('#competitionDetail .comp-photo-button--cover').dataset.photoState==='ready'`);
+  assert.equal(await evaluate(`document.querySelector('#competitionDetail .comp-photo-button--cover img').src.includes('photoRetry=')&&document.getElementById('lightbox').classList.contains('hidden')`),true,'Retry loads the photo without casting a vote or opening broken media');
   await evaluate(`document.querySelector('#competitionDetail .comp-choice [data-comp-action="photo"]').focus();document.querySelector('#competitionDetail .comp-choice [data-comp-action="photo"]').click()`);
   await wait(`!document.getElementById('lightbox').classList.contains('hidden')&&document.querySelector('#lightboxBody img')?.naturalHeight===80`);
   assert.equal(await evaluate(`getComputedStyle(document.querySelector('#lightboxBody img')).objectFit==='contain'&&document.querySelector('#lightboxBody img').naturalWidth===40&&document.activeElement.id==='lightboxClose'`),true,'Original portrait opens fully in fullscreen viewer even when voting is locked');

@@ -1,5 +1,35 @@
 # snybena.com live audit — 11 October 2026
 
+## Best Dresses photo feedback — v185 (12 October)
+
+Read-only checks confirmed the Best Dresses cover exists (HTTP 200 image/png,
+1032x1524, 3.6 MB) and the game requires verified sign-in. Male/Female have no
+individual photo URLs saved. No missing server photo or corrupted upload was
+established from the user's pasted screen text; generic image alt text alone
+does not prove a broken image. Verification policy and vote counts are retained.
+
+Competition photos now show explicit loading feedback, hide broken-image/alt
+fallbacks on errors, and offer tap-to-retry with a fresh query on the same file.
+After successful retry, the loaded URL opens full-screen; unloaded/failed images
+do not open a broken viewer. Cover images load eagerly and use the competition
+title rather than generic "Competition photo" text. Cover frames reserve space
+while loading. Existing contain/full-photo layout and separate vote labels stay.
+No upload is replaced, optimised retroactively or deleted.
+
+Disposable actual API/browser test covers error feedback and retry recovery
+without triggering a vote, along with full-photo and voting regressions.
+Candidate mobile competition tests pass. One initial expanded test stalled in
+the pre-existing settings-polling fixture; a clean serial rerun passed.
+Added read-only actual-game test `node tests/gifts-design.cjs <output-dir>
+--live-competition` to inspect Best Dresses image loading, 320/375/430/1024
+fit, full-screen view/Close and guest-verification navigation without voting
+or live settings changes.
+Deployed actual Best Dresses test passed with its real image, full-screen
+controls, mobile/desktop fit and sign-in navigation. Worker regression passed.
+Health/public feeds 200, admin guards 401, API/nginx active and SQLite `ok`.
+Pre-v185 comparison retained all guest/media/gift/fund/setting/competition records
+and media files. No API restart or database migration was required.
+
 ## Full-photo competition frames — v184 (12 October)
 
 Competition cover and contestant photos now preserve the full image instead
