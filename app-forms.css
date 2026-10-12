@@ -310,7 +310,7 @@ button.upload-drop{ width:100%; font-family:inherit; }
 .mem-card img{
   width:100%;
   aspect-ratio:1/1;
-  object-fit:cover;
+  object-fit:contain;
   background:#e8d7bd;
   /* thumbnails fade in as they decode instead of popping in */
   animation:memFade .45s ease both;

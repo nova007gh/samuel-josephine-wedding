@@ -16,7 +16,8 @@
   const date=value=>value ? new Date(value).toLocaleString([], {dateStyle:'medium',timeStyle:'short'}) : '';
   const badge=status=>`<span class="comp-badge comp-badge--${esc(status)}">${esc(status)}</span>`;
   const action=(name,label,id='',extra='')=>`<button class="comp-btn ${extra}" data-comp-action="${name}" data-id="${esc(id)}" type="button">${label}</button>`;
-  const image=(url,cls='comp-thumb')=>url ? `<img class="${cls}" src="${esc(url)}" alt="" loading="lazy" decoding="async">` : '<span class="comp-placeholder" aria-hidden="true">&#127918;</span>';
+  const photo=(url,cls='',caption='Competition photo')=>`<button class="comp-photo-button ${cls==='comp-cover'?'comp-photo-button--cover':''}" type="button" data-comp-action="photo" data-photo-url="${esc(url)}" data-photo-caption="${esc(caption)}" aria-label="${esc('View full photo: '+caption)}"><img class="${cls}" src="${esc(url)}" alt="${esc(caption)}" loading="lazy" decoding="async"></button>`;
+  const image=(url,cls='comp-thumb')=>url ? photo(url,cls) : '<span class="comp-placeholder" aria-hidden="true">&#127918;</span>';
   function filterMarkup(rows,filter,admin){
     const types=admin ? ['all','active','upcoming','paused','closed','draft'] : ['all','active','upcoming','paused','closed'];
     return types.map(type=>`<button type="button" data-comp-filter="${type}" data-admin="${admin}" aria-pressed="${filter===type}">${type[0].toUpperCase()+type.slice(1)} (${type==='all'?rows.length:rows.filter(c=>c.status===type).length})</button>`).join('');
@@ -41,7 +42,7 @@
     let previous=-1,rank=0;
     const rankings=r.rankings.map((x,i)=>{
       if(x.votes!==previous){rank=i+1;previous=x.votes;}
-      return `<div class="comp-result"><b>${rank}</b>${x.photoUrl?`<img src="${esc(x.photoUrl)}" alt="" loading="lazy">`:'<span class="comp-mini-placeholder" aria-hidden="true">&#9819;</span>'}
+      return `<div class="comp-result"><b>${rank}</b>${x.photoUrl?photo(x.photoUrl,'',x.name):'<span class="comp-mini-placeholder" aria-hidden="true">&#9819;</span>'}
         <div><strong>${esc(x.name)}</strong><div class="comp-bar"><i style="width:${x.percentage}%"></i></div></div><div><b>${x.percentage}%</b><small>${x.votes} votes</small></div></div>`;
     }).join('');
     return `<div class="comp-panel"><h2>${c.status==='active'?'Live':'Voting'} Results ${admin?'(Admin View)':''}</h2>
@@ -53,8 +54,8 @@
     const c=detail;
     if(!selectionDirty&&!voting) selected=new Set(c.myChoices);
     const draftComment=$('competitionComment')?.value||'';
-    const choices=c.choices.map(x=>`<label class="comp-choice">${x.photoUrl?`<img src="${esc(x.photoUrl)}" alt="${esc(x.name)}" loading="lazy">`:''}
-      <span><input name="competition-choice" type="${c.voteMode==='single'?'radio':'checkbox'}" value="${esc(x.id)}" ${selected.has(x.id)?'checked':''} ${!c.canVote||voting?'disabled':''}>${esc(x.name)}</span></label>`).join('');
+    const choices=c.choices.map(x=>`<div class="comp-choice">${x.photoUrl?photo(x.photoUrl,'',x.name):''}
+      <label class="comp-choice-vote"><input name="competition-choice" type="${c.voteMode==='single'?'radio':'checkbox'}" value="${esc(x.id)}" ${selected.has(x.id)?'checked':''} ${!c.canVote||voting?'disabled':''}>${esc(x.name)}</label></div>`).join('');
     $('competitionDetail').innerHTML=`<div class="comp-heading"><h1>${esc(c.title)}</h1><p>${esc(c.description).replace(/\n/g,'<br>')}</p>${badge(c.status)}</div>
       ${c.coverUrl?image(c.coverUrl,'comp-cover'):''}<p class="comp-status">${esc(c.startAt?'Starts '+date(c.startAt):'')}${c.endAt?'<br>Closes '+esc(date(c.endAt)):''}</p>
       ${submitted?'<div class="comp-success"><b aria-hidden="true">&#10003;</b><h2>Vote Submitted!</h2><p>Thank you for participating. Your vote has been counted.</p>'+action('results','View Results')+action('all','Vote in Another Competition')+'</div>':''}
@@ -90,7 +91,7 @@
   }
   function photoControl(url,target){
     return `<div class="comp-photo-control" data-photo-target="${target}" data-photo-url="${esc(url||'')}">
-      ${url?`<img src="${esc(url)}" alt="Selected photo">`:''}
+      ${url?photo(url,'','Selected photo'):''}
       <label class="comp-btn">${url?'Change':'Upload'} Photo<input class="hidden" type="file" accept="image/jpeg,image/png,image/webp" data-comp-photo></label>
       ${url?'<button class="comp-btn" data-comp-action="clear-photo" type="button">Remove Photo</button>':''}<span class="comp-photo-status" role="status"></span></div>`;
   }
@@ -215,6 +216,7 @@
   }
   async function runAction(el){
     const name=el.dataset.compAction,id=el.dataset.id;
+    if(name==='photo'){openLightbox(el.dataset.photoUrl,el.dataset.photoCaption);return;}
     if(name==='open'){
       selectedId=id;detail=null;selected.clear();selectionDirty=false;submitted=false;
       try{sessionStorage.setItem('sj_competition',id);}catch{}

@@ -10,7 +10,11 @@
 .comp-filters button{ flex:1; min-width:64px; min-height:40px; border:1px solid #e1ceb0; border-radius:8px; background:#fff9ed; color:#725632; font-size:12px; padding:8px; }
 .comp-filters button[aria-pressed="true"]{ background:#8e6327; color:#fff; border-color:#8e6327; }
 .comp-card{ display:grid; grid-template-columns:65px minmax(0,1fr) auto; align-items:center; gap:11px; padding:12px; border:1px solid #e6d6bd; border-radius:12px; background:rgba(255,250,240,.94); }
-.comp-thumb,.comp-placeholder{ width:65px; height:72px; object-fit:cover; border-radius:8px; background:#f1e2c9; }
+.comp-thumb,.comp-placeholder{ width:65px; height:72px; object-fit:contain; border-radius:8px; background:#f1e2c9; }
+.comp-photo-button{display:block;padding:0;border:0;background:#f7efe4;border-radius:8px;cursor:zoom-in;min-width:0;max-width:100%;}
+.comp-photo-button:focus-visible{outline:3px solid #a7752c;outline-offset:3px;}
+.comp-photo-button img{display:block;}
+.comp-photo-button--cover{width:100%;margin:10px 0;}
 .comp-placeholder{ display:grid; place-items:center; color:#ac8140; font-size:27px; }
 .comp-card h2{ font:600 20px/1.15 'Cormorant Garamond',Georgia,serif; margin:0 0 7px; overflow-wrap:anywhere; }
 .comp-card small{ display:block; line-height:1.5; font-size:11px; color:#7c674e; margin-top:5px; }
@@ -27,12 +31,12 @@
 .comp-panel{ margin:16px 0; padding:18px; border:1px solid #e0ceb1; border-radius:14px; background:rgba(255,250,240,.95); }
 .comp-panel h2,.comp-panel h3{ font:600 24px/1.2 'Cormorant Garamond',Georgia,serif; margin:0 0 14px; overflow-wrap:anywhere; }
 .comp-panel p{ font-size:13px; line-height:1.6; white-space:pre-line; overflow-wrap:anywhere; }
-.comp-cover{ width:100%; max-height:320px; aspect-ratio:16/9; object-fit:cover; border-radius:12px; margin:10px 0; }
+.comp-cover{ width:100%; height:auto; max-height:75dvh; object-fit:contain; border-radius:12px; }
 .comp-choices{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:18px 0; }
 .comp-choice{ display:flex; flex-direction:column; gap:7px; padding:8px; border:1px solid #dfceb0; border-radius:11px; background:#fffaf1; cursor:pointer; min-width:0; }
 .comp-choice:has(input:checked){ border:2px solid #a7752c; padding:7px; background:#f8ecd4; }
-.comp-choice img{ width:100%; aspect-ratio:1/1; object-fit:cover; border-radius:7px; }
-.comp-choice span{ display:flex; align-items:center; gap:7px; font-size:14px; overflow-wrap:anywhere; line-height:1.4; }
+.comp-choice img{ width:100%; height:auto; object-fit:contain; border-radius:7px; }
+.comp-choice-vote{ display:flex; align-items:center; gap:7px; font-size:14px; overflow-wrap:anywhere; line-height:1.4; cursor:pointer; }
 .comp-choice input{ flex-shrink:0; accent-color:#9b6c28; width:18px; height:18px; }
 .comp-field{ display:flex; flex-direction:column; min-width:0; gap:6px; margin:14px 0; font-size:13px; }
 .comp-field :is(input,textarea,select){ width:100%; min-width:0; padding:12px; min-height:46px; border:1px solid #dac8a8; border-radius:8px; background:#fffdf9; font:inherit; font-size:16px; color:#493722; box-sizing:border-box; }
@@ -44,7 +48,7 @@
 .comp-status:empty{ display:none; }
 .comp-notice{ padding:13px; border-radius:10px; border:1px solid #e2cfae; background:#f8eedc; font-size:13px; line-height:1.6; margin:14px 0; }
 .comp-result{ display:grid; grid-template-columns:26px 42px minmax(0,1fr) auto; align-items:center; gap:10px; margin:18px 0; }
-.comp-result img{ width:42px; height:42px; border-radius:50%; object-fit:cover; }
+.comp-result img{ width:42px; height:42px; border-radius:7px; object-fit:contain; }
 .comp-result .comp-mini-placeholder{ width:42px; height:42px; border-radius:50%; background:#eddfc3; display:grid; place-items:center; }
 .comp-result strong{ font-size:13px; display:block; overflow-wrap:anywhere; }
 .comp-result b{ font-size:14px; }
@@ -58,7 +62,7 @@
 .comp-contestant{ border:1px solid #e6d5b8; background:#fffaf1; padding:13px; border-radius:10px; margin:12px 0; }
 .comp-contestant .comp-field{ margin-top:0; }
 .comp-photo-control{ display:flex; flex-wrap:wrap; align-items:center; gap:10px; font-size:12px; }
-.comp-photo-control img{ width:70px; height:70px; object-fit:cover; border-radius:7px; }
+.comp-photo-control img{ width:70px; height:70px; object-fit:contain; border-radius:7px; }
 .comp-photo-control label{ cursor:pointer; }
 .comp-groups{ max-height:230px; overflow:auto; border:1px solid #e4d4b6; padding:0 12px; border-radius:9px; }
 .comp-success{ text-align:center; padding:22px; background:#f7ecd8; border:1px solid #d9bf90; border-radius:12px; margin:16px 0; }

@@ -1,5 +1,36 @@
 # snybena.com live audit — 11 October 2026
 
+## Full-photo competition frames — v184 (12 October)
+
+Competition cover and contestant photos now preserve the full image instead
+of filling a cropped 16:9/square frame. Covers fit within 75% of the viewport
+height; contestant previews retain natural proportions. List/result/editor
+thumbnails use contain rather than cover. All competition photo controls are
+keyboard-accessible buttons opening the existing full-screen contain viewer.
+Contestant photo buttons sit outside the voting label: inspecting a photo does
+not select a contestant or submit a ballot. Photos remain viewable when voting
+is gated, paused or already counted. Viewer Close/Escape/background dismissal
+remain available; focus moves to Close and returns to the opener afterwards,
+and any pre-existing body scroll lock is preserved.
+
+Uploaded Gallery and S&J Gallery photo cards also use contain, keeping the
+entire photo within their existing grid frames; their existing full-screen
+viewer remains available. This does not recover detail lost in prior upload
+optimisation and does not replace original media files or saved photo URLs.
+
+Actual disposable API/browser test uploads a 40x80 portrait, adds it to
+contestants, verifies its original dimensions in the full-screen viewer while
+voting is verification-gated, checks contain/focus/close and confirms no ballot
+selection occurs. Existing actual voting/moderation/privacy/upload tests pass.
+Candidate mobile competitions, Share/seven-page and refresh regressions pass.
+One Chrome debugging-port startup failed; serial retry passed. No live photo,
+competition config, verification policy or vote is changed by these tests.
+Deployed competition/Share/mobile and current-photo reload regressions passed,
+as did worker tests. Health/public feeds 200, admin guards 401, API/nginx active
+and SQLite integrity `ok`. Pre-v184 comparison preserved 7 guests, 1 RSVP,
+30 media records/files, 0 guestbook entries, 3 gifts, 2 funds, 35 settings and
+all 3 competitions. No API restart or database migration was required.
+
 ## Refresh-photo and transition fix — v183 (12 October)
 
 Root cause: HTML initially assigned the bundled `assets/couple-home.jpg`;

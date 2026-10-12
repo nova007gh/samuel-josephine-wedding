@@ -399,9 +399,15 @@ if (typeof onMemories === 'function'){
 const lightbox = document.getElementById('lightbox');
 const lightboxBody = document.getElementById('lightboxBody');
 const lightboxCaption = document.getElementById('lightboxCaption');
+let lightboxReturnFocus = null;
+let lightboxWasLocked = false;
 
 function openLightbox(src, caption='', type='image'){
   if (!lightbox) return;
+  if (lightbox.classList.contains('hidden')){
+    lightboxReturnFocus = document.activeElement;
+    lightboxWasLocked = document.body.classList.contains('locked');
+  }
   lightboxBody.innerHTML = type.startsWith('video/')
     ? `<video src="${src}" controls playsinline autoplay preload="metadata"></video>`
     : type.startsWith('audio/')
@@ -410,13 +416,16 @@ function openLightbox(src, caption='', type='image'){
   lightboxCaption.textContent = caption;
   lightbox.classList.remove('hidden');
   document.body.classList.add('locked');
+  document.getElementById('lightboxClose')?.focus({preventScroll:true});
 }
 function closeLightbox(){
+  if (!lightbox || lightbox.classList.contains('hidden')) return;
   lightbox?.classList.add('hidden');
   /* stop playback before dropping the element so audio can't keep going */
   lightboxBody?.querySelectorAll('video, audio').forEach(el => { el.pause(); el.removeAttribute('src'); });
   if (lightboxBody) lightboxBody.innerHTML = '';
-  document.body.classList.remove('locked');
+  if (!lightboxWasLocked) document.body.classList.remove('locked');
+  if (lightboxReturnFocus?.isConnected) lightboxReturnFocus.focus({preventScroll:true});
   /* a detached media element's pause event can't reach document — tell the
      song-ducking tracker directly so the wedding song un-mutes now */
   if (typeof reconcileDucking === 'function') reconcileDucking();

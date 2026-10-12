@@ -40,7 +40,7 @@ module.exports=async({call,evaluate,errors,out})=>{
   await wait(`!document.getElementById('competitionEditor').classList.contains('hidden')`);
   await evaluate(`(async()=>{const f=document.getElementById('competitionEditor');f.elements.title.value='E2E Verified Voting';f.elements.description.value='Real API and cookies';f.elements.commentsEnabled.checked=true;
     const names=f.querySelectorAll('[data-choice-name]');names[0].value='Choice One';names[1].value='Choice Two';f.dispatchEvent(new Event('input',{bubbles:true}));
-    const dt=new DataTransfer();const canvas=document.createElement('canvas');canvas.width=canvas.height=16;canvas.getContext('2d').fillRect(0,0,16,16);const blob=await new Promise(r=>canvas.toBlob(r,'image/png'));
+    const dt=new DataTransfer();const canvas=document.createElement('canvas');canvas.width=40;canvas.height=80;canvas.getContext('2d').fillRect(0,0,40,80);const blob=await new Promise(r=>canvas.toBlob(r,'image/png'));
     dt.items.add(new File([blob],'e2e.png',{type:'image/png'}));const input=f.querySelector('[data-photo-target="cover"] input');input.files=dt.files;input.dispatchEvent(new Event('change',{bubbles:true}));})()`);
   await wait(`document.querySelector('[data-photo-target="cover"]').dataset.photoUrl.startsWith('/uploads/')&&!document.querySelector('#competitionEditor [type="submit"]').disabled`);
   await wait(`document.querySelector('[data-photo-target="cover"] img').naturalWidth>0`);
@@ -57,11 +57,18 @@ module.exports=async({call,evaluate,errors,out})=>{
   await evaluate(`window.__e2e.releaseList();api=window.__e2e.originalApi`);
   await new Promise(r=>setTimeout(r,300));
   assert.equal(await evaluate(`document.querySelector('#competitionAdminManage .comp-badge').textContent`),'active','Old polling replies cannot undo a published state on screen');
+  const withPhotos=(await request('/admin/competitions/'+verifiedId,{admin:true})).data.config;
+  await request('/admin/competitions/'+verifiedId,{admin:true,method:'PATCH',body:{choices:withPhotos.choices.map(x=>({...x,photoUrl:withPhotos.coverUrl}))}});
   await evaluate(`(async()=>{await api('/admin/logout',{method:'POST',admin:true});setAdminToken(null);switchView('competitions');})()`);
   await wait(`!!document.querySelector('#competitionList [data-id="${verifiedId}"]')`);
   await evaluate(`document.querySelector('#competitionList [data-id="${verifiedId}"]').click()`);
   await wait(`!!document.querySelector('#competitionDetail [data-comp-action="verify"]')`);
   assert.equal(await evaluate(`document.querySelectorAll('#competitionDetail [name="competition-choice"]:disabled').length`),2);
+  await evaluate(`document.querySelector('#competitionDetail .comp-choice [data-comp-action="photo"]').focus();document.querySelector('#competitionDetail .comp-choice [data-comp-action="photo"]').click()`);
+  await wait(`!document.getElementById('lightbox').classList.contains('hidden')&&document.querySelector('#lightboxBody img')?.naturalHeight===80`);
+  assert.equal(await evaluate(`getComputedStyle(document.querySelector('#lightboxBody img')).objectFit==='contain'&&document.querySelector('#lightboxBody img').naturalWidth===40&&document.activeElement.id==='lightboxClose'`),true,'Original portrait opens fully in fullscreen viewer even when voting is locked');
+  await evaluate(`document.getElementById('lightboxClose').click()`);
+  assert.equal(await evaluate(`document.activeElement.matches('.comp-choice [data-comp-action="photo"]')&&!document.querySelector('#competitionDetail [name="competition-choice"]:checked')`),true,'Viewing a photo does not select a contestant; closing restores focus');
   await evaluate(`document.querySelector('#competitionDetail [data-comp-action="verify"]').click()`);
   assert.equal(await evaluate(`gateShowing()&&document.getElementById('returnPhone')===document.activeElement`),true,'Verification action opens and focuses the guest sign-in screen');
   await evaluate(`enterApp();switchView('competition')`);

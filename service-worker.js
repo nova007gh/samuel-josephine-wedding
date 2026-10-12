@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v183-fresh-photos-transitions';
+const CACHE = 'sj-wedding-v184-full-photo-viewer';
 const ASSETS = [
   './',
   './index.html',
