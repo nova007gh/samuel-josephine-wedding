@@ -1,7 +1,7 @@
-/* User-supplied reception program. Independent from the main event schedule. */
+/* Independent, editable reception and engagement programs. */
 (() => {
   'use strict';
-  const defaults={title:'Reception Program',names:'SAMUEL & JOSEPHINE',tagline:'OUR FOREVER BEGINS',dateLabel:'SATURDAY, JANUARY 9, 2027',timeLabel:'2:00 PM – 10:00 PM',hosts:'MC: Mr. Edward Effah Brobey & Mr. Marcus Bentle',footer:'End of Reception',items:[
+  const receptionDefaults={title:'Reception Program',names:'SAMUEL & JOSEPHINE',tagline:'OUR FOREVER BEGINS',dateLabel:'SATURDAY, JANUARY 9, 2027',timeLabel:'2:00 PM – 10:00 PM',hosts:'MC: Mr. Edward Effah Brobey & Mr. Marcus Bentle',footer:'End of Reception',items:[
     {time:'2:00 PM',title:'GUEST ARRIVAL & WELCOME COCKTAILS',details:'Cocktail Bar Opens | Photo Booth Opens\nLive Violinist @GhViolinist | Ewuraesi Sax'},
     {time:'3:00 PM',title:'TRADITIONAL GAMES & CELEBRATIONS',details:'Local Chops | Pork Stand | Tasty Grilled Chicken'},
     {time:'3:45 PM',title:'LIVE MUSIC PERFORMANCE',details:'Akwesi Orlando & Haywaya'},
@@ -15,8 +15,24 @@
     {time:'8:15 PM',title:'AFTER PARTY BEGINS',details:'DJ Sisco — Dance like there’s no tomorrow'},
     {time:'10:00 PM',title:'THANK YOU & GOODNIGHT',details:''}
   ]};
+  const engagementDefaults={title:'Traditional Wedding Ceremony',names:'Samuel & Josephine',tagline:'OUR FOREVER BEGINS',dateLabel:'SATURDAY, JANUARY 9, 2027',timeLabel:'7:00 AM – 11:00 AM',hosts:'',footer:'Grateful for our families, our heritage and everyone walking this journey with us!\n\nALWAYS & FOREVER',items:[
+    {time:'7:00 AM',title:'OPENING PRAYER & FAMILY GATHERING',details:'Prayer for the couple, families and marriage'},
+    {time:'7:15 AM',title:'GREETINGS & INTRODUCTION OF BOTH FAMILIES',details:'Formal welcome of both families, elders and spokesperson'},
+    {time:'7:40 AM',title:'KNOCKING CEREMONY',details:'Groom’s family formally announces its intentions and presents the customary knocking items'},
+    {time:'8:15 AM',title:'PRESENTATION & INSPECTION OF TRADITIONAL MARRIAGE ITEMS',details:'Drinks, gifts and customary items are presented and acknowledged by the bride’s family'},
+    {time:'8:45 AM',title:'CALLING & PRESENTATION OF THE BRIDE',details:'The bride is ceremonially brought before both families'},
+    {time:'9:05 AM',title:'TRADITIONAL ENGAGEMENT / MARRIAGE CEREMONY',details:'Formal acceptance of the marriage, customary rites, exchange of rings where desired, counsel and family blessings'},
+    {time:'9:50 AM',title:'PASTOR BLESSING & ADVICE FROM THE ELDERS',details:'Elders from both families offer marital counsel and blessings'},
+    {time:'',title:'SPECIAL GUESTS SPEECH',details:'OMANHENE OSEADEEYO KWESI AKUFFO III\nNII KOJO ABABIO I'},
+    {time:'10:15 AM',title:'THANKSGIVING & APPRECIATION',details:'Samuel & Josephine and both families express their gratitude'},
+    {time:'10:25 AM',title:'FAMILY CELEBRATION & TRADITIONAL PHOTO MOMENT',details:'Family photographs, embraces and brief celebration'},
+    {time:'10:50 AM',title:'CLOSING PRAYER & FINAL BLESSING',details:''},
+    {time:'',title:'TRADITIONAL WEDDING CEREMONY CONCLUDES',details:''}
+  ]};
+  function install({key,defaults,formId,rowsId,statusId,hostId,timePrefix,allowUntimed=false}){
   const fields={title:120,names:200,tagline:200,dateLabel:160,timeLabel:160,hosts:300,footer:160};
-  const form=document.getElementById('programEditor'),rows=document.getElementById('programItemsEditor'),status=document.getElementById('programEditorStatus');
+  const form=document.getElementById(formId),rows=document.getElementById(rowsId),status=document.getElementById(statusId);
+  if(!form||!rows||!status||!document.getElementById(hostId))return;
   const esc=value=>escapeHTML(String(value??''));
   let saved=structuredClone(defaults),raw=null,dirty=false,busy=false,version=null,received=false;
   function decode(value){
@@ -28,11 +44,11 @@
     return data;
   }
   function render(){
-    const host=document.getElementById('receptionProgram');
-    host.innerHTML=`<img class="program-seal" src="assets/seal-logo.png" alt="S & J seal"><p class="program-names">${esc(saved.names)}</p><p class="program-tagline">${esc(saved.tagline)}</p><h1>${esc(saved.title)}</h1><p class="program-date">${esc(saved.dateLabel)}</p><p class="program-time">Reception time: ${esc(saved.timeLabel)}</p><ol class="program-lineup">${saved.items.map(item=>`<li><time>${esc(item.time)}</time><div><h2>${esc(item.title)}</h2>${item.details?`<p>${esc(item.details)}</p>`:''}</div></li>`).join('')}</ol><p class="program-hosts">${esc(saved.hosts)}</p><p class="program-footer">${esc(saved.footer)}</p>`;
+    const host=document.getElementById(hostId);
+    host.innerHTML=`<img class="program-seal" src="assets/seal-logo.png" alt="S & J seal"><p class="program-names">${esc(saved.names)}</p><p class="program-tagline">${esc(saved.tagline)}</p><h1>${esc(saved.title)}</h1><p class="program-date">${esc(saved.dateLabel)}</p><p class="program-time">${esc(timePrefix)}: ${esc(saved.timeLabel)}</p><ol class="program-lineup">${saved.items.map(item=>`<li class="${item.time?'':'program-untimed'}">${item.time?`<time>${esc(item.time)}</time>`:''}<div><h2>${esc(item.title)}</h2>${item.details?`<p>${esc(item.details)}</p>`:''}</div></li>`).join('')}</ol>${saved.hosts?`<p class="program-hosts">${esc(saved.hosts)}</p>`:''}<p class="program-footer">${esc(saved.footer)}</p>`;
   }
   function row(item={time:'',title:'',details:''}){
-    return `<fieldset class="program-edit-row"><legend>Activity</legend><label class="field">Time<input data-program-field="time" maxlength="40" required value="${esc(item.time)}"></label><label class="field">Activity title<input data-program-field="title" maxlength="180" required value="${esc(item.title)}"></label><label class="field">Details<textarea data-program-field="details" rows="2" maxlength="600">${esc(item.details)}</textarea></label><div class="aq-actions"><button class="aq-approve" data-program-action="up" type="button">MOVE UP</button><button class="aq-approve" data-program-action="down" type="button">MOVE DOWN</button><button class="aq-reject" data-program-action="remove" type="button">REMOVE</button></div></fieldset>`;
+    return `<fieldset class="program-edit-row"><legend>Activity</legend><label class="field">Time${allowUntimed?' (optional)':''}<input data-program-field="time" maxlength="40" ${allowUntimed?'':'required'} value="${esc(item.time)}"></label><label class="field">Activity title<input data-program-field="title" maxlength="180" required value="${esc(item.title)}"></label><label class="field">Details<textarea data-program-field="details" rows="2" maxlength="600">${esc(item.details)}</textarea></label><div class="aq-actions"><button class="aq-approve" data-program-action="up" type="button">MOVE UP</button><button class="aq-approve" data-program-action="down" type="button">MOVE DOWN</button><button class="aq-reject" data-program-action="remove" type="button">REMOVE</button></div></fieldset>`;
   }
   function fill(){
     if(!isAdmin()||dirty||busy||!received)return;
@@ -51,7 +67,7 @@
   function collect(){
     const value=Object.fromEntries(Object.keys(fields).map(key=>[key,form.elements.namedItem(key).value.trim()]));
     value.items=[...rows.querySelectorAll('.program-edit-row')].map(el=>Object.fromEntries(['time','title','details'].map(key=>[key,el.querySelector(`[data-program-field="${key}"]`).value.trim()])));
-    if(!value.title||value.items.some(item=>!item.time||!item.title))throw new Error('Enter a program title and a time/title for each activity.');
+    if(!value.title||value.items.some(item=>!item.title||!allowUntimed&&!item.time))throw new Error('Enter a program title and required activity fields.');
     if(JSON.stringify(value).length>32000)throw new Error('Program is too long. Shorten the activity details.');
     return value;
   }
@@ -62,7 +78,7 @@
     if(action==='reload'){
       if(dirty&&!confirm('Discard unsaved program changes and reload the saved lineup?'))return;
       busy=true;controls(true);
-      try{const settings=await getSettings();if(!isAdmin())return;saved=decode(settings.receptionProgram);raw=settings.receptionProgram||null;received=true;dirty=false;render();status.textContent='Saved program reloaded.';}
+      try{const settings=await getSettings();if(!isAdmin())return;saved=decode(settings[key]);raw=settings[key]||null;received=true;dirty=false;render();status.textContent='Saved program reloaded.';}
       catch(err){status.textContent=err.message;}
       finally{busy=false;controls(false);fill();}return;
     }
@@ -83,20 +99,30 @@
     busy=true;controls(true);status.textContent='Saving program…';
     try{
       const latest=await getSettings();if(!isAdmin())return;
-      if((latest.receptionProgram||null)!==version)throw new Error('The program changed on the server. Your draft is kept. Use RELOAD SAVED before editing again.');
-      const text=JSON.stringify(value);await patchSettings({receptionProgram:text});if(!isAdmin())return;
-      saved=value;raw=text;siteSettings.receptionProgram=text;dirty=false;render();status.textContent='Program saved — guests will see the updated lineup.';
+      if((latest[key]||null)!==version)throw new Error('The program changed on the server. Your draft is kept. Use RELOAD SAVED before editing again.');
+      const text=JSON.stringify(value);await patchSettings({[key]:text});if(!isAdmin())return;
+      saved=value;raw=text;siteSettings[key]=text;dirty=false;render();status.textContent='Program saved — guests will see the updated lineup.';
     }catch(err){if(isAdmin())status.textContent=err.message+' Your draft is kept; retry when ready.';}
     finally{busy=false;controls(false);fill();}
   });
   window.addEventListener('wedding:settings',e=>{
-    if(e.detail?.ready===false){if(!received)document.getElementById('receptionProgram').textContent='Reconnect to load the current reception program.';return;}
-    sync(e.detail?.receptionProgram);
+    if(!Object.prototype.hasOwnProperty.call(e.detail||{},key))return;
+    if(e.detail?.ready===false){if(!received)document.getElementById(hostId).textContent='Reconnect to load the current program.';return;}
+    sync(e.detail?.[key]);
   });
   onAdminAuth(signedIn=>{
     if(signedIn)fill();else{dirty=false;version=null;form.reset();Object.keys(fields).forEach(key=>{form.elements.namedItem(key).value='';});rows.innerHTML='';status.textContent='';}
   });
-  if(photosConfirmed)sync(siteSettings.receptionProgram);
-  else document.getElementById('receptionProgram').textContent='Loading reception program…';
+  if(photosConfirmed)sync(siteSettings[key]);
+  else document.getElementById(hostId).textContent='Loading program…';
   fill();
+  }
+  install({key:'receptionProgram',defaults:receptionDefaults,formId:'programEditor',rowsId:'programItemsEditor',statusId:'programEditorStatus',hostId:'receptionProgram',timePrefix:'Reception time'});
+  install({key:'engagementProgram',defaults:engagementDefaults,formId:'engagementEditor',rowsId:'engagementItemsEditor',statusId:'engagementEditorStatus',hostId:'engagementProgram',timePrefix:'Ceremony time',allowUntimed:true});
+  document.querySelectorAll('[data-program-editor]').forEach(button=>button.addEventListener('click',()=>{
+    if(!isAdmin())return;
+    document.querySelectorAll('[data-program-editor]').forEach(tab=>tab.setAttribute('aria-pressed',String(tab===button)));
+    document.getElementById('programEditor').classList.toggle('hidden',button.dataset.programEditor!=='reception');
+    document.getElementById('engagementEditor').classList.toggle('hidden',button.dataset.programEditor!=='engagement');
+  }));
 })();

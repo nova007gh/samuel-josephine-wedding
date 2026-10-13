@@ -79,7 +79,7 @@ const delay = ms => new Promise(resolve=>setTimeout(resolve,ms));
   if(process.argv.includes('--live-competition')){
     await require('./live-competition-photo.cjs')({call,evaluate,errors,out});return;
   }
-  if(process.argv.includes('--live-program')){
+  if(process.argv.includes('--live-program')||process.argv.includes('--live-engagement')){
     await require('./live-program-checks.cjs')({call,evaluate,errors,out});return;
   }
   if(process.argv.includes('--e2e')){

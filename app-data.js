@@ -567,7 +567,7 @@ function showCouplePhoto(has){
   renderGallery();
   renderSiteSettings();
   renderHomeLikes();
-  window.dispatchEvent(new CustomEvent('wedding:settings',{detail:{receptionProgram:siteSettings.receptionProgram,ready:photosConfirmed}}));
+  window.dispatchEvent(new CustomEvent('wedding:settings',{detail:{receptionProgram:siteSettings.receptionProgram,engagementProgram:siteSettings.engagementProgram,ready:photosConfirmed}}));
 })();
 
 /* only the couple (admin) can change the photo — it is shared for all guests */
@@ -967,7 +967,7 @@ async function syncSiteSettings(){
   }
   for (const k of Object.keys(siteSettings)) if (!(k in fresh)) delete siteSettings[k];
   Object.assign(siteSettings, fresh);
-  window.dispatchEvent(new CustomEvent('wedding:settings',{detail:{receptionProgram:siteSettings.receptionProgram,ready:photosConfirmed}}));
+  window.dispatchEvent(new CustomEvent('wedding:settings',{detail:{receptionProgram:siteSettings.receptionProgram,engagementProgram:siteSettings.engagementProgram,ready:photosConfirmed}}));
   if (changed.story) renderTimeline();
   if (changed.photos){ applySitePhotos(); cacheSitePhotos(); }
   if (changed.details) applyWeddingDetails();

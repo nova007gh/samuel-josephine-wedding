@@ -9,4 +9,7 @@ assert.throws(()=>validate(JSON.stringify({...program,title:''})),/title/);
 assert.throws(()=>validate(JSON.stringify({...program,items:[{time:'',title:'Dinner',details:''}]})),/time/);
 assert.throws(()=>validate(JSON.stringify({...program,items:[{time:'5 PM',title:'Dinner',details:'x'.repeat(601)}]})),/600/);
 assert.throws(()=>validate({}),/text/);
+const untimed={...program,items:[{time:'',title:'Special guests speech',details:'Speakers listed in the program'}]};
+assert.throws(()=>validate(JSON.stringify(untimed)),/time/);
+assert.equal(JSON.parse(validate(JSON.stringify(untimed),{allowUntimed:true})).items[0].time,'');
 console.log('PASS reception program schema, repeated times/order, required activity fields, invalid JSON and length limits');

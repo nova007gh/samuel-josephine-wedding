@@ -1340,7 +1340,7 @@ const TEXT_SETTING_KEYS = new Set([
   'weddingNameA', 'weddingNameB', 'weddingFormal',
   'weddingDateISO', 'weddingDateLabel', 'weddingVenue', 'weddingHashtag',
   'weddingTagline', 'rsvpDeadline', 'storyText', 'events', 'mapUrl', 'storyItems',
-  'giftIntroText', 'giftMessageText', 'receptionProgram'
+  'giftIntroText', 'giftMessageText', 'receptionProgram', 'engagementProgram'
 ]);
 
 /* story timeline likes — a single JSON map { itemId: count } in settings;
@@ -1361,9 +1361,10 @@ app.post('/api/story-likes', (req, res) => {
 });
 
 app.patch('/api/admin/settings', requireAdmin, (req, res) => {
-  let program;
-  if(req.body?.receptionProgram!==undefined){
-    try{program=require('./reception-program')(req.body.receptionProgram);}
+  const programs={};
+  for(const key of ['receptionProgram','engagementProgram']){
+    if(req.body?.[key]===undefined)continue;
+    try{programs[key]=require('./reception-program')(req.body[key],{allowUntimed:key==='engagementProgram'});}
     catch(err){return res.status(400).json({error:err.message});}
   }
   for (const key of ['giftIntroText','giftMessageText']){
@@ -1376,7 +1377,7 @@ app.patch('/api/admin/settings', requireAdmin, (req, res) => {
   let saved = 0;
   for (const [k, v] of Object.entries(req.body || {})){
     if (!TEXT_SETTING_KEYS.has(k)) continue;
-    stmt.run(k, k==='receptionProgram'?program:str(v, 8000));
+    stmt.run(k, programs[k]!==undefined?programs[k]:str(v, 8000));
     saved++;
   }
   res.json({ ok: true, saved });

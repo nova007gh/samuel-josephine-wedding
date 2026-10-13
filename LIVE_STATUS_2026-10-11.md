@@ -1,5 +1,38 @@
 # snybena.com live audit — 11 October 2026
 
+## Engagement / traditional program — v190 (13 October)
+
+Added Events → **Engagement / Traditional Program**, alongside Reception
+Program, using the supplied traditional wedding poster: January 9, 2027,
+7:00 AM–11:00 AM, twelve entries including the untimed special guests speech
+(OMANHENE OSEADEEYO KWESI AKUFFO III and NII KOJO ABABIO I) and untimed
+ceremony conclusion. No time was invented for those two entries. Closing
+gratitude and ALWAYS & FOREVER are included.
+
+Admin Dashboard → Program Lineup now has RECEPTION and ENGAGEMENT / TRADITIONAL
+selectors. Both editors stay mounted with separate drafts, save/reload controls,
+settings keys and conflict checks. Engagement activity time is optional; title
+is required. Existing reception validation still requires times. Saved programs
+are validated before any settings writes; a malformed engagement in a combined
+patch cannot partially overwrite reception. Shared program rendering/editor
+keeps prior escaping, unsaved-draft/retry/polling protection and sign-out cleanup.
+Engagement metadata and 1–40 activities use the same length limits as reception.
+The new setting is `engagementProgram`; no data migration or existing setting
+rewrite. Seven main tabs and eleven dashboard categories remain unchanged.
+
+Actual-browser/disposable-API tests pass for both programs: supplied entries,
+untimed activities/speakers, guest navigation and 320/375/430/1024 widths,
+independent admin drafts and saves, optional engagement time, invalid combined
+patch/auth guards, sign-out cleanup and preserved reception/event settings.
+Both settings persist across isolated API restart. Dashboard, Share/seven-page,
+schema and worker regressions pass. Focused engagement command:
+`WEDDING_E2E_ENGAGEMENT_ONLY=1 WEDDING_E2E_SERVER=/root/wedding-program-v190-candidate/server.js node tests/isolated-e2e.cjs <output-dir>`.
+Deployed read-only engagement/reception navigation/content/mobile checks and
+current-photo reload checks pass. Fresh pre-v190 preservation audit: 5 guests,
+1 RSVP, 31 memories/files, 0 guestbook entries, 3 gifts, 2 funds, 36 settings
+unchanged, existing competition retained; SQLite `ok`, services active.
+No live program save, guest registration, media upload or vote was submitted.
+
 ## Editable reception program — v189 (13 October)
 
 Added Events → **Reception Program**, with an ivory/gold editable-text program

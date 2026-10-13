@@ -1,5 +1,5 @@
 'use strict';
-module.exports=function validateReceptionProgram(value){
+module.exports=function validateReceptionProgram(value,{allowUntimed=false}={}){
   if(typeof value!=='string'||value.length>32000)throw new Error('Program must be valid text of at most 32,000 characters.');
   let data;try{data=JSON.parse(value);}catch{throw new Error('Program must contain valid JSON.');}
   if(!data||typeof data!=='object'||Array.isArray(data))throw new Error('Invalid program.');
@@ -12,7 +12,7 @@ module.exports=function validateReceptionProgram(value){
   if(!Array.isArray(data.items)||data.items.length<1||data.items.length>40)throw new Error('Program must have 1–40 activities.');
   out.items=data.items.map(item=>{
     if(!item||typeof item!=='object'||Array.isArray(item))throw new Error('Invalid program activity.');
-    return {time:text(item.time,40,'Activity time',true),title:text(item.title,180,'Activity title',true),details:text(item.details,600,'Activity details')};
+    return {time:text(item.time,40,'Activity time',!allowUntimed),title:text(item.title,180,'Activity title',true),details:text(item.details,600,'Activity details')};
   });
   const result=JSON.stringify(out);if(result.length>32000)throw new Error('Program is too long.');return result;
 };

@@ -27,6 +27,11 @@ module.exports=async({call,evaluate,errors,out})=>{
     await require('./program-e2e-checks.cjs')({call,evaluate,wait,request,out});
     await request('/admin/logout',{method:'POST',admin:true});return;
   }
+  if(process.env.WEDDING_E2E_ENGAGEMENT_ONLY==='1'){
+    controllerToken=(await request('/admin/login',{method:'POST',body:{password:'isolated-browser-only'}})).data.token;
+    await require('./engagement-e2e-checks.cjs')({call,evaluate,wait,request,out});
+    await request('/admin/logout',{method:'POST',admin:true});return;
+  }
   await require('./page-actions-checks.cjs')({evaluate,wait});
   await evaluate(`switchView('adminlogin');document.getElementById('adminEmail').value='test@example.com';document.getElementById('adminPassword').value='incorrect-test-password';document.getElementById('adminLoginForm').requestSubmit()`);
   await wait(`document.getElementById('adminLoginError').textContent.includes('Incorrect')&&!document.querySelector('#adminLoginForm [type="submit"]').disabled`);

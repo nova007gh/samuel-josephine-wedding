@@ -31,7 +31,7 @@
   <link rel="stylesheet" href="app-social.css?v=187" />
   <link rel="stylesheet" href="gifts.css?v=187" />
   <link rel="stylesheet" href="competitions.css?v=188" />
-  <link rel="stylesheet" href="reception-program.css?v=189" />
+  <link rel="stylesheet" href="reception-program.css?v=190" />
   <script>
   /* a checked-in guest goes straight into the app — flag it before first
      paint so the invitation never flashes on their screen (mirrors
@@ -581,6 +581,7 @@
         VIEW MAP <span aria-hidden="true">&#128506;</span>
       </button>
     </div>
+    <button class="menu-item menu-item--wide" data-goto="engagementprogram" type="button"><span class="menu-icon menu-icon--gold">&#128141;</span><span class="menu-text"><strong>Engagement / Traditional Program</strong><small>View the traditional wedding ceremony lineup</small></span><span class="menu-chev">&#10095;</span></button>
     <button class="menu-item menu-item--wide" data-goto="program" type="button"><span class="menu-icon menu-icon--gold">&#128220;</span><span class="menu-text"><strong>Reception Program</strong><small>View the complete celebration lineup</small></span><span class="menu-chev">&#10095;</span></button>
 
     <div class="hash-bar">
@@ -596,6 +597,11 @@
   </section>
 
   <!-- ---------- More (hub menu) ---------- -->
+  <section class="view hidden" data-view="engagementprogram">
+    <button class="back-link" data-goto="events" type="button">&#10094; Event Details</button>
+    <div id="engagementProgram" class="reception-program"></div>
+  </section>
+
   <section class="view hidden" data-view="more">
     <h1 class="page-title">Share Moments</h1>
     <div class="divider"><span></span><i>&#10084;</i><span></span></div>
@@ -1043,8 +1049,9 @@
 
     </div>
     <div id="admin-panel-program" class="admin-section-panel hidden" role="tabpanel" aria-labelledby="admin-tab-program" tabindex="0">
-      <h2 class="settings-heading">Reception Program Lineup</h2>
-      <p class="page-sub">Edit the program guests see under Events. Add, remove or reorder activities without changing the main event schedule.</p>
+      <h2 class="settings-heading">Wedding Program Lineups</h2>
+      <p class="page-sub">Edit the reception and engagement programs guests see under Events. Each saves separately, without changing the main event schedule.</p>
+      <div class="aq-actions program-editor-tabs"><button class="aq-approve" type="button" data-program-editor="reception" aria-pressed="true">RECEPTION</button><button class="aq-approve" type="button" data-program-editor="engagement" aria-pressed="false">ENGAGEMENT / TRADITIONAL</button></div>
       <form id="programEditor" class="aq-card">
         <div class="settings-fields">
           <label class="field">Program title<input name="title" maxlength="120" required /></label>
@@ -1059,6 +1066,22 @@
         <div id="programItemsEditor"></div>
         <div class="aq-actions"><button class="aq-approve" data-program-action="add" type="button">ADD ACTIVITY</button><button class="aq-approve" type="submit">SAVE PROGRAM</button><button class="aq-reject" data-program-action="reload" type="button">RELOAD SAVED</button></div>
         <p id="programEditorStatus" class="upload-status" role="status" aria-live="polite"></p>
+      </form>
+      <form id="engagementEditor" class="aq-card hidden">
+        <h3>Engagement / Traditional Wedding Program</h3>
+        <div class="settings-fields">
+          <label class="field">Program title<input name="title" maxlength="120" required /></label>
+          <label class="field">Couple names<input name="names" maxlength="200" /></label>
+          <label class="field">Tagline<input name="tagline" maxlength="200" /></label>
+          <label class="field">Program date<input name="dateLabel" maxlength="160" /></label>
+          <label class="field">Ceremony time<input name="timeLabel" maxlength="160" /></label>
+          <label class="field">Hosts / speakers (optional)<input name="hosts" maxlength="300" /></label>
+          <label class="field">Closing message<textarea name="footer" maxlength="160" rows="3"></textarea></label>
+        </div>
+        <h3>Program Activities</h3><p>Keep the supplied order. Leave an activity time blank when no exact time is given.</p>
+        <div id="engagementItemsEditor"></div>
+        <div class="aq-actions"><button class="aq-approve" data-program-action="add" type="button">ADD ACTIVITY</button><button class="aq-approve" type="submit">SAVE ENGAGEMENT PROGRAM</button><button class="aq-reject" data-program-action="reload" type="button">RELOAD SAVED</button></div>
+        <p id="engagementEditorStatus" class="upload-status" role="status" aria-live="polite"></p>
       </form>
     </div>
     <div id="admin-panel-story" class="admin-section-panel hidden" role="tabpanel" aria-labelledby="admin-tab-story" tabindex="0">
@@ -1633,11 +1656,11 @@ try{
   </div>
 </div>
 <script src="api-data.js?v=187"></script>
-<script src="app.js?v=189"></script>
-<script src="app-data.js?v=189"></script>
+<script src="app.js?v=190"></script>
+<script src="app-data.js?v=190"></script>
 <script src="app-social.js?v=187"></script>
 <script src="admin-dashboard.js?v=187"></script>
-<script src="reception-program.js?v=189"></script>
+<script src="reception-program.js?v=190"></script>
 <script src="competitions.js?v=188"></script>
 <script src="competition-notices.js?v=187"></script>
 </body>
