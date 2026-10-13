@@ -34,13 +34,13 @@ module.exports = async ({call,evaluate,errors,out}) => {
           noOverflow:document.documentElement.scrollWidth===innerWidth};
       });
     })()`);
-    assert.equal(checks.length,10);
+    assert.equal(checks.length,11);
     for(const check of checks){
       assert.equal(check.selected,true,check.section+' panel selection');
       assert.equal(check.fits,true,check.section+' tab overflow at '+width);
       assert.equal(check.noOverflow,true,check.section+' page overflow at '+width);
     }
-    console.log('PASS ten dashboard categories at',width,'pixels (mock admin responses)');
+    console.log('PASS eleven dashboard categories at',width,'pixels (mock admin responses)');
   }
   const photo=await evaluate(`(async()=>{
     document.getElementById('admin-tab-gifts').click();

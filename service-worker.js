@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v188-voting-hours-minutes-seconds';
+const CACHE = 'sj-wedding-v189-reception-program';
 const ASSETS = [
   './',
   './index.html',
@@ -10,6 +10,8 @@ const ASSETS = [
   './app-social.css',
   './gifts.css',
   './competitions.css',
+  './reception-program.css',
+  './reception-program.js',
   './competitions.js',
   './competition-notices.js',
   './assets/gift-floral.svg',

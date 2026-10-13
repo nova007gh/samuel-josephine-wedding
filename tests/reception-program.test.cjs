@@ -1,0 +1,12 @@
+const assert=require('node:assert/strict');
+const validate=require('../server/reception-program');
+const program={title:'Reception Program',names:'S & J',tagline:'Forever',dateLabel:'January 9, 2027',timeLabel:'2 PM – 10 PM',hosts:'Our MCs',footer:'Goodnight',items:[{time:'5:45 PM',title:'Dinner',details:'Main course'},{time:'5:45 PM',title:'Live band',details:'Until cake cutting'}]};
+assert.deepEqual(JSON.parse(validate(JSON.stringify(program))),program);
+assert.throws(()=>validate('{'),/JSON/);
+assert.throws(()=>validate(JSON.stringify({...program,items:[]})),/1–40/);
+assert.throws(()=>validate(JSON.stringify({...program,items:Array.from({length:41},()=>program.items[0])})),/1–40/);
+assert.throws(()=>validate(JSON.stringify({...program,title:''})),/title/);
+assert.throws(()=>validate(JSON.stringify({...program,items:[{time:'',title:'Dinner',details:''}]})),/time/);
+assert.throws(()=>validate(JSON.stringify({...program,items:[{time:'5 PM',title:'Dinner',details:'x'.repeat(601)}]})),/600/);
+assert.throws(()=>validate({}),/text/);
+console.log('PASS reception program schema, repeated times/order, required activity fields, invalid JSON and length limits');

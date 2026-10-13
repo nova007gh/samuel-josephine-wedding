@@ -44,6 +44,12 @@ async function create(overrides){return (await req('/admin/competitions',{method
   try{
     await start();db=new Database(path.join(dir,'wedding.db'));
     token=(await req('/admin/login',{method:'POST',body:{password:'isolated-test-only'}})).data.token;
+    const receptionProgram=JSON.stringify({title:'Reception Program',names:'S & J',tagline:'Forever',dateLabel:'January 9, 2027',timeLabel:'2 PM – 10 PM',hosts:'Our MCs',footer:'Goodnight',items:Array.from({length:20},(_,i)=>({time:'5:45 PM',title:'Activity '+i,details:'x'.repeat(500)}))});
+    await req('/admin/settings',{method:'PATCH',admin:true,body:{receptionProgram}});
+    assert.equal((await req('/settings')).data.receptionProgram,receptionProgram,'Long program is not truncated at the ordinary text-setting limit');
+    await req('/admin/settings',{method:'PATCH',admin:true,body:{receptionProgram:'{bad',weddingVenue:'Must not save'},status:400});
+    assert.notEqual((await req('/settings')).data.weddingVenue,'Must not save','Invalid program rejects the whole patch before any write');
+    await req('/admin/settings',{method:'PATCH',body:{receptionProgram},status:401});
     assert.deepEqual((await req('/competitions')).data,[]);
     await req('/admin/competitions',{status:401});
     await req('/admin/competitions',{method:'POST',body:cfg(),status:401});
@@ -188,6 +194,7 @@ async function create(overrides){return (await req('/admin/competitions',{method
     assert.equal((await req('/competitions/session',{cookie:login.cookie})).data.verified,false);
     await req('/competitions/'+multi.id+'/vote',{method:'POST',cookie:login.cookie,body:{choices:[m[0]]},status:401});
     db.close();db=null;await stop();await start();
+    assert.equal((await req('/settings')).data.receptionProgram,receptionProgram,'Program persists across API restart');
     assert.deepEqual((await req('/competitions/'+optional.id,{cookie:browserCookie})).data.myChoices,[optionTwo]);
     assert.equal((await req('/competitions/'+optional.id,{cookie:browserCookie})).data.requireVerified,false);
     assert.equal((await req('/competitions/'+multi.id,{cookie:a.cookie})).data.results.totalVotes,2);

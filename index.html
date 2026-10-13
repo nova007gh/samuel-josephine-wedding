@@ -31,6 +31,7 @@
   <link rel="stylesheet" href="app-social.css?v=187" />
   <link rel="stylesheet" href="gifts.css?v=187" />
   <link rel="stylesheet" href="competitions.css?v=188" />
+  <link rel="stylesheet" href="reception-program.css?v=189" />
   <script>
   /* a checked-in guest goes straight into the app — flag it before first
      paint so the invitation never flashes on their screen (mirrors
@@ -580,12 +581,18 @@
         VIEW MAP <span aria-hidden="true">&#128506;</span>
       </button>
     </div>
+    <button class="menu-item menu-item--wide" data-goto="program" type="button"><span class="menu-icon menu-icon--gold">&#128220;</span><span class="menu-text"><strong>Reception Program</strong><small>View the complete celebration lineup</small></span><span class="menu-chev">&#10095;</span></button>
 
     <div class="hash-bar">
       <span class="heart">&#10084;</span>
       <span data-wed="hashtag">#AlwaysAndForever</span>
       <span class="heart">&#10084;</span>
     </div>
+  </section>
+
+  <section class="view hidden" data-view="program">
+    <button class="back-link" data-goto="events" type="button">&#10094; Event Details</button>
+    <div id="receptionProgram" class="reception-program"></div>
   </section>
 
   <!-- ---------- More (hub menu) ---------- -->
@@ -898,6 +905,7 @@
       <button id="admin-tab-content" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-content" data-admin-section="content" type="button"><span aria-hidden="true">&#128247;</span>Guest Content</button>
       <button id="admin-tab-photos" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-photos" data-admin-section="photos" type="button"><span aria-hidden="true">&#9835;</span>Photos &amp; Music</button>
       <button id="admin-tab-wedding" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-wedding" data-admin-section="wedding" type="button"><span aria-hidden="true">&#128197;</span>Wedding Details</button>
+      <button id="admin-tab-program" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-program" data-admin-section="program" type="button"><span aria-hidden="true">&#128220;</span>Program Lineup</button>
       <button id="admin-tab-story" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-story" data-admin-section="story" type="button"><span aria-hidden="true">&#9825;</span>Our Story</button>
       <button id="admin-tab-announcements" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-announcements" data-admin-section="announcements" type="button"><span aria-hidden="true">&#128227;</span>Announcements</button>
       <button id="admin-tab-gifts" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-gifts" data-admin-section="gifts" type="button"><span aria-hidden="true">&#127873;</span>Gifts &amp; MoMo</button>
@@ -1033,6 +1041,25 @@
       <small id="wedSaveStatus"></small>
     </article>
 
+    </div>
+    <div id="admin-panel-program" class="admin-section-panel hidden" role="tabpanel" aria-labelledby="admin-tab-program" tabindex="0">
+      <h2 class="settings-heading">Reception Program Lineup</h2>
+      <p class="page-sub">Edit the program guests see under Events. Add, remove or reorder activities without changing the main event schedule.</p>
+      <form id="programEditor" class="aq-card">
+        <div class="settings-fields">
+          <label class="field">Program title<input name="title" maxlength="120" required /></label>
+          <label class="field">Couple names<input name="names" maxlength="200" /></label>
+          <label class="field">Tagline<input name="tagline" maxlength="200" /></label>
+          <label class="field">Program date<input name="dateLabel" maxlength="160" /></label>
+          <label class="field">Reception time<input name="timeLabel" maxlength="160" /></label>
+          <label class="field">MC / hosts<input name="hosts" maxlength="300" /></label>
+          <label class="field">Closing message<input name="footer" maxlength="160" /></label>
+        </div>
+        <h3>Program Activities</h3><p>Activities stay in your chosen order. Two activities can share the same time.</p>
+        <div id="programItemsEditor"></div>
+        <div class="aq-actions"><button class="aq-approve" data-program-action="add" type="button">ADD ACTIVITY</button><button class="aq-approve" type="submit">SAVE PROGRAM</button><button class="aq-reject" data-program-action="reload" type="button">RELOAD SAVED</button></div>
+        <p id="programEditorStatus" class="upload-status" role="status" aria-live="polite"></p>
+      </form>
     </div>
     <div id="admin-panel-story" class="admin-section-panel hidden" role="tabpanel" aria-labelledby="admin-tab-story" tabindex="0">
     <h2 class="settings-heading">Our Story Timeline</h2>
@@ -1606,10 +1633,11 @@ try{
   </div>
 </div>
 <script src="api-data.js?v=187"></script>
-<script src="app.js?v=187"></script>
-<script src="app-data.js?v=187"></script>
+<script src="app.js?v=189"></script>
+<script src="app-data.js?v=189"></script>
 <script src="app-social.js?v=187"></script>
 <script src="admin-dashboard.js?v=187"></script>
+<script src="reception-program.js?v=189"></script>
 <script src="competitions.js?v=188"></script>
 <script src="competition-notices.js?v=187"></script>
 </body>

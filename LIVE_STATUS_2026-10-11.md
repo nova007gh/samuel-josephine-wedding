@@ -1,5 +1,53 @@
 # snybena.com live audit — 11 October 2026
 
+## Editable reception program — v189 (13 October)
+
+Added Events → **Reception Program**, with an ivory/gold editable-text program
+based on the supplied January 9, 2027 poster. It includes the full 12-activity
+2:00 PM–10:00 PM reception lineup, names/tagline/date, MCs, activity descriptions
+and End of Reception. Both 5:45 PM activities (dinner and live band) are kept
+in their provided order. Existing main Events schedule, wedding details and
+seven main navigation tabs are unchanged. Program is an Events subview.
+
+Admin Dashboard has an eleventh category, **Program Lineup**, with directly
+editable title, names, tagline, date, reception time, MC/hosts, closing message,
+and 1–40 activities. Admins can add/remove/reorder entries and edit time/title/
+details, then SAVE PROGRAM. RELOAD SAVED is explicit and confirms discarding
+unsaved changes. Duplicate times are allowed; no automatic chronological sort.
+Plain text is HTML-escaped for guest rendering. Failed saves preserve the draft;
+live polling does not overwrite unsaved fields. Save rechecks the loaded program
+against the server before writing and refuses known newer-content conflicts
+(this is a client-side conflict check, not a database compare-and-swap guarantee).
+Admin sign-out clears the editor. Guest updates use the existing settings poll.
+
+`receptionProgram` is a separate public settings JSON value. Admin-only PATCH
+validates its metadata/items/types/required fields/lengths before any setting
+write, normalises the value and avoids the ordinary 8,000-character truncation
+limit. Maximum encoded length is 32,000 characters. No table migration.
+The poster content is a supplied fallback when fresh settings confirm no saved
+program exists; publishing an edit persists the program in SQLite. On startup
+the program waits for current settings rather than briefly showing an older
+fallback; offline first-load asks for reconnection. Existing photos, games,
+gifts, media and event times are not rewritten.
+
+Added reception schema unit test and actual-browser/disposable-API program
+tests: all supplied entries/repeated times, Events/Back navigation, mobile guest/
+editor fit, add/remove/order, failed-save retry, dirty-field preservation,
+newer-server conflict/reload, persistent save, admin guards, invalid JSON and
+unchanged event settings pass. Expanded API tests verify >8 KB programs persist
+untruncated across API restart and malformed program rejects the whole patch.
+Dashboard tests now cover eleven categories. Candidate dashboard/Share/mobile,
+Gift Message and worker regressions pass. Focused command:
+`WEDDING_E2E_PROGRAM_ONLY=1 WEDDING_E2E_SERVER=/root/wedding-program-v189-candidate/server.js node tests/isolated-e2e.cjs <output-dir>`.
+No live test program save, upload, vote or guest registration is submitted.
+Deployed read-only program content/navigation and 320/375/430/1024 width checks
+passed, along with eleven-category dashboard/upload, Share/seven-page and
+current-photo reload checks. Public routes 200, admin guards 401, services active
+and SQLite `ok`. Pre-v189 snapshot retained 5 guests, 1 RSVP, 31 media records/
+files, 0 guestbook entries, 3 gifts, 2 funds, 35 settings and the live competition.
+API restarted for validated program persistence; no existing settings were
+changed and no data migration was needed.
+
 ## Hours/minutes/seconds voting countdown — v188 (12 October)
 
 Competition timers now have three columns: Hrs, Mins, Secs. Hours are total
