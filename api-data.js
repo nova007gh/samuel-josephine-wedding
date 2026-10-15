@@ -57,8 +57,9 @@ async function api(path, opts = {}){
   const { method = 'GET', body, form = null, admin = false, onProgress } = opts;
   if (form){
     const file = form.get('file') || form.get('selfie');
-    if (file instanceof Blob && file.size > 256 * 1024 * 1024)
-      throw new Error('The file exceeds the 256 MB upload limit. Trim or compress the video, then try again.');
+    const limit = path === '/admin/competition-photos' ? 10 * 1024 * 1024 : 1024 * 1024 * 1024;
+    if (file instanceof Blob && file.size > limit)
+      throw new Error(path === '/admin/competition-photos' ? 'Photo exceeds the 10 MB upload limit.' : 'The file exceeds the 1 GB upload limit. Trim or compress the video, then try again.');
   }
   const headers = { 'X-Device-Id': DEVICE_ID, 'X-Network-Type': deviceNetType() };
   if (admin && adminToken) headers['Authorization'] = `Bearer ${adminToken}`;
@@ -67,7 +68,7 @@ async function api(path, opts = {}){
   let res;
   const ctrl = new AbortController();
   /* large phone videos on mobile data need far more than 2 minutes */
-  const timer = setTimeout(() => ctrl.abort(), form ? 15 * 60000 : 15000);
+  const timer = setTimeout(() => ctrl.abort(), form ? 60 * 60000 : 15000);
   /* counted so an app-update reload never interrupts an upload */
   if (form) window.__uploadsInFlight = (window.__uploadsInFlight || 0) + 1;
   try {
@@ -76,7 +77,7 @@ async function api(path, opts = {}){
       res = await new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.open(method, API_BASE + path);
-        xhr.timeout = 15 * 60000;
+        xhr.timeout = 60 * 60000;
         Object.entries(headers).forEach(([key, value]) => xhr.setRequestHeader(key, value));
         xhr.upload.onprogress = e => {
           if (e.lengthComputable && onProgress) onProgress(Math.round(e.loaded / e.total * 100));
@@ -110,7 +111,7 @@ async function api(path, opts = {}){
   let data = null;
   try { data = await res.json(); } catch {}
   if (!res.ok){
-    const err = new Error((data && data.error) || `Request failed (${res.status}).`);
+    const err = new Error((data && data.error) || (res.status === 413 ? 'Upload is too large. The limit is 1 GB per file (10 MB for competition photos).' : `Request failed (${res.status}).`));
     err.code = (data && data.code)
       || (res.status === 401 || res.status === 403 ? 'auth/invalid-credential'
         : res.status === 429 ? 'auth/too-many-requests' : 'unknown');

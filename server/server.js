@@ -22,7 +22,7 @@ const ADMIN_EMAIL = process.env.ADMIN_EMAIL || '';
 let MOMO_NUMBER = process.env.MOMO_NUMBER || '+233 24 123 4567';
 let MOMO_ACCOUNT_NAME = process.env.MOMO_ACCOUNT_NAME || 'Samuel & Josephine';
 
-const MAX_UPLOAD = 256 * 1024 * 1024; // 256MB — long phone videos
+const MAX_UPLOAD = 1024 * 1024 * 1024; // 1 GiB per file, streamed to disk
 const SESSION_TTL_MS = 30 * 24 * 3600 * 1000; // 30 days
 
 fs.mkdirSync(UPLOADS_DIR, { recursive: true });
@@ -224,9 +224,9 @@ function pumpTranscode(){
   const outPath = path.join(UPLOADS_DIR, outName);
   console.log(`[video] transcoding ${path.basename(src)} (${(srcSize / 1048576).toFixed(1)}MB)…`);
   const ff = spawn(FFMPEG_BIN, [
-    '-y', '-i', src,
+    '-y', '-threads', '1', '-filter_threads', '1', '-i', src,
     '-vf', "scale='min(1920,iw)':'min(1920,ih)':force_original_aspect_ratio=decrease:force_divisible_by=2",
-    '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '27',
+    '-c:v', 'libx264', '-threads', '1', '-preset', 'veryfast', '-crf', '27',
     '-pix_fmt', 'yuv420p',
     '-c:a', 'aac', '-b:a', '96k', '-ac', '2',
     '-movflags', '+faststart',
@@ -1659,7 +1659,7 @@ app.use((err, req, res, next) => {
   res.status(400).json({ error: err.message || 'Bad request.' });
 });
 
-app.listen(PORT, HOST, () => {
+const httpServer = app.listen(PORT, HOST, () => {
   console.log(`wedding-api listening on http://${HOST}:${PORT}`);
   /* re-encode heavy videos that were uploaded before compression existed —
      the row check in the transcode finish path keeps this idempotent */
@@ -1670,3 +1670,6 @@ app.listen(PORT, HOST, () => {
     } catch(err){ console.warn('[video] startup sweep failed:', err.message); }
   }, 5000);
 });
+/* Node's default five-minute request deadline truncates large mobile uploads.
+   The browser allows one hour; leave a little headroom for request completion. */
+httpServer.requestTimeout = 65 * 60000;

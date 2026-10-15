@@ -1,5 +1,50 @@
 # snybena.com live audit — 11 October 2026
 
+## Large phone-video uploads — v191 (15 October)
+
+Raised the general media per-file limit from 256 MiB to 1 GiB (1,024 MiB),
+including Our Story / S&J Gallery. Competition photos retain their 10 MiB cap.
+Browser preflight and song picker match the general cap. Added an Our Story
+upload hint to use Wi-Fi and keep the page open. Files above the cap still need
+trimming/compression; retrying an unchanged oversized file will not help.
+
+Browser upload deadlines are now 60 minutes; ordinary API reads stay at 15s.
+Node requestTimeout is 65 minutes instead of its default five minutes. nginx
+permits 1,100 MiB request bodies (multipart overhead), uses 60-minute upstream
+read/send inactivity timeouts, and streams request bodies directly to Multer
+instead of first buffering another large disk copy. Its client body inactivity
+timeout remains 120s. Multer still streams to disk rather than buffering in RAM.
+The existing serial background compression queue is preserved; ffmpeg decoder,
+filter and H.264 encoder threads are limited to one on this small server.
+No compression or synchronous encoding was added to the browser/API request.
+Proxy 413 responses now have a useful fallback error instead of bare HTTP text.
+
+New disposable API + isolated loopback nginx integration test streams actual
+257 MiB and exactly 1 GiB multipart files successfully through the candidate
+proxy and API; 1 GiB + 1 byte returns 413 and its partial file is removed.
+No live data is used. During those transfers 168 concurrent health probes
+passed, worst 65ms, API peak RSS 108.1 MiB. Synthetic test bytes do not establish
+real-phone video quality or codec compatibility. Browser-helper tests check
+the 1 GiB boundary, oversized preflight, 10 MiB photo cap and extended XHR timeout.
+API security/persistence, video queue, dashboard upload/retry, Share/seven-page
+and service-worker regressions pass. New command:
+`node tests/large-upload-api.cjs /root/wedding-upload-v191-candidate` (Linux).
+
+Uploads remain non-resumable: phone backgrounding, a network loss or closing
+the tab may require a full retry. Existing staged-file retention and duplicate
+submit guards remain. No physical iPhone upload of the user's video was tested.
+Predeployment disk check showed about 11 GiB free; off-site backups/automatic
+storage expansion are not configured. Larger uploads consume more disk/bandwidth.
+Deployed API/client/proxy changes; nginx configuration validated before reload.
+Only targeted upload directives in the live nginx config were changed, retaining
+its existing cache duration and IPv6 differences from the repository template.
+Live refresh/current-photo, dashboard/upload controls and reception navigation
+checks pass. A chained browser run timed out starting the final program check;
+the standalone retry passed. Pre-v191 snapshot audit: 6 guests, 1 RSVP, all
+27 memories/files, 0 guestbook entries, 3 gifts, 1 fund, 37 settings unchanged,
+existing competition retained; SQLite `ok`, both services active. No test upload,
+guest registration or vote was submitted to live records.
+
 ## Engagement / traditional program — v190 (13 October)
 
 Added Events → **Engagement / Traditional Program**, alongside Reception

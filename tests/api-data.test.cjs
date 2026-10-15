@@ -5,6 +5,7 @@ const callbacks = [];
 let calls = 0;
 let rows = [{ id: 'one' }];
 let pending;
+let sent = 0;
 const context = vm.createContext({
   console, Blob, FormData, AbortController,
   crypto: { randomUUID: () => 'test-device' },
@@ -21,7 +22,7 @@ const context = vm.createContext({
   XMLHttpRequest: class {
     constructor(){ this.upload = {}; this.status = 200; this.responseText = '{"id":"uploaded"}'; }
     open() {} setRequestHeader() {}
-    send(){ this.upload.onprogress({ lengthComputable: true, loaded: 5, total: 10 }); this.upload.onload(); this.onload(); }
+    send(){ sent++; assert.equal(this.timeout,60*60000); this.upload.onprogress({ lengthComputable: true, loaded: 5, total: 10 }); this.upload.onload(); this.onload(); }
     abort(){ this.onabort(); }
   }
 });
@@ -65,5 +66,14 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
   const storyResult = await context.addCoupleMemory(new Blob(['test'], {type:'image/png'}), 'Test caption', p => storyProgress.push(p));
   assert.equal(storyResult.id, 'uploaded');
   assert.deepEqual(storyProgress, [50, 100], 'Our Story uploads must forward transfer progress');
+  // Override size on tiny Blobs to exercise boundaries without allocating 1 GB.
+  const fakeForm=size=>{const blob=new Blob(['x'],{type:'video/mp4'});Object.defineProperty(blob,'size',{value:size});return {get:key=>key==='file'?blob:null};};
+  await context.api('/admin/gallery',{method:'POST',form:fakeForm(257*1024*1024)});
+  await context.api('/admin/gallery',{method:'POST',form:fakeForm(1024*1024*1024)});
+  const beforeReject=sent;
+  await assert.rejects(context.api('/admin/gallery',{method:'POST',form:fakeForm(1024*1024*1024+1)}),/1 GB/);
+  await assert.rejects(context.api('/admin/competition-photos',{method:'POST',form:fakeForm(10*1024*1024+1)}),/10 MB/);
+  assert.equal(sent,beforeReject,'Oversized files must be rejected before network transfer');
+  assert.equal(context.window.__uploadsInFlight,0);
   console.log('PASS: unchanged feeds, changed feeds, no overlap, pause/resume, unsubscribe, upload progress and counter cleanup');
 })().catch(err => { console.error(err); process.exitCode = 1; });

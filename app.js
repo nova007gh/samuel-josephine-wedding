@@ -1169,7 +1169,7 @@ async function saveSong(file){
   if (!isAdmin()||songSaving) return;
   const button=$('#songMenuItem'),input=$('#songUpload'),label=$('#songLabel'),status=$('#shareActionStatus');
   const previous=label?.textContent;
-  if(file.size>256*1024*1024){if(status)status.textContent='Song exceeds the 256 MB upload limit. Choose a smaller file.';return;}
+  if(file.size>1024*1024*1024){if(status)status.textContent='Song exceeds the 1 GB upload limit. Choose a smaller file.';return;}
   songSaving=true;if(button)button.disabled=true;if(input)input.disabled=true;if(status)status.textContent='';
   try {
     await uploadSiteSong(file, file.name,p=>{if(label)label.textContent=p===100?'100% sent — saving…':`Uploading song ${p}%…`;});
