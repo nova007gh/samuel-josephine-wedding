@@ -186,7 +186,7 @@ function allGalleryItems(){
   const uploaded = latestMemories
     .filter(m => m.status === 'approved' && m.category !== 'sj-gallery')
     .map(m => ({ ...m, seeded:false }));
-  const seeded = SEED_MEMORIES.map(m => ({ ...m, src: sitePhoto(m.photoKey, m.src), type:'image/jpeg', seeded:true }));
+  const seeded = SEED_MEMORIES.map(m => ({ ...m, src: sitePhoto(m.photoKey, m.src), originalSrc:originalSitePhoto(m.photoKey,m.src), type:'image/jpeg', seeded:true }));
   return [...uploaded, ...seeded];
 }
 
@@ -302,7 +302,7 @@ function renderGallery(memories){
 
     const label = item.caption || CATEGORY_LABELS[item.category] || '';
     if (!item.type.startsWith('video/') && !item.type.startsWith('audio/')){
-      card.querySelector('img').addEventListener('click', () => openLightbox(url, label, item.type));
+      card.querySelector('img').addEventListener('click', () => openLightbox(item.originalSrc||url, label, item.type));
     }
     card.querySelector('.mem-expand')?.addEventListener('click', () => {
       card.querySelector('video')?.pause();
@@ -481,13 +481,17 @@ const DEFAULT_STORY_ITEMS = [
   { slot:'now',             m:'NOW', d:'',   y:'\u2764', emoji:'\u{1F495}', title:'ENGAGED & FOREVER', text:"Now we're building our forever together. \u{1F495}" },
 ];
 
-function sitePhoto(slot, fallback){
+function originalSitePhoto(slot, fallback){
   if (!photosConfirmed) return 'assets/photo-placeholder.svg';
   if (!slot) return fallback;
   const key = slot === 'couple' ? 'couplePhotoUrl' : `photo:${slot}`;
   /* the admin heart follows the couple photo until it gets its own */
-  if (slot === 'admin-heart' && !siteSettings[key]) return sitePhoto('couple', fallback);
+  if (slot === 'admin-heart' && !siteSettings[key]) return originalSitePhoto('couple', fallback);
   return siteSettings[key] || fallback;
+}
+function sitePhoto(slot,fallback){
+  const original=originalSitePhoto(slot,fallback);
+  try{return JSON.parse(siteSettings.photoPreviews||'{}')[original]||original;}catch{return original;}
 }
 
 function applySitePhotos(){
@@ -499,10 +503,15 @@ function applySitePhotos(){
     if (img.dataset.photoTarget === url) return;
     img._clearPhotoHandlers?.();
     img.dataset.photoTarget = url;
+    delete img._decodedPhotoUrl;
     delete img.dataset.photoReady;
+    const homeStatus=document.getElementById('homePhotoStatus');
+    if(img.id==='couplePhoto'){homeStatus?.classList.remove('hidden');document.getElementById('homePhotoMessage').textContent='Loading photo…';}
     const ready = () => {
-      if (img.src === url && img.complete && img.naturalWidth && img.currentSrc === url){
+      if (img.dataset.photoTarget===url&&img.src === url && img.complete && img.naturalWidth && (img.currentSrc === url||img._decodedPhotoUrl===url)){
         img.dataset.photoReady = 'true';
+        img._photoRetryCount=0;
+        if(img.id==='couplePhoto')homeStatus?.classList.add('hidden');
         img.removeEventListener('load', ready);
         img.removeEventListener('error', failed);
       }
@@ -513,17 +522,27 @@ function applySitePhotos(){
       if (img.dataset.photoTarget !== url) return;
       img.src = 'assets/photo-placeholder.svg';
       img.dataset.photoReady = 'true';
+      if(img.id==='couplePhoto'){homeStatus?.classList.remove('hidden');document.getElementById('homePhotoMessage').textContent='Photo could not load. Check your connection and retry.';}
+      img.dataset.photoFailed='true';
+      const attempt=img._photoRetryCount=(img._photoRetryCount||0)+1;
+      if(attempt<=3)setTimeout(()=>{
+        if(img.isConnected&&img.dataset.photoTarget===url&&img.dataset.photoFailed==='true'&&!document.hidden){delete img.dataset.photoTarget;applySitePhotos();}
+      },attempt*3000);
     };
     img.addEventListener('load', ready);
     img.addEventListener('error', failed);
     img._clearPhotoHandlers = () => {img.removeEventListener('load', ready);img.removeEventListener('error', failed);};
     img.src = url;
+    delete img.dataset.photoFailed;
+    if(typeof img.decode==='function'&&img.loading!=='lazy')img.decode().then(()=>{
+      if(img.src===url&&img.dataset.photoTarget===url){img._decodedPhotoUrl=url;ready();}
+    }).catch(()=>{});
     ready();
   });
   /* the landing screen shows the bundled invitation art; uploading Landing
      Page Art in Site Settings replaces it, and the code-rendered card
      stays available as the no-art fallback */
-  const landUrl = siteSettings['photo:landing'] || SLOT_DEFS.landing;
+  const landUrl = sitePhoto('landing',SLOT_DEFS.landing);
   const lFrame = document.getElementById('landingFrame');
   const lArt = document.getElementById('landingArt');
   lFrame?.classList.toggle('landing-frame--card', !landUrl);
@@ -532,6 +551,16 @@ function applySitePhotos(){
     if (landUrl) lArt.src = landUrl;
   }
 }
+
+function retrySitePhotos(){
+  document.querySelectorAll('[data-site-photo]').forEach(img=>{
+    if(img.dataset.photoFailed==='true'||img.dataset.photoReady!=='true'){delete img.dataset.photoTarget;img._photoRetryCount=0;}
+  });
+  applySitePhotos();
+  if(!photosConfirmed)syncSiteSettings();
+}
+document.getElementById('retryHomePhoto')?.addEventListener('click',retrySitePhotos);
+window.addEventListener('online',()=>{retrySitePhotos();syncSiteSettings();});
 
 /* Retire the legacy photo map: only confirmed settings determine visible photos. */
 function cacheSitePhotos(){
@@ -550,12 +579,15 @@ function showCouplePhoto(has){
 }
 
 (async () => {
+  document.getElementById('homePhotoStatus')?.classList.remove('hidden');
   try {
     siteSettings = await getSettings();
     photosConfirmed = true;
   } catch(err){
     console.warn('Site settings unavailable:', err);
     siteSettings = {};
+    const message=document.getElementById('homePhotoMessage');
+    if(message)message.textContent='Content could not load. Check your connection and retry.';
   }
   renderTimeline();
   applySitePhotos();
@@ -956,7 +988,7 @@ async function syncSiteSettings(){
   if (!photosConfirmed){photosConfirmed = true;siteSettings = fresh;applySitePhotos();renderAlbums();renderGallery();}
   const groups = {
     story:   k => k === 'storyItems' || k === 'storyLikes',
-    photos:  k => k === 'couplePhotoUrl' || k.startsWith('photo:'),
+    photos:  k => k === 'couplePhotoUrl' || k === 'photoPreviews' || k.startsWith('photo:'),
     details: k => k.startsWith('wedding') || ['events','mapUrl','rsvpDeadline','storyText'].includes(k),
     songs:   k => k === 'songs' || k === 'songUrl',
     likes:   k => k === 'homeLikes',
@@ -990,7 +1022,9 @@ document.addEventListener('click', e => {
   const img = e.target.closest('.tl-photo img');
   if (!img) return;
   const title = img.closest('.tl-row')?.querySelector('.tl-card h4')?.textContent || img.alt || '';
-  openLightbox(img.currentSrc || img.src, title);
+  const slot=img.dataset.sitePhoto;
+  const original=siteSettings[slot==='couple'?'couplePhotoUrl':`photo:${slot}`];
+  openLightbox(original||img.currentSrc||img.src, title);
 });
 
 /* ---------- S&J Gallery panel on Our Story ---------- */

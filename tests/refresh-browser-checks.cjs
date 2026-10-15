@@ -11,7 +11,7 @@ exports.setup=async({call})=>{
       if(String(input).includes('/api/settings')){
         window.__settingsRequests++;await window.__settingsHeld;
         if(localStorage.getItem('sj_refresh_offline')==='1')throw new TypeError('Offline test');
-        return new Response(JSON.stringify({couplePhotoUrl:'/assets/seal-logo.png?current=1','photo:admin-heart':'/assets/seal-logo.png?current=1'}),{headers:{'Content-Type':'application/json'}});
+        return new Response(JSON.stringify({couplePhotoUrl:'/assets/seal-logo.png?current=1','photo:admin-heart':'/assets/seal-logo.png?current=1',photoPreviews:JSON.stringify({'/assets/seal-logo.png?current=1':'/assets/seal-logo.png?display=1'})}),{headers:{'Content-Type':'application/json'}});
       }
       return originalFetch(input,options);
     };
@@ -29,7 +29,8 @@ exports.check=async({call,evaluate,errors,out})=>{
   assert.equal(await evaluate(`window.__oldPhotoPaints.length`),0);
   await evaluate(`window.__releaseSettings()`);
   await wait(`document.getElementById('couplePhoto').dataset.photoReady==='true'&&document.getElementById('couplePhoto').naturalWidth>0`);
-  assert.equal(await evaluate(`document.getElementById('couplePhoto').src.endsWith('seal-logo.png?current=1')`),true,'Fresh settings determine displayed photo');
+  assert.equal(await evaluate(`document.getElementById('couplePhoto').src.endsWith('seal-logo.png?display=1')`),true,'Fresh settings choose only the current photo display variant');
+  assert.equal(await evaluate(`(()=>{const item=allGalleryItems().find(m=>m.photoKey==='couple');return item.src.endsWith('?display=1')&&item.originalSrc.endsWith('?current=1');})()`),true,'Seeded Gallery cards retain the original full-screen source');
   await evaluate(`flashPageLoader()`);await delay(220);await evaluate(`flashPageLoader()`);await delay(200);
   assert.equal(await evaluate(`!document.getElementById('pageLoader').classList.contains('hidden')`),true,'Previous loader hide timer cannot interrupt new transition');
   await delay(260);
@@ -46,6 +47,11 @@ exports.check=async({call,evaluate,errors,out})=>{
   await wait(`document.getElementById('couplePhoto').dataset.photoReady==='true'`);
   await delay(250);
   assert.equal(await evaluate(`window.__oldPhotoPaints.length`),0);
+  await evaluate(`(()=>{siteSettings.couplePhotoUrl='/assets/seal-logo.png?recovery-test=1';applySitePhotos();document.getElementById('couplePhoto').dispatchEvent(new Event('error'));})()`);
+  assert.equal(await evaluate(`document.getElementById('couplePhoto').dataset.photoFailed==='true'&&!document.getElementById('homePhotoStatus').classList.contains('hidden')`),true,'Failed Home photo shows recovery controls');
+  await evaluate(`document.getElementById('retryHomePhoto').click()`);
+  await wait(`document.getElementById('couplePhoto').dataset.photoReady==='true'&&!document.getElementById('couplePhoto').dataset.photoFailed&&document.getElementById('couplePhoto').src.endsWith('recovery-test=1')`);
+  assert.equal(await evaluate(`document.getElementById('homePhotoStatus').classList.contains('hidden')`),true,'Same-URL retry succeeds without changing settings');
   const shot=await call('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(out,'refresh-current-photo.png'),Buffer.from(shot.data,'base64'));
   assert.equal(errors.length,0,'No uncaught refresh errors');
   console.log('PASS delayed fresh settings, stale photo-map rejection, loaded-image reveal, rapid loader transitions, reduced motion, refresh/offline neutral state and photo recovery (settings mocked; no live writes)');
@@ -61,7 +67,7 @@ exports.checkLive=async({call,evaluate,errors,out})=>{
     }
     assert.equal(ready,true,'Current live Home photo loads on initial visit/reload');
     await evaluate(`switchView('home')`);
-    assert.equal(await evaluate(`(async()=>{const fresh=await getSettings();const expected=new URL(fresh.couplePhotoUrl||'assets/photo-placeholder.svg',location.href).href;return document.getElementById('couplePhoto').currentSrc===expected;})()`),true,'Displayed photo matches live settings');
+    assert.equal(await evaluate(`(async()=>{const fresh=await getSettings();const original=fresh.couplePhotoUrl||'assets/photo-placeholder.svg';let previews={};try{previews=JSON.parse(fresh.photoPreviews||'{}');}catch{}const expected=new URL(previews[original]||original,location.href).href;return document.getElementById('couplePhoto').currentSrc===expected;})()`),true,'Displayed photo matches current settings and its available display variant');
     assert.equal(await evaluate(`!document.querySelector('img[src="assets/couple-home.jpg"]')&&!localStorage.getItem('sj_site_photos')`),true,'No bundled couple startup image or legacy photo map');
   }
   await delay(500);

@@ -196,6 +196,7 @@ let ffmpegOk = null;
 try { require('child_process').execSync(`${FFMPEG_BIN} -version`, { stdio: 'ignore' }); ffmpegOk = true; }
 catch { ffmpegOk = false; console.warn('[video] ffmpeg not available — uploads served uncompressed'); }
 const mediaThumbnails=require('./media-thumbnails')({uploadsDir:UPLOADS_DIR,ffmpegBin:FFMPEG_BIN,enabled:ffmpegOk});
+const sitePhotoPreviews=require('./media-thumbnails')({uploadsDir:UPLOADS_DIR,ffmpegBin:FFMPEG_BIN,enabled:ffmpegOk,width:1280,suffix:'.display.jpg'});
 
 function queueTranscode(memoryId){
   if (!ffmpegOk || transcodeIds.has(memoryId)) return;
@@ -1049,6 +1050,14 @@ app.get('/api/settings', (req, res) => {
   const out = {};
   for (const row of db.prepare('SELECT key, value FROM settings').all())
     if (!PRIVATE_SETTINGS.has(row.key)) out[row.key] = row.value;
+  const previews={};
+  for(const [key,url] of Object.entries(out)){
+    if((key==='couplePhotoUrl'||key.startsWith('photo:'))&&/^\/uploads\/[\w.-]+\.(jpe?g|png|webp|heic|heif)$/i.test(url)){
+      const preview=sitePhotoPreviews.decorate({mediaUrl:url,type:'image/jpeg'}).thumbnailUrl;
+      if(preview)previews[url]=preview;
+    }
+  }
+  out.photoPreviews=JSON.stringify(previews);
   res.json(out);
 });
 
@@ -1082,6 +1091,7 @@ app.post('/api/admin/settings/photo/:slot?', requireAdmin, upload.single('file')
     return res.status(400).json({ error: slot === 'gifts-hero' ? 'Choose a JPEG, PNG or WebP photo for Gifts.' : 'Photo must be an image.' });
   }
   const key = slot === 'couple' ? 'couplePhotoUrl' : `photo:${slot}`;
+  sitePhotoPreviews.enqueue({mediaUrl:`/uploads/${req.file.filename}`,type:req.file.mimetype});
   setSettingFile(res, req.file, key);
 });
 
@@ -1672,6 +1682,9 @@ const httpServer = app.listen(PORT, HOST, () => {
       for (const row of db.prepare(`SELECT id FROM memories WHERE type LIKE 'video/%'`).all())
         queueTranscode(row.id);
       for(const row of db.prepare(`SELECT mediaUrl,type FROM memories WHERE type LIKE 'image/%'`).all())mediaThumbnails.enqueue(row);
+      for(const row of db.prepare(`SELECT key,value FROM settings WHERE key='couplePhotoUrl' OR key LIKE 'photo:%'`).all()){
+        if(/^\/uploads\/[\w.-]+\.(jpe?g|png|webp|heic|heif)$/i.test(row.value))sitePhotoPreviews.enqueue({mediaUrl:row.value,type:'image/jpeg'});
+      }
     } catch(err){ console.warn('[video] startup sweep failed:', err.message); }
   }, 5000);
 });

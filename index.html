@@ -316,7 +316,7 @@
     </div>
 
     <figure class="couple-photo">
-        <img id="couplePhoto" src="assets/photo-placeholder.svg" data-site-photo="couple" alt="Sam and Jossy" />
+        <img id="couplePhoto" src="assets/photo-placeholder.svg" data-site-photo="couple" alt="Sam and Jossy" fetchpriority="high" decoding="async" />
       <label id="couplePlaceholder" class="photo-placeholder hidden">
         <strong>Sam &amp; Jossy</strong>
         <span>TAP TO ADD YOUR PHOTO</span>
@@ -327,6 +327,8 @@
         <span class="couple-heart">&#10084;</span>
       </figcaption>
     </figure>
+
+    <p id="homePhotoStatus" class="upload-status hidden" role="status" aria-live="polite"><span id="homePhotoMessage">Loading photo…</span> <button id="retryHomePhoto" class="mem-del" type="button">Retry photo</button></p>
 
     <button id="enterFromHome" class="enter-wide" type="button">
       ENTER OUR WEDDING <span aria-hidden="true">&#10095;</span>
@@ -1659,7 +1661,7 @@ try{
 </div>
 <script src="api-data.js?v=193"></script>
 <script src="app.js?v=191"></script>
-<script src="app-data.js?v=193"></script>
+<script src="app-data.js?v=194"></script>
 <script src="app-social.js?v=193"></script>
 <script src="admin-dashboard.js?v=187"></script>
 <script src="reception-program.js?v=190"></script>

@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v193-media-preview-performance';
+const CACHE = 'sj-wedding-v194-site-photo-loading-recovery';
 const ASSETS = [
   './',
   './index.html',

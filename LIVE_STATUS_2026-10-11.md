@@ -1,5 +1,45 @@
 # snybena.com live audit — 11 October 2026
 
+## Main site photo loading/recovery — v194 (15 October)
+
+User reported missing Home photo/content. Live browser reproduced heavy first
+loads: Home original 3,868,921 transfer bytes / about 25.5s in that browser,
+plus several 2–4 MB welcome/heart/Gifts/story images competing for bandwidth.
+API and nginx were active, load 0.00, originals present. The v193 previews only
+covered memory/album images, not site-setting photos. No evidence of lost data.
+
+Added non-destructive 1280px display JPEG generation for configured site photos.
+Public settings expose a derived `photoPreviews` JSON map from original URLs to
+existing display variants; no stored setting is rewritten. `sitePhoto()` uses
+only the current confirmed original's matching variant, preserving the no-old-
+photo flash guard. Home, header heart, welcome, landing art, Gifts and timeline
+use smaller display images. Full-screen timeline viewing retains the original.
+Startup queues missing display files; new site-photo uploads also enqueue them.
+Original URLs/files remain available. Missing/unsupported outputs use originals.
+
+Home photo gets high fetch priority and asynchronous decoding. Eager image
+readiness also checks successful `decode()` to avoid cached/load-event timing
+leaving a decoded image hidden. A loading/retry status is shown instead of
+silent blank content; settings errors explain reconnection. Failed image loads
+get up to three bounded retries, Retry Photo allows the same URL to recover,
+and the online event retries settings/images. This addresses the old failure
+state where unchanged `photoTarget` skipped future attempts indefinitely.
+
+Candidate refresh tests cover delayed settings, current display mapping, stale
+map rejection, no-old-photo flash, offline settings recovery, failed-image/same-
+URL retry and cached decode readiness. Dashboard/Share/mobile and API security/
+persistence tests pass; actual ffmpeg preview tests keep original hashes intact.
+No physical Safari/iPhone verification is implied by desktop browser tests.
+Live verification: Home display is 143,235 bytes versus 3,868,621 original
+bytes (96% smaller). Same browser measured roughly 2.34s display transfer after
+the fix versus 25.46s for the original before; not a controlled phone benchmark.
+Initial/reload Home checks pass with the current display variant and fresh
+settings. Guest album order/mobile and engagement content/navigation checks
+pass. Seeded Gallery cards also retain original sources for full-screen viewing.
+Fresh pre-v194 audit: 6 guests, 1 RSVP, all 26 memories/original files, 0 guestbook
+entries, 3 gifts, 1 fund, 37 stored settings unchanged, existing competition
+retained; SQLite `ok`, services active. No live content edit/upload/vote tested.
+
 ## Media browsing and upload feedback performance — v193 (15 October)
 
 Diagnostic read-only server check: load average 0.00, API around 87 MB RSS,
