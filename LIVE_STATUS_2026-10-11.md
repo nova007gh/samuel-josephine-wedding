@@ -1,5 +1,58 @@
 # snybena.com live audit — 11 October 2026
 
+## Media browsing and upload feedback performance — v193 (15 October)
+
+Diagnostic read-only server check: load average 0.00, API around 87 MB RSS,
+about 11 GiB free disk; no evidence of CPU/memory/storage overload at that time.
+An individual phone's upload throughput was not measured. Raising the file cap
+does not shrink original videos; server compression cannot save inbound bytes.
+
+Added serial, single-thread background JPEG preview generation for memory
+photos, bounded to 640×640 while keeping aspect ratio. Original files and memory
+rows remain untouched. Sidecars use `<original filename>.thumb.jpg`; startup
+generates missing previews and new uploads enqueue after the response. Failed/
+unsupported encodes leave the original working; each worker has a 60s timeout.
+Feeds expose `thumbnailUrl` only when an output exists. Gallery/album covers,
+Our Story and admin media cards prefer previews; full-screen guest photo viewing
+still opens the original. Reorder responses retain thumbnail metadata. This is
+for memory photos, not configurable Home/timeline photos or competition covers.
+Existing sidecars are retained if an album row is removed (small orphan-preview
+cleanup remains a maintenance follow-up).
+
+Album covers avoid rebuilding unchanged DOM. Staged video previews use
+`preload="none"` instead of reading video metadata every render. Share/Gallery/
+S&J uploads now display MB sent/total, average MB/s and estimated time remaining
+once a second of transfer is available; estimates vary with network conditions.
+100% correctly means sent/saving, not published before the API response.
+The 1 GiB cap, streaming upload path and extended deadlines are retained.
+Uploads are still non-resumable. No risky real-time browser video recompression
+was added: that could delay uploads, overheat phones and reduce quality.
+
+nginx enables HTTP/2 for HTTPS and adds JSON gzip to reduce connection/request
+overhead. This is not a promise of increased phone uplink bandwidth. Wi-Fi,
+keeping the app foregrounded and choosing a smaller 1080p/720p export remain
+the practical remedies when a large video exceeds the available uplink speed.
+
+Actual ffmpeg disposable test: 2400×1600 test image 68,024 → 18,894 bytes;
+preview dimensions bounded and original hash unchanged. Isolated nginx/API
+large upload regression still accepts 257 MiB / exactly 1 GiB, rejects/cleans
+1 GiB+1, with 171 concurrent health probes, worst 88ms, API peak RSS 107.4 MiB.
+Order/browser tests verify thumbnail rendering uses the original for full screen.
+Dashboard/Share/seven-page, fresh-photo/reduced-motion, upload helper ETA and
+video queue/worker regressions pass. No actual iPhone throughput benchmark.
+Deployed verification: HTTPS negotiates HTTP/2; 13 existing photo previews total
+474,205 bytes versus 12,462,920 original bytes, a 96% preview-data reduction.
+This does not quantify a video upload speedup. Live guest album ordering/mobile,
+admin upload controls and image-preview source checks pass. Pre-v193 audit:
+6 guests, 1 RSVP, all 26 memories/original files, 0 guestbook entries, 3 gifts,
+1 fund, 37 settings unchanged, existing competition retained; SQLite `ok` and
+services active. No live test upload, vote or content reorder was submitted.
+Live Home refresh first run missed its readiness deadline; the original Home
+file was confirmed present and settings HTTP/2 response was 200. Standalone
+retry passed both initial/reload current-photo assertions, then the browser
+harness exceeded its process-cleanup timeout after printing PASS. This is not
+a measured physical-phone startup/upload timing result.
+
 ## Admin Our Story photo/video ordering — v192 (15 October)
 
 Admin Dashboard → Our Story → S&J Gallery now has First, Earlier, Later and

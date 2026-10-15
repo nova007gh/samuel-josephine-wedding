@@ -75,5 +75,8 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
   await assert.rejects(context.api('/admin/competition-photos',{method:'POST',form:fakeForm(10*1024*1024+1)}),/10 MB/);
   assert.equal(sent,beforeReject,'Oversized files must be rejected before network transfer');
   assert.equal(context.window.__uploadsInFlight,0);
+  assert.match(context.uploadTransferLabel(25,{loaded:25*1024*1024,total:100*1024*1024,elapsedMs:10000}),/25\.0 \/ 100\.0 MB · 2\.50 MB\/s · about 30s left/);
+  assert.equal(context.uploadTransferLabel(100),'100% sent — saving…');
+  assert.equal(context.uploadTransferLabel(20),'Uploading 20%…');
   console.log('PASS: unchanged feeds, changed feeds, no overlap, pause/resume, unsubscribe, upload progress and counter cleanup');
 })().catch(err => { console.error(err); process.exitCode = 1; });

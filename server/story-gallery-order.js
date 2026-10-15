@@ -1,5 +1,5 @@
 'use strict';
-module.exports=({app,db,requireAdmin})=>{
+module.exports=({app,db,requireAdmin,decorate=row=>row})=>{
   db.exec(`CREATE TABLE IF NOT EXISTS sj_gallery_order (memoryId TEXT PRIMARY KEY REFERENCES memories(id) ON DELETE CASCADE, position INTEGER NOT NULL)`);
   const select=`SELECT m.*, o.position AS sjOrder FROM memories m LEFT JOIN sj_gallery_order o ON o.memoryId=m.id`;
   const gallery=()=>db.prepare(select+` WHERE m.category='sj-gallery' ORDER BY (o.position IS NOT NULL), o.position, m.createdAt DESC, m.id`).all();
@@ -18,7 +18,7 @@ module.exports=({app,db,requireAdmin})=>{
     try{
       const items=save(ids,expected);
       if(!items)return res.status(409).json({error:'The album changed on another device. Reload the album and try again.'});
-      res.json({items});
+      res.json({items:items.map(decorate)});
     }catch(err){res.status(400).json({error:err.message});}
   });
   return {select};

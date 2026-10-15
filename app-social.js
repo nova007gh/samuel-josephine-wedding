@@ -305,8 +305,8 @@ document.getElementById('shareForm')?.addEventListener('submit', async e => {
       name: `${upload.kind}-${Date.now()}`,
       size: upload.blob.size,
       blob: upload.blob,
-      onProgress: percent => {
-        uploadStatus.textContent=percent<100?`Uploading ${percent}%…`:'Upload sent — saving…';
+      onProgress: (percent,transfer) => {
+        uploadStatus.textContent=uploadTransferLabel(percent,transfer);
         if (submitBtn) submitBtn.textContent = percent < 100
           ? `Uploading ${percent}%…` : 'Upload sent — saving…';
       }
@@ -908,7 +908,7 @@ function renderApprovalQueue(){
     } else if (item.kind === 'guestbook'){
       media = `<p><b>${escapeHTML(item.name)}</b> &mdash; ${escapeHTML(item.message)}</p>`;
     } else if (item.type && item.type.startsWith('image/') && item.mediaUrl){
-      media = `<img class="aq-media" src="${item.mediaUrl}" alt="">`;
+      media = `<img class="aq-media" loading="lazy" decoding="async" src="${item.thumbnailUrl||item.mediaUrl}" alt="">`;
     } else if (item.type && item.type.startsWith('video/') && item.mediaUrl){
       media = `<video class="aq-media" controls playsinline preload="none" src="${item.mediaUrl}"></video>`;
     } else if (item.type && item.type.startsWith('audio/') && item.mediaUrl){
@@ -1274,7 +1274,7 @@ function renderSjAdminGrid(){
     const isVid = (m.type || '').startsWith('video/');
     const media = isVid
       ? `<div class="mem-media"><video src="${m.mediaUrl}" controls playsinline preload="none"></video></div>`
-      : `<img loading="lazy" decoding="async" src="${m.mediaUrl}" alt="${escapeHTML(m.caption || 'S&J memory')}">`;
+      : `<img loading="lazy" decoding="async" src="${m.thumbnailUrl||m.mediaUrl}" alt="${escapeHTML(m.caption || 'S&J memory')}">`;
     return `<article class="mem-card" data-sj-id="${escapeHTML(m.id)}">
       ${media}
       <div class="mem-meta">
@@ -1358,7 +1358,7 @@ function renderSjPreview(){
   host.innerHTML = sjPending.map((p, i) => {
     const isVid = (p.file.type || '').startsWith('video/');
     return `<figure class="sj-thumb${isVid ? ' sj-thumb--vid' : ''}">
-      ${isVid ? `<video src="${p.url}" muted playsinline preload="metadata"></video><span class="sj-vid-badge">&#9654;</span>` : `<img src="${p.url}" alt="">`}
+      ${isVid ? `<video src="${p.url}" muted playsinline preload="none"></video><span class="sj-vid-badge">&#9654;</span>` : `<img loading="lazy" decoding="async" src="${p.url}" alt="">`}
       <button class="sj-thumb-x" data-sj-rm="${i}" type="button" aria-label="Remove" ${sjUploading ? 'disabled' : ''}>&times;</button>
     </figure>`;
   }).join('');
@@ -1413,9 +1413,9 @@ document.getElementById('sjPublish')?.addEventListener('click', async () => {
     if (progress) progress.value = 0;
     status.textContent = `File ${i + 1} of ${total} — Uploading 0%…`;
     try {
-      const record = await addCoupleMemory(batch[i].file, total === 1 ? caption : (caption ? `${caption} ${i + 1}` : ''), percent => {
+      const record = await addCoupleMemory(batch[i].file, total === 1 ? caption : (caption ? `${caption} ${i + 1}` : ''), (percent,transfer) => {
         if (progress) progress.value = percent;
-        status.textContent = `File ${i + 1} of ${total} — ${percent < 100 ? `Uploading ${percent}%…` : '100% sent — saving…'}`;
+        status.textContent = `File ${i + 1} of ${total} — ${uploadTransferLabel(percent,transfer)}`;
       });
       saved++;
       done.push(i);
@@ -1509,7 +1509,7 @@ async function renderMyUploads(){
     const label = item._kind === 'guestbook' ? 'Guest book message' : kindLabel(item.kind);
     const type = item.type || '';
     const thumb = item._kind === 'memory' && item.mediaUrl
-      ? /^image\//.test(type) ? `<img class="aq-media" src="${item.mediaUrl}" alt="">`
+      ? /^image\//.test(type) ? `<img class="aq-media" loading="lazy" decoding="async" src="${item.thumbnailUrl||item.mediaUrl}" alt="">`
       : /^video\//.test(type) ? `<video class="aq-media" controls playsinline preload="none" src="${item.mediaUrl}"></video>`
       : /^audio\//.test(type) ? `<audio controls src="${item.mediaUrl}"></audio>` : ''
       : '';
@@ -2152,7 +2152,7 @@ initGifts();
 
 function adminContentMedia(item){
   if (item.type && item.type.startsWith('image/') && item.mediaUrl)
-    return `<img class="aq-media" src="${item.mediaUrl}" alt="" loading="lazy" />`;
+    return `<img class="aq-media" src="${item.thumbnailUrl||item.mediaUrl}" alt="" loading="lazy" decoding="async" />`;
   if (item.type && item.type.startsWith('video/') && item.mediaUrl)
     return `<video class="aq-media" controls playsinline preload="none" src="${item.mediaUrl}"></video>`;
   if (item.type && item.type.startsWith('audio/') && item.mediaUrl)

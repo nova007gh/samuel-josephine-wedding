@@ -80,7 +80,7 @@ async function api(path, opts = {}){
         xhr.timeout = 60 * 60000;
         Object.entries(headers).forEach(([key, value]) => xhr.setRequestHeader(key, value));
         xhr.upload.onprogress = e => {
-          if (e.lengthComputable && onProgress) onProgress(Math.round(e.loaded / e.total * 100));
+          if (e.lengthComputable && onProgress) onProgress(Math.round(e.loaded / e.total * 100),{loaded:e.loaded,total:e.total,elapsedMs:Date.now()-started});
         };
         xhr.upload.onload = () => { if (onProgress) onProgress(100); };
         xhr.onload = () => resolve({ ok: xhr.status >= 200 && xhr.status < 300,
@@ -89,6 +89,7 @@ async function api(path, opts = {}){
         xhr.ontimeout = () => reject(new Error('Upload timed out. Try a smaller file or a stronger connection.'));
         ctrl.signal.addEventListener('abort', () => xhr.abort(), { once: true });
         xhr.onabort = () => reject(new Error('Upload timed out. Try a smaller file or a stronger connection.'));
+        const started=Date.now();
         xhr.send(form);
       });
     } else res = await fetch(API_BASE + path, {
@@ -207,6 +208,13 @@ function sortedStoryGallery(items){
     if(y===null&&x!==null)return 1;
     return (x!==null&&y!==null?x-y:0)||Number(b.createdAt)-Number(a.createdAt)||String(a.id).localeCompare(String(b.id));
   });
+}
+function uploadTransferLabel(percent,transfer){
+  if(percent>=100)return '100% sent — saving…';
+  if(!transfer||transfer.elapsedMs<1000||!transfer.loaded)return `Uploading ${percent}%…`;
+  const mb=1024*1024,rate=transfer.loaded/(transfer.elapsedMs/1000),seconds=Math.max(1,Math.ceil((transfer.total-transfer.loaded)/rate));
+  const remaining=seconds<60?`${seconds}s`:`${Math.ceil(seconds/60)} min`;
+  return `${percent}% — ${(transfer.loaded/mb).toFixed(1)} / ${(transfer.total/mb).toFixed(1)} MB · ${(rate/mb).toFixed(2)} MB/s · about ${remaining} left`;
 }
 async function saveStoryGalleryOrder(ids,expected){
   return await api('/admin/gallery/order',{method:'PATCH',body:{ids,expected},admin:true});

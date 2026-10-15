@@ -191,16 +191,17 @@ function allGalleryItems(){
 }
 
 /* ---- album cover cards ---- */
+let albumRenderKey='';
 function renderAlbums(){
   const host = document.getElementById('galleryCats');
   if (!host) return;
   const items = allGalleryItems().filter(matchesKind);
 
-  host.innerHTML = GALLERY_ALBUMS.map(album => {
+  const html = GALLERY_ALBUMS.map(album => {
     const count = items.filter(m => m.category === album.id).length;
     const cover = items.find(m => m.category === album.id && (m.src || m.mediaUrl) &&
       (m.type || '').startsWith('image/'));
-    const src = (cover && (cover.src || cover.mediaUrl)) || sitePhoto(album.photoKey, album.cover);
+    const src = (cover && (cover.thumbnailUrl || cover.src || cover.mediaUrl)) || sitePhoto(album.photoKey, album.cover);
 
     return `
       <button class="cat-card" data-album="${album.id}" type="button">
@@ -209,6 +210,8 @@ function renderAlbums(){
         <span class="cat-count">${count}</span>
       </button>`;
   }).join('');
+  if(html===albumRenderKey&&host.children.length)return;
+  albumRenderKey=html;host.innerHTML=html;
 
   host.querySelectorAll('.cat-card').forEach(card => {
     card.addEventListener('click', () => openAlbum(card.dataset.album));
@@ -261,7 +264,7 @@ function renderGallery(memories){
      15s feed poll would cut playback off. Skip the rebuild when nothing
      visible has changed, and never interrupt media that is playing. */
   const key = activeGalleryFilter + '/' + activeGalleryKind + '#' +
-    items.map(m => (m.id || m.src) + ':' + (m.status || '') + ':' + (m.caption || '') + ':' + (m.mediaUrl || '')).join('|');
+    items.map(m => (m.id || m.src) + ':' + (m.status || '') + ':' + (m.caption || '') + ':' + (m.mediaUrl || '') + ':' + (m.thumbnailUrl||'')).join('|');
   if (key === galleryRenderKey && grid.children.length) return;
   const playing = [...grid.querySelectorAll('video, audio')].some(el => !el.paused && !el.ended);
   if (playing) return;
@@ -284,7 +287,7 @@ function renderGallery(memories){
     } else if (item.type.startsWith('audio/')){
       media = `<div class="mem-audio"><span class="mem-audio-icon">&#127908;</span><audio controls preload="none" src="${url}"></audio></div>`;
     } else {
-      media = `<img loading="lazy" decoding="async" src="${url}" alt="${escapeHTML(item.caption || 'Wedding memory')}">`;
+      media = `<img loading="lazy" decoding="async" src="${item.thumbnailUrl||url}" alt="${escapeHTML(item.caption || 'Wedding memory')}">`;
     }
 
     const byline = item.guestName ? `<p class="mem-by">by ${escapeHTML(item.guestName)}</p>` : '';
@@ -352,8 +355,8 @@ document.getElementById('memoryFiles')?.addEventListener('change', async event =
         blob: file,
         status: 'pending',
         guestName: (typeof getGuest === 'function' ? getGuest()?.name : '') || '',
-        onProgress: percent => {
-          status.textContent = `${i + 1} of ${files.length}: ${percent}%${percent === 100 ? ' sent — saving…' : ' uploaded'}`;
+        onProgress: (percent,transfer) => {
+          status.textContent = `${i + 1} of ${files.length}: ${uploadTransferLabel(percent,transfer)}`;
         }
       });
       saved++;
@@ -1003,7 +1006,7 @@ function renderSjStoryPanel(){
   /* mediaUrl is in the key: the server swaps a video's URL once its
      compressed mp4 is ready, and the grid must repaint to pick it up.
      Never rebuild while something is playing — same rule as the main grid. */
-  const key = items.map(m => `${m.id}:${m.caption || ''}:${m.mediaUrl}`).join('|');
+   const key = items.map(m => `${m.id}:${m.caption || ''}:${m.mediaUrl}:${m.thumbnailUrl||''}`).join('|');
   if (key === sjStoryRenderKey && grid.children.length) return;
   if ([...grid.querySelectorAll('video, audio')].some(el => !el.paused && !el.ended)) return;
   sjStoryRenderKey = key;
@@ -1013,7 +1016,7 @@ function renderSjStoryPanel(){
     const isVid = (m.type || '').startsWith('video/');
     const media = isVid
       ? `<div class="mem-media"><video src="${m.mediaUrl}" controls playsinline preload="none"></video></div>`
-      : `<img loading="lazy" decoding="async" src="${m.mediaUrl}" alt="${escapeHTML(m.caption || 'S&J memory')}">`;
+      : `<img loading="lazy" decoding="async" src="${m.thumbnailUrl||m.mediaUrl}" data-full-src="${escapeHTML(m.mediaUrl)}" alt="${escapeHTML(m.caption || 'S&J memory')}">`;
     return `<article class="mem-card">
       ${media}
       <div class="mem-meta">
@@ -1028,7 +1031,7 @@ function renderSjStoryPanel(){
     img.style.cursor = 'zoom-in';
     img.addEventListener('click', () => {
       const caption = img.closest('.mem-card')?.querySelector('.mem-cap')?.textContent || '';
-      openLightbox(img.currentSrc || img.src, caption);
+      openLightbox(img.dataset.fullSrc || img.currentSrc || img.src, caption);
     });
   });
 }

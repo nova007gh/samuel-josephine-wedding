@@ -29,6 +29,8 @@ module.exports=async({call,evaluate,wait,request})=>{
   await evaluate(`saveStoryGalleryOrder=window.__orderSave;latestMemories=adminMemories.filter(m=>m.status==='approved');renderSjStoryPanel();window.__orderGuest=[...document.querySelectorAll('#sjStoryGrid .mem-cap')].map(el=>el.textContent);`);
   const expectedCaps=await evaluate(`sortedStoryGallery(adminMemories.filter(m=>m.category==='sj-gallery')).map(m=>m.caption)`);
   assert.deepEqual(await evaluate(`window.__orderGuest`),expectedCaps,'Guest album uses the saved order across photos/videos');
+  const preview=await evaluate(`(()=>{const photo=latestMemories.find(m=>m.category==='sj-gallery'&&m.type.startsWith('image/'));photo.thumbnailUrl=photo.mediaUrl+'?preview-test=1';renderSjStoryPanel();const img=[...document.querySelectorAll('#sjStoryGrid img')].find(el=>el.dataset.fullSrc===photo.mediaUrl);const usesPreview=img.getAttribute('src')===photo.thumbnailUrl;const old=openLightbox;let opened;openLightbox=src=>{opened=src;};img.click();openLightbox=old;return {usesPreview,opensOriginal:opened===photo.mediaUrl};})()`);
+  assert.equal(preview.usesPreview,true);assert.equal(preview.opensOriginal,true,'Preview uses small image; full screen still opens original');
   await evaluate(`(async()=>{window.__newStoryRecord=await addCoupleMemory(new File(['new'],'new.png',{type:'image/png'}),'Newest upload');adminMemories=await api('/admin/memories',{admin:true});renderSjAdminGrid();})()`);
   await wait(`document.querySelectorAll('#sjGrid [data-sj-id]').length===4`);
   assert.equal(await evaluate(`sortedStoryGallery(adminMemories.filter(m=>m.category==='sj-gallery'))[0].id===window.__newStoryRecord.id`),true,'New upload appears first without losing prior custom order');

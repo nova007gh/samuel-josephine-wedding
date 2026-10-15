@@ -195,6 +195,7 @@ let ffmpegOk = null;
 
 try { require('child_process').execSync(`${FFMPEG_BIN} -version`, { stdio: 'ignore' }); ffmpegOk = true; }
 catch { ffmpegOk = false; console.warn('[video] ffmpeg not available — uploads served uncompressed'); }
+const mediaThumbnails=require('./media-thumbnails')({uploadsDir:UPLOADS_DIR,ffmpegBin:FFMPEG_BIN,enabled:ffmpegOk});
 
 function queueTranscode(memoryId){
   if (!ffmpegOk || transcodeIds.has(memoryId)) return;
@@ -897,10 +898,10 @@ app.post('/api/guestbook/:id/reply', publicWrite, (req, res) => {
 });
 
 /* ---------- memories ---------- */
-const storyGalleryOrder = require('./story-gallery-order')({app,db,requireAdmin});
+const storyGalleryOrder = require('./story-gallery-order')({app,db,requireAdmin,decorate:mediaThumbnails.decorate});
 app.get('/api/memories', (req, res) => {
   const rows = db.prepare(storyGalleryOrder.select+` WHERE m.status = 'approved' ORDER BY m.createdAt DESC`).all();
-  res.json(rows);
+  res.json(rows.map(mediaThumbnails.decorate));
 });
 
 app.post('/api/memories', publicWrite, upload.single('file'), (req, res) => {
@@ -927,6 +928,7 @@ app.post('/api/memories', publicWrite, upload.single('file'), (req, res) => {
     .run(record);
   res.json(record);
   queueTranscode(record.id);
+  mediaThumbnails.enqueue(record);
   const what = { photo:'a photo', video:'a video', selfie:'a selfie', voice:'a voice message', videomsg:'a video message', music:'a song' }[record.kind] || 'a memory';
   notifyAll('New upload pending review', `${record.guestName || 'A guest'} shared ${what} — pending your approval`);
 });
@@ -956,6 +958,7 @@ app.post('/api/admin/gallery', requireAdmin, upload.single('file'), (req, res) =
     .run(record);
   res.json(record);
   queueTranscode(record.id);
+  mediaThumbnails.enqueue(record);
 });
 
 /* ---------- admin: full feeds ---------- */
@@ -963,7 +966,7 @@ app.get('/api/admin/guestbook', requireAdmin, (req, res) => {
   res.json(db.prepare(`SELECT * FROM guestbook ORDER BY createdAt DESC`).all().map(gbRow));
 });
 app.get('/api/admin/memories', requireAdmin, (req, res) => {
-  res.json(db.prepare(storyGalleryOrder.select+` ORDER BY m.createdAt DESC`).all());
+  res.json(db.prepare(storyGalleryOrder.select+` ORDER BY m.createdAt DESC`).all().map(mediaThumbnails.decorate));
 });
 app.get('/api/admin/guests', requireAdmin, (req, res) => {
   res.json(db.prepare(`SELECT * FROM guests ORDER BY checkedInAt DESC`).all());
@@ -1668,6 +1671,7 @@ const httpServer = app.listen(PORT, HOST, () => {
     try {
       for (const row of db.prepare(`SELECT id FROM memories WHERE type LIKE 'video/%'`).all())
         queueTranscode(row.id);
+      for(const row of db.prepare(`SELECT mediaUrl,type FROM memories WHERE type LIKE 'image/%'`).all())mediaThumbnails.enqueue(row);
     } catch(err){ console.warn('[video] startup sweep failed:', err.message); }
   }, 5000);
 });
