@@ -716,10 +716,15 @@ const adminFeedErrors = new Map();
 /* S&J Gallery nodes must exist before onAdminAuth fires — that callback
    runs synchronously at load and renders the admin grid. */
 const sjGrid = document.getElementById('sjGrid');
+let sjOrderBusy = false;
+let sjAdminRenderKey = '';
+let sjOrderAuthEpoch = 0;
 const sjEmpty = document.getElementById('sjEmpty');
 
 /* auth state drives everything admin-related */
 onAdminAuth(signedIn => {
+  sjOrderAuthEpoch++;
+  if(!signedIn){const status=document.getElementById('sjOrderStatus');if(status)status.textContent='';}
   const wasSignedIn = adminSignedIn;
   adminSignedIn = signedIn;
   document.body.classList.toggle('is-admin', signedIn);
@@ -1255,31 +1260,84 @@ function stopAdminListeners(){
    ========================================================= */
 function renderSjAdminGrid(){
   if (!sjGrid || !sjEmpty) return;
-  const items = (adminMemories || []).filter(m => m.category === 'sj-gallery');
+  if(!isAdmin()){sjGrid.innerHTML='';sjAdminRenderKey='';return;}
+  if(sjOrderBusy)return;
+  const items = sortedStoryGallery((adminMemories || []).filter(m => m.category === 'sj-gallery'));
+  const key=JSON.stringify(items);
+  if(key===sjAdminRenderKey)return;
   sjEmpty.classList.toggle('hidden', items.length > 0);
   /* keep any playing video alive across poll refreshes — same rule as the
      guest gallery grid */
   if ([...sjGrid.querySelectorAll('video, audio')].some(el => !el.paused && !el.ended)) return;
-  sjGrid.innerHTML = items.map(m => {
+  sjAdminRenderKey=key;
+  sjGrid.innerHTML = items.map((m,i) => {
     const isVid = (m.type || '').startsWith('video/');
     const media = isVid
       ? `<div class="mem-media"><video src="${m.mediaUrl}" controls playsinline preload="none"></video></div>`
       : `<img loading="lazy" decoding="async" src="${m.mediaUrl}" alt="${escapeHTML(m.caption || 'S&J memory')}">`;
-    return `<article class="mem-card">
+    return `<article class="mem-card" data-sj-id="${escapeHTML(m.id)}">
       ${media}
       <div class="mem-meta">
         <p class="mem-cap">${escapeHTML(m.caption || '—')}</p>
+        <small>Position ${i+1} of ${items.length}</small>
+        <div class="sj-order-controls">
+          <button class="mem-del" data-sj-move="first" type="button" ${i===0?'disabled':''} aria-label="Move item ${i+1} to first">First</button>
+          <button class="mem-del" data-sj-move="up" type="button" ${i===0?'disabled':''} aria-label="Move item ${i+1} earlier">↑ Earlier</button>
+          <button class="mem-del" data-sj-move="down" type="button" ${i===items.length-1?'disabled':''} aria-label="Move item ${i+1} later">↓ Later</button>
+          <button class="mem-del" data-sj-move="last" type="button" ${i===items.length-1?'disabled':''} aria-label="Move item ${i+1} to last">Last</button>
+        </div>
         <button class="mem-del" data-sj-del="${m.id}" type="button">Remove</button>
       </div>
     </article>`;
   }).join('');
   sjGrid.querySelectorAll('[data-sj-del]').forEach(btn =>
     btn.addEventListener('click', async () => {
+      if(!isAdmin()||sjOrderBusy)return;
       if (!confirm('Remove this from the S&J Gallery?')) return;
       try { await deleteMemory(btn.dataset.sjDel); }
       catch { alert('Could not remove — try again.'); }
     }));
 }
+
+sjGrid?.addEventListener('click',async e=>{
+  const button=e.target.closest('[data-sj-move]');
+  if(!button||!isAdmin()||sjOrderBusy)return;
+  const id=button.closest('[data-sj-id]').dataset.sjId;
+  const epoch=sjOrderAuthEpoch;
+  const items=sortedStoryGallery((adminMemories||[]).filter(m=>m.category==='sj-gallery'));
+  const expected=items.map(m=>m.id),ids=expected.slice(),from=ids.indexOf(id);
+  if(from<0)return;
+  const action=button.dataset.sjMove;
+  const to=action==='first'?0:action==='last'?ids.length-1:action==='up'?from-1:from+1;
+  if(to<0||to>=ids.length||to===from)return;
+  ids.splice(to,0,ids.splice(from,1)[0]);
+  const status=document.getElementById('sjOrderStatus');
+  sjOrderBusy=true;
+  sjGrid.querySelectorAll('video,audio').forEach(el=>el.pause());
+  sjGrid.querySelectorAll('button').forEach(b=>b.disabled=true);
+  status.textContent='Saving album order…';
+  try{
+    const result=await saveStoryGalleryOrder(ids,expected);
+    if(!isAdmin()||epoch!==sjOrderAuthEpoch)return;
+    adminMemories=[...(adminMemories||[]).filter(m=>m.category!=='sj-gallery'),...result.items];
+    latestMemories=[...(latestMemories||[]).filter(m=>m.category!=='sj-gallery'),...result.items.filter(m=>m.status==='approved')];
+    // An explicit admin move may pause this album's playback; polling never does.
+    sjGrid.querySelectorAll('video,audio').forEach(el=>el.pause());
+    status.textContent='Order saved — guests will see this arrangement. New uploads appear first.';
+    renderSjStoryPanel();
+  }catch(err){
+    if(isAdmin()&&epoch===sjOrderAuthEpoch){
+      status.textContent=err.message||'Could not save the order. Please try again.';
+      try{const fresh=await api('/admin/memories',{admin:true});if(isAdmin()&&epoch===sjOrderAuthEpoch)adminMemories=fresh;}catch{}
+    }
+  }finally{
+    sjOrderBusy=false;sjAdminRenderKey='';renderSjAdminGrid();
+    if(isAdmin()&&epoch===sjOrderAuthEpoch){
+      const card=[...sjGrid.querySelectorAll('[data-sj-id]')].find(el=>el.dataset.sjId===id);
+      (card?.querySelector(`[data-sj-move="${action}"]:not(:disabled)`)||card?.querySelector('[data-sj-move]:not(:disabled)'))?.focus({preventScroll:true});
+    }
+  }
+});
 
 /* pick → preview → publish. The input is opened by an explicit button so a
    label-wrapped hidden input can never swallow the tap on mobile. */

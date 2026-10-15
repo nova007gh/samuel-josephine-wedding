@@ -200,6 +200,17 @@ function onAllMemories(callback){
 }
 
 /* the couple's own album — admin-published, lands approved instantly */
+function sortedStoryGallery(items){
+  return items.slice().sort((a,b)=>{
+    const x=Number.isInteger(a.sjOrder)?a.sjOrder:null,y=Number.isInteger(b.sjOrder)?b.sjOrder:null;
+    if(x===null&&y!==null)return -1;
+    if(y===null&&x!==null)return 1;
+    return (x!==null&&y!==null?x-y:0)||Number(b.createdAt)-Number(a.createdAt)||String(a.id).localeCompare(String(b.id));
+  });
+}
+async function saveStoryGalleryOrder(ids,expected){
+  return await api('/admin/gallery/order',{method:'PATCH',body:{ids,expected},admin:true});
+}
 async function addCoupleMemory(file, caption, onProgress){
   const fd = new FormData();
   fd.append('file', file, file.name || 'memory');

@@ -997,9 +997,8 @@ function renderSjStoryPanel(){
   const empty = document.getElementById('sjStoryEmpty');
   if (!grid || !empty) return;
 
-  const items = (latestMemories || [])
-    .filter(m => m.status === 'approved' && m.category === 'sj-gallery' && m.mediaUrl)
-    .sort((a, b) => toMillis(b.createdAt) - toMillis(a.createdAt)); // newest first
+  const items = sortedStoryGallery((latestMemories || [])
+    .filter(m => m.status === 'approved' && m.category === 'sj-gallery' && m.mediaUrl));
 
   /* mediaUrl is in the key: the server swaps a video's URL once its
      compressed mp4 is ready, and the grid must repaint to pick it up.

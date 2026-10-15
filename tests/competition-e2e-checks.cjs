@@ -22,6 +22,11 @@ module.exports=async({call,evaluate,errors,out})=>{
     await require('./countdown-e2e-checks.cjs')({evaluate,wait,request});
     await request('/admin/logout',{method:'POST',admin:true});return;
   }
+  if(process.env.WEDDING_E2E_ORDER_ONLY==='1'){
+    controllerToken=(await request('/admin/login',{method:'POST',body:{password:'isolated-browser-only'}})).data.token;
+    await require('./story-order-e2e.cjs')({call,evaluate,wait,request,out});
+    await request('/admin/logout',{method:'POST',admin:true});return;
+  }
   if(process.env.WEDDING_E2E_PROGRAM_ONLY==='1'){
     controllerToken=(await request('/admin/login',{method:'POST',body:{password:'isolated-browser-only'}})).data.token;
     await require('./program-e2e-checks.cjs')({call,evaluate,wait,request,out});

@@ -87,6 +87,9 @@ const delay = ms => new Promise(resolve=>setTimeout(resolve,ms));
     await require('./competition-e2e-checks.cjs')({call,evaluate,errors,out});
     return;
   }
+  if(process.argv.includes('--live-story-order')){
+    await require('./live-story-order.cjs')({call,evaluate,errors});return;
+  }
   if(process.argv.includes('--share')){
     await require('./share-browser-checks.cjs')({call,evaluate,errors,out});
     return;

@@ -897,8 +897,9 @@ app.post('/api/guestbook/:id/reply', publicWrite, (req, res) => {
 });
 
 /* ---------- memories ---------- */
+const storyGalleryOrder = require('./story-gallery-order')({app,db,requireAdmin});
 app.get('/api/memories', (req, res) => {
-  const rows = db.prepare(`SELECT * FROM memories WHERE status = 'approved' ORDER BY createdAt DESC`).all();
+  const rows = db.prepare(storyGalleryOrder.select+` WHERE m.status = 'approved' ORDER BY m.createdAt DESC`).all();
   res.json(rows);
 });
 
@@ -962,7 +963,7 @@ app.get('/api/admin/guestbook', requireAdmin, (req, res) => {
   res.json(db.prepare(`SELECT * FROM guestbook ORDER BY createdAt DESC`).all().map(gbRow));
 });
 app.get('/api/admin/memories', requireAdmin, (req, res) => {
-  res.json(db.prepare(`SELECT * FROM memories ORDER BY createdAt DESC`).all());
+  res.json(db.prepare(storyGalleryOrder.select+` ORDER BY m.createdAt DESC`).all());
 });
 app.get('/api/admin/guests', requireAdmin, (req, res) => {
   res.json(db.prepare(`SELECT * FROM guests ORDER BY checkedInAt DESC`).all());

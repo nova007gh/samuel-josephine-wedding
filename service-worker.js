@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v191-one-gb-uploads';
+const CACHE = 'sj-wedding-v192-story-album-order';
 const ASSETS = [
   './',
   './index.html',

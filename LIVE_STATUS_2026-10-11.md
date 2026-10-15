@@ -1,5 +1,39 @@
 # snybena.com live audit — 11 October 2026
 
+## Admin Our Story photo/video ordering — v192 (15 October)
+
+Admin Dashboard → Our Story → S&J Gallery now has First, Earlier, Later and
+Last controls and numbered positions on each published album item. Each move
+saves automatically, for both photos and videos. Guests' Our Story → S&J Gallery
+uses the same custom order. New uploads appear first, keeping existing custom
+relative order. Reordering does not alter captions, dates, media files or URLs.
+Timeline text/photo slots and guest-uploaded Gallery ordering are unchanged.
+
+Order is persisted in a new `sj_gallery_order` table, keyed by memory ID; no
+existing memory rows are migrated or modified. Public/admin memory feeds include
+the optional `sjOrder` field. Admin-only PATCH `/api/admin/gallery/order` validates
+every current album ID exactly once and compares the expected order in the same
+SQLite transaction as the write. Changed order/membership returns 409, preventing
+one admin's stale list overwriting another device's work. Failed saves do not
+optimistically change the displayed order; the current list is reloaded for retry.
+Duplicate taps are blocked while saving; sign-out/changed-session responses are
+ignored. Controls use touch-friendly buttons, not drag-only gestures. Explicit
+admin moves pause that editor's media; background polls do not stop playback.
+Unchanged admin album snapshots now avoid unnecessary grid rebuilds.
+
+Actual browser/disposable API tests pass for all four moves, mixed photo/video,
+guest ordering, 320/375/430/1024 mobile widths, failed-save retry, duplicate taps,
+admin guard, invalid/missing/duplicate IDs, stale conflicts and sign-out cleanup.
+API tests verify saved order survives restart and files/metadata remain intact.
+Dashboard upload/progress/duplicate-protection, Share/seven-page, API security,
+upload helper and service-worker regressions pass. Focused command:
+`WEDDING_E2E_ORDER_ONLY=1 WEDDING_E2E_SERVER=/root/wedding-order-v192-candidate/server.js node tests/isolated-e2e.cjs <output-dir>`.
+Deployed read-only guest album order/mobile/auth checks and dashboard/upload
+regressions pass. Fresh pre-v192 preservation audit: 6 guests, 1 RSVP, all
+26 memories/files, 0 guestbook entries, 3 gifts, 1 fund, 37 settings unchanged;
+existing competition retained, SQLite `ok`, services active. Existing live album
+order was not rearranged for testing. No live media uploaded/deleted or votes cast.
+
 ## Large phone-video uploads — v191 (15 October)
 
 Raised the general media per-file limit from 256 MiB to 1 GiB (1,024 MiB),

@@ -1282,3 +1282,6 @@ body.is-admin [data-view="more"] .admin-only.hidden{ display:none !important; }
 /* read-only MoMo fields for non-admins */
 input[readOnly]{ background:rgba(240,228,196,.5) !important; }
 .hidden{ display:none !important; }
+.sj-order-controls{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;}
+.sj-order-controls .mem-del{font-size:12px;padding:8px 10px;min-height:40px;margin:0;}
+.sj-order-controls button:disabled{opacity:.4;cursor:default;}

@@ -44,6 +44,17 @@ async function create(overrides){return (await req('/admin/competitions',{method
   try{
     await start();db=new Database(path.join(dir,'wedding.db'));
     token=(await req('/admin/login',{method:'POST',body:{password:'isolated-test-only'}})).data.token;
+    const album=[];
+    for(let i=0;i<3;i++){const form=new FormData();form.append('file',new Blob(['test'],{type:i===1?'video/mp4':'image/png'}),i===1?'test.mp4':'test.png');album.push((await req('/admin/gallery',{method:'POST',admin:true,body:form})).data);}
+    const currentAlbum=(await req('/admin/memories',{admin:true})).data.filter(m=>m.category==='sj-gallery').sort((a,b)=>Number(b.createdAt)-Number(a.createdAt)||a.id.localeCompare(b.id)).map(m=>m.id);
+    const desiredAlbum=currentAlbum.slice().reverse();
+    await req('/admin/gallery/order',{method:'PATCH',body:{ids:desiredAlbum,expected:currentAlbum},status:401});
+    await req('/admin/gallery/order',{method:'PATCH',admin:true,body:{ids:desiredAlbum,expected:currentAlbum}});
+    assert.deepEqual((await req('/memories')).data.filter(m=>m.category==='sj-gallery').sort((a,b)=>a.sjOrder-b.sjOrder).map(m=>m.id),desiredAlbum);
+    const reordered=(await req('/admin/memories',{admin:true})).data;
+    for(const original of album){const found=reordered.find(m=>m.id===original.id);for(const key of ['caption','createdAt','mediaUrl','size','type','status'])assert.equal(found[key],original[key],'Reordering preserves '+key);assert.ok(fs.existsSync(path.join(dir,'uploads',path.basename(found.mediaUrl))));}
+    await req('/admin/gallery/order',{method:'PATCH',admin:true,body:{ids:currentAlbum,expected:currentAlbum},status:409});
+    await req('/admin/gallery/order',{method:'PATCH',admin:true,body:{ids:[desiredAlbum[0]],expected:desiredAlbum},status:400});
     const receptionProgram=JSON.stringify({title:'Reception Program',names:'S & J',tagline:'Forever',dateLabel:'January 9, 2027',timeLabel:'2 PM – 10 PM',hosts:'Our MCs',footer:'Goodnight',items:Array.from({length:20},(_,i)=>({time:'5:45 PM',title:'Activity '+i,details:'x'.repeat(500)}))});
     await req('/admin/settings',{method:'PATCH',admin:true,body:{receptionProgram}});
     assert.equal((await req('/settings')).data.receptionProgram,receptionProgram,'Long program is not truncated at the ordinary text-setting limit');
@@ -200,6 +211,7 @@ async function create(overrides){return (await req('/admin/competitions',{method
     db.close();db=null;await stop();await start();
     assert.equal((await req('/settings')).data.receptionProgram,receptionProgram,'Program persists across API restart');
     assert.equal((await req('/settings')).data.engagementProgram,engagementProgram,'Engagement persists across API restart');
+    assert.deepEqual((await req('/memories')).data.filter(m=>m.category==='sj-gallery').sort((a,b)=>a.sjOrder-b.sjOrder).map(m=>m.id),desiredAlbum,'Album order persists across API restart');
     assert.deepEqual((await req('/competitions/'+optional.id,{cookie:browserCookie})).data.myChoices,[optionTwo]);
     assert.equal((await req('/competitions/'+optional.id,{cookie:browserCookie})).data.requireVerified,false);
     assert.equal((await req('/competitions/'+multi.id,{cookie:a.cookie})).data.results.totalVotes,2);
