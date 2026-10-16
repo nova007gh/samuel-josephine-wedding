@@ -43,6 +43,15 @@ and safe new-device continuation. Existing full competition API/session/OTP
 regressions also pass with verification re-enabled in isolated tests.
 Command: `WEDDING_E2E_QUICK_ONLY=1 WEDDING_E2E_SERVER=/root/wedding-onboarding-v198-candidate/quick-onboarding-server.js node tests/isolated-e2e.cjs <output-dir>`.
 
+Deployed with `GUEST_OTP_REQUIRED=false`; public config and all four paused
+routes were verified live (empty requests only, no messages sent). Read-only
+mobile onboarding and thirteen-category dashboard/upload checks pass. Fresh
+predeployment snapshot: `/root/wedding-pre-v198` (private environment backup
+stays on the server only). Preservation audit retained all 9 guests, 1 RSVP,
+26 media records/files, 0 guestbook entries, 3 gifts, 1 fund, 37 settings and
+both competitions; SQLite integrity `ok`. API/nginx active; backend files
+match the deployed repository. No live test guests were created.
+
 ## Bridal Train / live-stream usability enhancements — v197 (16 October)
 
 Frontend-only update; existing API, schema and saved settings are unchanged.
