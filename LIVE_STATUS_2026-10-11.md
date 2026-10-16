@@ -25,6 +25,12 @@ including three-column schedule/replays and two-column action cards, decoded
 photos, no eager iframe and no JS exceptions. Broadcast schema/calendar and
 service-worker regression suites pass. Cache: v199-broadcast-reference.
 
+Deployed commit `6ed2927`. Read-only live broadcast checks pass at all four
+widths. Fresh snapshot `/root/wedding-pre-v199`; preservation audit retained
+13 guests, 1 RSVP, all 26 media records/files, 0 guestbook entries, 3 gifts,
+1 fund, 37 settings and both competitions. SQLite integrity `ok`; API/nginx
+active. No live data/settings were edited and no test guests were created.
+
 ## Temporary OTP pause and quick onboarding — v198 (16 October)
 
 Guest OTP can be paused with server environment `GUEST_OTP_REQUIRED=false`.
