@@ -26,6 +26,15 @@ conflicts/reload and sign-out cleanup. Schema/default and service-worker
 tests pass. GET-only candidate previews using public live data pass Bridal
 Train and Live Broadcast regressions; no live saves/uploads/messages.
 
+Deployed `2720de7`; read-only live Bridal Train checks pass. Snapshot:
+`/root/wedding-pre-v200`. Audit retained 13 guests, 1 RSVP, 26 media
+records/files, 0 guestbook entries, 3 gifts, 1 fund, 2 competitions and
+1 competition vote; SQLite integrity `ok`. The strict snapshot audit flagged
+a concurrent `liveBroadcast.posterUrl` edit, investigated separately and
+left untouched. All other settings (including bridalTrain) match the snapshot.
+No backend changes, live test guests or content saves in this deployment;
+API/nginx remain active.
+
 ## Live Broadcast reference layout — v199 (16 October)
 
 Rebuilt the guest Live Broadcast composition to follow the supplied cream/gold
