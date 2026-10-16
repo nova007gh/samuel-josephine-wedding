@@ -34,6 +34,13 @@ GET-only real-data preview checks pass for 320x568/375x667/430x1100/844x390,
 16px inputs, reachable submit, hidden OTP and no JS exceptions. Worker and
 logout/push regressions pass. Predeployment snapshot: `/root/wedding-pre-v202`.
 
+Deployed `c53ff88`; read-only live check-in checks pass in small portrait and
+landscape layouts, including neutral returning-device help and unchanged
+OTP-off mode. Audit retained 18 guests, 1 RSVP, all 25 media records/files,
+0 guestbook entries, 3 gifts, 1 fund, 39 settings and both competitions
+unchanged; SQLite integrity `ok`, API/nginx active. No live test check-ins,
+uploads, message delivery or content changes were performed.
+
 ## Floral polish and direct Bridal Train / Live tabs — v201 (16 October)
 
 At the user's request, expanded navigation from seven to nine destinations:
