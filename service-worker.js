@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v206-home-floral-reference';
+const CACHE = 'sj-wedding-v207-restore-home';
 const ASSETS = [
   './',
   './index.html',
@@ -8,7 +8,6 @@ const ASSETS = [
   './app-views.css',
   './app-polish.css',
   './guest-checkin.css',
-  './home-reference.css',
   './app-forms.css',
   './app-social.css',
   './gifts.css',

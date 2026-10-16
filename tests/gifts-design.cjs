@@ -76,9 +76,6 @@ const delay = ms => new Promise(resolve=>setTimeout(resolve,ms));
   }
   /* Preview-only identity in this disposable profile; no check-in API call. */
   await evaluate('setGuest({name:"Design preview"});enterApp();switchView("gifts");Promise.race([document.fonts.ready,new Promise(resolve=>setTimeout(resolve,5000))]).then(()=>true)');
-  if(process.argv.includes('--home')){
-    await require('./home-reference-checks.cjs')({call,evaluate,errors,out});return;
-  }
   if(process.argv.includes('--navigation')){
     await require('./navigation-style-checks.cjs')({call,evaluate,errors,out});return;
   }
