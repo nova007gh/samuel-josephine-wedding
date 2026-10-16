@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v204-gallery-seal-pulse';
+const CACHE = 'sj-wedding-v205-visible-all-tabs';
 const ASSETS = [
   './',
   './index.html',

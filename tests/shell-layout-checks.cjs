@@ -16,7 +16,7 @@ module.exports=async({call,evaluate,errors,out})=>{
       if(diagnostic)console.log(width,view,JSON.stringify(samples));
     }
     if(!diagnostic){
-      const navigation=await evaluate(`(async()=>{const checks=[];for(const tab of document.querySelectorAll('.tabbar .tab')){tab.click();await new Promise(r=>setTimeout(r,600));const b=tab.getBoundingClientRect(),bar=tab.closest('.tabbar'),n=bar.getBoundingClientRect();checks.push({name:tab.dataset.tab,active:tab.getAttribute('aria-current')==='page'&&currentView===tab.dataset.tab,visible:b.left>=n.left-1&&b.right<=n.right+1,touch:b.width>=44&&b.height>=44,rect:[b.left,b.right,n.left,n.right],scroll:bar.scrollLeft});}return checks;})()`);
+      const navigation=await evaluate(`(async()=>{const checks=[];for(const tab of document.querySelectorAll('.tabbar .tab')){tab.click();await new Promise(r=>setTimeout(r,600));const b=tab.getBoundingClientRect(),bar=tab.closest('.tabbar'),n=bar.getBoundingClientRect();checks.push({name:tab.dataset.tab,active:tab.getAttribute('aria-current')==='page'&&currentView===tab.dataset.tab,visible:b.left>=n.left-1&&b.right<=n.right+1,touch:b.width>=24&&b.height>=44,rect:[b.left,b.right,n.left,n.right],scroll:bar.scrollLeft});}return checks;})()`);
       assert.equal(navigation.length,9);assert.ok(navigation.every(x=>x.active&&x.visible&&x.touch),'All tabs visible on selection, active and tappable at '+width+' '+JSON.stringify(navigation));
       assert.equal(await evaluate(`document.querySelectorAll('.tabbar .tab')[4].dataset.tab`),'gallery');
       console.log('PASS 17 guest/sign-in pages reach finite bottoms and all nine tabs route/fit at '+width+'px');

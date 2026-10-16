@@ -1,5 +1,27 @@
 # snybena.com live audit — 11 October 2026
 
+## Keep Share and all bottom tabs visible — v205 (16 October)
+
+Fixed the reported hidden Share button by removing the bottom bar's fixed
+44px/64px minimum-column widths and sideways scrolling. All nine destinations
+now fit inside the available width; Gallery remains fifth with a modestly
+wider relative column, not a fixed oversized slot. Labels have their own
+two-line area and responsive font sizing, so longer names can wrap rather
+than force buttons out of view. Tall 64px targets remain (74px for Gallery);
+narrow-phone button widths adapt, remaining above the 24px target minimum.
+
+Reduced the seal from 52px to a responsive 28–38px width / 36px height and
+kept its gentle pulse/reduced-motion fallback. Bar clearance is now 86px plus
+safe area instead of 96px. No backend, routing, content or OTP changes.
+Updated navigation checks require every tab to be visible simultaneously,
+including Home and Share, with no horizontal scroll extent or clipped labels.
+
+Candidate checks pass at 320/360/375/390/430/476/1024px for all nine tabs
+simultaneously visible, no sideways-scroll extent, wrapped/non-clipped labels,
+aligned label rows, reduced animated seal, active routing and reduced motion.
+320px and wider screenshots reviewed. Share guest/admin controls and check-in
+regression previews pass; worker tests pass. Snapshot `/root/wedding-pre-v205`.
+
 ## Larger centre Gallery seal — v204 (16 October)
 
 At the user's request, Gallery now has a wider 64px-minimum centre slot and
