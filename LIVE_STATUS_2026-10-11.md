@@ -22,6 +22,11 @@ minimum touch sizes, shared pulse and reduced-motion disabling. Screenshots
 reviewed. Share guest/admin/controls and check-in regression previews pass;
 worker and logout/push unit tests pass. Snapshot `/root/wedding-pre-v203`.
 
+Deployed `7709edd`; the same navigation suite passes live at all five widths.
+Preservation audit retains 18 guests, 1 RSVP, 25 media records/files,
+0 guestbook entries, 3 gifts, 1 fund, 39 settings and both competitions
+unchanged. SQLite integrity `ok`; API/nginx active; no live content writes.
+
 ## Guest check-in cleanup and validation recovery — v202 (16 October)
 
 Reviewed the reported check-in screenshot and rebuilt its scoped presentation:
