@@ -18,6 +18,11 @@ all nine routes/selected visibility and reduced-motion. Screenshots reviewed;
 Share guest/admin and check-in regression previews pass, as does worker
 caching. Fresh predeployment snapshot: `/root/wedding-pre-v204`.
 
+Deployed `75f907e`; live navigation checks pass at all five widths. Audit
+retains 18 guests, 1 RSVP, 25 media records/files, 0 guestbook entries,
+3 gifts, 1 fund, 39 settings and both competitions unchanged. SQLite integrity
+`ok`; API/nginx active, with no live content writes by this release.
+
 ## Uniform bottom navigation buttons — v203 (16 October)
 
 All nine bottom-bar destinations now share the same 64px button height,
