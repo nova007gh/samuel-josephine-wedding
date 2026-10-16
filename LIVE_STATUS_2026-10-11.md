@@ -1,5 +1,27 @@
 # snybena.com live audit — 11 October 2026
 
+## Uniform bottom navigation buttons — v203 (16 October)
+
+All nine bottom-bar destinations now share the same 64px button height,
+rounded gold-bordered cream card, padding, label baseline, centred icon row
+and soft gold pulse. Active pages consistently use the filled gold treatment.
+Gallery stays in the fifth/centre slot with its real S&J seal fitted into
+the same icon row (no separate oversized pulse or label offset). Removed
+special Bridal Train/Live-only treatment; higher-specificity shared rules
+also prevent their page styles from changing button margins or dimensions.
+Added uniform 2px gaps/outer inset and 80px safe-area-aware bar clearance.
+Minimum 44px targets and narrow-screen sideways swipe remain; all pulses
+disable under reduced-motion. No routes, guest content or backend changed.
+Selected-tab reveal now runs after the document reset and uses only an
+instant local strip scroll, avoiding competing smooth-scroll animations.
+
+New read-only navigation suite passes at 320/375/430/476/1024px: equal card
+dimensions/styles, aligned icon centres and text baselines across Home/Bridal
+Train/Live pages, all nine routes/active indicators, selected-tab visibility,
+minimum touch sizes, shared pulse and reduced-motion disabling. Screenshots
+reviewed. Share guest/admin/controls and check-in regression previews pass;
+worker and logout/push unit tests pass. Snapshot `/root/wedding-pre-v203`.
+
 ## Guest check-in cleanup and validation recovery — v202 (16 October)
 
 Reviewed the reported check-in screenshot and rebuilt its scoped presentation:

@@ -1073,20 +1073,19 @@ function switchView(name, fromHistory = false){
     t.classList.toggle('active',selected);
     if(selected)t.setAttribute('aria-current','page');else t.removeAttribute('aria-current');
   });
-  // Scroll only the narrow navigation strip, never scrollIntoView on its button:
-  // that would also move the document and fight the guest's page scrolling.
-  const selectedTab=document.querySelector('.tab.active'),bar=selectedTab?.closest('.tabbar');
-  if(bar){const item=selectedTab.getBoundingClientRect(),frame=bar.getBoundingClientRect();
-    const delta=item.left<frame.left?item.left-frame.left:item.right>frame.right?item.right-frame.right:0;
-    if(delta)bar.scrollTo({left:bar.scrollLeft+delta,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
-  }
-
   /* the music button floats over every screen once a song exists;
      the menu button takes its header slot elsewhere */
   const onHome = name === 'home';
   $('#musicDock')?.classList.toggle('hidden', !music?.src);
 
   if(name!==currentView)window.scrollTo({ top: 0, behavior: 'instant' });
+  // Reveal the selected button after the page scroll reset. Using a separate
+  // instant strip scroll avoids competing smooth-scroll animations on phones.
+  const selectedTab=document.querySelector('.tab.active'),bar=selectedTab?.closest('.tabbar');
+  if(bar){const item=selectedTab.getBoundingClientRect(),frame=bar.getBoundingClientRect();
+    const delta=item.left<frame.left?item.left-frame.left:item.right>frame.right?item.right-frame.right:0;
+    if(delta)bar.scrollTo({left:bar.scrollLeft+delta,behavior:'instant'});
+  }
 
   if (!fromHistory && name !== currentView){
     try { history.pushState({ view: name }, '', '#' + name); } catch {}

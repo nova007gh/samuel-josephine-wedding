@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v202-checkin-recovery';
+const CACHE = 'sj-wedding-v203-unified-tab-buttons';
 const ASSETS = [
   './',
   './index.html',
