@@ -22,6 +22,14 @@ aligned label rows, reduced animated seal, active routing and reduced motion.
 320px and wider screenshots reviewed. Share guest/admin controls and check-in
 regression previews pass; worker tests pass. Snapshot `/root/wedding-pre-v205`.
 
+Deployed `23a7a9d`; all seven-width visibility/navigation tests also pass live.
+Audit retains 19 guests, 1 RSVP, all 25 media records/files, 0 guestbook
+entries, 3 gifts, 1 fund, both competitions and 1 vote unchanged. The strict
+snapshot audit flagged a concurrent `liveBroadcast.posterUrl` change; separate
+read-only comparison confirms all other settings unchanged and that change
+was left untouched. SQLite integrity `ok`; API/nginx active. No content writes
+or backend changes were performed by this release.
+
 ## Larger centre Gallery seal — v204 (16 October)
 
 At the user's request, Gallery now has a wider 64px-minimum centre slot and
