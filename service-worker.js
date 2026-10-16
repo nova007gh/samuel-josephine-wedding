@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v203-unified-tab-buttons';
+const CACHE = 'sj-wedding-v204-gallery-seal-pulse';
 const ASSETS = [
   './',
   './index.html',

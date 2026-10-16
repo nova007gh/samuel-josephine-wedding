@@ -1,5 +1,23 @@
 # snybena.com live audit — 11 October 2026
 
+## Larger centre Gallery seal — v204 (16 October)
+
+At the user's request, Gallery now has a wider 64px-minimum centre slot and
+an 84px-tall button, with the real S&J seal increased from 30x28 to 52x52px.
+A slow three-second golden glow/scale pulse affects the seal only, not the
+button layout; reduced-motion keeps the seal static with a light halo.
+Neighbouring buttons retain their matching style and 44px minimum targets,
+and all nine labels stay aligned. The 96px safe-area-aware bar reserves space
+for the raised centre button without clipping its seal or covering page ends.
+Gallery stays fifth; narrow-phone sideways navigation remains available.
+No routing, backend, content or OTP changes. Cache bumped to v204.
+
+Candidate navigation suite passes at 320/375/430/476/1024px for larger centre
+dimensions, 52px animated seal, label alignment, neighbouring button styles,
+all nine routes/selected visibility and reduced-motion. Screenshots reviewed;
+Share guest/admin and check-in regression previews pass, as does worker
+caching. Fresh predeployment snapshot: `/root/wedding-pre-v204`.
+
 ## Uniform bottom navigation buttons — v203 (16 October)
 
 All nine bottom-bar destinations now share the same 64px button height,
