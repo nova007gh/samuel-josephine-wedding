@@ -38,6 +38,7 @@
   <link rel="stylesheet" href="live-broadcast-reference.css?v=199" />
   <link rel="stylesheet" href="app-polish.css?v=205" />
   <link rel="stylesheet" href="guest-checkin.css?v=202" />
+  <link rel="stylesheet" href="home-reference.css?v=206" />
   <script>
   /* a checked-in guest goes straight into the app — flag it before first
      paint so the invitation never flashes on their screen (mirrors
@@ -296,6 +297,19 @@
   <!-- ---------- SCREEN 3 — Home ---------- -->
   <section class="view" data-view="home">
     <div class="home-hero">
+      <figure class="couple-photo">
+        <img id="couplePhoto" src="assets/photo-placeholder.svg" data-site-photo="couple" alt="Sam and Jossy" fetchpriority="high" decoding="async" />
+        <label id="couplePlaceholder" class="photo-placeholder hidden">
+          <strong>Sam &amp; Jossy</strong>
+          <span>TAP TO ADD YOUR PHOTO</span>
+          <input id="couplePhotoFile" type="file" accept="image/*" class="hidden" />
+        </label>
+        <figcaption class="couple-caption">
+          <span class="couple-hash" data-wed="hashtag">#AlwaysAndForever</span>
+          <span class="couple-heart">&#10084;</span>
+        </figcaption>
+      </figure>
+      <div class="home-hero-copy">
       <h1 class="home-welcome">Welcome</h1>
       <div class="home-rule">
         <span></span><i>&#10084;</i><span></span>
@@ -314,6 +328,7 @@
         <span class="home-name" data-wed="nameB">Jossy</span>
       </p>
       <p class="home-tag" data-wed="tagline">OUR FOREVER STARTS HERE</p>
+      </div>
     </div>
 
     <div class="bigday">
@@ -327,19 +342,6 @@
         <div><strong id="seconds">00</strong><span>SECS</span></div>
       </div>
     </div>
-
-    <figure class="couple-photo">
-        <img id="couplePhoto" src="assets/photo-placeholder.svg" data-site-photo="couple" alt="Sam and Jossy" fetchpriority="high" decoding="async" />
-      <label id="couplePlaceholder" class="photo-placeholder hidden">
-        <strong>Sam &amp; Jossy</strong>
-        <span>TAP TO ADD YOUR PHOTO</span>
-        <input id="couplePhotoFile" type="file" accept="image/*" class="hidden" />
-      </label>
-      <figcaption class="couple-caption">
-        <span class="couple-hash" data-wed="hashtag">#AlwaysAndForever</span>
-        <span class="couple-heart">&#10084;</span>
-      </figcaption>
-    </figure>
 
     <p id="homePhotoStatus" class="upload-status hidden" role="status" aria-live="polite"><span id="homePhotoMessage">Loading photo…</span> <button id="retryHomePhoto" class="mem-del" type="button">Retry photo</button></p>
 

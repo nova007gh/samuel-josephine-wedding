@@ -1,5 +1,32 @@
 # snybena.com live audit — 11 October 2026
 
+## Home matched to Bridal Train's floral style — v206 (16 October)
+
+Home now shares the reference's edge-to-edge real couple-photo hero,
+champagne fade, flowing script lettering, S&J/menu header and floral corners.
+Preserved personalized guest greeting, both configured couple names/tagline,
+hashtag, real wedding date and live Home/Events countdown. The Big Day card
+uses a gold pill heading with matching gold-leaf ornaments and cream timer
+tiles. Enter Our Wedding and existing competition/broadcast links use the
+same cream/gold styling. All nine visible tabs and reduced centre seal remain.
+
+The existing confirmed `couplePhoto` image/placeholder/upload input/caption
+were moved into the hero, not duplicated or replaced with mock-up faces;
+photo readiness/failure/retry IDs and behavior remain intact. Retained music
+and like/admin-heart controls, with an S&J brand and menu in the Home header.
+Home header scrolls with the hero rather than overlaying later content.
+New styling is scoped in `home-reference.css`; no content/settings or backend
+changes. Worker cache bumped to v206. Snapshot `/root/wedding-pre-v206`.
+
+Read-only Home suite passes at 320/375/430/476/1024px: confirmed real photo,
+Emma greeting, single retained photo node, bounded hero names, finite scroll,
+shared Home/Events countdown, competition/broadcast/menu/brand links and
+retained like/music/photo-retry controls. All-nine-tab visibility suite passes
+at seven widths. Delayed-settings/stale-photo rejection/reveal/offline/retry
+suite passes with mocked settings, along with worker and logout/push unit
+tests. Final preview reviewed; GET-only proxy now handles aborted media streams
+cleanly rather than throwing an unhandled stream error during test teardown.
+
 ## Keep Share and all bottom tabs visible — v205 (16 October)
 
 Fixed the reported hidden Share button by removing the bottom bar's fixed
