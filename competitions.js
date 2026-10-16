@@ -284,6 +284,7 @@
     if(name==='all'){switchView('competitions');return;}
     if(name==='results'){$(current()==='admincompetitions'?'competitionAdminResults':'competitionResults')?.scrollIntoView({behavior:'smooth',block:'start'});return;}
     if(name==='verify'){
+      try{const config=await api('/onboarding');if(!config.otpRequired){message('competitionVoteStatus','Quick check-in does not verify your phone. This competition still requires verified sign-in; contact the couple for help. You can continue browsing without a code.');return;}}catch{message('competitionVoteStatus','Could not load sign-in options. Please try again.');return;}
       document.getElementById('app').classList.add('hidden');document.body.classList.add('locked');
       showGate(guestLoginScreen);showPane('return');$('returnPhone')?.focus();return;
     }

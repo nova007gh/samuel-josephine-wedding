@@ -519,7 +519,7 @@ $('#checkinPlus')?.addEventListener('click', () => setCheckinParty(checkinParty 
 
 /* reveal a "who invited you?" text field when the guest picks Other */
 $('#guestRelation')?.addEventListener('change', e => {
-  const isOther = e.target.value === 'Other';
+  const isOther = /^other$/i.test(e.target.value);
   $('#guestRelationOtherWrap')?.classList.toggle('hidden', !isOther);
   const input = $('#guestRelationOther');
   if (input) input.required = isOther;
@@ -623,6 +623,28 @@ let otpMode = 'register';       /* 'register' | 'login' */
 let otpPhone = '';
 let otpChannel = 'sms';         /* 'sms' | 'email' — delivery channel for the code */
 let otpEmail = '';              /* target/masked email shown in the hint */
+let guestEntryBusy=false,quickEntryKey='',onboardingMode=null;
+async function loadOnboarding(){
+  const config=await api('/onboarding');
+  if(typeof config.otpRequired!=='boolean')throw new Error('Check-in is temporarily unavailable. Please try again.');
+  const required=config.otpRequired;
+  ['guestCity','guestCountry','guestEmail','guestRelation'].forEach(id=>{const el=document.getElementById(id);if(el)el.required=required;});
+  if(onboardingMode!==required)['guestContactDetails','guestRelationDetails'].forEach(id=>{document.getElementById(id).open=required;});
+  onboardingMode=required;
+  document.querySelector('#guestContactDetails summary').textContent='Contact & location details'+(required?'':' (optional)');
+  document.querySelector('#guestRelationDetails summary').textContent='Your connection to the couple'+(required?'':' (optional)');
+  document.getElementById('guestCheckinHint').textContent=required?'So we can personalize your experience':'Just your name and phone to get started. No SMS, email or call code needed.';
+  document.getElementById('guestOptionalNote').classList.toggle('hidden',required);
+  document.getElementById('returnGuestLink').textContent=required?'Already checked in? Sign in with your phone':'Already checked in on this device? Continue';
+  return config;
+}
+loadOnboarding().catch(()=>{});
+function entryKey(){
+  if(quickEntryKey)return quickEntryKey;
+  try{quickEntryKey=sessionStorage.getItem('sj_pending_entry_key')||'';}catch{}
+  if(!/^[a-f0-9]{64}$/.test(quickEntryKey)){quickEntryKey=Array.from(crypto.getRandomValues(new Uint8Array(32)),b=>b.toString(16).padStart(2,'0')).join('');try{sessionStorage.setItem('sj_pending_entry_key',quickEntryKey);}catch{}}
+  return quickEntryKey;
+}
 let pendingGuest = null;
 
 function showPane(which){
@@ -712,8 +734,13 @@ async function finishCheckin(){
 
 $('#guestLoginForm')?.addEventListener('submit', async e => {
   e.preventDefault();
+  if(guestEntryBusy)return;
   const err = $('#guestLoginError');
   const submitBtn = e.target.querySelector('button[type="submit"]');
+  guestEntryBusy=true;submitBtn.disabled=true;
+  let otpRequired;
+  try{({otpRequired}=await loadOnboarding());}catch(x){err.textContent=x.message||'Could not load check-in. Please retry.';guestEntryBusy=false;submitBtn.disabled=false;return;}
+  guestEntryBusy=false;submitBtn.disabled=false;
   const name = $('#guestName').value.trim();
   const phone = composePhone();
   const email = $('#guestEmail').value.trim();
@@ -722,10 +749,10 @@ $('#guestLoginForm')?.addEventListener('submit', async e => {
   const country = $('#guestCountry')?.value || '';
   const relationSel = $('#guestRelation').value;
   const relationOther = $('#guestRelationOther')?.value.trim();
-  const relation = relationSel === 'Other' ? (relationOther ? `Other — ${relationOther}` : 'Other') : relationSel;
+  const relation = /^other$/i.test(relationSel) ? (relationOther ? `Other — ${relationOther}` : 'Other') : relationSel;
 
-  if (!name || !phone || !email || !relationSel){
-    if (err) err.textContent = 'Please fill in all fields.';
+  if (!name || !phone || (otpRequired&&(!email||!relationSel))){
+    if (err) err.textContent = otpRequired?'Please fill in all fields.':'Please enter your name and phone number.';
     return;
   }
   if (phone.replace(/[^\d]/g, '').length < 7){
@@ -733,11 +760,11 @@ $('#guestLoginForm')?.addEventListener('submit', async e => {
     $('#guestPhone')?.focus();
     return;
   }
-  if (!city || !country){
+  if (otpRequired&&(!city || !country)){
     if (err) err.textContent = 'Please add your city and country — state is optional.';
     return;
   }
-  if (relationSel === 'Other' && !relationOther){
+  if (otpRequired&&/^other$/i.test(relationSel) && !relationOther){
     if (err) err.textContent = 'Please tell us who invited you.';
     $('#guestRelationOther')?.focus();
     return;
@@ -751,23 +778,33 @@ $('#guestLoginForm')?.addEventListener('submit', async e => {
   if (submitBtn){
     submitBtn.disabled = true;
     submitBtn.dataset.label = submitBtn.innerHTML;
-    submitBtn.innerHTML = 'Sending code…';
+    submitBtn.innerHTML = otpRequired?'Sending code…':'Saving your check-in…';
   }
+  guestEntryBusy=true;
   try {
+    if(!otpRequired){
+      const response=await api('/guest-entry',{method:'POST',body:{...pendingGuest,entryKey:entryKey()}});
+      if(!response.guest?.id)throw new Error('Your check-in could not be confirmed. Please try again.');
+      setGuest(response.guest);pendingGuest=null;quickEntryKey='';try{sessionStorage.removeItem('sj_pending_entry_key');}catch{}
+      err.textContent='';enterApp();return;
+    }
     const intl = !isGhanaPhone(phone);
     const r = await sendOtp(phone, 'register', name, intl ? { channel:'call', email } : undefined);
     showOtpPane(phone, 'register', r.delivered, r);
     if (err) err.textContent = '';
   } catch(x){
-    if (err) err.textContent = x.message || 'Could not send the code — try again.';
+    if(x.code==='ENTRY_EXPIRED'){quickEntryKey='';try{sessionStorage.removeItem('sj_pending_entry_key');}catch{}}
+    if (err) err.textContent = x.message || (otpRequired?'Could not send the code — try again.':'Check-in could not save. Please retry; your details are kept.');
     pendingGuest = null;
   } finally {
+    guestEntryBusy=false;
     if (submitBtn){ submitBtn.disabled = false; submitBtn.innerHTML = submitBtn.dataset.label; }
   }
 });
 
 /* returning guest — phone + code brings their check-in back */
-$('#returnGuestLink')?.addEventListener('click', () => {
+$('#returnGuestLink')?.addEventListener('click', async () => {
+  try{const config=await loadOnboarding();if(!config.otpRequired){if(getGuest()?.name){enterApp();return;}showPane('form');$('#guestLoginError').textContent='On a new device? Enter your name and phone below. No code is needed; previous private check-in details will not be retrieved.';$('#guestName').focus();return;}}catch(x){$('#guestLoginError').textContent=x.message;return;}
   $('#guestLoginError').textContent = '';
   $('#returnError').textContent = '';
   $('#returnRegister')?.classList.add('hidden');
@@ -802,6 +839,7 @@ $('#returnSendBtn')?.addEventListener('click', async e => {
   const label = btn.innerHTML;
   btn.innerHTML = 'Checking…';
   try {
+    const config=await loadOnboarding();if(!config.otpRequired){showPane('form');$('#guestLoginError').textContent='Enter your name and phone to continue — no code needed.';return;}
     /* confirm the number actually checked in before spending an OTP send */
     let firstName = null;
     try {

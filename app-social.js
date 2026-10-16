@@ -961,7 +961,7 @@ function renderGuestList(){
       <p><b>${escapeHTML(g.name)}</b>
         <span class="gb-badge ${g.attending ? 'gb-badge--approved' : 'gb-badge--pending'}">${g.attending ? 'Attending' : 'Exploring'}</span>
         ${g.attending && g.tableGuests > 0 ? `<span class="gb-badge gb-badge--approved">Table of ${1 + g.tableGuests}</span>` : ''}
-        ${g.status !== 'approved' ? '<span class="gb-badge gb-badge--pending">Needs approval</span>' : ''}</p>
+        ${g.status !== 'approved' ? '<span class="gb-badge gb-badge--pending">Needs approval</span>' : ''}${g.checkinMethod==='quick'?'<span class="gb-badge gb-badge--pending">Quick check-in · no OTP</span>':''}</p>
       <small>${escapeHTML(g.relation || '')} &middot; ${escapeHTML(g.phone || '')} &middot; ${escapeHTML(g.email || '')}</small>
       ${[g.city, g.state, g.country].filter(Boolean).length ? `<small>${escapeHTML([g.city, g.state, g.country].filter(Boolean).join(', '))}</small>` : ''}
       <small>Checked in ${checkedIn}</small>
@@ -2289,7 +2289,7 @@ function renderGuestRsvpList(){
         <p><b>${escapeHTML(g.name)}</b>
           <span class="gb-badge ${g.attending ? 'gb-badge--approved' : 'gb-badge--pending'}">${g.attending ? 'Attending' : 'Exploring'}</span>
           ${g.attending && g.tableGuests > 0 ? `<span class="gb-badge gb-badge--approved">Table of ${1 + g.tableGuests}</span>` : ''}
-          ${g.status !== 'approved' ? '<span class="gb-badge gb-badge--pending">Needs approval</span>' : ''}</p>
+          ${g.status !== 'approved' ? '<span class="gb-badge gb-badge--pending">Needs approval</span>' : ''}${g.checkinMethod==='quick'?'<span class="gb-badge gb-badge--pending">Quick check-in · no OTP</span>':''}</p>
         <small>${escapeHTML(g.relation || '')} &middot; ${escapeHTML(g.phone || '')} &middot; ${escapeHTML(g.email || '')}</small>
         ${[g.city, g.state, g.country].filter(Boolean).length ? `<small>${escapeHTML([g.city, g.state, g.country].filter(Boolean).join(', '))}</small>` : ''}
         <small>Checked in ${checkedIn}</small>

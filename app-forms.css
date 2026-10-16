@@ -458,3 +458,8 @@ button.upload-drop{ width:100%; font-family:inherit; }
   border-color:#c79c48;
   box-shadow:0 6px 16px rgba(138,98,32,.3);
 }
+.checkin-details{border:1px solid #dcc8a7;border-radius:12px;background:#fffaf17a;padding:10px 12px;min-width:0;}
+.checkin-details summary{cursor:pointer;color:#785329;font:14px/1.6 Georgia,serif;min-height:28px;padding:4px 0;}
+.checkin-details[open] summary{margin-bottom:12px;}
+.checkin-details .field{margin-bottom:12px;}
+#guestOptionalNote{font-size:12px;line-height:1.7;text-align:left;margin:4px 0;}

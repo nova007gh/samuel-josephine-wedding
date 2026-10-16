@@ -1,5 +1,48 @@
 # snybena.com live audit — 11 October 2026
 
+## Temporary OTP pause and quick onboarding — v198 (16 October)
+
+Guest OTP can be paused with server environment `GUEST_OTP_REQUIRED=false`.
+Default is still OTP-required when unset/true; re-enabling requires updating
+that variable and restarting wedding-api. Admin password/session protection is
+unchanged. GET `/api/onboarding` returns only the public mode with no-store.
+While paused, OTP send/verify, phone-only lookup and returning phone login
+return 409 before creating codes or contacting SMS/email/voice providers.
+Old clients are told to refresh for quick check-in.
+
+Name and phone are the only required guest fields in quick mode. Contact,
+location and relationship sections collapse and become optional; attendance
+and party-size controls remain. Check-in waits for a confirmed server save,
+enters immediately on success, keeps fields on errors, guards duplicate clicks
+and remembers a successful guest on this device. No notification-permission
+prompt is automatically requested during quick entry. New-device continuation
+asks for details again, rather than exposing a prior profile by phone alone.
+
+POST `/api/guest-entry` is available only while OTP is paused, rate-limited
+and same-origin checked. It creates a pending, self-reported guest, never
+overwrites/retrieves someone by an unverified phone and never issues a verified
+voting cookie. Same-phone entries on different devices may remain separate
+pending records; preventing account takeover is preferred to phone-only merge.
+A per-attempt 256-bit secret (sessionStorage until success, hash only on server)
+binds idempotent retries for 24 hours in additive `guest_entry_keys`. No guests,
+settings or ballots are seeded or replaced. Admin lists label these entries
+“Quick check-in · no OTP”. Existing signed-in guests retain their sessions.
+
+Verified competitions keep their existing policy and ballots; quick check-in
+does not qualify as verification. Their Verify action explains the temporary
+limitation rather than looping through onboarding. Browser-voting competitions
+remain available under their existing independent browser-cookie rules.
+
+Disposable API tests pass: no OTP/code creation while paused, validation,
+same-origin guard, concurrent/idempotent retries, hashed secrets, no phone
+takeover/disclosure, no verified session, admin protection/labels, expiry,
+restart persistence and re-enable switch. Disposable browser tests pass for
+name/phone-only validation, optional sections and 320/375/430px layouts,
+save failures, duplicate clicks, zero OTP requests, same-device reload entry
+and safe new-device continuation. Existing full competition API/session/OTP
+regressions also pass with verification re-enabled in isolated tests.
+Command: `WEDDING_E2E_QUICK_ONLY=1 WEDDING_E2E_SERVER=/root/wedding-onboarding-v198-candidate/quick-onboarding-server.js node tests/isolated-e2e.cjs <output-dir>`.
+
 ## Bridal Train / live-stream usability enhancements — v197 (16 October)
 
 Frontend-only update; existing API, schema and saved settings are unchanged.

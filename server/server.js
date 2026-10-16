@@ -438,6 +438,7 @@ app.post('/api/admin/logout', requireAdmin, (req, res) => {
 });
 
 const competitionAuth = require('./competitions')({app,db,requireAdmin,publicWrite,multer,storage,uploadsDir:UPLOADS_DIR});
+const onboarding = require('./guest-onboarding')({app,db,publicWrite,normPhone,notifyAll});
 
 /* ---------- guests (check-in) ---------- */
 app.post('/api/guests', publicWrite, (req, res) => {
@@ -718,6 +719,7 @@ function checkOtpCode(phone, code){
 }
 
 app.post('/api/otp/send', otpSendLimit, async (req, res) => {
+  if(!onboarding.otpRequired())return res.status(409).json({error:'Entry codes are temporarily paused. Refresh for quick check-in — no code needed.'});
   const b = req.body || {};
   const phone = normPhone(b.phone);
   const tail = phoneTail(phone);
@@ -795,6 +797,7 @@ app.post('/api/otp/send', otpSendLimit, async (req, res) => {
 });
 
 app.post('/api/otp/verify', otpCheckLimit, (req, res) => {
+  if(!onboarding.otpRequired())return res.status(409).json({error:'Entry codes are paused. Refresh for quick check-in.'});
   const r = checkOtpCode(req.body?.phone, req.body?.code);
   if (!r.ok){
     logSecurity('otp_verify_failed', req, `${r.error} — number ${str(req.body?.phone, 40)}`, /too many/i.test(r.error) ? 'warn' : 'info');
@@ -810,6 +813,7 @@ app.post('/api/otp/verify', otpCheckLimit, (req, res) => {
 /* "Already checked in?" — confirm the number has a check-in before we
    burn an OTP send; first name only, nothing else leaks */
 app.post('/api/guests/lookup', otpCheckLimit, (req, res) => {
+  if(!onboarding.otpRequired())return res.status(409).json({error:'Use quick check-in. Existing guest details are not available by phone alone.'});
   const tail = phoneTail(str(req.body?.phone, 40));
   const g = tail.length >= 9 ? findGuestByPhone(tail) : null;
   if (!g) return res.json({ exists: false });
@@ -817,6 +821,7 @@ app.post('/api/guests/lookup', otpCheckLimit, (req, res) => {
 });
 
 app.post('/api/guests/login', otpCheckLimit, (req, res) => {
+  if(!onboarding.otpRequired())return res.status(409).json({error:'Phone sign-in is paused. Refresh for quick check-in. Existing guest details cannot be retrieved by phone alone.'});
   const r = checkOtpCode(req.body?.phone, req.body?.code);
   if (!r.ok){
     logSecurity('otp_verify_failed', req, `Sign-in ${r.error} — number ${str(req.body?.phone, 40)}`, /too many/i.test(r.error) ? 'warn' : 'info');
@@ -972,7 +977,7 @@ app.get('/api/admin/memories', requireAdmin, (req, res) => {
   res.json(db.prepare(storyGalleryOrder.select+` ORDER BY m.createdAt DESC`).all().map(mediaThumbnails.decorate));
 });
 app.get('/api/admin/guests', requireAdmin, (req, res) => {
-  res.json(db.prepare(`SELECT * FROM guests ORDER BY checkedInAt DESC`).all());
+  res.json(db.prepare(`SELECT g.*, CASE WHEN EXISTS (SELECT 1 FROM guest_entry_keys e WHERE e.guestId=g.id) THEN 'quick' ELSE 'standard' END AS checkinMethod FROM guests g ORDER BY g.checkedInAt DESC`).all());
 });
 app.get('/api/admin/rsvps', requireAdmin, (req, res) => {
   res.json(db.prepare(`SELECT * FROM rsvps ORDER BY submittedAt DESC`).all());

@@ -17,6 +17,11 @@ module.exports=async({call,evaluate,errors,out})=>{
     for(let i=0;i<300;i++){if(await evaluate(expr))return;await new Promise(r=>setTimeout(r,40));}
     throw new Error('End-to-end UI wait failed: '+expr);
   };
+  if(process.env.WEDDING_E2E_QUICK_ONLY==='1'){
+    controllerToken=(await request('/admin/login',{method:'POST',body:{password:'isolated-browser-only'}})).data.token;
+    await require('./quick-onboarding-e2e.cjs')({call,evaluate,wait,request,out,errors});
+    await request('/admin/logout',{method:'POST',admin:true});return;
+  }
   if(process.env.WEDDING_E2E_BROADCAST_ONLY==='1'){
     controllerToken=(await request('/admin/login',{method:'POST',body:{password:'isolated-browser-only'}})).data.token;
     await require('./live-broadcast-e2e.cjs')({call,evaluate,wait,request,out});

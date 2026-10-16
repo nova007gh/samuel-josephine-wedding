@@ -76,6 +76,9 @@ const delay = ms => new Promise(resolve=>setTimeout(resolve,ms));
   }
   /* Preview-only identity in this disposable profile; no check-in API call. */
   await evaluate('setGuest({name:"Design preview"});enterApp();switchView("gifts");Promise.race([document.fonts.ready,new Promise(resolve=>setTimeout(resolve,5000))]).then(()=>true)');
+  if(process.argv.includes('--live-onboarding')){
+    await require('./live-onboarding-readonly.cjs')({call,evaluate,errors,out});return;
+  }
   if(process.argv.includes('--live-broadcast')){
     await require('./live-broadcast-readonly.cjs')({call,evaluate,errors,out});return;
   }

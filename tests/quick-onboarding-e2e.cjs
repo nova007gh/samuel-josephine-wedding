@@ -1,0 +1,35 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+module.exports=async({call,evaluate,wait,request,out,errors})=>{
+  const before=(await request('/admin/guests',{admin:true})).data;
+  await evaluate(`clearGuest();document.getElementById('app').classList.add('hidden');document.body.classList.add('locked');showGate(guestLoginScreen);window.__entryApi=api;window.__otpCalls=0;window.__entryCalls=0;api=async(p,o)=>{if(p.startsWith('/otp/')||p==='/guests/login'){window.__otpCalls++;throw new Error('Unexpected OTP request');}return window.__entryApi(p,o);};`);
+  await wait(`!document.getElementById('guestOptionalNote').classList.contains('hidden')`);
+  assert.equal(await evaluate(`document.getElementById('guestEmail').required||document.getElementById('guestCity').required||document.getElementById('guestCountry').required||document.getElementById('guestRelation').required`),false);
+  await evaluate(`document.getElementById('guestName').value='Quick Onboarding Test';document.getElementById('guestPhone').value='0241234567';`);
+  assert.equal(await evaluate(`document.getElementById('guestLoginForm').checkValidity()`),true,'Only name/phone needed');
+  for(const width of [320,375,430]){await call('Emulation.setDeviceMetricsOverride',{width,height:1100,deviceScaleFactor:1,mobile:true});assert.equal(await evaluate(`document.documentElement.scrollWidth===innerWidth`),true,'Quick entry fits '+width);}
+  const shot=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:true});fs.writeFileSync(path.join(out,'quick-checkin-mobile.png'),Buffer.from(shot.data,'base64'));
+  await evaluate(`api=async(p,o)=>{if(p==='/guest-entry'){window.__entryCalls++;throw new Error('Synthetic offline check-in');}if(p.startsWith('/otp/'))window.__otpCalls++;return window.__entryApi(p,o);};document.getElementById('guestLoginForm').requestSubmit()`);
+  await wait(`document.getElementById('guestLoginError').textContent.includes('Synthetic offline check-in')`);
+  assert.equal(await evaluate(`getGuest()`),null,'Failed save does not pretend success');assert.equal((await request('/admin/guests',{admin:true})).data.length,before.length);
+  assert.equal(await evaluate(`document.getElementById('guestName').value`),'Quick Onboarding Test');
+  await evaluate(`api=async(p,o)=>{if(p==='/guest-entry'){window.__entryCalls++;await new Promise(r=>setTimeout(r,150));}if(p.startsWith('/otp/'))window.__otpCalls++;return window.__entryApi(p,o);};const form=document.getElementById('guestLoginForm');form.requestSubmit();form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));`);
+  await wait(`!!getGuest()?.id&&!gateShowing()`);
+  assert.equal(await evaluate(`window.__entryCalls`),2,'One failed attempt and one successful attempt; duplicate blocked');assert.equal(await evaluate(`window.__otpCalls`),0);
+  const own=await evaluate(`getGuest()`);assert.equal(own.checkinMethod,'quick');assert.equal(own.email,'');
+  const after=(await request('/admin/guests',{admin:true})).data;assert.equal(after.length,before.length+1);assert.equal(after.find(g=>g.id===own.id).checkinMethod,'quick');
+  assert.equal((await request('/competitions/session')).data.verified,false);
+  const competition=(await request('/admin/competitions',{method:'POST',admin:true,status:201,body:{title:'Verified-only onboarding test',description:'Disposable',status:'active',audience:'all',guestIds:[],voteMode:'single',showResults:true,showPhotos:true,allowChange:false,commentsEnabled:false,requireVerified:true,choices:[{name:'A'},{name:'B'}]}})).data;
+  const game=(await request('/competitions/'+competition.id)).data;assert.equal(game.canVote,false);
+  await request('/competitions/'+competition.id+'/vote',{method:'POST',body:{choices:[game.choices[0].id]},status:401});
+  await evaluate(`switchView('competitions')`);await wait(`!!document.querySelector('[data-comp-action="open"][data-id="${competition.id}"]')`);
+  await evaluate(`document.querySelector('[data-comp-action="open"][data-id="${competition.id}"]').click()`);await wait(`!!document.querySelector('[data-comp-action="verify"]')`);
+  await evaluate(`document.querySelector('[data-comp-action="verify"]').click()`);await wait(`document.getElementById('competitionVoteStatus').textContent.includes('Quick check-in does not verify')`);
+  assert.equal(await evaluate(`gateShowing()`),false,'Verified game explains restriction rather than creating an onboarding loop');
+  await call('Page.reload',{ignoreCache:true});await wait(`typeof getGuest==='function'&&getGuest()?.id===${JSON.stringify(own.id)}&&!gateShowing()`);
+  await evaluate(`clearGuest();document.getElementById('app').classList.add('hidden');document.body.classList.add('locked');showGate(guestLoginScreen);document.getElementById('returnGuestLink').click()`);
+  await wait(`document.getElementById('guestLoginError').textContent.includes('On a new device?')`);
+  assert.equal(await evaluate(`document.getElementById('returnPane').classList.contains('hidden')&&document.getElementById('otpPane').classList.contains('hidden')`),true);
+  assert.equal(await evaluate(`getGuest()`),null,'No phone-only account retrieval');
+  assert.equal(errors.length,0,'No uncaught browser exceptions');
+  console.log('PASS quick-entry browser: name/phone-only valid form, optional details/mobile widths, failed-save retention, duplicate guard, no OTP request, saved reload continuity, no verified session and safe new-device flow');
+};
