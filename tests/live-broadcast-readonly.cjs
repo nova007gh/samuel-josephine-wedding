@@ -5,6 +5,9 @@ module.exports=async({call,evaluate,errors,out})=>{
   assert.equal(await evaluate(`document.getElementById('liveBroadcastLoadStatus').textContent`),'');
   assert.equal(await evaluate(`document.querySelectorAll('.tabbar [data-tab]').length`),7);
   assert.equal(await evaluate(`document.querySelectorAll('#liveBroadcastContent iframe').length`),0);
+  await evaluate(`document.querySelector('[data-lb-jump="schedule"]').click()`);
+  assert.equal(await evaluate(`document.activeElement.id`),'lbScheduleSection');
+  await evaluate(`window.scrollTo({top:0,behavior:'instant'})`);
   const realPhoto=await evaluate(`document.querySelector('#liveBroadcastContent .showcase-hero-photo').getAttribute('src')`);assert.match(realPhoto,/^\/uploads\//);
   await evaluate(`Promise.all([...document.querySelectorAll('#liveBroadcastContent img')].map(img=>img.decode().catch(()=>{})))`);
   assert.equal(await evaluate(`document.querySelector('#liveBroadcastContent .showcase-hero-photo').naturalWidth>0`),true);

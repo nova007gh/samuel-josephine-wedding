@@ -5,11 +5,15 @@ module.exports=async({call,evaluate,errors,out})=>{
   for(let i=0;i<300;i++){if(await evaluate(`!!document.querySelector('#bridalTrainContent .bt-hero')`))break;await new Promise(r=>setTimeout(r,40));}
   assert.equal(await evaluate(`document.querySelector('#bridalTrainContent h1')?.textContent`),expected.title);
   assert.deepEqual(await evaluate(`[...document.querySelectorAll('#bridalTrainContent .bt-caption h3')].map(el=>el.textContent)`),expected.names);
+  await evaluate(`document.querySelector('[data-bt-jump="groomsmen"]').click()`);
+  assert.equal(await evaluate(`document.activeElement.id`),'bt-heading-groomsmen');
+  assert.equal(await evaluate(`document.querySelectorAll('.bt-group-nav button').length`),2);
   for(const width of [320,375,430,1024]){await call('Emulation.setDeviceMetricsOverride',{width,height:1000,deviceScaleFactor:1,mobile:width<600});assert.equal(await evaluate(`document.documentElement.scrollWidth===innerWidth`),true,'Live bridal page fits '+width);}
   assert.equal(await evaluate(`(async()=>{const r=await fetch('/api/admin/bridal-train',{method:'PATCH',headers:{'Content-Type':'application/json'},body:'{}'});return r.status;})()`),401);
   await call('Emulation.setDeviceMetricsOverride',{width:375,height:1000,deviceScaleFactor:1,mobile:true});
   for(let i=0;i<150;i++){if(await evaluate(`document.querySelector('.bt-hero-photo')?.complete&&document.querySelector('.bt-hero-photo')?.naturalWidth>0`))break;await new Promise(r=>setTimeout(r,40));}
   assert.equal(await evaluate(`document.querySelector('.bt-hero-photo')?.naturalWidth>0`),true,'Live bridal hero loads');
+  await evaluate(`window.scrollTo({top:0,behavior:'instant'})`);
   const shot=await call('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(out,'live-bridal-train-mobile.png'),Buffer.from(shot.data,'base64'));
   await evaluate(`document.querySelector('[data-view="bridaltrain"] .back-link').click()`);
   assert.equal(await evaluate(`currentView`),'story');assert.equal(errors.length,0);

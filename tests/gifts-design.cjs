@@ -185,5 +185,5 @@ const delay = ms => new Promise(resolve=>setTimeout(resolve,ms));
      chrome.kill();await Promise.race([stopped,delay(5000)]);
      if(chrome.exitCode===null&&chrome.signalCode===null){chrome.kill('SIGKILL');await Promise.race([stopped,delay(5000)]);}
    }
-   if(chrome.exitCode!==null||chrome.signalCode!==null)fs.rmSync(profile,{recursive:true,force:true});
+   if(chrome.exitCode!==null||chrome.signalCode!==null)fs.rmSync(profile,{recursive:true,force:true,maxRetries:10,retryDelay:100});
 });

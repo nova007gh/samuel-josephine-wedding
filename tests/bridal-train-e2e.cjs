@@ -6,6 +6,8 @@ module.exports=async({call,evaluate,wait,request,out})=>{
   await wait(`document.querySelectorAll('#bridalTrainContent .bt-card').length===19`);
   assert.equal(await evaluate(`document.querySelectorAll('#bridalTrainContent .bt-photo-note').length`),19,'No mock portraits published as real people');
   assert.equal(await evaluate(`document.getElementById('bt-heading-bridesmaids').textContent.includes('(9)')&&document.getElementById('bt-heading-groomsmen').textContent.includes('(10)')`),true);
+  await evaluate(`document.querySelector('[data-bt-jump="groomsmen"]').click()`);
+  assert.equal(await evaluate(`document.activeElement.id`),'bt-heading-groomsmen');
   for(const width of [320,375,430,1024]){await call('Emulation.setDeviceMetricsOverride',{width,height:1000,deviceScaleFactor:1,mobile:width<600});assert.equal(await evaluate(`document.documentElement.scrollWidth===innerWidth`),true,'Bridal guest fits '+width);}
   await evaluate(`document.querySelector('[data-view="bridaltrain"] .back-link').click()`);
   assert.equal(await evaluate(`currentView`),'story');
@@ -15,10 +17,14 @@ module.exports=async({call,evaluate,wait,request,out})=>{
   await wait(`document.querySelectorAll('#bridalTrainEditor [data-bt-id]').length===19`);
   await wait(`document.getElementById('bridalTrainContent').getAttribute('aria-busy')==='false'`);
   assert.equal(await evaluate(`(()=>{const original=api;let calls=0;api=(p,o)=>{if(p==='/bridal-train')calls++;return original(p,o);};switchView('home');switchView('admin');api=original;return calls>0;})()`),true,'Returning to the selected Bridal Train editor loads immediately');
+  await wait(`document.getElementById('bridalTrainContent').getAttribute('aria-busy')==='false'`);
+  assert.equal(await evaluate(`(()=>{const row=document.querySelector('#bridalTrainEditor [data-bt-id]');switchView('bridaltrain');switchView('admin');return row===document.querySelector('#bridalTrainEditor [data-bt-id]');})()`),true,'Pristine editor rows keep their identity');
   for(const width of [320,375,430]){await call('Emulation.setDeviceMetricsOverride',{width,height:1000,deviceScaleFactor:1,mobile:true});assert.equal(await evaluate(`document.documentElement.scrollWidth===innerWidth`),true,'Bridal editor fits '+width);}
   await evaluate(`(()=>{const f=document.getElementById('bridalTrainEditor');f.elements.title.value='Our Wedding Party';f.dispatchEvent(new Event('input',{bubbles:true}));const first=document.querySelector('#bridalTrainBridesmaids [data-bt-id]');first.querySelector('[data-bt-field="role"]').value='Maid of Honor';first.querySelector('[data-bt-action="down"]').click();f.querySelector('[data-bt-action="add"][data-bt-group="bridesmaids"]').click();document.querySelector('#bridalTrainBridesmaids [data-bt-id]:last-child [data-bt-field="name"]').value='Family Friend';f.querySelector('[data-bt-action="add"][data-bt-group="groomsmen"]').click();document.querySelector('#bridalTrainGroomsmen [data-bt-id]:last-child [data-bt-action="remove"]').click();})()`);
   await evaluate(`(async()=>{const canvas=document.createElement('canvas');canvas.width=80;canvas.height=120;canvas.getContext('2d').fillRect(0,0,80,120);const blob=await new Promise(r=>canvas.toBlob(r,'image/png'));const dt=new DataTransfer();dt.items.add(new File([blob],'portrait.png',{type:'image/png'}));document.querySelector('#bridalTrainBridesmaids [data-bt-id] [data-bt-photo]').click();const input=document.getElementById('bridalTrainPhotoInput');input.files=dt.files;input.dispatchEvent(new Event('change'));})()`);
   await wait(`document.getElementById('bridalTrainEditorStatus').textContent.includes('Photo uploaded to your draft')`);
+  assert.equal(await evaluate(`document.getElementById('bridalTrainDraftState').classList.contains('has-draft')`),true);
+  assert.equal(await evaluate(`(()=>{const e=new Event('beforeunload',{cancelable:true});window.dispatchEvent(e);return e.defaultPrevented;})()`),true,'Unsaved editor warns before page unload');
   assert.equal((await request('/bridal-train')).data.data.bridesmaids[0].photoUrl,'','Draft photo not published before Save');
   await evaluate(`window.__bridalApi=api;api=async(p,o)=>{if(p==='/admin/bridal-train')throw new Error('Synthetic bridal save failure');return window.__bridalApi(p,o);};document.getElementById('bridalTrainEditor').requestSubmit()`);
   await wait(`document.getElementById('bridalTrainEditorStatus').textContent.includes('Synthetic bridal save failure')`);
@@ -42,8 +48,15 @@ module.exports=async({call,evaluate,wait,request,out})=>{
   await evaluate(`confirm=window.__bridalConfirm;(async()=>{await api('/admin/logout',{method:'POST',admin:true});setAdminToken(null);switchView('bridaltrain');})()`);
   await wait(`document.querySelectorAll('#bridalTrainEditor [data-bt-id]').length===0`);
   assert.equal(await evaluate(`document.querySelectorAll('#bridalTrainContent .bt-card').length`),20);
-  const viewer=await evaluate(`(()=>{const original=openLightbox;let url;openLightbox=u=>url=u;document.querySelector('#bridalTrainContent [data-bt-view]').click();openLightbox=original;return url;})()`);
+  const viewer=await evaluate(`(()=>{const original=openLightbox;let url;openLightbox=u=>url=u;document.querySelector('#bridalTrainContent .bt-portrait[data-bt-view]').click();openLightbox=original;return url;})()`);
   assert.equal(viewer,saved.data.bridesmaids[0].photoUrl);
+  await evaluate(`document.querySelector('#bridalTrainContent .bt-portrait[data-bt-view]').click()`);
+  await wait(`document.querySelector('#lightboxBody img')?.naturalWidth>0`);
+  await evaluate(`document.querySelector('#lightboxBody img').dispatchEvent(new Event('error'))`);
+  assert.equal(await evaluate(`!!document.querySelector('#lightboxBody .bt-lightbox-retry')`),true);
+  await evaluate(`document.querySelector('.bt-lightbox-retry').click()`);
+  await wait(`!document.querySelector('.bt-lightbox-retry')`);
+  await evaluate(`closeLightbox()`);
   const after=(await request('/settings')).data;
   for(const key of ['events','receptionProgram','engagementProgram','couplePhotoUrl'])assert.equal(after[key],baseline[key],'Other wedding setting unchanged: '+key);
   await call('Emulation.setDeviceMetricsOverride',{width:375,height:1000,deviceScaleFactor:1,mobile:true});const shot=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:true});fs.writeFileSync(path.join(out,'bridal-train-mobile.png'),Buffer.from(shot.data,'base64'));

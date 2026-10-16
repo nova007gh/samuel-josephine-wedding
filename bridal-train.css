@@ -30,3 +30,19 @@ button.bt-portrait{cursor:zoom-in;}
 @media(min-width:600px){.bt-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;}}
 @media(min-width:900px){.bt-grid{grid-template-columns:repeat(5,minmax(0,1fr));}.bt-hero-photo{max-height:420px;}}
 @media(max-width:350px){.bt-hero{grid-template-columns:1fr;}.bt-hero-photo{height:210px;min-height:0;}.bt-edit-fields{grid-template-columns:1fr;}.bt-caption h3{font-size:15px;}}
+.bt-hero-view{display:block;position:relative;width:100%;padding:0;border:0;border-radius:0;background:#f3e7d3;cursor:zoom-in;overflow:hidden;min-width:0;}
+.bt-hero-view>span{position:absolute;left:10px;bottom:10px;color:#fffaf0;background:#49321ddb;border:1px solid #dec49988;border-radius:20px;font:11px/1.5 system-ui,sans-serif;padding:5px 10px;}
+.bt-hero .bt-our{display:block;font:400 14px/2 Georgia,serif;letter-spacing:4px;text-transform:uppercase;}
+.bt-hero>div{background:url('assets/gift-floral.svg') right bottom/65px auto no-repeat;}
+.bt-group-nav{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:0 auto 12px;}
+.bt-group-nav button{border:1px solid #dbc19b;background:#fff9ef;color:#7b5528;border-radius:28px;padding:10px 16px;min-height:44px;max-width:100%;min-width:0;overflow-wrap:anywhere;font:14px/1.4 Georgia,serif;cursor:pointer;}
+.bt-group-nav button>span{display:inline-grid;place-items:center;min-width:22px;height:22px;background:#f0dfc2;border-radius:50%;margin-left:6px;font:12px system-ui,sans-serif;}
+.bt-view-hint{text-align:center;font:13px/1.7 Georgia,serif;color:#80694b;max-width:500px;margin:8px auto 18px;}
+.bt-heading{scroll-margin-top:90px;}.bt-card{transition:box-shadow .2s ease,transform .2s ease;}
+.bt-portrait:after{content:'View photo ⤢';position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:#49321ddb;color:#fffaf0;border-radius:18px;padding:5px 10px;font:11px/1.5 system-ui,sans-serif;white-space:nowrap;pointer-events:none;}
+.bt-portrait--empty:after{display:none;}
+.bt-header-preview img{width:120px;height:90px;object-fit:contain;border:1px solid #dbc19b;border-radius:10px;}
+.bt-lightbox-retry{background:#fff4df;border:1px solid #b88b4b;color:#66451f;border-radius:24px;padding:12px 24px;margin:12px;cursor:pointer;}
+#bridalTrainContent :focus-visible{outline:3px solid #986727;outline-offset:3px;}
+@media(hover:hover){.bt-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px #77532322;}.bt-group-nav button:hover{background:#f5e5cb;}}
+@media(prefers-reduced-motion:reduce){.bt-card{transition:none;}.bt-card:hover{transform:none;}}

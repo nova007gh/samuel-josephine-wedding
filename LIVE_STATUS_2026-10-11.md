@@ -1,5 +1,44 @@
 # snybena.com live audit — 11 October 2026
 
+## Bridal Train / live-stream usability enhancements — v197 (16 October)
+
+Frontend-only update; existing API, schema and saved settings are unchanged.
+Bridal Train adds script-heading polish, group jump buttons/counts, keyboard
+focus at the selected group, coordinated gold/cream cards and reduced-motion
+aware hover treatment. The couple header opens its original full-size photo;
+portrait buttons keep opening originals. Bridal photo viewer reports loading,
+handles failed images and offers Retry photo without replacing the original.
+No mock portraits were added; real portrait uploads are still needed.
+
+Broadcast adds Schedule/Replays quick links, manual detail refresh, actual
+scheduled date/time with the device timezone, optional schedule end times and
+time-window labels that never imply a real feed is live. Replay cards have
+clear Play overlays. Playback has a title, provider fallback link and explicit
+Retry player. Direct-video loading/buffering/error messages are available;
+cross-origin iframe failures cannot be reliably inspected, so provider fallback
+is always visible rather than claiming an embed was successfully streaming.
+Each player attempt has an identity guard so late events cannot overwrite a
+newer attempt. Offline details remain visible with a connection message.
+Direct videos also offer Safari's native full-screen method when the standard
+container full-screen API is unavailable; provider players retain their own
+full-screen controls. This remains subject to physical-device testing.
+
+Details/replay/schedule changes now render while watching WITHOUT moving or
+recreating the active iframe/video. Explicit retry replaces the player;
+navigation, removed links and ended main broadcasts still stop playback.
+Both editors keep pristine field DOM/focus when a poll returns the same
+revision, show unsaved/working state, offer sticky Save/Reload/View Published
+actions and request a browser unload warning when a draft/upload exists.
+Unload prompts depend on browser support; drafts are not persisted across
+reloads. Bridal header uploads now have an editor preview. Existing revision,
+draft-only-upload and auth-session guards remain in place.
+
+Extended disposable browser checks cover group/section jump focus, pristine
+row preservation, draft state/unload warning, photo viewer retry, provider
+fallback, player identity across remote detail changes, explicit player retry
+and direct-video failure/stale-event recovery. Actual provider playback and
+physical phone testing still require a real broadcast and device.
+
 ## Live Broadcast and Bridal Train refinements — v196 (16 October)
 
 Added Home, Events and Share links to **Our Live Broadcast** without changing
