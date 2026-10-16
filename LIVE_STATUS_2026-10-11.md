@@ -45,6 +45,14 @@ reduced-motion and both dynamic broadcast hero buttons pass. The reported
 continuous scrolling was not reproduced; physical-device follow-up may be
 needed if it persists. Preview screenshots reviewed with current real photos.
 
+Deployed `667abc5`. Read-only live Bridal Train and Live Broadcast checks
+pass at 320/375/430/1024px, including nine-tab navigation and real photos.
+Fresh deployment snapshot `/root/wedding-pre-v201/wedding-deploy.db` retains
+16 guests, 1 RSVP, all 25 current media records/files, 0 guestbook entries,
+3 gifts, 1 fund, all 39 settings and both competitions unchanged; SQLite
+integrity `ok`. API/nginx active; no live saves/uploads/messages or backend
+configuration changes were made by this release.
+
 ## Bridal Train reference composition — v200 (16 October)
 
 Guest Bridal Train now follows the supplied reference layout: full-width real
