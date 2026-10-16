@@ -57,7 +57,7 @@ async function api(path, opts = {}){
   const { method = 'GET', body, form = null, admin = false, onProgress } = opts;
   if (form){
     const file = form.get('file') || form.get('selfie');
-    const photoOnly = ['/admin/competition-photos','/admin/bridal-train/photo'].includes(path);
+    const photoOnly = ['/admin/competition-photos','/admin/bridal-train/photo','/admin/live-broadcast/photo'].includes(path);
     const limit = photoOnly ? 10 * 1024 * 1024 : 1024 * 1024 * 1024;
     if (file instanceof Blob && file.size > limit)
       throw new Error(photoOnly ? 'Photo exceeds the 10 MB upload limit.' : 'The file exceeds the 1 GB upload limit. Trim or compress the video, then try again.');
@@ -127,7 +127,7 @@ async function api(path, opts = {}){
 /* Feeds poll the API so new approved content appears without realtime sockets.
    Returns an unsubscribe function, same contract as the old listeners. */
 async function optimiseUploadImage(path, form){
-  if (!['/memories', '/admin/gallery', '/guestbook', '/admin/settings/photo/gifts-hero', '/admin/competition-photos', '/admin/bridal-train/photo'].includes(path) || typeof createImageBitmap !== 'function') return;
+  if (!['/memories', '/admin/gallery', '/guestbook', '/admin/settings/photo/gifts-hero', '/admin/competition-photos', '/admin/bridal-train/photo', '/admin/live-broadcast/photo'].includes(path) || typeof createImageBitmap !== 'function') return;
   const key = form.has('file') ? 'file' : 'selfie';
   const file = form.get(key);
   if (!(file instanceof Blob) || file.size < 1024 * 1024 || !/^image\/(jpeg|webp)$/.test(file.type)) return;

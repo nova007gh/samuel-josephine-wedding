@@ -32,7 +32,8 @@
   <link rel="stylesheet" href="gifts.css?v=187" />
   <link rel="stylesheet" href="competitions.css?v=188" />
   <link rel="stylesheet" href="reception-program.css?v=190" />
-  <link rel="stylesheet" href="bridal-train.css?v=195" />
+  <link rel="stylesheet" href="bridal-train.css?v=196" />
+  <link rel="stylesheet" href="live-broadcast.css?v=196" />
   <script>
   /* a checked-in guest goes straight into the app — flag it before first
      paint so the invitation never flashes on their screen (mirrors
@@ -337,6 +338,7 @@
     <button class="menu-item menu-item--wide" data-goto="competitions" type="button">
       <span class="menu-icon menu-icon--gold">&#127918;</span><span class="menu-text"><strong>Wedding Games &amp; Competitions</strong><small>Join the fun, vote and see live results</small></span><span class="menu-chev">&#10095;</span>
     </button>
+    <button class="menu-item menu-item--wide" data-goto="livebroadcast" type="button"><span class="menu-icon menu-icon--gold">&#9673;</span><span class="menu-text"><strong>Our Live Broadcast</strong><small>Watch from wherever you are</small></span><span class="menu-chev">&#10095;</span></button>
   </section>
 
   <!-- ---------- SCREEN 4 — Our Story ---------- -->
@@ -585,6 +587,7 @@
         VIEW MAP <span aria-hidden="true">&#128506;</span>
       </button>
     </div>
+    <button class="menu-item menu-item--wide" data-goto="livebroadcast" type="button"><span class="menu-icon menu-icon--gold">&#9673;</span><span class="menu-text"><strong>Our Live Broadcast</strong><small>Broadcast details, schedule and replays</small></span><span class="menu-chev">&#10095;</span></button>
     <button class="menu-item menu-item--wide" data-goto="engagementprogram" type="button"><span class="menu-icon menu-icon--gold">&#128141;</span><span class="menu-text"><strong>Engagement / Traditional Program</strong><small>View the traditional wedding ceremony lineup</small></span><span class="menu-chev">&#10095;</span></button>
     <button class="menu-item menu-item--wide" data-goto="program" type="button"><span class="menu-icon menu-icon--gold">&#128220;</span><span class="menu-text"><strong>Reception Program</strong><small>View the complete celebration lineup</small></span><span class="menu-chev">&#10095;</span></button>
 
@@ -606,6 +609,15 @@
     <div id="engagementProgram" class="reception-program"></div>
   </section>
 
+  <section class="view hidden" data-view="livebroadcast">
+    <button class="back-link" data-goto="events" type="button">&#10094; Event Details</button>
+    <div id="liveBroadcastContent" aria-busy="false"></div>
+    <p id="liveBroadcastLoadStatus" class="upload-status" role="status" aria-live="polite"></p>
+    <button id="liveBroadcastRetry" class="mem-del hidden" type="button">RETRY LOADING</button>
+    <p id="liveBroadcastActionStatus" class="upload-status" role="status" aria-live="polite"></p>
+    <input id="liveBroadcastShareLink" class="hidden" readonly aria-label="Broadcast page link to copy" />
+  </section>
+
   <section class="view hidden" data-view="bridaltrain">
     <button class="back-link" data-goto="story" type="button">&#10094; Our Story</button>
     <div id="bridalTrainContent" aria-busy="false"></div>
@@ -620,6 +632,7 @@
 
     <div class="menu-list">
       <button class="menu-item" data-goto="bridaltrain" type="button"><span class="menu-icon menu-icon--gold">&#10084;</span><span class="menu-text"><strong>Our Bridal Train</strong><small>The people walking this journey with us</small></span><span class="menu-chev">&#10095;</span></button>
+      <button class="menu-item" data-goto="livebroadcast" type="button"><span class="menu-icon menu-icon--gold">&#9673;</span><span class="menu-text"><strong>Live Broadcast</strong><small>Watch, find the schedule and share the live page</small></span><span class="menu-chev">&#10095;</span></button>
       <button class="menu-item" data-goto="competitions" type="button">
         <span class="menu-icon menu-icon--gold">&#127918;</span>
         <span class="menu-text"><strong>Wedding Games &amp; Competitions</strong><small>Join the fun, vote and see results</small></span>
@@ -926,6 +939,7 @@
       <button id="admin-tab-program" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-program" data-admin-section="program" type="button"><span aria-hidden="true">&#128220;</span>Program Lineup</button>
       <button id="admin-tab-story" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-story" data-admin-section="story" type="button"><span aria-hidden="true">&#9825;</span>Our Story</button>
       <button id="admin-tab-bridal" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-bridal" data-admin-section="bridal" type="button"><span aria-hidden="true">&#10084;</span>Bridal Train</button>
+      <button id="admin-tab-broadcast" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-broadcast" data-admin-section="broadcast" type="button"><span aria-hidden="true">&#9673;</span>Live Broadcast</button>
       <button id="admin-tab-announcements" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-announcements" data-admin-section="announcements" type="button"><span aria-hidden="true">&#128227;</span>Announcements</button>
       <button id="admin-tab-gifts" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-gifts" data-admin-section="gifts" type="button"><span aria-hidden="true">&#127873;</span>Gifts &amp; MoMo</button>
       <button id="admin-tab-access" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-access" data-admin-section="access" type="button"><span aria-hidden="true">&#128737;</span>Access &amp; Security</button>
@@ -1097,6 +1111,30 @@
         <p id="engagementEditorStatus" class="upload-status" role="status" aria-live="polite"></p>
       </form>
     </div>
+    <div id="admin-panel-broadcast" class="admin-section-panel hidden" role="tabpanel" aria-labelledby="admin-tab-broadcast" tabindex="0">
+      <h2 class="settings-heading">Live Broadcast</h2>
+      <p class="page-sub">Configure real broadcast links, dates and replays. SAVE BROADCAST publishes your changes. The app does not generate a live video feed or invent viewer counts.</p>
+      <form id="liveBroadcastEditor" class="aq-card">
+        <div class="settings-fields">
+          <label class="field">Page title<input name="title" maxlength="120" required /></label>
+          <label class="field">Subtitle<input name="subtitle" maxlength="240" /></label>
+          <label class="field">Introduction<textarea name="intro" maxlength="600" rows="3"></textarea></label>
+          <label class="field">Broadcast status<select name="status"><option value="unconfigured">Not configured</option><option value="scheduled">Scheduled</option><option value="live">Live — host has started the stream</option><option value="ended">Ended</option></select></label>
+          <label class="field">Broadcast URL<input name="streamUrl" type="url" placeholder="https://www.youtube.com/watch?v=…" maxlength="2000" /></label>
+          <label class="field">Going-live time (optional unless Scheduled)<input name="startsAt" type="datetime-local" /></label>
+        </div>
+        <p>Times use this device's local timezone. YouTube and Vimeo can play inside the page after a guest taps Play; other HTTPS links open with the provider. Mark Live only when your actual stream is running.</p>
+        <input name="heroPhotoUrl" type="hidden" /><input name="posterUrl" type="hidden" />
+        <div class="lb-photo-settings"><div><p>Header photo (defaults to the couple photo)</p><div id="lbHeroPreview"></div><div class="aq-actions"><button class="aq-approve" data-lb-photo="heroPhotoUrl" type="button">UPLOAD HEADER</button><button class="aq-reject" data-lb-action="clear-photo" data-lb-target="heroPhotoUrl" type="button">RESET HEADER</button></div></div><div><p>Player poster (defaults to the header photo)</p><div id="lbPosterPreview"></div><div class="aq-actions"><button class="aq-approve" data-lb-photo="posterUrl" type="button">UPLOAD POSTER</button><button class="aq-reject" data-lb-action="clear-photo" data-lb-target="posterUrl" type="button">RESET POSTER</button></div></div></div>
+        <h3>Broadcast Schedule</h3><p>Leave times blank until confirmed. Optional end times must follow the start.</p><div id="liveBroadcastScheduleEditor"></div><button class="aq-approve" data-lb-action="add-schedule" type="button">ADD SCHEDULE ITEM</button>
+        <h3>Past Broadcasts / Replays</h3><p>Add actual replay links and optional posters, recording dates and duration labels.</p><div id="liveBroadcastReplayEditor"></div><button class="aq-approve" data-lb-action="add-replay" type="button">ADD REPLAY</button>
+        <p>Header/poster photos: JPEG, PNG or WebP, up to 10 MB. Uploading only updates your draft until you save.</p>
+        <div class="aq-actions"><button class="aq-approve" type="submit">SAVE BROADCAST</button><button class="aq-reject" data-lb-action="reload" type="button">RELOAD SAVED</button></div>
+        <p id="liveBroadcastEditorStatus" class="upload-status" role="status" aria-live="polite"></p>
+      </form>
+      <input id="liveBroadcastPhotoInput" type="file" accept="image/jpeg,image/png,image/webp" class="hidden" />
+    </div>
+
     <div id="admin-panel-bridal" class="admin-section-panel hidden" role="tabpanel" aria-labelledby="admin-tab-bridal" tabindex="0">
       <h2 class="settings-heading">Our Bridal Train</h2>
       <p class="page-sub">Edit names, roles, photos and order. Changes reach guests only after SAVE BRIDAL TRAIN. Upload real portraits to replace the initials.</p>
@@ -1692,13 +1730,15 @@ try{
     <div class="sheet-actions"><button class="sheet-cancel" data-close-sheet type="button">Close</button></div>
   </div>
 </div>
-<script src="api-data.js?v=195"></script>
-<script src="app.js?v=195"></script>
+<script src="api-data.js?v=196"></script>
+<script src="app.js?v=196"></script>
 <script src="app-data.js?v=194"></script>
 <script src="app-social.js?v=193"></script>
 <script src="admin-dashboard.js?v=187"></script>
 <script src="reception-program.js?v=190"></script>
-<script src="bridal-train.js?v=195"></script>
+<script src="bridal-train.js?v=196"></script>
+<script src="broadcast-calendar.js?v=196"></script>
+<script src="live-broadcast.js?v=196"></script>
 <script src="competitions.js?v=188"></script>
 <script src="competition-notices.js?v=187"></script>
 </body>

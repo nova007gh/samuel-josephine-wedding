@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v195-bridal-train';
+const CACHE = 'sj-wedding-v196-live-broadcast';
 const ASSETS = [
   './',
   './index.html',
@@ -14,6 +14,9 @@ const ASSETS = [
   './reception-program.js',
   './bridal-train.js',
   './bridal-train.css',
+  './live-broadcast.css',
+  './live-broadcast.js',
+  './broadcast-calendar.js',
   './competitions.js',
   './competition-notices.js',
   './assets/gift-floral.svg',

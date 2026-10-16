@@ -1,4 +1,5 @@
 #bridalTrainContent{max-width:1040px;margin:auto;color:#47321c;}
+#bridalTrainContent{background:linear-gradient(155deg,#fffaf2,#f8eddd);border-radius:20px;padding:1px 12px 16px;box-sizing:border-box;}
 .bt-hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);overflow:hidden;border:1px solid #dec499;border-radius:24px;background:linear-gradient(125deg,#f8ead2,#fffaf2);margin:12px 0 26px;box-shadow:0 8px 24px #674b1912;}
 .bt-hero-photo{width:100%;height:100%;min-height:250px;object-fit:contain;background:#f3e7d3;}
 .bt-hero>div{padding:24px 15px;text-align:center;align-self:center;min-width:0;}
@@ -6,7 +7,7 @@
 .bt-hero p{font:16px/1.6 Georgia,serif;overflow-wrap:anywhere;}
 .bt-hero .bt-eyebrow{font-size:10px;letter-spacing:2px;}
 .bt-heart{color:#a97528;font-size:24px;}
-.bt-heading{text-align:center;font:500 clamp(20px,4vw,28px)/1.4 Georgia,serif;color:#fff9ec;background:linear-gradient(110deg,#bc8b41,#885719,#bd8e45);border:1px solid #d5b877;border-radius:24px;padding:10px 18px;margin:20px auto;max-width:440px;box-shadow:0 4px 12px #76531b20;overflow-wrap:anywhere;}
+.bt-heading{text-align:center;font:500 clamp(20px,4vw,28px)/1.4 Georgia,serif;color:#fff9ec;background:linear-gradient(110deg,#bc8b41,#885719,#bd8e45);border:1px solid #d5b877;border-radius:24px;padding:10px 18px;margin:20px auto;max-width:440px;box-shadow:0 4px 12px #76531b20;overflow-wrap:anywhere;position:relative;}
 .bt-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
 .bt-card{min-width:0;background:#fffaf1;border:1px solid #e5d2b5;border-radius:12px;overflow:hidden;box-shadow:0 4px 14px #674b1909;}
 .bt-portrait{display:block;position:relative;width:100%;aspect-ratio:3/4;padding:0;border:0;border-radius:0;background:linear-gradient(135deg,#f0dfc2,#e0c498);overflow:hidden;}
@@ -15,11 +16,11 @@ button.bt-portrait{cursor:zoom-in;}
 .bt-portrait img[hidden]{display:none;}
 .bt-initials{position:absolute;inset:0;display:grid;place-items:center;font:italic 48px Georgia,serif;color:#8b652e;}
 .bt-photo-note{position:absolute;bottom:16px;left:5px;right:5px;text-align:center;color:#76572e;font:12px/1.4 Georgia,serif;}
-.bt-caption{text-align:center;padding:10px 7px;}
+.bt-caption{text-align:center;padding:12px 7px;background:linear-gradient(#fffcf6,#f7ead7);border-top:1px solid #e5d2b5;}
 .bt-caption h3{margin:0;font:600 17px/1.4 Georgia,serif;overflow-wrap:anywhere;}
 .bt-caption p{margin:3px 0;font:14px/1.4 Georgia,serif;overflow-wrap:anywhere;}
 .bt-caption>span{color:#a87830;font-size:14px;}
-.bt-footer{white-space:pre-line;text-align:center;font:italic 24px/1.8 Georgia,serif;color:#98662c;margin:28px 10px;overflow-wrap:anywhere;}
+.bt-footer{white-space:pre-line;text-align:center;font:italic 24px/1.8 Georgia,serif;color:#98662c;margin:28px 0 0;padding:24px 14px;overflow-wrap:anywhere;background:url('assets/gift-floral.svg') left bottom/60px auto no-repeat,url('assets/gift-floral.svg') right bottom/60px auto no-repeat;}
 .bt-edit-person{min-width:0;margin:14px 0;padding:14px;border:1px solid #ddc7a1;border-radius:12px;}
 .bt-edit-person legend{font-weight:600;padding:0 5px;}
 .bt-edit-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}

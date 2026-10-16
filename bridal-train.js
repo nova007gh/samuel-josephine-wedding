@@ -8,7 +8,8 @@
   const esc=value=>escapeHTML(String(value??''));
   const initials=name=>name.trim().split(/\s+/).slice(0,2).map(s=>s[0]).join('');
   let saved=null,version=null,dirty=false,busy=false,loading=false,renderKey='',authEpoch=0,photoTarget=null,stateSerial=0;
-  function wanted(){return !document.hidden&&(!document.querySelector('[data-view="bridaltrain"]').classList.contains('hidden')||(isAdmin()&&!panel.classList.contains('hidden')));}
+  const editorVisible=()=>isAdmin()&&!panel.classList.contains('hidden')&&!document.querySelector('[data-view="admin"]').classList.contains('hidden');
+  function wanted(){return !document.hidden&&(!document.querySelector('[data-view="bridaltrain"]').classList.contains('hidden')||editorVisible());}
   function controls(disabled){[...form.elements].forEach(el=>el.disabled=disabled);form.setAttribute('aria-busy',String(disabled));}
   function portrait(m,previews){
     const avatar=`<span class="bt-initials" aria-hidden="true">${esc(initials(m.name))}</span>`;
@@ -105,8 +106,8 @@
   retry.addEventListener('click',()=>load());
   window.addEventListener('wedding:view',e=>{if(e.detail.name==='bridaltrain')load();});
   window.addEventListener('wedding:settings',()=>{if(saved)render();});
-  new MutationObserver(()=>{if(isAdmin()&&!panel.classList.contains('hidden')){fill();load();}}).observe(panel,{attributes:true,attributeFilter:['class']});
-  onAdminAuth(signedIn=>{authEpoch++;if(signedIn){if(!panel.classList.contains('hidden'))load();else fill();}else{dirty=false;version=null;photoTarget=null;form.reset();Object.values(groups).forEach(el=>el.innerHTML='');status.textContent='';}});
+  new MutationObserver(()=>{if(editorVisible()){fill();load();}}).observe(panel,{attributes:true,attributeFilter:['class']});
+  onAdminAuth(signedIn=>{authEpoch++;if(signedIn){if(editorVisible())load();else fill();}else{dirty=false;version=null;photoTarget=null;form.reset();Object.values(groups).forEach(el=>el.innerHTML='');status.textContent='';}});
   document.addEventListener('visibilitychange',()=>{if(wanted())load();});
   window.addEventListener('online',()=>{if(wanted())load();});
   setInterval(()=>{if(wanted()&&!busy&&!window.__uploadsInFlight)load();},15000);

@@ -1,5 +1,55 @@
 # snybena.com live audit — 11 October 2026
 
+## Live Broadcast and Bridal Train refinements — v196 (16 October)
+
+Added Home, Events and Share links to **Our Live Broadcast** without changing
+the seven main tabs. Cream/gold photo-and-script header, floral countdown band,
+poster/player, Join Us Live, three-column schedule, replay cards, calendar,
+calendar reminder and share controls follow the reference. Uses the confirmed
+real couple photo by default; mock-up people/venue photos are not published.
+No invented dates, replays, viewer count or HD claim. Defaults are unconfigured:
+**Broadcast details coming soon**, no countdown or LIVE badge, disabled calendar
+actions until real dates are entered. Scheduled countdown uses server time;
+reaching zero waits for the host rather than automatically claiming to be live.
+
+Admin Dashboard's thirteenth category, **Live Broadcast**, supports title,
+subtitle, introduction, explicit status, HTTPS stream URL, local start datetime,
+header/poster uploads, schedule add/remove/order/times/links and replay
+add/remove/order/date/duration/poster/link. SAVE BROADCAST publishes the draft;
+photo uploads alone do not publish. Failed saves/polling retain drafts; stale
+revision saves reject with 409. Reload confirms draft loss; logout clears editor.
+Upload/save duplicate guards and auth-session response checks are included.
+
+Public GET `/api/live-broadcast` returns defaults without a settings write;
+admin PATCH `/api/admin/live-broadcast` validates and writes only `liveBroadcast`
+using transactional revision comparison. Admin POST `/api/admin/live-broadcast/photo`
+uses the 10 MiB JPEG/PNG/WebP photo limit. Missing saved photos reject updates.
+Public HTTPS URLs are required; no server fetch of remote video links occurs.
+YouTube/Vimeo iframe URLs are allowlisted and generated on the server. No iframe
+or direct video loads until Play. Other providers use external HTTPS links.
+Playback pauses background wedding music and is removed on navigation/hiding.
+Provider playback itself depends on the host's real embed permissions/network;
+synthetic browser checks verify iframe creation/cleanup, not an actual wedding feed.
+
+Calendar downloads use confirmed dates only, UTC, escaped/folded ICS text, stable
+event IDs and optional 15-minute VALARM. The guest must import the file; this is
+not automatic web-push scheduling. Sharing uses the broadcast page `?live=1`,
+preserves the existing entry flow and offers clipboard/manual-copy fallback.
+The Bridal Train receives coordinated cream/caption/floral-footer styling;
+both features poll only when their guest view or actual admin view is visible.
+
+Tests: schema/calendar unit checks; disposable API auth, MIME/oversize cleanup,
+missing-photo validation, revision conflicts, SQLite integrity and restart
+persistence; actual disposable browser responsive layouts, all guest links,
+schedule/replay editing, draft portrait upload, retry/duplicate guards, calendar
+reminder/share, no eager embed, playback cleanup, conflict/reload/logout and
+unrelated-settings preservation. Commands:
+`WEDDING_E2E_BROADCAST_ONLY=1 WEDDING_E2E_SERVER=/root/wedding-broadcast-v196-candidate/server.js node tests/isolated-e2e.cjs <output-dir>`;
+`node tests/live-broadcast.test.cjs`;
+`node tests/gifts-design.cjs <output-dir> --live-broadcast` (read-only live).
+Real broadcast link, dates, replay files and real Bridal Train portraits are
+still to be supplied/configured. Physical-phone/provider playback not verified.
+
 ## Bridal Train — v195 (16 October)
 
 Added Our Story → **Our Bridal Train** and a second link in Share's menu.

@@ -959,7 +959,7 @@ const SUBVIEW_TAB = {
   guestbook:'more', rsvp:'more', voicemsg:'more', videomsg:'more',
   admin:'more', adminlogin:'more', approvals:'more', rsvpAdmin:'more', guestlist:'more',
   guestrsvp:'more', adminmedia:'more', adminvoice:'more', adminvideo:'more', security:'more',
-  competitions:'more', competition:'more', admincompetitions:'more', program:'events', engagementprogram:'events', bridaltrain:'story'
+  competitions:'more', competition:'more', admincompetitions:'more', program:'events', engagementprogram:'events', bridaltrain:'story', livebroadcast:'events'
 };
 const ADMIN_VIEWS = new Set(['admin', 'approvals', 'rsvpAdmin', 'guestlist', 'guestrsvp', 'adminmedia', 'adminvoice', 'adminvideo', 'security', 'admincompetitions']);
 /* Views are pushed onto browser history so the device Back button moves
@@ -1202,7 +1202,7 @@ document.getElementById('songUpload')?.addEventListener('change', e => {
 let musicWanted = true;           // guest hasn't paused it via the button
 
 function tryStartSong(){
-  if (!music || !music.src || !music.paused || !musicWanted) return;
+  if (window.__weddingBroadcastPlaying || !music || !music.src || !music.paused || !musicWanted) return;
   music.play().then(() => $('#musicToggle')?.classList.add('is-on')).catch(() => {});
 }
 ['pointerdown','keydown'].forEach(ev =>
