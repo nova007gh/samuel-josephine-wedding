@@ -39,6 +39,15 @@ fallback, player identity across remote detail changes, explicit player retry
 and direct-video failure/stale-event recovery. Actual provider playback and
 physical phone testing still require a real broadcast and device.
 
+Deployed v197; fresh predeployment SQLite/frontend snapshot is
+`/root/wedding-pre-v197`. Both disposable browser suites passed, followed by
+read-only live Bridal Train/broadcast checks at 320/375/430/1024px and the
+thirteen-category dashboard/upload regression suite. Live names and configured
+couple photos match the API, seven main tabs remain, no eager iframe or JS
+exceptions were found. Preservation audit: all 6 guests, 1 RSVP, 26 media
+records/files, 0 guestbook entries, 3 gifts, 1 fund, 37 settings and 2
+competitions retained; SQLite integrity `ok`. API/nginx remain active.
+
 ## Live Broadcast and Bridal Train refinements — v196 (16 October)
 
 Added Home, Events and Share links to **Our Live Broadcast** without changing
