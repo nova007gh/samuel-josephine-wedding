@@ -1,5 +1,31 @@
 # snybena.com live audit — 11 October 2026
 
+## Bridal Train reference composition — v200 (16 October)
+
+Guest Bridal Train now follows the supplied reference layout: full-width real
+couple photo hero with S&J/menu overlay, script heading/heart divider, gold
+pill group headings with dedicated gold-leaf ornaments, five-across portrait
+cards (nine bridesmaids flow 5+4, ten groomsmen 5+5), centered names/roles and
+heart details, plus a floral script “Together in Love” footer. Short final
+rows center and expand slightly while preserving equal portrait heights.
+Saved titles/subtitles/footer, group counts, names, roles and photos remain
+data-driven; no settings are overwritten. Missing portraits remain honest
+initials/“Portrait coming soon” placeholders, not reference/mock-up faces.
+
+Scoped `bridal-train-reference.css` changes the guest view only; editor CRUD,
+draft uploads, revision conflicts, full-size originals/lightbox retries,
+seven main tabs and central Gallery are preserved. Hero home/menu actions
+use delegated navigation for dynamically rendered controls. Group jumps,
+photo hint and Back to Our Story remain below the reference composition.
+Cache bumped to v200-bridal-reference; new CSS and gold sprig precached.
+
+Disposable browser suite passes: reference 5+4 card rows and equal image
+heights at 320/375/430/1024px, hero menu/home, editor add/remove/reorder,
+draft portrait upload/save/view/retry, duplicate guard, failure retention,
+conflicts/reload and sign-out cleanup. Schema/default and service-worker
+tests pass. GET-only candidate previews using public live data pass Bridal
+Train and Live Broadcast regressions; no live saves/uploads/messages.
+
 ## Live Broadcast reference layout — v199 (16 October)
 
 Rebuilt the guest Live Broadcast composition to follow the supplied cream/gold

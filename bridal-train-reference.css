@@ -1,0 +1,58 @@
+/* Reference-style guest composition. Admin editing remains independent. */
+.app:has([data-view="bridaltrain"]:not(.hidden)){padding-top:0;background:#fcf3e7;}
+.app:has([data-view="bridaltrain"]:not(.hidden))>.app-header,
+.app:has([data-view="bridaltrain"]:not(.hidden))>.floral-bg{display:none;}
+.app:has([data-view="bridaltrain"]:not(.hidden))::before,
+.app:has([data-view="bridaltrain"]:not(.hidden))::after{display:none;}
+.view[data-view="bridaltrain"]{padding:0 0 12px;animation:none;}
+#bridalTrainContent{container-type:inline-size;max-width:none;margin:0;padding:0;border-radius:0;overflow:hidden;background:linear-gradient(#fff8ed,#fbf0e2);color:#38291b;}
+#bridalTrainContent .bt-hero{position:relative;display:block;min-height:190px;border:0;border-radius:0;margin:0;background:repeating-linear-gradient(104deg,#f1d9b6 0,#fff0d9 18px,#fff7e9 30px,#ebd1ab 46px,#fff0d9 65px);box-shadow:none;isolation:isolate;}
+#bridalTrainContent .bt-hero-view{position:absolute;inset:0 auto 0 0;width:70%;height:100%;z-index:0;}
+#bridalTrainContent .bt-hero-photo{width:100%;height:100%;min-height:0;max-height:none;object-fit:cover;object-position:45% 40%;}
+#bridalTrainContent .bt-hero-view>span{left:8px;bottom:6px;font-size:8px;padding:3px 6px;opacity:0;}
+#bridalTrainContent .bt-hero-view:focus-visible>span,#bridalTrainContent .bt-hero-view:hover>span{opacity:1;}
+#bridalTrainContent .bt-hero::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 27%,#fff1dd0a 38%,#fff1ddc9 55%,#fff1ddf0 70%,#fff1dd99);z-index:1;pointer-events:none;}
+#bridalTrainContent .bt-hero::after{content:'';position:absolute;right:-12px;bottom:-20px;width:85px;height:105px;background:url('assets/gift-floral.svg') center/contain no-repeat;z-index:3;pointer-events:none;}
+.bt-hero-bar{position:absolute;inset:0 0 auto;z-index:4;display:flex;align-items:center;justify-content:space-between;padding:calc(8px + env(safe-area-inset-top)) 16px 0;}
+.bt-hero-bar button{border:0;background:transparent;color:#735021;min-width:44px;min-height:44px;padding:0;cursor:pointer;}
+.bt-monogram{font:400 31px/1 'Cormorant Garamond',Georgia,serif;letter-spacing:-2px;text-align:left;}
+.bt-menu svg{width:25px;height:25px;}
+#bridalTrainContent .bt-hero-copy{position:relative;z-index:2;margin-left:49%;padding:52px 10px 26px 0;background:none;text-align:center;min-width:0;pointer-events:none;}
+#bridalTrainContent .bt-hero h1{font:400 clamp(32px,10cqw,59px)/1.05 'Great Vibes',Parisienne,cursive;color:#81551e;margin:0;overflow-wrap:anywhere;}
+#bridalTrainContent .bt-our{display:block;font:400 clamp(11px,3.2cqw,18px)/1.6 Georgia,serif;letter-spacing:3px;margin-bottom:5px;}
+#bridalTrainContent .bt-heart{display:flex;align-items:center;justify-content:center;gap:9px;font-size:16px;color:#a06b25;margin:2px 0 5px;}
+#bridalTrainContent .bt-heart::before,#bridalTrainContent .bt-heart::after{content:'';width:36px;height:1px;background:linear-gradient(90deg,transparent,#be995e);}
+#bridalTrainContent .bt-heart::after{transform:rotate(180deg);}
+#bridalTrainContent .bt-hero-copy>p{font:400 clamp(8px,2.1cqw,12px)/1.5 Georgia,serif;text-transform:uppercase;letter-spacing:1.1px;margin:0;text-wrap:balance;}
+#bridalTrainContent .bt-section{position:relative;padding:0 14px;margin:0 0 12px;}
+#bridalTrainContent .bt-section:first-of-type::before{content:'';position:absolute;left:-14px;top:-38px;width:64px;height:90px;background:url('assets/gift-floral.svg') center/contain no-repeat;pointer-events:none;z-index:2;}
+#bridalTrainContent .bt-heading{position:relative;max-width:60%;width:fit-content;min-width:40%;box-sizing:border-box;margin:0 auto 7px;padding:5px 16px;border-radius:30px;border:1px solid #e6c287;background:linear-gradient(170deg,#d2a15b,#a76d26 45%,#885116 80%,#bc873c);box-shadow:0 2px 7px #a9742e40,inset 0 1px 3px #ffdd9b99;color:#fff9e9;font:400 clamp(12px,3.25cqw,19px)/1.2 Georgia,serif;text-transform:uppercase;scroll-margin-top:12px;}
+#bridalTrainContent .bt-heading::before,#bridalTrainContent .bt-heading::after{content:'';position:absolute;top:50%;width:70px;height:28px;background:url('assets/bridal-gold-sprig.svg') center/contain no-repeat;transform:translateY(-50%);pointer-events:none;}
+#bridalTrainContent .bt-heading::before{right:calc(100% + 8px);}
+#bridalTrainContent .bt-heading::after{left:calc(100% + 8px);transform:translateY(-50%) scaleX(-1);}
+#bridalTrainContent .bt-grid{display:flex;flex-wrap:wrap;justify-content:center;align-items:stretch;gap:6px;}
+#bridalTrainContent .bt-card{flex:1 1 calc(20% - 6px);max-width:calc(25% - 5px);min-width:0;border:1px solid #f3e7d7;border-radius:5px;background:#fffaf1;box-shadow:0 2px 3px #a77b3f08;}
+#bridalTrainContent .bt-portrait{aspect-ratio:auto;height:21cqw;background:radial-gradient(ellipse at 25% 20%,#fff8e6,#eddbbd);}
+#bridalTrainContent .bt-portrait img{object-fit:cover;}
+#bridalTrainContent .bt-portrait::after{display:none;}
+#bridalTrainContent .bt-initials{font:400 clamp(19px,5.6cqw,32px)/1 'Cormorant Garamond',Georgia,serif;color:#aa7b3f;}
+#bridalTrainContent .bt-photo-note{bottom:5px;left:3px;right:3px;font:400 clamp(7px,1.7cqw,10px)/1.25 Georgia,serif;color:#806342;}
+#bridalTrainContent .bt-caption{padding:4px 2px 0;border-top:0;background:#fffaf2;}
+#bridalTrainContent .bt-caption h3{font:600 clamp(8px,2cqw,12px)/1.18 Georgia,serif;margin:0;overflow-wrap:anywhere;}
+#bridalTrainContent .bt-caption p{font:400 clamp(7px,1.7cqw,10px)/1.25 Georgia,serif;margin:2px 0 0;}
+#bridalTrainContent .bt-caption>span{display:flex;align-items:center;justify-content:center;gap:2px;color:#a46e28;font-size:9px;line-height:1.2;margin:2px auto 0;}
+#bridalTrainContent .bt-caption>span::before,#bridalTrainContent .bt-caption>span::after{content:'';height:1px;width:13px;background:linear-gradient(90deg,transparent,#d7bd95);}
+#bridalTrainContent .bt-caption>span::after{transform:rotate(180deg);}
+#bridalTrainContent .bt-footer{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:106px;box-sizing:border-box;padding:12px 55px 16px;margin:-3px 0 0;background:url('assets/gift-floral.svg') -12px bottom/100px auto no-repeat,url('assets/gift-floral.svg') calc(100% + 12px) bottom/100px auto no-repeat,linear-gradient(transparent,#f2e1c8);white-space:pre-line;overflow-wrap:anywhere;}
+.bt-footer-title{display:block;font:400 clamp(32px,10cqw,57px)/1.3 'Great Vibes',Parisienne,cursive;color:#936020;text-wrap:balance;}
+.bt-footer-subtitle{display:block;text-transform:uppercase;letter-spacing:1.1px;font:400 clamp(8px,2.1cqw,12px)/1.5 Georgia,serif;margin-top:2px;text-wrap:balance;}
+#bridalTrainContent .bt-group-nav{gap:14px;margin:4px 12px 0;}
+#bridalTrainContent .bt-group-nav button{border:0;border-radius:0;background:transparent;min-height:36px;padding:4px 0;font:10px/1.5 Georgia,serif;text-decoration:underline;text-underline-offset:3px;}
+#bridalTrainContent .bt-group-nav button>span{font-size:9px;width:auto;min-width:16px;height:16px;margin-left:3px;}
+#bridalTrainContent .bt-view-hint{font:10px/1.4 Georgia,serif;margin:0 auto 5px;padding:0 12px;}
+.view[data-view="bridaltrain"]>.back-link{display:block;margin:4px auto;padding:8px 12px;font-size:11px;}
+.view[data-view="bridaltrain"]>.upload-status:empty{display:none;}
+.view[data-view="bridaltrain"]>.upload-status{margin:8px 14px;}
+.app:has([data-view="bridaltrain"]:not(.hidden)) .tabbar{background:#fff9ef;border-top:1px solid #f0e2cb;}
+.app:has([data-view="bridaltrain"]:not(.hidden)) .tab.active{background:linear-gradient(145deg,#b78032,#8b551c);color:#fff9e9;border-radius:7px;margin:4px 2px;}
+@media(max-width:350px){#bridalTrainContent .bt-section{padding:0 8px;}#bridalTrainContent .bt-grid{gap:4px;}#bridalTrainContent .bt-card{flex-basis:calc(20% - 4px);max-width:calc(25% - 4px);}#bridalTrainContent .bt-hero-copy{padding:49px 6px 20px 0;}#bridalTrainContent .bt-heading{padding:5px 10px;}#bridalTrainContent .bt-heading::before,#bridalTrainContent .bt-heading::after{width:53px;}#bridalTrainContent .bt-footer{padding-left:43px;padding-right:43px;}}

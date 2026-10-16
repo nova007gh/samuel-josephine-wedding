@@ -8,7 +8,15 @@ module.exports=async({call,evaluate,wait,request,out})=>{
   assert.equal(await evaluate(`document.getElementById('bt-heading-bridesmaids').textContent.includes('(9)')&&document.getElementById('bt-heading-groomsmen').textContent.includes('(10)')`),true);
   await evaluate(`document.querySelector('[data-bt-jump="groomsmen"]').click()`);
   assert.equal(await evaluate(`document.activeElement.id`),'bt-heading-groomsmen');
-  for(const width of [320,375,430,1024]){await call('Emulation.setDeviceMetricsOverride',{width,height:1000,deviceScaleFactor:1,mobile:width<600});assert.equal(await evaluate(`document.documentElement.scrollWidth===innerWidth`),true,'Bridal guest fits '+width);}
+  for(const width of [320,375,430,1024]){
+    await call('Emulation.setDeviceMetricsOverride',{width,height:1000,deviceScaleFactor:1,mobile:width<600});assert.equal(await evaluate(`document.documentElement.scrollWidth===innerWidth`),true,'Bridal guest fits '+width);
+    assert.deepEqual(await evaluate(`(()=>{const cards=[...document.querySelectorAll('.bt-section:first-of-type .bt-card')],rows=[];for(const c of cards){const top=c.getBoundingClientRect().top;let row=rows.find(r=>Math.abs(r.top-top)<1);if(!row){row={top,count:0};rows.push(row);}row.count++;}return rows.map(r=>r.count);})()`),[5,4],'Reference bridesmaid rows at '+width);
+    assert.equal(await evaluate(`(()=>{const photos=[...document.querySelectorAll('.bt-section:first-of-type .bt-portrait')];return Math.abs(photos[0].getBoundingClientRect().height-photos[8].getBoundingClientRect().height)<1;})()`),true,'Matching portrait heights across rows');
+  }
+  assert.equal(await evaluate(`document.querySelector('.bt-footer-title').textContent`),'Together in Love');
+  await evaluate(`document.querySelector('.bt-menu').click()`);assert.equal(await evaluate(`currentView`),'more');
+  await evaluate(`switchView('bridaltrain');document.querySelector('.bt-monogram').click()`);assert.equal(await evaluate(`currentView`),'home');
+  await evaluate(`switchView('bridaltrain')`);
   await evaluate(`document.querySelector('[data-view="bridaltrain"] .back-link').click()`);
   assert.equal(await evaluate(`currentView`),'story');
   await evaluate(`switchView('more');document.querySelector('[data-view="more"] [data-goto="bridaltrain"]').click()`);
