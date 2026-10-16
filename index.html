@@ -37,6 +37,7 @@
   <link rel="stylesheet" href="live-broadcast.css?v=197" />
   <link rel="stylesheet" href="live-broadcast-reference.css?v=199" />
   <link rel="stylesheet" href="app-polish.css?v=201" />
+  <link rel="stylesheet" href="guest-checkin.css?v=202" />
   <script>
   /* a checked-in guest goes straight into the app — flag it before first
      paint so the invitation never flashes on their screen (mirrors
@@ -159,51 +160,53 @@
     <p class="gate-sub" id="guestCheckinHint">So we can personalize your experience</p>
     <div class="divider"><span></span><i>&#10084;</i><span></span></div>
 
-    <form id="guestLoginForm" class="gate-form">
+    <form id="guestLoginForm" class="gate-form" novalidate>
+      <p id="guestCheckinNotice" class="checkin-notice hidden" role="status" aria-live="polite"></p>
       <label class="field">Full Name
-        <input id="guestName" type="text" name="name" required placeholder="Enter your full name" autocomplete="name" />
+        <input id="guestName" type="text" name="name" required maxlength="120" placeholder="Enter your full name" autocomplete="name" enterkeyhint="next" />
       </label>
       <div class="field">
-        <span class="field-label">Phone Number</span>
+        <label class="field-label" for="guestPhone">Phone Number</label>
         <div class="phone-row">
           <select id="guestDialCode" class="dial-select" name="dialCode" aria-label="Country calling code"></select>
-          <input id="guestPhone" type="tel" name="phone" required placeholder="e.g. 24 123 4567" autocomplete="tel-national" />
+          <input id="guestPhone" type="tel" name="phone" inputmode="tel" required maxlength="40" placeholder="24 123 4567" autocomplete="tel-national" />
         </div>
       </div>
       <details id="guestContactDetails" class="checkin-details" open><summary>Contact &amp; location details</summary>
       <div class="field-pair field-pair--two">
         <label class="field">City
-          <input id="guestCity" type="text" name="city" required placeholder="e.g. Accra" autocomplete="address-level2" />
+          <input id="guestCity" type="text" name="city" maxlength="120" placeholder="e.g. Accra" autocomplete="address-level2" />
         </label>
         <label class="field">State / Region <small class="field-opt">(optional)</small>
-          <input id="guestState" type="text" name="state" placeholder="e.g. Greater Accra" autocomplete="address-level1" />
+          <input id="guestState" type="text" name="state" maxlength="120" placeholder="e.g. Greater Accra" autocomplete="address-level1" />
         </label>
       </div>
       <label class="field">Country
-        <select id="guestCountry" name="country" required></select>
+        <select id="guestCountry" name="country" autocomplete="country-name"></select>
       </label>
       <label class="field">Email Address
-        <input id="guestEmail" type="email" name="email" required placeholder="you@example.com" autocomplete="email" />
+        <input id="guestEmail" type="email" name="email" maxlength="200" placeholder="you@example.com" autocomplete="email" />
       </label>
       </details>
       <div class="field">
         <span class="field-label">Will you attend?</span>
         <div class="rsvp-pills" id="guestRsvp">
-          <button type="button" class="rsvp-pill active" data-rsvp="yes">Attending</button>
-          <button type="button" class="rsvp-pill" data-rsvp="no">Can't make it — exploring</button>
+          <button type="button" class="rsvp-pill active" data-rsvp="yes" aria-pressed="true">Attending</button>
+          <button type="button" class="rsvp-pill" data-rsvp="no" aria-pressed="false">Not attending</button>
         </div>
       </div>
       <div class="field" id="checkinPartyRow">
-        <span class="field-label">Add guests to your table</span>
+        <span class="field-label">Extra guests joining you</span>
         <div class="stepper">
-          <button type="button" id="checkinMinus" aria-label="Fewer guests">&#8722;</button>
-          <span id="checkinCount">Just me</span>
-          <button type="button" id="checkinPlus" aria-label="More guests">&#43;</button>
+          <button type="button" id="checkinMinus" aria-label="Fewer extra guests" disabled>&#8722;</button>
+          <span id="checkinCount" role="status" aria-live="polite">Just me</span>
+          <button type="button" id="checkinPlus" aria-label="More extra guests">&#43;</button>
         </div>
+        <small class="checkin-field-help">Don’t count yourself.</small>
       </div>
       <details id="guestRelationDetails" class="checkin-details" open><summary>Your connection to the couple</summary>
       <label class="field">Your Relationship / Invited By
-        <select id="guestRelation" name="relation" required>
+        <select id="guestRelation" name="relation">
           <option value="" disabled selected>Select who invited you</option>
           <option value="SAM'S FAMILY">SAM'S FAMILY</option>
           <option value="JOSSY'S FAMILY">JOSSY'S FAMILY</option>
@@ -223,7 +226,7 @@
         <input id="guestRelationOther" type="text" maxlength="80" placeholder="Tell us who invited you" />
       </label>
       </details>
-      <p id="guestOptionalNote" class="gate-sub hidden">The extra details above are optional. Your number is saved for the couple, but is not verified. This device will remember your check-in.</p>
+      <p id="guestOptionalNote" class="gate-sub hidden">Optional details help the couple plan. Your phone is saved without verification.</p>
       <p id="guestLoginError" class="gate-error" role="alert"></p>
       <button type="submit" class="gate-btn gate-btn--submit">ENTER THE WEDDING &#10095;</button>
       <button type="button" id="returnGuestLink" class="gate-link">Already checked in? Sign in with your phone</button>
@@ -1750,7 +1753,7 @@ try{
   </div>
 </div>
 <script src="api-data.js?v=196"></script>
-<script src="app.js?v=201"></script>
+<script src="app.js?v=202"></script>
 <script src="app-data.js?v=194"></script>
 <script src="app-social.js?v=198"></script>
 <script src="admin-dashboard.js?v=187"></script>

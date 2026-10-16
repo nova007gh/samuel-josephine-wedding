@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v201-floral-navigation';
+const CACHE = 'sj-wedding-v202-checkin-recovery';
 const ASSETS = [
   './',
   './index.html',
@@ -7,6 +7,7 @@ const ASSETS = [
   './assets/seal-logo.png',
   './app-views.css',
   './app-polish.css',
+  './guest-checkin.css',
   './app-forms.css',
   './app-social.css',
   './gifts.css',

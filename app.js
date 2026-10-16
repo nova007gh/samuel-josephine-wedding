@@ -512,8 +512,9 @@ function syncGuestRsvpPills(){
 let checkinParty = 0;
 function syncCheckinParty(){
   $('#checkinPartyRow')?.classList.toggle('hidden', !guestRsvpYes);
+  document.querySelectorAll('#guestRsvp .rsvp-pill').forEach(button=>button.setAttribute('aria-pressed',String((button.dataset.rsvp==='yes')===guestRsvpYes)));
 }
-const setCheckinParty = n => { checkinParty = Math.min(9, Math.max(0, n)); $('#checkinCount').textContent = checkinParty ? `+${checkinParty}` : 'Just me'; };
+const setCheckinParty = n => { checkinParty = Math.min(9, Math.max(0, n)); $('#checkinCount').textContent = checkinParty ? `${checkinParty} extra${checkinParty===1?' guest':' guests'}` : 'Just me';$('#checkinMinus').disabled=checkinParty===0;$('#checkinPlus').disabled=checkinParty===9; };
 $('#checkinMinus')?.addEventListener('click', () => setCheckinParty(checkinParty - 1));
 $('#checkinPlus')?.addEventListener('click', () => setCheckinParty(checkinParty + 1));
 
@@ -522,7 +523,7 @@ $('#guestRelation')?.addEventListener('change', e => {
   const isOther = /^other$/i.test(e.target.value);
   $('#guestRelationOtherWrap')?.classList.toggle('hidden', !isOther);
   const input = $('#guestRelationOther');
-  if (input) input.required = isOther;
+  if (input) input.required = isOther&&onboardingMode===true;
   if (isOther) input?.focus();
 });
 
@@ -624,21 +625,34 @@ let otpPhone = '';
 let otpChannel = 'sms';         /* 'sms' | 'email' — delivery channel for the code */
 let otpEmail = '';              /* target/masked email shown in the hint */
 let guestEntryBusy=false,quickEntryKey='',onboardingMode=null;
+function checkinNotice(message=''){
+  const notice=$('#guestCheckinNotice');notice.textContent=message;notice.classList.toggle('hidden',!message);
+}
+function checkinError(message='',input){
+  const error=$('#guestLoginError');error.textContent=message;
+  $('#guestLoginForm').querySelectorAll('[aria-invalid]').forEach(el=>{el.removeAttribute('aria-invalid');el.removeAttribute('aria-describedby');});
+  if(input){const details=input.closest('details');if(details)details.open=true;input.setAttribute('aria-invalid','true');input.setAttribute('aria-describedby','guestLoginError');input.focus();}
+}
+async function boundedCheckin(request){
+  let timer;try{return await Promise.race([request,new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('This is taking longer than expected. Please retry — your details are kept.')),20000);})]);}finally{clearTimeout(timer);}
+}
 async function loadOnboarding(){
-  const config=await api('/onboarding');
+  const config=await boundedCheckin(api('/onboarding'));
   if(typeof config.otpRequired!=='boolean')throw new Error('Check-in is temporarily unavailable. Please try again.');
   const required=config.otpRequired;
   ['guestCity','guestCountry','guestEmail','guestRelation'].forEach(id=>{const el=document.getElementById(id);if(el)el.required=required;});
   if(onboardingMode!==required)['guestContactDetails','guestRelationDetails'].forEach(id=>{document.getElementById(id).open=required;});
   onboardingMode=required;
+  $('#guestRelationOther').required=required&&/^other$/i.test($('#guestRelation').value);
   document.querySelector('#guestContactDetails summary').textContent='Contact & location details'+(required?'':' (optional)');
   document.querySelector('#guestRelationDetails summary').textContent='Your connection to the couple'+(required?'':' (optional)');
-  document.getElementById('guestCheckinHint').textContent=required?'So we can personalize your experience':'Just your name and phone to get started. No SMS, email or call code needed.';
+  document.getElementById('guestCheckinHint').textContent=required?'So we can personalize your experience':'Your name and phone are all you need. No code required.';
   document.getElementById('guestOptionalNote').classList.toggle('hidden',required);
-  document.getElementById('returnGuestLink').textContent=required?'Already checked in? Sign in with your phone':'Already checked in on this device? Continue';
+  document.getElementById('returnGuestLink').textContent=required?'Already checked in? Sign in with your phone':getGuest()?.name?'Continue with your saved check-in':'Already checked in on another device?';
   return config;
 }
-loadOnboarding().catch(()=>{});
+loadOnboarding().catch(()=>checkinNotice('Check-in options could not load. Tap Enter the Wedding to retry.'));
+$('#guestLoginForm')?.addEventListener('input',()=>{if(!guestEntryBusy)checkinError();});
 function entryKey(){
   if(quickEntryKey)return quickEntryKey;
   try{quickEntryKey=sessionStorage.getItem('sj_pending_entry_key')||'';}catch{}
@@ -737,12 +751,14 @@ $('#guestLoginForm')?.addEventListener('submit', async e => {
   if(guestEntryBusy)return;
   const err = $('#guestLoginError');
   const submitBtn = e.target.querySelector('button[type="submit"]');
-  guestEntryBusy=true;submitBtn.disabled=true;
+  const initialLabel=submitBtn.innerHTML;
+  guestEntryBusy=true;submitBtn.disabled=true;submitBtn.textContent='Checking…';$('#returnGuestLink').disabled=true;
+  e.target.setAttribute('aria-busy','true');checkinError();checkinNotice();
   let otpRequired;
-  try{({otpRequired}=await loadOnboarding());}catch(x){err.textContent=x.message||'Could not load check-in. Please retry.';guestEntryBusy=false;submitBtn.disabled=false;return;}
-  guestEntryBusy=false;submitBtn.disabled=false;
+  try{({otpRequired}=await loadOnboarding());}catch(x){checkinError(x.message||'Could not load check-in. Please retry.');guestEntryBusy=false;submitBtn.disabled=false;submitBtn.innerHTML=initialLabel;$('#returnGuestLink').disabled=false;e.target.setAttribute('aria-busy','false');return;}
+  guestEntryBusy=false;submitBtn.disabled=false;submitBtn.innerHTML=initialLabel;$('#returnGuestLink').disabled=false;e.target.setAttribute('aria-busy','false');
   const name = $('#guestName').value.trim();
-  const phone = composePhone();
+  const phone = composePhone().replace(/^00/,'+').replace(/[^\d+]/g,'');
   const email = $('#guestEmail').value.trim();
   const city = $('#guestCity')?.value.trim() || '';
   const state = $('#guestState')?.value.trim() || '';
@@ -751,23 +767,13 @@ $('#guestLoginForm')?.addEventListener('submit', async e => {
   const relationOther = $('#guestRelationOther')?.value.trim();
   const relation = /^other$/i.test(relationSel) ? (relationOther ? `Other — ${relationOther}` : 'Other') : relationSel;
 
-  if (!name || !phone || (otpRequired&&(!email||!relationSel))){
-    if (err) err.textContent = otpRequired?'Please fill in all fields.':'Please enter your name and phone number.';
-    return;
-  }
-  if (phone.replace(/[^\d]/g, '').length < 7){
-    if (err) err.textContent = 'Enter a valid phone number.';
-    $('#guestPhone')?.focus();
-    return;
-  }
-  if (otpRequired&&(!city || !country)){
-    if (err) err.textContent = 'Please add your city and country — state is optional.';
-    return;
-  }
-  if (otpRequired&&/^other$/i.test(relationSel) && !relationOther){
-    if (err) err.textContent = 'Please tell us who invited you.';
-    $('#guestRelationOther')?.focus();
-    return;
+  if(!name){checkinError('Please enter your name.',$('#guestName'));return;}
+  if(!$('#guestPhone').value.trim()||!/^\+\d{9,15}$/.test(phone)){checkinError('Please enter a valid phone number. Check the country code too.',$('#guestPhone'));return;}
+  if(email&&!$('#guestEmail').validity.valid){checkinError('Enter a valid email address, or leave it blank.',$('#guestEmail'));return;}
+  if(otpRequired){
+    const missing=[['guestEmail','Please enter your email address.'],['guestCity','Please enter your city.'],['guestCountry','Please choose your country.'],['guestRelation','Please choose your connection to the couple.']].find(([id])=>!$('#'+id).value.trim());
+    if(missing){checkinError(missing[1],$('#'+missing[0]));return;}
+    if(/^other$/i.test(relationSel)&&!relationOther){checkinError('Please tell us who invited you.',$('#guestRelationOther'));return;}
   }
 
   pendingGuest = { name, phone, email, city, state, country, relation,
@@ -781,9 +787,10 @@ $('#guestLoginForm')?.addEventListener('submit', async e => {
     submitBtn.innerHTML = otpRequired?'Sending code…':'Saving your check-in…';
   }
   guestEntryBusy=true;
+  e.target.setAttribute('aria-busy','true');$('#returnGuestLink').disabled=true;
   try {
     if(!otpRequired){
-      const response=await api('/guest-entry',{method:'POST',body:{...pendingGuest,entryKey:entryKey()}});
+      const response=await boundedCheckin(api('/guest-entry',{method:'POST',body:{...pendingGuest,entryKey:entryKey()}}));
       if(!response.guest?.id)throw new Error('Your check-in could not be confirmed. Please try again.');
       setGuest(response.guest);pendingGuest=null;quickEntryKey='';try{sessionStorage.removeItem('sj_pending_entry_key');}catch{}
       err.textContent='';enterApp();return;
@@ -794,17 +801,19 @@ $('#guestLoginForm')?.addEventListener('submit', async e => {
     if (err) err.textContent = '';
   } catch(x){
     if(x.code==='ENTRY_EXPIRED'){quickEntryKey='';try{sessionStorage.removeItem('sj_pending_entry_key');}catch{}}
-    if (err) err.textContent = x.message || (otpRequired?'Could not send the code — try again.':'Check-in could not save. Please retry; your details are kept.');
+    checkinError(x.message || (otpRequired?'Could not send the code — try again.':'Check-in could not save. Please retry; your details are kept.'));
     pendingGuest = null;
   } finally {
     guestEntryBusy=false;
+    e.target.setAttribute('aria-busy','false');$('#returnGuestLink').disabled=false;
     if (submitBtn){ submitBtn.disabled = false; submitBtn.innerHTML = submitBtn.dataset.label; }
   }
 });
 
 /* returning guest — phone + code brings their check-in back */
 $('#returnGuestLink')?.addEventListener('click', async () => {
-  try{const config=await loadOnboarding();if(!config.otpRequired){if(getGuest()?.name){enterApp();return;}showPane('form');$('#guestLoginError').textContent='On a new device? Enter your name and phone below. No code is needed; previous private check-in details will not be retrieved.';$('#guestName').focus();return;}}catch(x){$('#guestLoginError').textContent=x.message;return;}
+  if(guestEntryBusy)return;
+  try{const config=await loadOnboarding();if(!config.otpRequired){if(getGuest()?.name){enterApp();return;}showPane('form');checkinError();checkinNotice('On another device? Fill in your name and phone here to continue. No code needed.');$('#guestName').focus();return;}}catch(x){checkinError(x.message);return;}
   $('#guestLoginError').textContent = '';
   $('#returnError').textContent = '';
   $('#returnRegister')?.classList.add('hidden');
@@ -839,7 +848,7 @@ $('#returnSendBtn')?.addEventListener('click', async e => {
   const label = btn.innerHTML;
   btn.innerHTML = 'Checking…';
   try {
-    const config=await loadOnboarding();if(!config.otpRequired){showPane('form');$('#guestLoginError').textContent='Enter your name and phone to continue — no code needed.';return;}
+    const config=await loadOnboarding();if(!config.otpRequired){showPane('form');checkinError();checkinNotice('Enter your name and phone to continue. No code needed.');return;}
     /* confirm the number actually checked in before spending an OTP send */
     let firstName = null;
     try {

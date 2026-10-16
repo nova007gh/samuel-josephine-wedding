@@ -1,5 +1,39 @@
 # snybena.com live audit — 11 October 2026
 
+## Guest check-in cleanup and validation recovery — v202 (16 October)
+
+Reviewed the reported check-in screenshot and rebuilt its scoped presentation:
+readable 16px form controls (avoids iOS focus zoom), consistent 44–50px touch
+targets, wider phone entry on narrow phones, balanced spacing, shorter copy,
+clearer attendance choices and extra-guest counts/bounds. Gate/card entrance
+transforms are removed on this screen, and the card stays scrollable in small
+portrait/landscape viewports with safe-area padding and reachable submit.
+
+Returning-device guidance now uses a neutral status notice near the top,
+not the red validation alert; the link accurately says “another device” when
+no guest is saved. Actual errors clear when editing and invalid fields expose
+ARIA state/description, open their parent optional section, and receive focus.
+Only name/phone are required in quick mode, including when Other is selected.
+OTP-required mode still restores its required contact/connection fields.
+
+Form validation now waits for the public mode before checking optional versus
+required fields (novalidate avoids hidden native-required-field dead ends).
+Client phone validation matches the 9–15 international-digit server format,
+including normalization of 00 prefixes; malformed optional email can be fixed
+or removed. Pending config/save operations show busy feedback and have a
+20-second recovery bound. Failure/timeout keeps field values and the hashed-
+secret idempotency retry key; successful entry still waits for server save.
+No OTP, admin/voting policy, backend or stored content changes.
+
+Expanded disposable browser tests pass: empty name/invalid phone, collapsed
+invalid optional email, Other in both OTP modes, config outage recovery,
+00-prefixed international phones, synthetic save timeout with retained retry
+key, actual save retry/duplicate guard, no OTP request, attendance/party bounds,
+saved reload continuity, verified-voting isolation and neutral device guidance.
+GET-only real-data preview checks pass for 320x568/375x667/430x1100/844x390,
+16px inputs, reachable submit, hidden OTP and no JS exceptions. Worker and
+logout/push regressions pass. Predeployment snapshot: `/root/wedding-pre-v202`.
+
 ## Floral polish and direct Bridal Train / Live tabs — v201 (16 October)
 
 At the user's request, expanded navigation from seven to nine destinations:

@@ -1,0 +1,42 @@
+/* Accessible, scroll-safe check-in. Keep gate styling out of guest/admin pages. */
+#guestLoginScreen{padding:calc(16px + env(safe-area-inset-top)) 12px calc(20px + env(safe-area-inset-bottom));overflow-x:hidden;overscroll-behavior-y:contain;scroll-padding:20px;background:url('assets/gift-floral.svg') left top/90px auto no-repeat,url('assets/gift-floral.svg') right bottom/100px auto no-repeat,linear-gradient(160deg,#fcf5e9,#edddc5);animation:none;}
+#guestLoginScreen .gate-card{width:min(100%,440px);padding:24px 22px 20px;border-radius:22px;background:#fffcf7f5;animation:none;}
+#guestLoginScreen .gate-seal{margin:0 auto 12px;width:60px;height:60px;animation:none;}
+#guestLoginScreen .gate-seal img{width:100%;height:100%;object-fit:contain;}
+#guestLoginScreen .gate-eyebrow{font-size:10px;letter-spacing:2px;margin:0 0 6px;}
+#guestLoginScreen .gate-title{font:600 32px/1.15 'Cormorant Garamond',Georgia,serif;margin:0 0 9px;}
+#guestLoginScreen .gate-sub{font-size:12px;line-height:1.6;margin:0 auto;max-width:34ch;color:#80694b;}
+#guestLoginScreen .divider{margin:13px auto;}
+#guestLoginScreen .gate-form{gap:17px;margin-top:17px;min-width:0;}
+#guestLoginScreen .field{margin:0;min-width:0;font-size:10px;line-height:1.5;font-weight:600;letter-spacing:.9px;color:#624d32;}
+#guestLoginScreen .field :is(input,select){min-width:0;max-width:100%;min-height:48px;padding:11px 12px;font-size:16px;line-height:1.4;letter-spacing:0;text-transform:none;border-radius:11px;background:#fffefd;scroll-margin:20px;}
+#guestLoginScreen input::placeholder{font-size:13px;color:#897d6d;opacity:1;}
+#guestLoginScreen .field :is(input,select)[aria-invalid="true"]{border-color:#ac4336;box-shadow:0 0 0 2px #ac433618;}
+#guestLoginScreen .phone-row{grid-template-columns:minmax(0,46%) minmax(0,1fr);gap:8px;margin-top:7px;}
+#guestLoginScreen .phone-row :is(input,select){margin-top:0;}
+#guestLoginScreen .phone-row select{padding-left:8px;padding-right:4px;font-size:16px;}
+#guestLoginScreen .checkin-details{padding:0 12px;border-radius:11px;background:#fbf5e9;border-color:#e3cfaf;}
+#guestLoginScreen .checkin-details summary{padding:13px 0;min-height:46px;font:500 13px/1.5 Georgia,serif;color:#75532c;}
+#guestLoginScreen .checkin-details[open] summary{margin-bottom:0;}
+#guestLoginScreen .checkin-details[open]{padding-bottom:13px;}
+#guestLoginScreen .checkin-details .field{margin-bottom:12px;}
+#guestLoginScreen .checkin-details .field:last-child{margin-bottom:0;}
+#guestLoginScreen .field-pair{grid-template-columns:repeat(2,minmax(0,1fr));}
+#guestLoginScreen .rsvp-pills{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:7px;}
+#guestLoginScreen .rsvp-pill{min-height:44px;min-width:0;padding:9px 7px;font-size:12px;line-height:1.4;letter-spacing:0;text-transform:none;border-radius:11px;}
+#guestLoginScreen .stepper{display:grid;grid-template-columns:48px minmax(0,1fr) 48px;margin-top:7px;min-height:46px;border-radius:11px;overflow:hidden;}
+#guestLoginScreen .stepper button{min-width:44px;min-height:44px;padding:8px;font-size:21px;}
+#guestLoginScreen .stepper button:disabled{opacity:.35;cursor:default;background:#f8f1e7;}
+#guestLoginScreen .stepper span{min-width:0;font-size:12px;line-height:1.4;letter-spacing:0;text-transform:none;padding:9px 2px;}
+#guestLoginScreen .checkin-field-help{display:block;font:400 11px/1.5 Montserrat,sans-serif;letter-spacing:0;text-transform:none;color:#89765c;margin-top:5px;}
+#guestLoginScreen #guestOptionalNote{font:400 11px/1.6 Montserrat,sans-serif;max-width:none;text-align:left;margin:0;}
+#guestLoginScreen .checkin-notice{margin:0;padding:11px 12px;background:#f3ead9;border:1px solid #e6d5b9;border-radius:10px;color:#765b36;font:400 12px/1.6 Montserrat,sans-serif;}
+#guestLoginScreen .gate-error{min-height:0;font-size:12px;line-height:1.6;}
+#guestLoginScreen .gate-error:empty{display:none;}
+#guestLoginScreen .gate-btn--submit{min-height:50px;font-size:11px;letter-spacing:1px;padding:13px 12px;line-height:1.5;}
+#guestLoginScreen .gate-link{min-height:44px;padding:8px 4px;font-size:11px;line-height:1.5;letter-spacing:0;text-transform:none;text-align:center;}
+#guestLoginScreen :is(button,summary):focus-visible{outline:2px solid #a8752c;outline-offset:3px;}
+#guestLoginScreen .gate-form[aria-busy="true"] button[type="submit"]{cursor:progress;opacity:.75;}
+@media(max-width:400px){#guestLoginScreen .phone-row{grid-template-columns:minmax(0,1fr);}}
+@media(max-width:360px){#guestLoginScreen .gate-card{padding:22px 18px 18px;}#guestLoginScreen .field-pair{grid-template-columns:1fr;gap:0;}}
+@media(max-height:540px){#guestLoginScreen .gate-card{margin:0 auto;}#guestLoginScreen .gate-seal{width:46px;height:46px;}}
