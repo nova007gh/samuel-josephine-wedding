@@ -1,5 +1,30 @@
 # snybena.com live audit — 11 October 2026
 
+## Live Broadcast reference layout — v199 (16 October)
+
+Rebuilt the guest Live Broadcast composition to follow the supplied cream/gold
+reference: edge-to-edge photo hero, S&J/menu overlay, flowing script heading,
+heart divider, floral countdown strip, wide poster/player, gold join CTA,
+three-column schedule and replay cards, and paired reminder/share cards.
+Scoped `live-broadcast-reference.css` replaces the separate header only in
+this view; seven main tabs and central Gallery remain unchanged. Existing
+real configured photos are used; decorative hero/poster crops never alter
+stored originals. Admin editor and settings are unchanged.
+
+Missing dates show dashes and “to be announced”; empty replay slots are
+explicitly unavailable placeholders, not invented broadcasts. No fabricated
+LIVE/viewer/HD claims or copied sample dates. Calendar/reminder and join
+controls remain disabled until real details exist. Section jumps and manual
+refresh remain below the reference cards. Provider embeds still load only
+after Play; active player survives metadata refresh and supports retry/close.
+
+Disposable full broadcast browser suite passes (editing, ordering, draft
+photos, failure/duplicate guards, conflicts, playback and preservation).
+GET-only preview using actual public photos passes 320/375/430/1024px checks,
+including three-column schedule/replays and two-column action cards, decoded
+photos, no eager iframe and no JS exceptions. Broadcast schema/calendar and
+service-worker regression suites pass. Cache: v199-broadcast-reference.
+
 ## Temporary OTP pause and quick onboarding — v198 (16 October)
 
 Guest OTP can be paused with server environment `GUEST_OTP_REQUIRED=false`.

@@ -10,8 +10,16 @@ module.exports=async({call,evaluate,errors,out})=>{
   await evaluate(`window.scrollTo({top:0,behavior:'instant'})`);
   const realPhoto=await evaluate(`document.querySelector('#liveBroadcastContent .showcase-hero-photo').getAttribute('src')`);assert.match(realPhoto,/^\/uploads\//);
   await evaluate(`Promise.all([...document.querySelectorAll('#liveBroadcastContent img')].map(img=>img.decode().catch(()=>{})))`);
+  await evaluate(`Promise.race([document.fonts.ready,new Promise(r=>setTimeout(r,5000))])`);
   assert.equal(await evaluate(`document.querySelector('#liveBroadcastContent .showcase-hero-photo').naturalWidth>0`),true);
-  for(const width of [320,375,430,1024]){await call('Emulation.setDeviceMetricsOverride',{width,height:1100,deviceScaleFactor:1,mobile:width<600});assert.equal(await evaluate('document.documentElement.scrollWidth===innerWidth'),true,'Live broadcast layout at '+width);}
-  await call('Emulation.setDeviceMetricsOverride',{width:430,height:1100,deviceScaleFactor:1,mobile:true});const shot=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:true});fs.writeFileSync(path.join(out,'live-broadcast-real-photo.png'),Buffer.from(shot.data,'base64'));
+  for(const width of [320,375,430,1024]){
+    await call('Emulation.setDeviceMetricsOverride',{width,height:1100,deviceScaleFactor:1,mobile:width<600});assert.equal(await evaluate('document.documentElement.scrollWidth===innerWidth'),true,'Live broadcast layout at '+width);
+    assert.deepEqual(await evaluate(`['.lb-schedule-grid','.lb-replays','.lb-bottom-actions'].map(s=>getComputedStyle(document.querySelector(s)).gridTemplateColumns.split(' ').length)`),[3,3,2],'Reference card columns at '+width);
+    assert.equal(await evaluate(`getComputedStyle(document.querySelector('.app-header')).display`),'none','Hero replaces the separate app header');
+  }
+  await call('Emulation.setDeviceMetricsOverride',{width:430,height:1100,deviceScaleFactor:1,mobile:true});
+  // Dismiss transient notices in the disposable profile for an unobstructed visual check.
+  await evaluate(`document.querySelector('.competition-toast-close')?.click();document.querySelectorAll('.activity-toast').forEach(el=>el.remove());window.scrollTo({top:0,behavior:'instant'})`);
+  const shot=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:true});fs.writeFileSync(path.join(out,'live-broadcast-real-photo.png'),Buffer.from(shot.data,'base64'));
   assert.deepEqual(errors,[]);console.log('PASS read-only live broadcast: Events link, seven tabs, real configured image decoded, no eager provider iframe, responsive 320/375/430/1024 and no JS exceptions');
 };

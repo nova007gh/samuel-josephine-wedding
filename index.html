@@ -21,7 +21,7 @@
   </style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Parisienne&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Parisienne&family=Great+Vibes&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="assets/landing-invite.jpg" />
   <link rel="preload" as="image" href="assets/seal-pressed-320.png" />
   <link rel="stylesheet" href="app.css?v=187" />
@@ -34,6 +34,7 @@
   <link rel="stylesheet" href="reception-program.css?v=190" />
   <link rel="stylesheet" href="bridal-train.css?v=197" />
   <link rel="stylesheet" href="live-broadcast.css?v=197" />
+  <link rel="stylesheet" href="live-broadcast-reference.css?v=199" />
   <script>
   /* a checked-in guest goes straight into the app — flag it before first
      paint so the invitation never flashes on their screen (mirrors
@@ -615,12 +616,12 @@
   </section>
 
   <section class="view hidden" data-view="livebroadcast">
-    <button class="back-link" data-goto="events" type="button">&#10094; Event Details</button>
     <div id="liveBroadcastContent" aria-busy="false"></div>
     <p id="liveBroadcastLoadStatus" class="upload-status" role="status" aria-live="polite"></p>
     <button id="liveBroadcastRetry" class="mem-del hidden" type="button">RETRY LOADING</button>
     <p id="liveBroadcastActionStatus" class="upload-status" role="status" aria-live="polite"></p>
     <input id="liveBroadcastShareLink" class="hidden" readonly aria-label="Broadcast page link to copy" />
+    <button class="back-link" data-goto="events" type="button">&#10094; Event Details</button>
   </section>
 
   <section class="view hidden" data-view="bridaltrain">
@@ -1746,7 +1747,7 @@ try{
 <script src="reception-program.js?v=190"></script>
 <script src="bridal-train.js?v=197"></script>
 <script src="broadcast-calendar.js?v=196"></script>
-<script src="live-broadcast.js?v=197"></script>
+<script src="live-broadcast.js?v=199"></script>
 <script src="competitions.js?v=198"></script>
 <script src="competition-notices.js?v=187"></script>
 </body>
