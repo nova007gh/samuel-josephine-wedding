@@ -997,7 +997,7 @@ const SUBVIEW_TAB = {
   guestbook:'more', rsvp:'more', voicemsg:'more', videomsg:'more',
   admin:'more', adminlogin:'more', approvals:'more', rsvpAdmin:'more', guestlist:'more',
   guestrsvp:'more', adminmedia:'more', adminvoice:'more', adminvideo:'more', security:'more',
-  competitions:'more', competition:'more', admincompetitions:'more', program:'events', engagementprogram:'events', bridaltrain:'story', livebroadcast:'events'
+  competitions:'more', competition:'more', admincompetitions:'more', program:'events', engagementprogram:'events'
 };
 const ADMIN_VIEWS = new Set(['admin', 'approvals', 'rsvpAdmin', 'guestlist', 'guestrsvp', 'adminmedia', 'adminvoice', 'adminvideo', 'security', 'admincompetitions']);
 /* Views are pushed onto browser history so the device Back button moves
@@ -1020,6 +1020,7 @@ function flashPageLoader(){
 }
 
 function switchView(name, fromHistory = false){
+  if(!$$('.view').some(v=>v.dataset.view===name))return;
   /* guest pages need a check-in; only the admin sign-in page is open to all */
   if (name !== 'adminlogin' && !ADMIN_VIEWS.has(name) && !isAdmin() && !getGuest()?.name && !gateShowing()){
     requireCheckIn();
@@ -1058,14 +1059,25 @@ function switchView(name, fromHistory = false){
     v.querySelectorAll('video, audio').forEach(media => { if (!media.paused) media.pause(); });
   });
   $$('.view').forEach(v => v.classList.toggle('hidden', v.dataset.view !== name));
-  $$('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tabName));
+  $$('.tab').forEach(t => {
+    const selected=t.dataset.tab===tabName;
+    t.classList.toggle('active',selected);
+    if(selected)t.setAttribute('aria-current','page');else t.removeAttribute('aria-current');
+  });
+  // Scroll only the narrow navigation strip, never scrollIntoView on its button:
+  // that would also move the document and fight the guest's page scrolling.
+  const selectedTab=document.querySelector('.tab.active'),bar=selectedTab?.closest('.tabbar');
+  if(bar){const item=selectedTab.getBoundingClientRect(),frame=bar.getBoundingClientRect();
+    const delta=item.left<frame.left?item.left-frame.left:item.right>frame.right?item.right-frame.right:0;
+    if(delta)bar.scrollTo({left:bar.scrollLeft+delta,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+  }
 
   /* the music button floats over every screen once a song exists;
      the menu button takes its header slot elsewhere */
   const onHome = name === 'home';
   $('#musicDock')?.classList.toggle('hidden', !music?.src);
 
-  window.scrollTo({ top: 0, behavior: 'instant' });
+  if(name!==currentView)window.scrollTo({ top: 0, behavior: 'instant' });
 
   if (!fromHistory && name !== currentView){
     try { history.pushState({ view: name }, '', '#' + name); } catch {}

@@ -114,6 +114,7 @@ module.exports=async({call,evaluate,errors,out})=>{
   await evaluate(`document.getElementById('lightboxClose').click()`);
   assert.equal(await evaluate(`document.activeElement.matches('.comp-choice [data-comp-action="photo"]')&&!document.querySelector('#competitionDetail [name="competition-choice"]:checked')`),true,'Viewing a photo does not select a contestant; closing restores focus');
   await evaluate(`document.querySelector('#competitionDetail [data-comp-action="verify"]').click()`);
+  await wait(`gateShowing()&&document.getElementById('returnPhone')===document.activeElement`);
   assert.equal(await evaluate(`gateShowing()&&document.getElementById('returnPhone')===document.activeElement`),true,'Verification action opens and focuses the guest sign-in screen');
   await evaluate(`enterApp();switchView('competition')`);
   await evaluate(`(async()=>{const r=await guestLogin('+233240000001','123456');setGuest(r.guest);enterApp();})()`);

@@ -1,11 +1,12 @@
 
-const CACHE = 'sj-wedding-v200-bridal-reference';
+const CACHE = 'sj-wedding-v201-floral-navigation';
 const ASSETS = [
   './',
   './index.html',
   './app.css',
   './assets/seal-logo.png',
   './app-views.css',
+  './app-polish.css',
   './app-forms.css',
   './app-social.css',
   './gifts.css',

@@ -1,5 +1,50 @@
 # snybena.com live audit — 11 October 2026
 
+## Floral polish and direct Bridal Train / Live tabs — v201 (16 October)
+
+At the user's request, expanded navigation from seven to nine destinations:
+Home, Our Story, Events, Bridal Train, Gallery, Live, Memories, Gifts, Share.
+Gallery retains the fifth/centre slot. Bridal Train and Live now select their
+own tabs rather than Story/Events. New buttons use a slow gold halo pulse,
+without transforms/layout motion; reduced-motion disables the animation.
+Minimum 44px-wide targets; the bar alone swipes horizontally below 396px,
+and selecting a clipped destination brings it into view without scrolling
+the page. Safe-area padding/content clearance updated for the taller bar.
+Selected navigation exposes aria-current; repeated active-tab taps preserve
+page position. Invalid routes cannot hide all views. Dynamic broadcast hero
+home/menu controls now handle clicks through the rendered host.
+
+Shared `app-polish.css` adds bounded floral corner artwork, cream/gold
+finishing, resilient form/media widths and consistent serif guest headings,
+without overwriting page content or the Bridal Train/Live reference layouts.
+No backend, settings, guest, vote, upload or OTP-mode changes.
+
+Initial 375px diagnostics across 17 guest/sign-in pages found finite page
+bottoms and no reproducible continuous scroll. No intentional auto-scrolling
+has been added; navigation strip visibility uses only the strip's scrollTo,
+never scrollIntoView that could move the document. A new read-only shell
+suite checks all page bottoms, routes, touch widths and polling stability.
+
+Unit checks pass for worker caching, logout/push controls, Bridal Train and
+broadcast validation/calendar, and thirteen-section admin navigation. Mocked
+dashboard checks pass at 320/375/430px including retained upload controls;
+Share suite passes guest/admin layouts, all nine routes, calendar/reminders,
+notification/install states, music upload failure handling and sign-out.
+Full disposable browser/API regression passes for Home/Share/Story routing,
+synthetic microphone recording and denied/late permission cleanup, retained
+failed uploads/duplicate guard, competition editing/photos/countdowns,
+verified OTP sessions/ballots, moderation/privacy, browser ballots, polling
+selection preservation, pause and deleted-game recovery. Physical-phone
+microphones and real OTP delivery are not exercised by these tests.
+The read-only shell suite passes all 17 guest/sign-in pages at 320/375/430/
+768/1024px: finite bottoms, no document horizontal overflow, nine routes,
+minimum touch sizes and selected-tab visibility. Bridal Train and Live
+preserve height/scroll position and issue no scroll commands across actual
+15-second polling cycles; tapping the active tab does not jump. Gold pulse,
+reduced-motion and both dynamic broadcast hero buttons pass. The reported
+continuous scrolling was not reproduced; physical-device follow-up may be
+needed if it persists. Preview screenshots reviewed with current real photos.
+
 ## Bridal Train reference composition — v200 (16 October)
 
 Guest Bridal Train now follows the supplied reference layout: full-width real

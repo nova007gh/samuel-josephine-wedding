@@ -1,0 +1,30 @@
+/* Shared finishing touches; decorations never participate in page sizing. */
+:root{--tabbar-h:76px;}
+html{scroll-padding-bottom:calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 16px);}
+.app{isolation:isolate;}
+.app>.floral-bg{overflow:clip;background:url('assets/gift-floral.svg') left top/76px auto no-repeat,url('assets/gift-floral.svg') right bottom/90px auto no-repeat;opacity:.28;}
+.app::before,.app::after{max-width:24%;}
+.app .view{min-width:0;overflow-wrap:anywhere;}
+.view> .page-title{font-family:'Cormorant Garamond',Georgia,serif;color:#805722;}
+.view :is(.field,.field-pair,.card,.menu-item){min-width:0;}
+.view :is(input,select,textarea){max-width:100%;}
+.view :is(video,iframe){max-width:100%;}
+.view :is(.page-sub,.menu-text small){text-wrap:pretty;}
+/* Single-row nine-tab bar: 44px minimum touch width, local sideways swipe on
+   small phones. No page-level horizontal scrolling or hidden destinations. */
+.app .tabbar{grid-template-columns:repeat(9,minmax(44px,1fr));gap:0;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scrollbar-width:none;background:#fff9eff5;border-top:1px solid #e8d5b6;box-shadow:0 -3px 18px #9e702512;-webkit-overflow-scrolling:touch;}
+.tabbar::-webkit-scrollbar{display:none;}
+.app .tabbar .tab{position:relative;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:5px;min-width:44px;min-height:60px;padding:5px 1px 4px;margin:3px 0;border-radius:8px;font-size:8px;font-weight:500;letter-spacing:0;white-space:nowrap;line-height:1.2;color:#85643c;background:transparent;flex-shrink:0;}
+.app .tabbar .tab svg{width:23px;height:23px;flex-shrink:0;}
+.app .tabbar .tab.active{background:linear-gradient(145deg,#b78032,#8b551c);color:#fff9e9;}
+.app .tabbar .tab.active svg{fill:none;transform:none;}
+.app .tabbar .tab .tab-seal{width:42px;height:34px;object-fit:contain;margin:0;transform:none;}
+.app .tabbar .tab--center{gap:0;}
+.app .tabbar .tab:focus-visible{outline:2px solid #a87526;outline-offset:-2px;}
+.app .tabbar .tab--showcase{color:#9b651c;isolation:isolate;}
+.app .tabbar .tab--showcase::before{content:'';position:absolute;inset:5px 3px;z-index:-1;border:1px solid #c69a51;border-radius:9px;background:#f7e6c53d;box-shadow:0 0 3px #c9943555;animation:showcaseGoldGlow 3.6s ease-in-out infinite;pointer-events:none;}
+.app .tabbar .tab--showcase svg{filter:drop-shadow(0 0 3px #e7ad42a0);}
+.app .tabbar .tab--showcase.active{color:#fff9e9;}
+@keyframes showcaseGoldGlow{0%,100%{opacity:.5;box-shadow:0 0 3px #c9943533,inset 0 0 3px #efbc5633;}50%{opacity:1;box-shadow:0 0 9px #dfa23988,inset 0 0 6px #efbc5655;}}
+@media(min-width:430px){.app .tabbar .tab{font-size:8.5px;}}
+@media(prefers-reduced-motion:reduce){.app .tabbar .tab--showcase::before{animation:none;opacity:.75;}.app .tabbar .tab-seal{animation:none;}.app .tabbar{scroll-behavior:auto;}}
