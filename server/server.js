@@ -900,6 +900,7 @@ app.post('/api/guestbook/:id/reply', publicWrite, (req, res) => {
 
 /* ---------- memories ---------- */
 const storyGalleryOrder = require('./story-gallery-order')({app,db,requireAdmin,decorate:mediaThumbnails.decorate});
+require('./bridal-train')({app,db,requireAdmin,multer,storage,uploadsDir:UPLOADS_DIR,previews:sitePhotoPreviews});
 app.get('/api/memories', (req, res) => {
   const rows = db.prepare(storyGalleryOrder.select+` WHERE m.status = 'approved' ORDER BY m.createdAt DESC`).all();
   res.json(rows.map(mediaThumbnails.decorate));
@@ -1666,7 +1667,7 @@ app.delete('/api/admin/rsvps/:id', requireAdmin, (req, res) => {
 /* ---------- errors ---------- */
 app.use((err, req, res, next) => {
   if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE'){
-    if(req.path==='/api/admin/competition-photos') return res.status(413).json({error:'Photo is too large (max 10 MB).'});
+    if(['/api/admin/competition-photos','/api/admin/bridal-train/photo'].includes(req.path)) return res.status(413).json({error:'Photo is too large (max 10 MB).'});
     return res.status(413).json({ error: `File is too large (max ${Math.round(MAX_UPLOAD / 1048576)}MB).` });
   }
   console.warn('Request error:', err.message);

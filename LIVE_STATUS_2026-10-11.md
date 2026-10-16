@@ -1,5 +1,60 @@
 # snybena.com live audit — 11 October 2026
 
+## Bridal Train — v195 (16 October)
+
+Added Our Story → **Our Bridal Train** and a second link in Share's menu.
+Seven main tabs remain unchanged. Guest page uses the reference's cream/gold
+style, a current-couple-photo header, responsive portrait cards, group counts,
+roles, hearts as decoration (not votes), and Together in Love closing text.
+Default names: Cynthia, Becky, Abigail, Jennifer, Esther, Victoria, Vennessa,
+Evelyn, Lian; Sammy Jay, Mike, Charles, Fada Ignatious, Mr. Larbi, Paak, Dave,
+Kojo, Alhaji, Nana Kojo Ignis. Counts 9 bridesmaids / 10 groomsmen. Reference
+role typos corrected to Groomsman. Mock-up faces are NOT published as actual
+portraits; initials/Portrait coming soon remain until real photos are uploaded.
+
+Admin Dashboard has a twelfth category, **Bridal Train**. It edits title,
+subtitle, group headings, closing message, optional header photo, names, roles,
+portraits and order; add/remove and Earlier/Later buttons support up to 50 people
+per group. Changes publish only after SAVE BRIDAL TRAIN, including uploaded
+portrait selection. Header defaults to the confirmed current couple photo.
+Drafts survive polling, failed saves and navigation between dashboard sections;
+explicit RELOAD SAVED confirms discarding drafts. Sign-out clears editor fields.
+Duplicate submits/uploads are guarded; changed-session responses are ignored.
+
+New public GET `/api/bridal-train` serves saved content or reference defaults
+without writing settings. Admin-only PATCH `/api/admin/bridal-train` validates
+metadata, unique IDs, group sizes, required names/roles and local JPEG/PNG/WebP
+URLs. It compares the expected SHA-256 revision and saves in one SQLite
+transaction, rejecting stale edits with 409. Missing files reject saves.
+Persistence uses a separate `bridalTrain` settings key; no table migration.
+Photo upload `/api/admin/bridal-train/photo` is admin-only, 10 MiB maximum,
+JPEG/PNG/WebP only, with existing image optimisation and background 1280px display
+previews. Originals retained; full-screen viewing uses originals. Unused draft
+uploads are retained, like existing competition-photo uploads.
+
+Page loads on demand, polls only when its guest view/editor is visible, skips
+polls while hidden/uploading, and avoids repainting unchanged content. Portraits
+are lazy/async decoded with stable aspect ratios. Header reuses the small current
+couple image, not an extra large illustration. Loading/retry/stale-content states
+are explicit, and failed portraits fall back to originals then initials.
+
+Schema/API/actual disposable-browser checks pass: default names/roles/counts,
+320/375/430/1024 widths, both guest links and Back, admin add/remove/reorder,
+portrait upload/draft/save/full-screen source, failed-save retry, duplicate guard,
+polling draft preservation, transactional conflict/reload, sign-out cleanup,
+auth guards, unsafe-photo rejection, 10 MiB rejection and restart persistence.
+No real bridesmaid/groomsman portraits or physical-phone checks were supplied.
+Focused command: `WEDDING_E2E_BRIDAL_ONLY=1 WEDDING_E2E_SERVER=/root/wedding-bridal-v195-candidate/server.js node tests/isolated-e2e.cjs <output-dir>`.
+Twelve-category dashboard/upload, Share/seven-page and fresh-photo/retry
+regressions pass. Pre-v195 preservation audit: 6 guests, 1 RSVP, all 26 media
+records/files, 0 guestbook entries, 3 gifts, 1 fund, 37 settings unchanged and
+both existing competitions retained; SQLite `ok`, API/nginx active. No live
+bridal edits or portrait uploads were submitted during verification.
+Read-only deployed Bridal Train names/counts, current-couple hero, four viewport
+widths, Back/admin guards and initial/reload Home image checks pass. Header photo
+uses contain (uncropped); guest portraits use cover in cards and originals in
+the full-screen viewer.
+
 ## Main site photo loading/recovery — v194 (15 October)
 
 User reported missing Home photo/content. Live browser reproduced heavy first

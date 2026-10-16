@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v194-site-photo-loading-recovery';
+const CACHE = 'sj-wedding-v195-bridal-train';
 const ASSETS = [
   './',
   './index.html',
@@ -12,6 +12,8 @@ const ASSETS = [
   './competitions.css',
   './reception-program.css',
   './reception-program.js',
+  './bridal-train.js',
+  './bridal-train.css',
   './competitions.js',
   './competition-notices.js',
   './assets/gift-floral.svg',

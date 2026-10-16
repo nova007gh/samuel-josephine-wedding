@@ -57,9 +57,10 @@ async function api(path, opts = {}){
   const { method = 'GET', body, form = null, admin = false, onProgress } = opts;
   if (form){
     const file = form.get('file') || form.get('selfie');
-    const limit = path === '/admin/competition-photos' ? 10 * 1024 * 1024 : 1024 * 1024 * 1024;
+    const photoOnly = ['/admin/competition-photos','/admin/bridal-train/photo'].includes(path);
+    const limit = photoOnly ? 10 * 1024 * 1024 : 1024 * 1024 * 1024;
     if (file instanceof Blob && file.size > limit)
-      throw new Error(path === '/admin/competition-photos' ? 'Photo exceeds the 10 MB upload limit.' : 'The file exceeds the 1 GB upload limit. Trim or compress the video, then try again.');
+      throw new Error(photoOnly ? 'Photo exceeds the 10 MB upload limit.' : 'The file exceeds the 1 GB upload limit. Trim or compress the video, then try again.');
   }
   const headers = { 'X-Device-Id': DEVICE_ID, 'X-Network-Type': deviceNetType() };
   if (admin && adminToken) headers['Authorization'] = `Bearer ${adminToken}`;
@@ -112,7 +113,7 @@ async function api(path, opts = {}){
   let data = null;
   try { data = await res.json(); } catch {}
   if (!res.ok){
-    const err = new Error((data && data.error) || (res.status === 413 ? 'Upload is too large. The limit is 1 GB per file (10 MB for competition photos).' : `Request failed (${res.status}).`));
+    const err = new Error((data && data.error) || (res.status === 413 ? 'Upload is too large. The limit is 10 MB for competition and bridal train photos, or 1 GB for other files.' : `Request failed (${res.status}).`));
     err.code = (data && data.code)
       || (res.status === 401 || res.status === 403 ? 'auth/invalid-credential'
         : res.status === 429 ? 'auth/too-many-requests' : 'unknown');
@@ -126,7 +127,7 @@ async function api(path, opts = {}){
 /* Feeds poll the API so new approved content appears without realtime sockets.
    Returns an unsubscribe function, same contract as the old listeners. */
 async function optimiseUploadImage(path, form){
-  if (!['/memories', '/admin/gallery', '/guestbook', '/admin/settings/photo/gifts-hero', '/admin/competition-photos'].includes(path) || typeof createImageBitmap !== 'function') return;
+  if (!['/memories', '/admin/gallery', '/guestbook', '/admin/settings/photo/gifts-hero', '/admin/competition-photos', '/admin/bridal-train/photo'].includes(path) || typeof createImageBitmap !== 'function') return;
   const key = form.has('file') ? 'file' : 'selfie';
   const file = form.get(key);
   if (!(file instanceof Blob) || file.size < 1024 * 1024 || !/^image\/(jpeg|webp)$/.test(file.type)) return;

@@ -1,0 +1,12 @@
+const assert=require('node:assert/strict');
+const {validate,defaults}=require('../server/bridal-train');
+assert.equal(validate(defaults).bridesmaids.length,9);assert.equal(validate(defaults).groomsmen.length,10);
+assert.ok(defaults.groomsmen.every(m=>m.role==='Groomsman'&&!m.photoUrl));
+assert.deepEqual(validate({...defaults,bridesmaids:[],groomsmen:[]}).bridesmaids,[]);
+assert.throws(()=>validate({...defaults,title:''}),/title/);
+assert.throws(()=>validate({...defaults,bridesmaids:[defaults.bridesmaids[0],defaults.bridesmaids[0]]}),/unique ID/);
+assert.throws(()=>validate({...defaults,heroPhotoUrl:'javascript:alert(1)'}),/uploaded/);
+assert.throws(()=>validate({...defaults,heroPhotoUrl:'https://example.com/photo.jpg'}),/uploaded/);
+assert.throws(()=>validate({...defaults,heroPhotoUrl:'/uploads/../photo.jpg'}),/uploaded/);
+assert.throws(()=>validate({...defaults,bridesmaids:Array(51).fill(defaults.bridesmaids[0])}),/50/);
+console.log('PASS bridal train defaults/counts, correct roles, empty groups, limits, unique IDs and safe local-photo URLs');

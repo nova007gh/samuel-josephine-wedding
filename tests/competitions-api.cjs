@@ -44,6 +44,21 @@ async function create(overrides){return (await req('/admin/competitions',{method
   try{
     await start();db=new Database(path.join(dir,'wedding.db'));
     token=(await req('/admin/login',{method:'POST',body:{password:'isolated-test-only'}})).data.token;
+    const bridal=(await req('/bridal-train')).data;
+    assert.equal(bridal.data.bridesmaids.length,9);assert.equal(bridal.data.groomsmen.length,10);
+    const portrait=new FormData();portrait.append('file',new Blob([Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64')],{type:'image/png'}),'portrait.png');
+    await req('/admin/bridal-train/photo',{method:'POST',body:portrait,status:401});
+    const portraitUrl=(await req('/admin/bridal-train/photo',{method:'POST',admin:true,body:portrait})).data.url;
+    const invalidPortrait=new FormData();invalidPortrait.append('file',new Blob(['<svg/>'],{type:'image/svg+xml'}),'bad.svg');
+    await req('/admin/bridal-train/photo',{method:'POST',admin:true,body:invalidPortrait,status:400});
+    const oversizedPortrait=new FormData();oversizedPortrait.append('file',new Blob([Buffer.alloc(10*1024*1024+1)],{type:'image/jpeg'}),'large.jpg');
+    await req('/admin/bridal-train/photo',{method:'POST',admin:true,body:oversizedPortrait,status:413});
+    const bridalData=structuredClone(bridal.data);bridalData.title='Our Wedding Party';bridalData.bridesmaids[0].photoUrl=portraitUrl;
+    await req('/admin/bridal-train',{method:'PATCH',body:{data:bridalData,expectedRevision:bridal.revision},status:401});
+    await req('/admin/bridal-train',{method:'PATCH',admin:true,body:{data:bridalData,expectedRevision:bridal.revision}});
+    await req('/admin/bridal-train',{method:'PATCH',admin:true,body:{data:bridalData,expectedRevision:bridal.revision},status:409});
+    const savedBridal=(await req('/bridal-train')).data;
+    await req('/admin/bridal-train',{method:'PATCH',admin:true,body:{data:{...bridalData,heroPhotoUrl:'javascript:alert(1)'},expectedRevision:savedBridal.revision},status:400});
     const album=[];
     for(let i=0;i<3;i++){const form=new FormData();form.append('file',new Blob(['test'],{type:i===1?'video/mp4':'image/png'}),i===1?'test.mp4':'test.png');album.push((await req('/admin/gallery',{method:'POST',admin:true,body:form})).data);}
     const currentAlbum=(await req('/admin/memories',{admin:true})).data.filter(m=>m.category==='sj-gallery').sort((a,b)=>Number(b.createdAt)-Number(a.createdAt)||a.id.localeCompare(b.id)).map(m=>m.id);
@@ -211,6 +226,7 @@ async function create(overrides){return (await req('/admin/competitions',{method
     db.close();db=null;await stop();await start();
     assert.equal((await req('/settings')).data.receptionProgram,receptionProgram,'Program persists across API restart');
     assert.equal((await req('/settings')).data.engagementProgram,engagementProgram,'Engagement persists across API restart');
+    assert.deepEqual((await req('/bridal-train')).data.data,bridalData,'Bridal train names/portraits persist across API restart');
     assert.deepEqual((await req('/memories')).data.filter(m=>m.category==='sj-gallery').sort((a,b)=>a.sjOrder-b.sjOrder).map(m=>m.id),desiredAlbum,'Album order persists across API restart');
     assert.deepEqual((await req('/competitions/'+optional.id,{cookie:browserCookie})).data.myChoices,[optionTwo]);
     assert.equal((await req('/competitions/'+optional.id,{cookie:browserCookie})).data.requireVerified,false);
