@@ -111,7 +111,7 @@
   });
   host.addEventListener('error',e=>{const img=e.target;if(img.tagName!=='IMG'||img.src.includes('photo-placeholder.svg'))return;const original=Object.entries(saved?.previews||{}).find(([,preview])=>new URL(preview,location.href).href===img.src)?.[0]||(img.src===new URL(couple(),location.href).href?originalSitePhoto('couple','assets/photo-placeholder.svg'):'');img.src=original&&new URL(original,location.href).href!==img.src?original:'assets/photo-placeholder.svg';},true);
   retry.addEventListener('click',()=>load());
-  window.addEventListener('wedding:view',e=>{if(e.detail?.name==='livebroadcast')load();else if(e.detail?.name)stopPlayer();});
+  window.addEventListener('wedding:view',e=>{if(e.detail?.name==='livebroadcast')load();else if(e.detail?.name){stopPlayer();if(e.detail.name==='admin'&&editorVisible()){fill();load();}}});
   window.addEventListener('wedding:settings',()=>{if(saved)render();});
   document.getElementById('musicToggle')?.addEventListener('click',()=>{if(activeUrl){stopPlayer(false);render();}},true);
   new MutationObserver(()=>{if(editorVisible()){fill();load();}}).observe(panel,{attributes:true,attributeFilter:['class']});

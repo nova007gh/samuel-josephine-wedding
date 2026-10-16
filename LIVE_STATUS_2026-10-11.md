@@ -50,6 +50,17 @@ unrelated-settings preservation. Commands:
 Real broadcast link, dates, replay files and real Bridal Train portraits are
 still to be supplied/configured. Physical-phone/provider playback not verified.
 
+Deployment: v196 frontend and API are active. Fresh SQLite/code snapshot:
+`/root/wedding-pre-v196`. Postdeployment preservation checks retained 6 guests,
+1 RSVP, all 26 media records/files, 0 guestbook entries, 3 gifts, 1 fund,
+all 37 settings and both competitions; SQLite integrity `ok`. Live new
+admin routes reject unauthenticated requests, v196 assets return 200, and
+public defaults remain unconfigured without writing a settings entry.
+Read-only live broadcast/current-photo, thirteen-category mobile dashboard,
+upload/navigation duplicate-guard and fresh Home reload checks pass. Entering
+an already-selected Bridal Train/Broadcast admin section explicitly refreshes
+its editor, without waiting for the next polling interval (script v196.1).
+
 ## Bridal Train — v195 (16 October)
 
 Added Our Story → **Our Bridal Train** and a second link in Share's menu.

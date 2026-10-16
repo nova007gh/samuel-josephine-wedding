@@ -104,7 +104,7 @@
   host.addEventListener('click',e=>{const button=e.target.closest('[data-bt-view]');if(button)openLightbox(button.dataset.btView,button.dataset.btCaption);});
   host.addEventListener('error',e=>{const img=e.target;if(img.tagName!=='IMG')return;if(img.dataset.original&&img.getAttribute('src')!==img.dataset.original)img.src=img.dataset.original;else if(img.classList.contains('bt-hero-photo')&&!img.src.includes('photo-placeholder.svg'))img.src='assets/photo-placeholder.svg';else img.hidden=true;},true);
   retry.addEventListener('click',()=>load());
-  window.addEventListener('wedding:view',e=>{if(e.detail.name==='bridaltrain')load();});
+  window.addEventListener('wedding:view',e=>{if(e.detail?.name==='bridaltrain'||(e.detail?.name==='admin'&&editorVisible()))load();});
   window.addEventListener('wedding:settings',()=>{if(saved)render();});
   new MutationObserver(()=>{if(editorVisible()){fill();load();}}).observe(panel,{attributes:true,attributeFilter:['class']});
   onAdminAuth(signedIn=>{authEpoch++;if(signedIn){if(editorVisible())load();else fill();}else{dirty=false;version=null;photoTarget=null;form.reset();Object.values(groups).forEach(el=>el.innerHTML='');status.textContent='';}});
