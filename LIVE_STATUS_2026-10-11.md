@@ -1,5 +1,42 @@
 # snybena.com live audit — 11 October 2026
 
+## Actual Speso sandbox collection verified — v213 (17 October)
+
+After the user installed test credentials and restarted the service, verified
+active test mode for Emdulab Enterprise, successful read-only Speso `/fees`
+authentication (HTTP 200/success), and 401 for unauthenticated sandbox
+initiation. No live credentials were used. Credentials were again exposed in
+a user screenshot; recommended rotating them plus the exposed SMS/email
+credentials. No secret values were printed, copied into code or committed.
+
+Added/deployed `1b65527`: each initiation must explicitly match the server's
+test/live mode, preventing stale sandbox tabs from issuing live requests after
+a configuration change. Missing/mismatched mode rejects before provider calls.
+Disposable API, mocked browser, unit/signature and worker tests pass.
+Pre-test snapshot: `/root/wedding-pre-v213`.
+
+Ran one authorized GHS 50 MTN sandbox collection through the real wedding API
+using the user's Ghana test number. Speso returned processing, then the app's
+authenticated GET reconciliation confirmed completed/GHS/50 and matching
+order/reference/network/payer. A repeat initiation reused the same order.
+Exactly one completed TEST order exists; no gift or real-money collection was
+created. Recovery secret/reference retained in root-only
+`/root/wedding-speso-sandbox-check.json`; reuse rather than start another order.
+
+Public HTTPS callback checks accept a valid simulated signature (200), reject
+invalid signatures (401) and expired callbacks (401). These three callbacks
+were simulated by our script, NOT delivered by Speso. Automatic provider
+webhook delivery has not been observed and remains an activation check; the
+actual sandbox settlement was independently verified by provider status GET.
+
+Preservation audit retains every baseline record and media file unchanged:
+4 gifts, 2 funds, 19 media records/files, 1 RSVP, 0 guestbook entries, 39 settings,
+2 competitions and 1 vote. One concurrent guest was added (21 -> 22); no
+baseline guest changed or disappeared. SQLite integrity ok, OTP active,
+services active. Mode remains TEST; live collection is NOT activated. Fresh
+live credentials, callback setup/delivery verification and any explicitly
+authorized real-money handset test remain pending.
+
 ## Cash Gifts alongside NOVA1 + fresh gift choices — v212 (17 October)
 
 At the user's request to add a gift option and continue, added enabled
