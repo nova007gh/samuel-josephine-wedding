@@ -1,5 +1,25 @@
 # snybena.com live audit — 11 October 2026
 
+## Sandbox callback URL saved; provider delivery still pending (17 October)
+
+User confirmed Speso saved the dedicated test callback URL. Ran one further
+GHS 50 sandbox-only collection through the app to test automatic delivery.
+Speso reported completed, but the app row remained processing before any app
+status poll. No new public callback requests reached nginx; the only three
+callback log entries were our earlier simulated signature checks (node agent).
+No simulated callback was sent during this second test. This does not establish
+whether sandbox webhook dispatch is unsupported, delayed or failing at Speso.
+Ask Speso API Support whether test collections send signed webhooks
+automatically or require a manual simulation/replay mechanism.
+
+Reconciled the second order with authenticated provider GET, now completed.
+There are two completed TEST attempts, zero live gift-payment records, and all
+four existing gifts remain. SQLite integrity ok; mode remains test. Second
+attempt recovery metadata is root-only
+`/root/wedding-speso-webhook-check.json`; reuse its order instead of initiating
+another prompt. Live activation remains blocked on callback verification and
+fresh privately installed live credentials. No real money was collected.
+
 ## Actual Speso sandbox collection verified — v213 (17 October)
 
 After the user installed test credentials and restarted the service, verified
