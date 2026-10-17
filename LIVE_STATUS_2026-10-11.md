@@ -23,6 +23,10 @@ draft retention, pesewas, duplicate-submit/failure recovery and MTN logo.
 Mocked Speso off/test/live-fixture/reload checks also pass at four widths.
 Worker/syntax checks pass. Actual Speso sandbox testing still awaits fresh
 privately installed credentials; Emdulab Enterprise merchant is confirmed.
+Deployed `4215710`; guest regression checks pass live. Audit preserves 21
+guests, 1 RSVP, 19 media records, 0 guestbook entries, all 4 gifts, 39 settings,
+2 competitions and 1 vote. NOVA1 is unchanged; Cash Gifts is the only added
+fund. SQLite integrity ok, zero Speso attempts, guest OTP active, Speso off.
 
 ## Speso installed with collection OFF — v210/v211 (17 October)
 
