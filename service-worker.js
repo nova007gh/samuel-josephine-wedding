@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v207-restore-home';
+const CACHE = 'sj-wedding-v208-story-without-bridal-card';
 const ASSETS = [
   './',
   './index.html',
