@@ -23,6 +23,12 @@ recovery and field labels. Fund editor/cancel and guest hiding also pass.
 Worker regression and JS syntax checks pass; snapshot `/root/wedding-pre-v209`.
 Worker and changed asset versions advanced to v209; OTP settings unchanged.
 
+Deployed `2be239e`; live guest layout and mocked confirmation regressions pass.
+Audit retains the fresh snapshot's 21 guests, 1 RSVP, all 19 media records/files,
+0 guestbook entries, 3 gifts, 1 fund, 39 settings and 2 competitions unchanged.
+SQLite integrity ok; API/nginx active. No live gifts, uploads or payments were
+created by these tests. Counts reflect live content at this release, not seeds.
+
 ## Guest OTP activated (17 October)
 
 After the user confirmed receiving the authorized Ghana OTP-style SMS and
