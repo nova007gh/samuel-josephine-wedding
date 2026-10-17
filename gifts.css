@@ -64,6 +64,7 @@
 .gift-funds:has(> :only-child){ grid-template-columns:1fr; }
 .gift-funds > :only-child{ width:100%; max-width:255px; justify-self:center; }
 .gift-funds > :only-child .gift-fund-desc{ max-width:195px; font-size:12px; }
+.gift-funds .gift-empty{grid-column:1/-1;max-width:none;margin:5px 0;line-height:1.6;}
 .gift-amounts{ display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:5px; }
 .gift-amount{ min-width:0; padding:11px 2px; font:600 17px/1 var(--gift-serif); border-radius:8px; background:#fffaf3; border-color:#e0d5c5; color:#29241c; }
 .gift-amount.is-on{ background:linear-gradient(125deg,#b08a3b,#936619); border-color:#926519; color:#fffaf0; }

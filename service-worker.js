@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v210-speso-prepared-off';
+const CACHE = 'sj-wedding-v211-speso-off-empty-funds';
 const ASSETS = [
   './',
   './index.html',

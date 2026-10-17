@@ -1,5 +1,28 @@
 # snybena.com live audit — 11 October 2026
 
+## Speso installed with collection OFF — v210/v211 (17 October)
+
+The user explicitly confirmed Emdulab Enterprise as the receiving Speso
+business. Deployed `a2146a5` frontend/API and set only the confirmed merchant
+name plus `SPESO_MODE=off`. No pasted keys were installed, no live confirmation
+flag was set, and no real provider requests were made. Fresh rotated test
+credentials and an actual Speso sandbox test remain required before activation.
+Private predeployment API/environment/frontend/database snapshot:
+`/root/wedding-pre-v210`. Live API source matched the previous repository
+version before replacement; no concurrent API edits were overwritten.
+
+Live checks pass: merchant/off configuration, collection POST blocked with
+503 before creating an order, admin payment activity guarded by 401, guest OTP
+still active, API/nginx active. Preservation audit retains 21 guests, 1 RSVP,
+all 19 media records/files, 0 guestbook entries, 3 gifts, all 39 settings and
+both competitions. SQLite integrity ok. The predeployment gift-fund count was
+already zero; it was preserved, not deleted by the integration.
+
+v211 adds an explicit empty gift-options message rather than a blank area and
+tests the existing safe no-fund confirmation guard. Does not recreate funds or
+edit the confirmed manual MoMo recipient. Candidate guest layout and no-fund
+submission checks pass at 320/375/430px with no live writes. Worker checks pass.
+
 ## Speso collection candidate — v210 (17 October; NOT deployed/activated)
 
 Prepared `server/speso-payments.js`, optional `speso-gifts.js` checkout and

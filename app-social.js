@@ -1749,7 +1749,7 @@ function renderGiftOptions(){
       <span class="gift-fund-label">${escapeHTML(f.label)}</span>
       <span class="gift-fund-desc">${escapeHTML(f.desc)}</span>
       <span class="gift-radio" aria-hidden="true"></span>
-    </button>`).join('');
+    </button>`).join('') || '<p class="page-sub gift-empty">Gift options are temporarily unavailable. Please check back or contact the couple.</p>';
 
   const amts = document.getElementById('giftAmounts');
   const other = document.getElementById('giftOtherWrap');

@@ -164,6 +164,8 @@ const delay = ms => new Promise(resolve=>setTimeout(resolve,ms));
     return {ok,hasForm:!!document.getElementById('giftForm'),hasCopy:document.querySelectorAll('[data-gift-copy]').length===2};
   })()`);
   assert.equal(behaviour.ok,true); assert.equal(behaviour.hasForm,true); assert.equal(behaviour.hasCopy,true);
+  const hasGiftFunds=await evaluate('GIFT_FUNDS.length>0');
+  if(hasGiftFunds){
   await require('./gift-page-regressions.cjs')({evaluate});
   const formCheck = await evaluate(`(async()=>{
     const original=window.fetch; let payload;
@@ -185,6 +187,20 @@ const delay = ms => new Promise(resolve=>setTimeout(resolve,ms));
     }finally{window.fetch=original;}
   })()`);
   assert.equal(formCheck,true,'Confirmation form regression (request mocked, no live gift created)');
+  }else{
+    const empty=await evaluate(`(()=>{
+      const original=window.fetch;let writes=0;
+      window.fetch=async(url,options)=>{if(String(url)==='/api/gifts'&&options?.method==='POST'){writes++;return new Response('{}');}return original(url,options);};
+      try{
+        document.getElementById('giftName').value='Empty-fund check - not saved';
+        document.getElementById('giftForm').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
+        const result={writes,blocked:document.getElementById('giftStatus').textContent.includes('Choose an available gift option'),disabled:document.getElementById('giftPayBtn').getAttribute('aria-disabled')==='true',explained:!!document.querySelector('#giftFunds .gift-empty')};
+        document.getElementById('giftName').value='';document.getElementById('giftStatus').textContent='';return result;
+      }finally{window.fetch=original;}
+    })()`);
+    assert.deepEqual(empty,{writes:0,blocked:true,disabled:true,explained:true});
+    console.log('PASS empty live gift-fund list is explained and safely blocks confirmation without writes');
+  }
   assert.equal(errors.length,0,'Uncaught browser errors');
   /* Keep transient welcome toasts out of the design artifact only. */
   await evaluate(`(async()=>{
@@ -198,7 +214,7 @@ const delay = ms => new Promise(resolve=>setTimeout(resolve,ms));
     clip:{x:0,y:0,width:430,height:metrics.cssContentSize.height,scale:1}});
   const file = path.join(out,'gifts-mobile.png');
   fs.writeFileSync(file,Buffer.from(shot.data,'base64'));
-  console.log('PASS amount/provider interactions, copy controls, mocked confirmation submission and no uncaught errors');
+  console.log('PASS amount/provider interactions, copy controls, '+(hasGiftFunds?'mocked confirmation submission':'empty-fund submission guard')+' and no uncaught errors');
   console.log('Screenshot:',file);
 })().catch(err=>{console.error(err);process.exitCode=1;}).finally(async()=>{
   socket?.close();
