@@ -1728,7 +1728,10 @@ const giftState = { fund:'cash', amount:200, provider:'mtn' };
 
 function giftCedi(cents){ return 'GHS ' + (Number(cents || 0) / 100).toLocaleString('en-GH', { minimumFractionDigits:2, maximumFractionDigits:2 }); }
 
-async function loadGiftFunds(){
+let giftFundsRequest=null;
+function loadGiftFunds(){
+  if(giftFundsRequest)return giftFundsRequest;
+  giftFundsRequest=(async()=>{
   try {
     const rows = await getGiftFunds();
     if (Array.isArray(rows)){
@@ -1738,6 +1741,8 @@ async function loadGiftFunds(){
   } catch (e){
     console.warn('Could not load gift funds:', e);
   }
+  })().finally(()=>{giftFundsRequest=null;});
+  return giftFundsRequest;
 }
 
 function renderGiftOptions(){
@@ -1793,6 +1798,13 @@ function updateGiftPayButton(){
   btn.dataset.provider = giftState.provider;
   btn.title = `${prov.label} · ${fund?.label || 'No gift options available'}`;
   btn.setAttribute('aria-disabled', String(!fund));
+  const note=document.getElementById('giftPaymentNote');
+  const selection=JSON.stringify([fund?.id||'',giftState.amount,giftState.provider,document.getElementById('giftMoMoNumber')?.value||'']);
+  if(note){
+    if(note.dataset.selection&&note.dataset.selection!==selection)
+      note.textContent='Pay in your provider’s app or official MoMo menu. Confirm the recipient before sending.';
+    note.dataset.selection=selection;
+  }
   window.dispatchEvent(new Event('gift:selection'));
 }
 
@@ -1973,6 +1985,7 @@ function initMomoSettingsAdmin(){
       // update the guest-facing fields
       document.getElementById('giftMoMoNumber').value = number;
       document.getElementById('giftMoMoName').value = accountName;
+      updateGiftPayButton();
     } catch (err){
       status.textContent = err.message || 'Could not save.';
     } finally {
@@ -2013,6 +2026,7 @@ async function initGifts(){
   getMomoSettings().then(s => {
     document.getElementById('giftMoMoNumber').value = s.number;
     document.getElementById('giftMoMoName').value = s.accountName;
+    updateGiftPayButton();
   }).catch(err => console.warn('MoMo settings unavailable:', err.message));
   await loadGiftFunds();
   renderGiftOptions();
@@ -2073,7 +2087,7 @@ async function initGifts(){
     if (!cedi || cedi < 50){ flashGiftStatus('Choose an amount of at least GHS 50.'); return; }
     const num = (document.getElementById('giftMoMoNumber')?.value || '').replace(/\s+/g, '');
     if (!/^\+\d{9,15}$/.test(num)){ flashGiftStatus('Check the MoMo number — it should look like +233241234567.'); return; }
-    if (!giftState.fund){ flashGiftStatus('No gift options are currently available.'); return; }
+    if (!GIFT_FUNDS.some(f => f.id === giftState.fund)){ flashGiftStatus('No gift options are currently available.'); return; }
     try { await navigator.clipboard.writeText(num); } catch {}
     const provider = GIFT_PROVIDERS.find(p => p.id === giftState.provider)?.label || 'MoMo';
     flashGiftStatus(`Open your ${provider} app or its official payment menu and send GHS ${cedi} to ${num}. Verify the account name before confirming. This website does not process or verify the payment.`);
@@ -2137,15 +2151,30 @@ function flashGiftStatus(text){
   document.getElementById('giftConfirmWrap')?.setAttribute('open', '');
 }
 
-/* refresh the list each time the Gifts tab is opened */
-document.querySelector('[data-tab="gifts"]')?.addEventListener('click', () => {
+/* Refresh from any Gifts route, without overlapping requests or resetting drafts. */
+let giftViewRefresh=null;
+function refreshGiftView(){
+  if(giftViewRefresh)return giftViewRefresh;
   updateGiftAdminVisibility();
   renderGiftOptions();
-  renderGiftList();
   if (isAdmin()){
     renderAdminGiftFunds();
-    renderMomoSettingsAdmin();
+    if(!document.getElementById('momoSettingsEditor')?.childElementCount)renderMomoSettingsAdmin();
   }
+  giftViewRefresh=(async()=>{
+    await Promise.all([
+      loadGiftFunds().then(()=>{renderGiftOptions();return renderGiftList();}),
+      getMomoSettings().then(s=>{
+        document.getElementById('giftMoMoNumber').value=s.number;
+        document.getElementById('giftMoMoName').value=s.accountName;
+        updateGiftPayButton();
+      }).catch(()=>{})
+    ]);
+  })().finally(()=>{giftViewRefresh=null;});
+  return giftViewRefresh;
+}
+window.addEventListener('wedding:view',event=>{
+  if(event.detail?.name==='gifts')refreshGiftView();
 });
 
 /* app-social.js loads last, so the gifts view can wire itself up immediately */

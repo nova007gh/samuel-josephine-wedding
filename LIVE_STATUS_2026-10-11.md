@@ -1,5 +1,29 @@
 # snybena.com live audit — 11 October 2026
 
+## Cash Gifts alongside NOVA1 + fresh gift choices — v212 (17 October)
+
+At the user's request to add a gift option and continue, added enabled
+`cash` / Cash Gifts with description “Send in your cherished wedding gifts.”
+through the authenticated admin API. Existing `nov19897979` / NOVA1, its
+description/order/enabled state and all four existing gifts were preserved.
+Fresh pre-change frontend/database snapshot: `/root/wedding-pre-v212`.
+No test gift, upload, SMS or payment collection was created.
+
+Gifts now refreshes funds and recipient details on entry from every route,
+coalescing overlapping fund/view requests while retaining donor and admin
+editor drafts. Valid selections remain selected. Changed fund/amount/provider
+or recipient resets obsolete payment guidance, including the stale “No gift
+options” warning. Payment instructions validate that the selected fund still
+exists. Two options use two equal-width columns instead of leaving a blank
+third slot. Speso remains OFF; no credentials installed or live activation.
+
+Candidate guest checks pass at 320/375/430px with both real enabled options.
+Mocked tests pass for stale-empty-state recovery, a single concurrent refresh,
+draft retention, pesewas, duplicate-submit/failure recovery and MTN logo.
+Mocked Speso off/test/live-fixture/reload checks also pass at four widths.
+Worker/syntax checks pass. Actual Speso sandbox testing still awaits fresh
+privately installed credentials; Emdulab Enterprise merchant is confirmed.
+
 ## Speso installed with collection OFF — v210/v211 (17 October)
 
 The user explicitly confirmed Emdulab Enterprise as the receiving Speso
