@@ -1,5 +1,37 @@
 # snybena.com live audit — 11 October 2026
 
+## Speso collection candidate — v210 (17 October; NOT deployed/activated)
+
+Prepared `server/speso-payments.js`, optional `speso-gifts.js` checkout and
+`server/SPESO_SETUP.md` from the Collections/webhook documentation. Default
+mode is off; ordinary guests cannot initiate sandbox orders. Test completion
+never creates gifts or notifications. Live mode needs separate credentials,
+explicit live confirmation and an approved merchant name. Collection funds
+credit the Speso wallet, not the existing manual MoMo recipient.
+
+The user pasted live and test credentials into chat. None were committed,
+installed in production or used by these tests. Rotation, secure installation,
+receiving-account/settlement confirmation, actual Speso sandbox testing and
+live activation remain pending. Production remains v209; guest OTP unchanged.
+
+Attempts use hashed 256-bit owner/idempotency secrets, a per-phone pending lock,
+and recover unknown results with GET instead of another upstream collection
+POST. Signed raw callbacks enforce environment/timestamp, then independently
+GET Speso status and match reference, exact amount, GHS, network and payer.
+Verified live gifts are inserted exactly once in a transaction. Sandbox orders
+remain isolated; public feeds never expose payer phones or payment secrets.
+Admin payment activity provides reconciliation controls.
+
+Validation/signature unit tests and eight existing unit suites pass. Disposable
+SQLite/HTTP tests pass for mode/auth guards, duplicate/concurrent requests,
+pending locks, signature replay/tamper rejection, mismatched settlement data,
+exactly-once recording, timeout/restart recovery and existing-record retention.
+Mocked browser tests pass at 320/375/430/1024px for manual fallback, guest sandbox
+hiding, admin sandbox preview, pesewas, lost-response/reload recovery and status
+handling. Full disposable browser/API regressions pass for page actions, voice
+recording recovery, countdowns, competition uploads/voting/moderation and guards.
+No real collection requests, guest records or provider credits were used.
+
 ## Gifts logo and page fixes — v209 (17 October)
 
 Replaced the improvised blue MTN text with a bundled current black MTN

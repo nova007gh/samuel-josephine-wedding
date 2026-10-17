@@ -1793,6 +1793,7 @@ function updateGiftPayButton(){
   btn.dataset.provider = giftState.provider;
   btn.title = `${prov.label} · ${fund?.label || 'No gift options available'}`;
   btn.setAttribute('aria-disabled', String(!fund));
+  window.dispatchEvent(new Event('gift:selection'));
 }
 
 async function renderGiftList(){
@@ -1815,7 +1816,7 @@ async function renderGiftList(){
         <span class="gift-avatar" aria-hidden="true">${escapeHTML(initials)}</span>
         <div class="gift-item-body">
           <p><b>${escapeHTML(g.name)}</b></p>
-          <small>${escapeHTML(giftCedi(g.amountCents))} &middot; ${escapeHTML(fundLabel(g.fund))}</small>
+          <small>${escapeHTML(giftCedi(g.amountCents))} &middot; ${escapeHTML(fundLabel(g.fund))}${g.paymentVerified ? ' · Speso confirmed' : ''}</small>
         </div>
         <div class="gift-item-note">
           <time${validDate ? ` datetime="${date.toISOString()}"` : ''}>${escapeHTML(dateLabel)}</time>

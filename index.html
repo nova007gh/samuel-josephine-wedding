@@ -29,7 +29,7 @@
   <link rel="stylesheet" href="app-views.css?v=187" />
   <link rel="stylesheet" href="app-forms.css?v=198" />
   <link rel="stylesheet" href="app-social.css?v=192" />
-  <link rel="stylesheet" href="gifts.css?v=209" />
+  <link rel="stylesheet" href="gifts.css?v=210" />
   <link rel="stylesheet" href="competitions.css?v=188" />
   <link rel="stylesheet" href="reception-program.css?v=190" />
   <link rel="stylesheet" href="bridal-train.css?v=197" />
@@ -1590,6 +1590,32 @@
     </div>
     <p class="gift-payment-note" id="giftPaymentNote" role="status" aria-live="polite">Pay in your provider’s app or official MoMo menu. Confirm the recipient before sending.</p>
 
+    <section class="speso-payment-panel hidden" id="spesoPaymentPanel" aria-labelledby="spesoPaymentTitle">
+      <h2 id="spesoPaymentTitle">Pay securely with Speso</h2>
+      <p id="spesoModeNotice"></p>
+      <p id="spesoSelection"></p>
+      <form id="spesoPaymentForm">
+        <label for="spesoPayerName">Your name</label>
+        <input id="spesoPayerName" type="text" required maxlength="120" autocomplete="name" />
+        <label for="spesoPayerPhone">Your Ghana MoMo number</label>
+        <input id="spesoPayerPhone" type="tel" required maxlength="30" inputmode="tel" autocomplete="tel" placeholder="e.g. 024 123 4567" />
+        <label for="spesoPayerMessage">Message to the couple (optional)</label>
+        <textarea id="spesoPayerMessage" rows="2" maxlength="500"></textarea>
+        <p>Approve only the amount shown here in your provider’s MoMo prompt. Never enter your MoMo PIN on this website.</p>
+        <button id="spesoRequestPayment" type="submit">Request MoMo payment</button>
+      </form>
+      <p id="spesoPaymentStatus" role="status" aria-live="polite"></p>
+      <div class="speso-actions">
+        <button id="spesoCheckPayment" type="button" class="hidden">Check payment status</button>
+        <button id="spesoNewPayment" type="button" class="hidden">Start another gift</button>
+      </div>
+      <details id="spesoAdminActivity" class="hidden">
+        <summary>Speso payment activity (admin only)</summary>
+        <button id="spesoRefreshActivity" type="button">Refresh payment activity</button>
+        <div id="spesoPaymentActivity"></div>
+      </details>
+    </section>
+
     <details class="gift-confirm" id="giftConfirmWrap">
       <summary><svg class="gift-confirm-icon" viewBox="0 0 32 36" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M16 2 29 8v10c0 8-6 13-13 16C9 31 3 26 3 18V8Z"/><path d="m10 17 4 4 8-10"/></svg><span>After payment, kindly fill in the confirmation form below so we can acknowledge your gift.</span><span class="gift-confirm-chevron" aria-hidden="true">&#10095;</span></summary>
       <form id="giftForm" class="aq-list" autocomplete="off">
@@ -1754,7 +1780,8 @@ try{
 <script src="api-data.js?v=196"></script>
 <script src="app.js?v=203"></script>
 <script src="app-data.js?v=194"></script>
-<script src="app-social.js?v=209"></script>
+<script src="app-social.js?v=210"></script>
+<script src="speso-gifts.js?v=210"></script>
 <script src="admin-dashboard.js?v=187"></script>
 <script src="reception-program.js?v=190"></script>
 <script src="bridal-train.js?v=200"></script>

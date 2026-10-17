@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v209-gifts-logo-and-controls';
+const CACHE = 'sj-wedding-v210-speso-prepared-off';
 const ASSETS = [
   './',
   './index.html',
@@ -29,6 +29,7 @@ const ASSETS = [
   './app.js',
   './app-data.js',
   './app-social.js',
+  './speso-gifts.js',
   './admin-dashboard.js',
   './api-data.js',
   './manifest.webmanifest',

@@ -378,7 +378,9 @@ function scanForIntrusion(req){
 /* ---------- app ---------- */
 const app = express();
 app.disable('x-powered-by');
-app.use(express.json({ limit: '1mb' }));
+app.use(express.json({ limit: '1mb',verify:(req,res,buffer)=>{
+  if(/^\/api\/payments\/speso\/(test|live)\/webhook(?:\?|$)/.test(req.originalUrl))req.rawBody=Buffer.from(buffer);
+} }));
 app.set('trust proxy', true);
 /* intrusion-shaped traffic is logged for the admin Security page — the
    request still proceeds (all queries are parameterized anyway) */
@@ -1260,6 +1262,7 @@ app.patch('/api/admin/momo-settings', requireAdmin, (req, res) => {
 });
 
 /* ---------- gifts (Mobile Money) ---------- */
+const spesoPayments=require('./speso-payments')({app,db,requireAdmin,publicWrite,paymentLimit:rateLimit(30,60000),notifyAll});
 const GIFTS_PUBLIC = Object.freeze({
   cash:     { label: 'Cash Gift',       min: 50,    max: 2000000 },
   house:    { label: 'House Fund',      min: 50,    max: 2000000 },
@@ -1272,8 +1275,8 @@ const giftPublic = r => ({
 
 /* Public feed: the thank-you wall. Contact details never leave the admin API. */
 app.get('/api/gifts', (req, res) => {
-  const rows = db.prepare('SELECT name, fund, amountCents, message, createdAt FROM gifts ORDER BY createdAt DESC LIMIT 40').all();
-  res.json(rows);
+  const rows = db.prepare('SELECT id, name, fund, amountCents, message, createdAt FROM gifts ORDER BY createdAt DESC LIMIT 40').all();
+  res.json(rows.map(({id,...row})=>({...row,paymentVerified:spesoPayments.isVerifiedGift(id)})));
 });
 
 app.post('/api/gifts', publicWrite, (req, res) => {
