@@ -29,7 +29,7 @@
   <link rel="stylesheet" href="app-views.css?v=187" />
   <link rel="stylesheet" href="app-forms.css?v=198" />
   <link rel="stylesheet" href="app-social.css?v=192" />
-  <link rel="stylesheet" href="gifts.css?v=187" />
+  <link rel="stylesheet" href="gifts.css?v=209" />
   <link rel="stylesheet" href="competitions.css?v=188" />
   <link rel="stylesheet" href="reception-program.css?v=190" />
   <link rel="stylesheet" href="bridal-train.css?v=197" />
@@ -1559,7 +1559,7 @@
     <h2 class="settings-heading gifts-heading">Select amount (GHS)</h2>
     <div class="gift-amounts" id="giftAmounts" role="radiogroup" aria-label="Amount"></div>
     <div class="gift-other hidden" id="giftOtherWrap">
-      <input id="giftOtherAmount" type="number" min="50" step="1" inputmode="numeric" placeholder="Other amount in GHS" />
+      <input id="giftOtherAmount" type="number" min="50" step="0.01" inputmode="decimal" aria-label="Other gift amount in GHS" placeholder="Other amount in GHS" />
     </div>
 
     <h2 class="settings-heading gifts-heading">Pay with Mobile Money (MoMo)</h2>
@@ -1593,16 +1593,16 @@
     <details class="gift-confirm" id="giftConfirmWrap">
       <summary><svg class="gift-confirm-icon" viewBox="0 0 32 36" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M16 2 29 8v10c0 8-6 13-13 16C9 31 3 26 3 18V8Z"/><path d="m10 17 4 4 8-10"/></svg><span>After payment, kindly fill in the confirmation form below so we can acknowledge your gift.</span><span class="gift-confirm-chevron" aria-hidden="true">&#10095;</span></summary>
       <form id="giftForm" class="aq-list" autocomplete="off">
-        <div class="field-label">Your name</div>
+        <label class="field-label" for="giftName">Your name</label>
         <input id="giftName" type="text" required maxlength="120" placeholder="e.g. Ama &amp; Kofi" />
-        <div class="field-label">Mobile number (optional)</div>
+        <label class="field-label" for="giftPhone">Mobile number (optional)</label>
         <input id="giftPhone" type="tel" maxlength="40" inputmode="tel" placeholder="+233..." />
-        <div class="field-label">Message (optional)</div>
+        <label class="field-label" for="giftMessage">Message (optional)</label>
         <textarea id="giftMessage" rows="2" maxlength="500" placeholder="God bless you both!"></textarea>
-        <div class="field-label">MoMo transaction reference (optional)</div>
+        <label class="field-label" for="giftTxn">MoMo transaction reference (optional)</label>
         <input id="giftTxn" type="text" maxlength="80" placeholder="e.g. MP260101.1234.ABCD" />
         <button class="aq-approve" id="giftSubmit" type="submit">Submit gift</button>
-        <small id="giftStatus"></small>
+        <small id="giftStatus" role="status" aria-live="polite"></small>
       </form>
     </details>
 
@@ -1754,7 +1754,7 @@ try{
 <script src="api-data.js?v=196"></script>
 <script src="app.js?v=203"></script>
 <script src="app-data.js?v=194"></script>
-<script src="app-social.js?v=198"></script>
+<script src="app-social.js?v=209"></script>
 <script src="admin-dashboard.js?v=187"></script>
 <script src="reception-program.js?v=190"></script>
 <script src="bridal-train.js?v=200"></script>

@@ -1,5 +1,28 @@
 # snybena.com live audit — 11 October 2026
 
+## Gifts logo and page fixes — v209 (17 October)
+
+Replaced the improvised blue MTN text with a bundled current black MTN
+wordmark on yellow (public-domain text/geometric source credited in SVG).
+Provider choices use aligned logo/label rows with no narrow-phone clipping.
+MoMo recipient fields stack on phones at readable 16px; copy controls are
+taller. Reduced left floral overlap, wrapped long gift labels/names, linked
+confirmation labels to controls and added accessible submission status.
+
+Custom gift amounts retain pesewas and submit integer cents; selecting Other
+starts with a clean input rather than displaying a stale amount. Confirmation
+and MoMo-settings saves ignore duplicate events while busy; confirmation
+requires an existing fund and preserves entered details after failures.
+No payment processing was added and no recipient/settings/content were edited.
+The saved recipient +233241234567 remains unconfirmed by the user.
+
+Candidate guest checks pass at 320/375/430px, admin panels at
+320/375/430/656/1024px. Mocked regression tests cover the bundled logo,
+75.50 GHS -> 7550 cents, provider retention, duplicate events, failed-save
+recovery and field labels. Fund editor/cancel and guest hiding also pass.
+Worker regression and JS syntax checks pass; snapshot `/root/wedding-pre-v209`.
+Worker and changed asset versions advanced to v209; OTP settings unchanged.
+
 ## Guest OTP activated (17 October)
 
 After the user confirmed receiving the authorized Ghana OTP-style SMS and

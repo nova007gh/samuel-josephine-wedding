@@ -40,7 +40,7 @@
 .gifts-hero-copy p{ font:500 16px/1.2 var(--gift-serif); margin:0 0 10px; text-wrap:pretty; }
 .gifts-hero-copy :is(#giftIntroText,#giftMessageText){ white-space:pre-line; overflow-wrap:anywhere; }
 .gifts-floral{ position:absolute; pointer-events:none; background:url('assets/gift-floral.svg') center/contain no-repeat; z-index:1; }
-.gifts-floral--left{ width:148px; height:224px; bottom:-8px; left:-35px; transform:rotate(-8deg); }
+.gifts-floral--left{ width:110px; height:170px; bottom:-16px; left:-40px; transform:rotate(-8deg); opacity:.5; }
 .gifts-floral--right{ width:176px; height:246px; bottom:-21px; right:-20px; transform:scaleX(-1) rotate(-8deg); }
 [data-view="gifts"] .gifts-heading{
   display:flex; align-items:center; justify-content:center; gap:11px;
@@ -69,14 +69,14 @@
 .gift-amount.is-on{ background:linear-gradient(125deg,#b08a3b,#936619); border-color:#926519; color:#fffaf0; }
 .gift-payment-panel{ padding:7px; border:1px solid #eee3d3; border-radius:12px; background:rgba(255,252,246,.75); box-shadow:0 2px 12px rgba(90,62,28,.06); }
 .gift-providers{ grid-template-columns:repeat(3,minmax(0,1fr)); gap:5px; }
-.gift-provider{ padding:6px; min-width:0; gap:6px; min-height:48px; border-radius:8px; border-color:#e8dccb; color:#312c24; }
+.gift-provider{ padding:9px 4px; min-width:0; gap:7px; min-height:84px; flex-direction:column; justify-content:center; border-radius:8px; border-color:#e8dccb; color:#312c24; }
 .gift-provider.is-on{ background:linear-gradient(120deg,#b08a49,#8b5e22); color:#fff9ec; border-color:#9d7438; }
-.gift-provider-label{ font:500 13px/1.1 var(--gift-serif); text-align:left; }
-.gift-provider-logo{ flex:0 0 29px; height:34px; display:flex; align-items:center; justify-content:center; flex-direction:column; border-radius:4px; background:#fffdf8; }
+.gift-provider-label{ font:600 13px/1.2 var(--gift-serif); text-align:center; min-width:0; max-width:100%; }
+.gift-provider-logo{ flex:0 0 34px; width:54px; height:34px; display:flex; align-items:center; justify-content:center; flex-direction:column; border-radius:5px; background:#fffdf8; }
 .gift-provider-logo b{ font-family:Arial,sans-serif; }
 .gift-provider-logo small{ font:700 5px/1.5 Arial,sans-serif; }
 .gift-provider-logo--mtn{ background:#ffce00; border:1px solid #ffed9b; }
-.gift-provider-logo--mtn b{ color:#124f91; font-size:10px; font-style:italic; border:1.3px solid #124f91; border-radius:50%; padding:2px; }
+.gift-provider-logo--mtn img{display:block;width:44px;height:22px;object-fit:contain;}
 .gift-provider-logo--telecel b{ display:grid; place-items:center; width:23px; height:23px; background:#cf1429; color:white; border-radius:50%; font-size:23px; }
 .gift-provider-logo--telecel small{ color:#333; }
 .gift-provider-logo--airteltigo{ color:#db2031; }
@@ -105,13 +105,19 @@
 .gift-list{ gap:4px; }
 .gift-item{ gap:10px; padding:10px 12px; border-color:#f0e6d8; border-radius:10px; background:rgba(255,252,246,.75); box-shadow:0 3px 8px rgba(79,50,19,.04); }
 .gift-avatar{ width:37px; height:37px; background:#f1e4d0; font:500 18px/1 var(--gift-serif); color:#302719; }
-.gift-item-body{ flex:1; }
+.gift-item-body{ flex:1; min-width:0; overflow-wrap:anywhere; }
 .gift-item-body p{ font:600 16px/1.1 var(--gift-serif); color:#251f17; }
 .gift-item-body small{ font-size:9px; line-height:1.5; color:#605646; margin-top:4px; }
 .gift-item-note{ flex:0 1 42%; border-left:1px solid #e9dfd0; padding-left:10px; min-width:0; }
 .gift-item-note time{ display:block; font:500 12px/1.2 var(--gift-serif); white-space:normal; color:#695b49; }
 .gift-msg{ display:block; margin-top:4px; font-size:9px; line-height:1.4; overflow-wrap:anywhere; color:#554837 !important; }
 .gift-msg span{ color:#bb8830; }
+.gift-fund-label,.gift-fund-desc{max-width:100%;overflow-wrap:anywhere;}
+#giftForm :is(input,textarea),#giftOtherAmount{font-size:16px;min-height:44px;}
+#giftForm .field-label{display:block;}
+.gift-copy{width:36px;min-height:44px;}
+.gift-input-wrap input{min-height:44px;padding-right:38px;}
+#giftStatus{display:block;min-height:1.5em;line-height:1.5;}
 [data-view="gifts"] :is(button,a,summary,input,textarea):focus-visible{ outline:2px solid #926719; outline-offset:3px; }
 /* Admin menu items are flex rows; these two sections are full-width panels. */
 body.is-admin :is(#adminGiftFundsSection,#momoSettingsSection){
@@ -174,10 +180,15 @@ body.is-admin :is(#adminGiftFundsSection,#momoSettingsSection).hidden{ display:n
   .gifts-hero{ margin-left:-14px; margin-right:-14px; }
   .gifts-hero-copy{ padding-left:14px; }
   .gifts-hero-copy p{ font-size:14px; }
-  .gift-provider{ padding:5px 3px; gap:3px; }
-  .gift-provider-label{ font-size:11px; }
+  .gift-provider{ padding:8px 3px; gap:7px; }
+  .gift-provider-label{ font-size:13px; }
   .gift-fund-label{ font-size:15px; }
   .gift-momo-row{ gap:8px; }
-  .gift-field + .gift-field{ padding-left:7px; }
+  .gift-field + .gift-field{ padding-left:0; }
+}
+@media(max-width:480px){
+  .gift-momo-row{grid-template-columns:minmax(0,1fr);gap:10px;}
+  .gift-field + .gift-field{border-left:0;padding-left:0;}
+  .gift-input-wrap input,#giftMoMoName{font-size:16px;}
 }
 @media(prefers-reduced-motion:reduce){ .gift-confirm-chevron{ transition:none; } }

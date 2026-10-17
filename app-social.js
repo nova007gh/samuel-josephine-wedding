@@ -1765,7 +1765,7 @@ function renderGiftOptions(){
   if (provs) provs.innerHTML = GIFT_PROVIDERS.map(p => `
     <button class="gift-provider${giftState.provider === p.id ? ' is-on' : ''}" data-provider="${p.id}"
             type="button" role="radio" aria-checked="${giftState.provider === p.id}">
-      <span class="gift-provider-logo gift-provider-logo--${p.id}" aria-hidden="true">${p.id === 'mtn' ? '<b>MTN</b>' : p.id === 'telecel' ? '<b>t</b><small>Telecel</small>' : '<b>a</b><small>AirtelTigo</small>'}</span>
+      <span class="gift-provider-logo gift-provider-logo--${p.id}" aria-hidden="true">${p.id === 'mtn' ? '<img src="assets/mtn-logo.svg" width="44" height="22" alt="" />' : p.id === 'telecel' ? '<b>t</b><small>Telecel</small>' : '<b>a</b><small>AirtelTigo</small>'}</span>
       <span class="gift-provider-label">${escapeHTML(p.label)}</span>
     </button>`).join('');
 
@@ -1959,6 +1959,7 @@ function renderMomoSettingsAdmin(){
 function initMomoSettingsAdmin(){
   document.getElementById('momoSettingsEditor')?.addEventListener('click', async e => {
     if (!e.target.matches('#saveMomoSettings')) return;
+    if (e.target.disabled) return;
     const number = document.getElementById('momoNumberInput').value.trim();
     const accountName = document.getElementById('momoNameInput').value.trim();
     const status = document.getElementById('momoSettingsStatus');
@@ -2029,6 +2030,7 @@ async function initGifts(){
     if (b.dataset.amount === 'other'){
       giftState.amount = 0;
       renderGiftOptions();
+      document.getElementById('giftOtherAmount').value = '';
       document.getElementById('giftOtherAmount')?.focus();
       return;
     }
@@ -2037,7 +2039,8 @@ async function initGifts(){
   });
 
   document.getElementById('giftOtherAmount')?.addEventListener('input', e => {
-    giftState.amount = Math.max(0, parseInt(e.target.value, 10) || 0);
+    const amount = Number(e.target.value);
+    giftState.amount = Number.isFinite(amount) ? Math.max(0, Math.round(amount * 100) / 100) : 0;
     updateGiftPayButton();
   });
 
@@ -2079,10 +2082,12 @@ async function initGifts(){
     e.preventDefault();
     const btn = document.getElementById('giftSubmit');
     const status = document.getElementById('giftStatus');
+    if (btn.disabled) return;
     const name = (document.getElementById('giftName')?.value || '').trim();
     if (!name){ if (status) status.textContent = 'Please enter your name.'; return; }
     const cedi = giftState.amount;
     if (!cedi || cedi < 50){ if (status) status.textContent = 'Choose an amount of at least GHS 50.'; return; }
+    if (!GIFT_FUNDS.some(f => f.id === giftState.fund)){ if (status) status.textContent = 'Choose an available gift option.'; return; }
     btn.disabled = true;
     const original = btn.textContent;
     btn.textContent = 'Sending…';
@@ -2091,7 +2096,7 @@ async function initGifts(){
         name,
         phone: document.getElementById('giftPhone')?.value || '',
         fund: giftState.fund,
-        amountCents: cedi * 100,
+        amountCents: Math.round(cedi * 100),
         provider: giftState.provider,
         txnRef: document.getElementById('giftTxn')?.value || '',
         message: document.getElementById('giftMessage')?.value || ''

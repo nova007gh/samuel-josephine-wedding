@@ -149,6 +149,8 @@ const delay = ms => new Promise(resolve=>setTimeout(resolve,ms));
     assert.equal(result.providers,3);
     assert.equal(result.readonly,true);
     assert.equal(result.adminHidden,true);
+    assert.equal(await evaluate(`Array.from(document.querySelectorAll('.gift-provider-label')).every(el=>el.scrollWidth<=el.clientWidth+1)`),true,'Provider labels fit at '+width);
+    assert.equal(await evaluate(`parseFloat(getComputedStyle(document.getElementById('giftMoMoNumber')).fontSize)>=16`),true,'Readable MoMo number at '+width);
     console.log('PASS mobile layout',JSON.stringify(result));
   }
   const behaviour = await evaluate(`(()=>{
@@ -160,6 +162,7 @@ const delay = ms => new Promise(resolve=>setTimeout(resolve,ms));
     return {ok,hasForm:!!document.getElementById('giftForm'),hasCopy:document.querySelectorAll('[data-gift-copy]').length===2};
   })()`);
   assert.equal(behaviour.ok,true); assert.equal(behaviour.hasForm,true); assert.equal(behaviour.hasCopy,true);
+  await require('./gift-page-regressions.cjs')({evaluate});
   const formCheck = await evaluate(`(async()=>{
     const original=window.fetch; let payload;
     window.fetch=async(url,opts)=>{

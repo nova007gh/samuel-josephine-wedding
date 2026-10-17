@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v208-story-without-bridal-card';
+const CACHE = 'sj-wedding-v209-gifts-logo-and-controls';
 const ASSETS = [
   './',
   './index.html',
@@ -25,6 +25,7 @@ const ASSETS = [
   './competitions.js',
   './competition-notices.js',
   './assets/gift-floral.svg',
+  './assets/mtn-logo.svg',
   './app.js',
   './app-data.js',
   './app-social.js',
