@@ -55,7 +55,7 @@
     attempt.id=result.id;attempt.status=result.status;store();showAttempt();
   }
   async function requestSameAttempt(){
-    const result=await api('/gift-payments',{method:'POST',admin:settings.mode==='test',body:{...attempt.details,secret:attempt.secret}});
+    const result=await api('/gift-payments',{method:'POST',admin:settings.mode==='test',body:{...attempt.details,secret:attempt.secret,mode:attempt.mode}});
     saveResult(result);
   }
   async function check(){

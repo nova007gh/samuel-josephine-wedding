@@ -13,6 +13,7 @@ module.exports.setup=async({call})=>{
       if(route.startsWith('/api/gift-payments')){
         if(route==='/api/gift-payments'){
           state.requests++;const body=JSON.parse(options.body);state.lastBody=body;
+          if(body.mode!==state.mode)return response({error:'Wrong payment mode',code:'payment/not-started'},409);
           if(state.failBefore){state.failBefore=false;return response({error:'Gift option no longer available',code:'payment/not-started'},400);}
           let result=state.orders[body.secret];
           if(!result){state.prompts++;result={id:'SJ-'+crypto.randomUUID().replaceAll('-',''),mode:state.mode,status:'processing',amountCents:body.amountCents};state.orders[body.secret]=result;sessionStorage.setItem('__speso_mock_orders',JSON.stringify(state.orders));}

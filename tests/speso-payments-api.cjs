@@ -38,7 +38,7 @@ async function request(route,{body,admin=false,status=200,headers={}}={}){
 function signed(body,secret=env.SPESO_MODE==='test'?env.SPESO_TEST_WEBHOOK_SECRET:env.SPESO_LIVE_WEBHOOK_SECRET,time=Math.floor(Date.now()/1000)){
   const raw=JSON.stringify(body);return {body:raw,headers:{'X-Speso-Signature':'t='+time+',v1='+crypto.createHmac('sha256',secret).update(time+'.'+raw).digest('hex')}};
 }
-const input=(digit='a',extra={})=>({secret:digit.repeat(64),name:'Sandbox guest',phone:'0240000001',fund:'cash',provider:'mtn',amountCents:7550,message:'Test only',...extra});
+const input=(digit='a',extra={})=>({mode:env.SPESO_MODE,secret:digit.repeat(64),name:'Sandbox guest',phone:'0240000001',fund:'cash',provider:'mtn',amountCents:7550,message:'Test only',...extra});
 const countPosts=()=>calls.filter(c=>c.method==='POST').length;
 async function callback(order,status=200,changes={}){return request('/api/payments/speso/'+env.SPESO_MODE+'/webhook',{...signed({order_id:order.id,status:'completed',...changes}),status});}
 (async()=>{try{
@@ -49,6 +49,9 @@ async function callback(order,status=200,changes={}){return request('/api/paymen
   await request('/api/gift-payments',{body:input(),admin:true,status:403,headers:{Origin:'https://untrusted.example'}});
   await request('/api/gift-payments',{body:input('a',{amountCents:49}),admin:true,status:400});
   await request('/api/gift-payments',{body:input('a',{fund:'disabled'}),admin:true,status:400});
+  await request('/api/gift-payments',{body:input('a',{mode:'live'}),admin:true,status:409});
+  await request('/api/gift-payments',{body:input('a',{mode:undefined}),admin:true,status:409});
+  assert.equal(countPosts(),0,'Missing/mismatched mode never reaches provider');
   const [one,two]=await Promise.all([request('/api/gift-payments',{body:input(),admin:true}),request('/api/gift-payments',{body:input(),admin:true})]);
   assert.equal(one.id,two.id);assert.equal(countPosts(),1);assert.equal(one.status,'processing');
   assert.equal(JSON.stringify(one).includes('233240000001'),false);assert.equal(JSON.stringify(one).includes(input().secret),false);
@@ -71,6 +74,7 @@ async function callback(order,status=200,changes={}){return request('/api/paymen
   env.SPESO_MODE='live';env.SPESO_LIVE_API_KEY='sk_live_fixture';env.SPESO_LIVE_WEBHOOK_SECRET='whsec_live_fixture';
   assert.equal((await request('/api/gift-payments/config')).enabled,false);
   env.SPESO_LIVE_CONFIRMED='true';env.SPESO_MERCHANT_NAME='Isolated test merchant';
+  await request('/api/gift-payments',{body:input('c',{mode:'test'}),status:409});
   const live=await request('/api/gift-payments',{body:input('c')});
   const record=orders.get(live.id);record.status='completed';
   for(const [key,bad] of [['amount',75.51],['amount',75.501],['currency','USD'],['mobile','233240000002'],['network','VOD'],['order_id','wrong'],['speso_reference','wrong'],['status','unrecognized']]){

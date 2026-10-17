@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v212-gift-options-refresh';
+const CACHE = 'sj-wedding-v213-speso-mode-guard';
 const ASSETS = [
   './',
   './index.html',

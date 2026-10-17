@@ -104,6 +104,7 @@ module.exports=({app,db,requireAdmin,publicWrite,paymentLimit=publicWrite,notify
     if(req.headers.origin){try{if(new URL(req.headers.origin).host!==req.get('host'))return res.status(403).json({error:'Open payments from the wedding app.'});}catch{return res.status(403).json({error:'Invalid origin.'});}}
     let input;try{input=validate(req.body);}catch(error){return res.status(400).json({error:error.message,code:'payment/not-started'});}
     const c=config(env),tokenHash=hash(req.body.secret),fingerprint=hash(JSON.stringify(input));
+    if(req.body.mode!==c.mode)return res.status(409).json({error:'The payment environment changed. Reload the wedding app before starting another attempt.',code:'payment/not-started'});
     const existing=db.prepare('SELECT * FROM gift_payments WHERE mode=? AND tokenHash=?').get(c.mode,tokenHash);
     if(existing){
       if(existing.fingerprint!==fingerprint)return res.status(409).json({error:'This payment attempt already exists with different details. Check its status before starting another.'});

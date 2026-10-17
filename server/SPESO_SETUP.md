@@ -68,6 +68,9 @@ the sandbox. Switching modes does not migrate orders, funds or gifts.
   unchanged payment details always reuse the existing order, never another
   collection POST. A per-phone pending lock also prevents parallel prompts
   from separate tabs/devices. New prompt requests are rate-limited.
+- Each initiation explicitly names its expected test/live mode. If a tab's
+  mode is stale after a server configuration change, initiation is rejected
+  before creating an order or contacting Speso. Reload before proceeding.
 - An initiation timeout is **unknown**, not failed. Recheck the original order.
   Do not automatically retry an upstream POST or tell the guest to pay again.
 - Never collect or ask for a MoMo PIN in the wedding app. Guests approve the
