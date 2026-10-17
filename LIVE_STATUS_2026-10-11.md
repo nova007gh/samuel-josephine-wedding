@@ -22,6 +22,8 @@ v211 adds an explicit empty gift-options message rather than a blank area and
 tests the existing safe no-fund confirmation guard. Does not recreate funds or
 edit the confirmed manual MoMo recipient. Candidate guest layout and no-fund
 submission checks pass at 320/375/430px with no live writes. Worker checks pass.
+Deployed `71fe9c7`; the same checks pass live. Fresh v211 preservation audit
+passes with all predeployment records/settings intact and zero Speso attempts.
 
 ## Speso collection candidate — v210 (17 October; NOT deployed/activated)
 
