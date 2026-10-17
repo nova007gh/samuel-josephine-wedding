@@ -66,6 +66,14 @@ const delay = ms => new Promise(resolve=>setTimeout(resolve,ms));
   const loaded = new Promise(resolve=>events.set('Page.loadEventFired',resolve));
    await call('Page.navigate',{url:(process.env.WEDDING_TEST_URL||'https://snybena.com/')+'#gifts'});
   await Promise.race([loaded,delay(15000)]);
+  // The load-event budget can expire while scripts are still downloading.
+  // Wait for the app, not just the document, before invoking guest helpers.
+  let appReady=false;
+  for(let i=0;i<240;i++){
+    if(await evaluate('typeof setGuest==="function" && typeof enterApp==="function" && typeof switchView==="function"')){appReady=true;break;}
+    await delay(250);
+  }
+  if(!appReady)throw new Error('App scripts did not become ready within the browser-test loading budget');
   if(process.argv.includes('--refresh')){
     await require('./refresh-browser-checks.cjs').check({call,evaluate,errors,out});
     return;

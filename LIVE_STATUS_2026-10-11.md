@@ -1,5 +1,24 @@
 # snybena.com live audit — 11 October 2026
 
+## Guest OTP activated (17 October)
+
+After the user confirmed receiving the authorized Ghana OTP-style SMS and
+explicitly requested activation, set `GUEST_OTP_REQUIRED=true` in the private
+service environment and restarted `wedding-api`. Sender remains SAMANDJOSSY.
+Private pre-change backup: `/root/wedding-otp-activation-1792233051183/`.
+No credentials were added to the repository and no extra SMS tests were sent.
+
+Live checks pass: `/api/onboarding` reports OTP required; quick entry rejects
+with 409 before writes; unauthenticated admin access remains 401; SQLite
+integrity is ok. Read-only browser test confirms OTP-mode guidance and reachable
+submit at 320/375/430px portrait and 844px landscape. No test guest created.
+Existing OTP mode also restores its original required detail fields; saved
+same-device entries are not forcibly signed out. Ghana delivery was confirmed
+by the user; US SMS delivery remains unresolved (Twilio error 30034).
+
+Added a read-only OTP-mode test branch and bounded browser app-readiness wait.
+These are test-only changes; no frontend design or runtime code changed.
+
 ## Restore previous Home — v207 (16 October)
 
 At the user's request, reverted the v206 Home redesign and its associated

@@ -1,5 +1,18 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 module.exports=async({call,evaluate,errors,out})=>{
+  if(process.env.WEDDING_EXPECT_OTP==='true'){
+    assert.equal(await evaluate(`(async()=>{const r=await api('/onboarding');return r.otpRequired;})()`),true);
+    await evaluate(`clearGuest();document.getElementById('app').classList.add('hidden');document.body.classList.add('locked');showGate(guestLoginScreen);loadOnboarding()`);
+    assert.equal(await evaluate(`document.getElementById('guestOptionalNote').classList.contains('hidden')`),true);
+    assert.equal(await evaluate(`document.getElementById('guestCheckinHint').textContent.includes('No code required')`),false);
+    assert.equal(await evaluate(`document.getElementById('returnGuestLink').textContent.includes('Sign in with your phone')`),true);
+    for(const [width,height] of [[320,568],[375,667],[430,1100],[844,390]]){
+      await call('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:true});
+      assert.equal(await evaluate(`document.documentElement.scrollWidth===innerWidth`),true);
+      assert.equal(await evaluate(`(()=>{const gate=document.getElementById('guestLoginScreen');gate.scrollTop=gate.scrollHeight;const b=document.querySelector('#guestLoginForm button[type="submit"]').getBoundingClientRect();return b.top>=0&&b.bottom<=innerHeight;})()`),true);
+    }
+    assert.equal(errors.length,0);console.log('PASS live OTP mode, sign-in guidance, mobile widths and reachable submit; no SMS requests or submissions');return;
+  }
   assert.equal(await evaluate(`(async()=>{const r=await api('/onboarding');return r.otpRequired;})()`),false);
   await evaluate(`clearGuest();document.getElementById('app').classList.add('hidden');document.body.classList.add('locked');showGate(guestLoginScreen);loadOnboarding()`);
   assert.equal(await evaluate(`document.getElementById('guestOptionalNote').classList.contains('hidden')`),false);
