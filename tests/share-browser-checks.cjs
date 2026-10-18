@@ -59,12 +59,12 @@ module.exports=async({call,evaluate,errors,out})=>{
     document.querySelector('.app-brand').click();const brandHome=document.querySelector('.view:not(.hidden)').dataset.view==='home';switchView('more');
     return {checks,menu,brandHome};
   })()`);
-  assert.equal(routing.checks.length,9);assert.ok(routing.checks.every(x=>x.correct));assert.ok(routing.menu.every(x=>x.correct));assert.equal(routing.brandHome,true);
+  assert.deepEqual(routing.checks.map(x=>x.name),['home','story','events','bridaltrain','gallery','livebroadcast','gifts']);assert.ok(routing.checks.every(x=>x.correct));assert.ok(routing.menu.every(x=>x.correct));assert.equal(routing.brandHome,true);
   for(const width of [320,375,430]){
     await call('Emulation.setDeviceMetricsOverride',{width,height:1100,deviceScaleFactor:1,mobile:true});
     const routes=await evaluate(`(()=>{const checks=[...document.querySelectorAll('.tabbar .tab')].map(tab=>{tab.click();return {name:tab.dataset.tab,scrollWidth:document.documentElement.scrollWidth,width:innerWidth};});switchView('more');return checks;})()`);
     for(const route of routes)assert.equal(route.scrollWidth,route.width,route.name+' overflow at '+width);
-    console.log('PASS nine main page widths',width,'pixels');
+    console.log('PASS seven main page widths',width,'pixels');
   }
   const calendar=await evaluate(`(()=>{
     const before=window.weddingDetails;
@@ -126,5 +126,5 @@ module.exports=async({call,evaluate,errors,out})=>{
   await evaluate(`(async()=>{document.getElementById('shareActionStatus').textContent='';document.getElementById('activityToasts').replaceChildren();switchView('more');await new Promise(r=>setTimeout(r,700));scrollTo(0,0);})()`);
   const shot=await call('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(out,'share-guest-preview.png'),Buffer.from(shot.data,'base64'));
   assert.equal(errors.length,0,'Uncaught browser exceptions');
-  console.log('PASS nine main routes/Share links, calendar escaping/folding/stable event/error handling, notification states/duplicate guard, install help/native cancellation, song picker/progress/failure and admin sign-out (operations mocked)');
+  console.log('PASS seven main routes/Gallery sharing links, calendar escaping/folding/stable event/error handling, notification states/duplicate guard, install help/native cancellation, song picker/progress/failure and admin sign-out (operations mocked)');
 };

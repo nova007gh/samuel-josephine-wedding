@@ -1,5 +1,17 @@
 # snybena.com live audit — 11 October 2026
 
+## Sharing removed from bottom menu — v215 (18 October)
+
+At the user's request, removed the Memories and Share bottom navigation
+buttons. Both sharing destinations remain accessible through Gallery's
+Share Memories and Share Moments cards. Seven remaining tabs retain their
+order, pulsing Gallery seal and no-swipe layout; columns now fill the bar.
+No saved content, API, settings or payment configuration changed.
+Read-only navigation checks passed at 320/360/375/390/430/476/1024px,
+including routing, visible labels and reduced-motion support. Gallery
+sharing/back links and existing mocked Share actions passed. Worker tests
+passed; CSS and cache versions bumped to v215.
+
 ## Gallery sharing navigation — v214 (18 October)
 
 Added Share Memories and Share Moments entry cards to Gallery. Moved the

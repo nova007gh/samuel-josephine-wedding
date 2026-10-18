@@ -1,4 +1,4 @@
-/* Read-only nine-tab visual and routing regression. */
+/* Read-only seven-tab visual and routing regression. */
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 module.exports=async({call,evaluate,errors,out})=>{
   for(const width of [320,360,375,390,430,476,1024]){
@@ -6,7 +6,7 @@ module.exports=async({call,evaluate,errors,out})=>{
     for(const view of ['home','bridaltrain','livebroadcast']){
       await evaluate(`switchView(${JSON.stringify(view)});new Promise(r=>setTimeout(r,600))`);
       const styles=await evaluate(`Array.from(document.querySelectorAll('.tabbar .tab')).map(button=>{const css=getComputedStyle(button),rect=button.getBoundingClientRect(),icon=button.querySelector('svg,img').getBoundingClientRect(),label=button.querySelector('.tab-label'),text=label.getBoundingClientRect(),bar=button.closest('.tabbar').getBoundingClientRect();return {width:rect.width,height:rect.height,radius:css.borderRadius,padding:css.padding,margin:css.margin,border:css.borderWidth,font:css.fontSize,iconY:icon.top+icon.height/2,labelY:text.top+text.height/2,glow:getComputedStyle(button,'::before').animationName,visible:rect.left>=bar.left-1&&rect.right<=bar.right+1,labelFits:label.scrollWidth<=label.clientWidth+1};})`);
-      assert.equal(styles.length,9);
+      assert.equal(styles.length,7);
       for(const [index,item] of styles.entries()){
         assert.ok(item.width>=24);assert.equal(item.height,index===4?74:64);
         assert.equal(item.visible,true,'Every button is visible without swiping at '+width);
@@ -25,7 +25,7 @@ module.exports=async({call,evaluate,errors,out})=>{
     assert.equal(routes.every(row=>row.correct&&row.visible),true,'Every destination routes and selected tab remains visible at '+width+' '+JSON.stringify(routes));
     await evaluate(`switchView('home');new Promise(r=>setTimeout(r,600))`);
     const shot=await call('Page.captureScreenshot',{format:'png',clip:{x:0,y:814,width,height:86,scale:1}});fs.writeFileSync(path.join(out,'navigation-'+width+'.png'),Buffer.from(shot.data,'base64'));
-    console.log('PASS all nine tabs visible without swiping, reduced pulsing seal, label fit/alignment and routing at '+width+'px');
+    console.log('PASS all seven tabs visible without swiping, reduced pulsing seal, label fit/alignment and routing at '+width+'px');
   }
   await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
   assert.equal(await evaluate(`Array.from(document.querySelectorAll('.tabbar .tab')).every(button=>getComputedStyle(button,'::before').animationName==='none')`),true);

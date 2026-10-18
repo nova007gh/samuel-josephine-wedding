@@ -3,7 +3,7 @@ module.exports=async({call,evaluate,errors,out})=>{
   await evaluate(`switchView('events');document.querySelector('[data-view="events"] [data-goto="livebroadcast"]').click()`);
   for(let i=0;i<100;i++){if(await evaluate(`!!document.querySelector('#liveBroadcastContent h1')`))break;await new Promise(r=>setTimeout(r,100));}
   assert.equal(await evaluate(`document.getElementById('liveBroadcastLoadStatus').textContent`),'');
-  assert.equal(await evaluate(`document.querySelectorAll('.tabbar [data-tab]').length`),9);
+  assert.equal(await evaluate(`document.querySelectorAll('.tabbar [data-tab]').length`),7);
   assert.equal(await evaluate(`document.querySelectorAll('#liveBroadcastContent iframe').length`),0);
   await evaluate(`document.querySelector('[data-lb-jump="schedule"]').click()`);
   assert.equal(await evaluate(`document.activeElement.id`),'lbScheduleSection');
@@ -21,5 +21,5 @@ module.exports=async({call,evaluate,errors,out})=>{
   // Dismiss transient notices in the disposable profile for an unobstructed visual check.
   await evaluate(`document.querySelector('.competition-toast-close')?.click();document.querySelectorAll('.activity-toast').forEach(el=>el.remove());window.scrollTo({top:0,behavior:'instant'})`);
   const shot=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:true});fs.writeFileSync(path.join(out,'live-broadcast-real-photo.png'),Buffer.from(shot.data,'base64'));
-  assert.deepEqual(errors,[]);console.log('PASS read-only live broadcast: Events link, nine tabs, real configured image decoded, no eager provider iframe, responsive 320/375/430/1024 and no JS exceptions');
+  assert.deepEqual(errors,[]);console.log('PASS read-only live broadcast: Events link, seven tabs, real configured image decoded, no eager provider iframe, responsive 320/375/430/1024 and no JS exceptions');
 };
