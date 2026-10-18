@@ -37,3 +37,16 @@ exports.check=async({call,evaluate,errors,out})=>{
   await evaluate(`document.getElementById('sjGuideAlerts').checked=false;document.getElementById('sjGuideAlerts').dispatchEvent(new Event('change'))`);
   assert.deepEqual(errors,[]);console.log('PASS local guide responsive dialog, source routing, focus, escaped content, private/unknown handling, local-only questions, stale-state warning, opt-in reminders and deduplication');
 };
+exports.live=async({call,evaluate,errors,out})=>{
+  await call('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
+  await evaluate(`document.getElementById('sjGuideLaunch').click();document.getElementById('sjGuideQuestion').value='Where is the wedding?';document.getElementById('sjGuideForm').requestSubmit()`);
+  for(let i=0;i<200;i++){if(await evaluate(`document.querySelector('#sjGuideResults a[href="#events"]')!==null`))break;await new Promise(r=>setTimeout(r,100));}
+  assert.equal(await evaluate(`document.querySelector('#sjGuideResults a[href="#events"]')!==null`),true,'Real endpoint produces wedding source');
+  assert.equal(await evaluate(`document.querySelector('#sjGuideResults img').decode().then(()=>true).catch(()=>false)`),true,'Live published photo decodes');
+  assert.match(await evaluate(`document.getElementById('sjGuideStatus').textContent`),/Published information refreshed/);
+  assert.equal(await evaluate(`document.getElementById('sjGuideAlerts').checked`),false,'Reminders stay opt-in');
+  const shot=await call('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(out,'guide-live-390x844.png'),Buffer.from(shot.data,'base64'));
+  await evaluate(`document.querySelector('#sjGuideResults a[href="#events"]').click()`);
+  assert.equal(await evaluate(`document.querySelector('[data-view="events"]').classList.contains('hidden')`),false,'Live source navigation works');
+  assert.deepEqual(errors,[]);console.log('PASS deployed guide: real public knowledge, decoded wedding photo, responsive dialog, reminders off by default and working source link; no submissions');
+};

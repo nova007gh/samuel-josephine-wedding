@@ -43,6 +43,17 @@ Private pre-deploy frontend/API/online database snapshot:
 `wedding-guide-knowledge.js` alongside `wedding-guide.js` and the one-line
 `server.js` registration. Operational notes: `server/GUIDE_SETUP.md`.
 
+Deployed code `a830885`; API restart was gated on zero established port-3100
+connections and a byte-identical pre-deploy API source check. Public live
+endpoint, v219 assets/cache, supplied illustration and nine-tab navigation
+passed. A fresh disposable live browser profile fetched real guide knowledge,
+decoded the published couple photo, opened its Events source and confirmed
+reminders were off; no submissions or OTP requests were made.
+Post-deploy snapshot comparison: 23 guests, 1 RSVP, 20 memories, 0 guestbook,
+4 gifts, 2 funds, 39 settings, 2 competitions, 1 vote, 3 payment attempts,
+2 chat messages, 6 reactions and 2 chat uploads; every baseline row unchanged,
+none missing, SQLite integrity `ok`. No configuration/credential changes.
+
 ## More conversation space / compact controls — v218 (18 October)
 
 User reported the Chat header used too much vertical space and requested a
