@@ -22,6 +22,11 @@ edge alignment, hit targets, composer clearance, Jossy’s keyboard activation,
 launcher-specific focus return, shared conversation, local/private questions,
 source links and optional reminders. Cache/CSS/guide script use v223.
 Private pre-deploy frontend/online database snapshot: `/root/wedding-pre-v223`.
+Deployed `47efccc`; live checks decoded both illustrations, opened the shared
+guide through Jossy, followed a real source link and continued through Sam.
+Public asset bytes/cache and the five-tab hierarchy passed. All 105 baseline
+rows across 13 audited wedding/chat/payment tables are unchanged; SQLite
+integrity `ok`. No production submissions or API restart were required.
 
 ## Five-tab navigation / Events entertainment hub — v222 (18 October)
 
