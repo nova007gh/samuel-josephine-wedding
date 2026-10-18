@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v217-community-reference';
+const CACHE = 'sj-wedding-v218-chat-space';
 const ASSETS = [
   './',
   './index.html',

@@ -21,5 +21,14 @@ module.exports=async({call,evaluate,errors,out})=>{
     }
     console.log('PASS reference community pages/real photo, icon tabs, viewport composer and no overflow at '+width+'px');
   }
+  for(const [width,height] of [[320,568],[360,640],[375,667],[390,844],[430,932],[495,770],[495,400],[844,390],[1024,768]]){
+    await call('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:width<900});
+    await evaluate(`switchView('chat');new Promise(r=>setTimeout(r,650))`);
+    const layout=await evaluate(`(()=>{const box=id=>document.getElementById(id).getBoundingClientRect(),feed=box('chatMessages'),composer=box('chatComposer'),bar=document.querySelector('.tabbar').getBoundingClientRect(),hero=document.querySelector('.community-hero--chat').getBoundingClientRect(),photo=document.querySelector('.community-hero--chat>img').getBoundingClientRect();return {fits:document.documentElement.scrollWidth===innerWidth,header:hero.height,photoWidth:photo.width,feed:feed.height,nonOverlap:feed.bottom<=composer.top+1&&composer.bottom<=bar.top+1,composerVisible:composer.top>0&&composer.bottom<=innerHeight,iconsSmall:[...document.querySelectorAll('#chatFilters .community-icon,.chat-compose-row .community-icon')].every(el=>el.getBoundingClientRect().width<=18.1)};})()`);
+    assert.equal(layout.fits,true,'Chat fits '+width+'x'+height);assert.equal(layout.nonOverlap,true,'Feed/composer/navigation do not overlap');assert.equal(layout.composerVisible,true,'Composer remains visible');assert.equal(layout.iconsSmall,true,'Compact glyphs with retained button targets');
+    assert.ok(layout.header<=(height<=600?78:126),'Compact header');assert.ok(layout.feed>=60,'Usable conversation space '+JSON.stringify({width,height,...layout}));
+    if(width===495&&height===770){assert.ok(layout.feed>=350,'At least 350px of conversation on the reported screen');assert.ok(layout.photoWidth>=190,'Larger landscape couple photo');await evaluate(`document.querySelectorAll('.competition-toast-close').forEach(b=>b.click());document.querySelectorAll('.activity-toast').forEach(el=>el.remove())`);const shot=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:true});fs.writeFileSync(path.join(out,'chat-compact-495x770.png'),Buffer.from(shot.data,'base64'));}
+    console.log('PASS compact Chat '+width+'x'+height+': header '+layout.header+'px, feed '+Math.round(layout.feed)+'px, visible composer');
+  }
   assert.deepEqual(errors,[]);console.log('PASS read-only style preview: no chat, booking, OTP or payment writes; empty chat response mocked locally.');
 };

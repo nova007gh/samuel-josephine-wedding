@@ -2,10 +2,12 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 module.exports=async({call,evaluate,errors,out})=>{
   const diagnostic=process.env.WEDDING_SHELL_AUDIT==='1';
+  const widthFilter=process.env.WEDDING_SHELL_WIDTH;
+  assert.ok(!widthFilter||[320,375,430,768,1024].includes(Number(widthFilter)),'Choose a supported shell test width');
   const views=['home','story','events','gallery','memories','gifts','more','bridaltrain','livebroadcast','guestbook','rsvp','voicemsg','videomsg','competitions','program','engagementprogram','adminlogin'];
   const results=[];
   await evaluate(`document.querySelector('.competition-toast-close')?.click();document.querySelectorAll('.activity-toast').forEach(el=>el.remove())`);
-  for(const width of diagnostic?[375]:[320,375,430,768,1024]){
+  for(const width of diagnostic?[375]:widthFilter?[Number(widthFilter)]:[320,375,430,768,1024]){
     await call('Emulation.setDeviceMetricsOverride',{width,height:900,deviceScaleFactor:1,mobile:width<600});
     for(const view of views){
       await evaluate(`switchView(${JSON.stringify(view)});new Promise(r=>setTimeout(r,250))`);

@@ -1,5 +1,41 @@
 # snybena.com live audit — 11 October 2026
 
+## More conversation space / compact controls — v218 (18 October)
+
+User reported the Chat header used too much vertical space and requested a
+smaller/higher title, larger couple photo and compact app-like icons. Chat
+header is now 118–126px on normal phone sizes, with a wider 42% landscape
+photo area (full configured image retained), smaller title and quieter floral
+decoration. Short/landscape viewports use a 78px header. Category strips use
+17–18px glyphs with 44–48px-high buttons; Announcements has the compact visual
+caption Updates while retaining its accessible Announcements label/filter.
+Composer glyphs are 18px, with clear button hit areas. Feed spacing and media
+heights are constrained so a pinned attachment cannot dominate the room.
+
+Bottom navigation is now 76px plus safe area, with 56px buttons, 64px Gallery
+button, 18–21px icons and retained pulsing 28–34px seal. All nine destinations
+remain visible; Share/Memories remain Gallery-only. Chat layout derives its
+available height from the shared navigation variable, including the desktop
+frame offset, instead of keeping the old hardcoded 86px clearance.
+
+Read-only compact-layout checks passed 320×568, 360×640, 375×667, 390×844,
+430×932, 495×770, 495×400, 844×390 and 1024×768. The empty guest-view fixture
+has 402px of feed space at the user's reported 495×770 size; populated
+disposable guest chat also retains more than 300px, can scroll to the complete
+last message and does not overlap the composer/navigation. Small viewports
+simulate available space, not a physical-phone keyboard/camera test.
+
+Passed isolated community send/retry/moderation/reaction/search/attachment and
+Entertainment regression, all ten pure suites, Share checks, all nine tabs'
+width/alignment/routing/reduced-motion tests, and shell finite-bottom checks
+at 320/375/430/768/1024px. The broad shell run reached its time budget after
+the first four widths; a targeted 1024px rerun completed the remaining checks,
+including actual refresh-cycle scroll stability for Bridal Train/Broadcast.
+
+No server/API/database/environment changes or production test submissions.
+Frontend and online SQLite snapshot: `/root/wedding-pre-v218`. Asset/cache
+version 218 updates layout and compact category labels together.
+
 ## Chat / Entertainment reference styling — v217 (18 October)
 
 User requested both pages closely match the supplied visual references.

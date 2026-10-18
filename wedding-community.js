@@ -31,7 +31,7 @@
   };
   const icon=name=>`<svg class="community-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${iconPaths[name]||iconPaths.other}</svg>`;
   document.querySelectorAll('[data-community-icon]').forEach(el=>el.innerHTML=icon(el.dataset.communityIcon));
-  $('chatFilters').querySelectorAll('button').forEach(b=>{b.innerHTML=icon(b.dataset.chatFilter)+`<span>${esc(b.textContent)}</span>`;});
+  $('chatFilters').querySelectorAll('button').forEach(b=>{const label=b.textContent;b.setAttribute('aria-label',label);b.innerHTML=icon(b.dataset.chatFilter)+`<span>${esc(b.dataset.chatFilter==='announcements'?'Updates':label)}</span>`;});
   const uuid=()=>crypto.randomUUID();
   const visible=name=>currentView===name&&!document.hidden;
   const adminEditor=()=>isAdmin()&&currentView==='admin'&&!$('admin-panel-entertainment').classList.contains('hidden');
