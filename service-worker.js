@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v223-jossy-guide';
+const CACHE = 'sj-wedding-v224-golden-companions';
 const ASSETS = [
   './assets/guide-launcher-jossy.png',
   './assets/guide-launcher.png',

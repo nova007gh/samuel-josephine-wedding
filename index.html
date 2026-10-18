@@ -39,7 +39,7 @@
   <link rel="stylesheet" href="app-polish.css?v=222" />
   <link rel="stylesheet" href="wedding-community.css?v=216" />
   <link rel="stylesheet" href="community-reference.css?v=218" />
-  <link rel="stylesheet" href="wedding-guide.css?v=223" />
+  <link rel="stylesheet" href="wedding-guide.css?v=224" />
   <link rel="stylesheet" href="guest-checkin.css?v=202" />
   <script>
   /* a checked-in guest goes straight into the app — flag it before first
@@ -1823,11 +1823,11 @@ try{
 <script src="bridal-train.js?v=200"></script>
 <script src="broadcast-calendar.js?v=196"></script>
 <script src="live-broadcast.js?v=201"></script>
-<button id="sjGuideLaunch" class="sj-guide-launch" type="button" aria-haspopup="dialog" aria-controls="sjGuideDialog" aria-label="Open S and J wedding guide" title="S&amp;J Guide"><img src="assets/guide-launcher.png" width="171" height="240" alt="" decoding="async" draggable="false"><span>Guide</span></button>
-<button id="sjGuideLaunchJossy" class="sj-guide-launch sj-guide-launch--left" type="button" aria-haspopup="dialog" aria-controls="sjGuideDialog" aria-label="Open S and J wedding guide with Jossy" title="S&amp;J Guide · Jossy"><img src="assets/guide-launcher-jossy.png" width="160" height="240" alt="" decoding="async" draggable="false"><span>Guide</span></button>
+<button id="sjGuideLaunch" class="sj-guide-launch" type="button" aria-haspopup="dialog" aria-controls="sjGuideDialog" aria-label="Open Sam and Jossy with Sam" title="Sam · Your wedding companion"><img src="assets/guide-launcher.png" width="171" height="240" alt="" decoding="async" draggable="false"><svg class="sj-guide-hand" viewBox="0 0 32 40" aria-hidden="true" focusable="false"><path d="M9 23 5 18c-2-3-5-1-3 2l7 12c3 6 14 6 18-1 2-4 3-9 3-13v-5c0-4-5-4-5 0v6V6c0-4-5-4-5 0v12V3c0-4-5-4-5 0v15V6c0-4-5-4-5 0v17Z"/></svg><span>Sam</span></button>
+<button id="sjGuideLaunchJossy" class="sj-guide-launch sj-guide-launch--left" type="button" aria-haspopup="dialog" aria-controls="sjGuideDialog" aria-label="Open Sam and Jossy with Jossy" title="Jossy · Your wedding companion"><img src="assets/guide-launcher-jossy.png" width="160" height="240" alt="" decoding="async" draggable="false"><svg class="sj-guide-hand" viewBox="0 0 32 40" aria-hidden="true" focusable="false"><path d="M9 23 5 18c-2-3-5-1-3 2l7 12c3 6 14 6 18-1 2-4 3-9 3-13v-5c0-4-5-4-5 0v6V6c0-4-5-4-5 0v12V3c0-4-5-4-5 0v15V6c0-4-5-4-5 0v17Z"/></svg><span>Jossy</span></button>
 <dialog id="sjGuideDialog" class="sj-guide-dialog" aria-labelledby="sjGuideTitle" aria-describedby="sjGuideDescription">
   <div class="sj-guide-shell">
-    <header class="sj-guide-head"><span class="sj-guide-mark" aria-hidden="true">S&amp;J</span><div><h2 id="sjGuideTitle">Your wedding companion</h2><p>Private by design · Built in-house</p></div><button id="sjGuideClose" class="sj-guide-close" type="button" aria-label="Close wedding guide">×</button></header>
+    <header class="sj-guide-head"><span class="sj-guide-mark" aria-hidden="true">S&amp;J</span><div><h2 id="sjGuideTitle">Sam &amp; Jossy</h2><p>Your in-house wedding companions</p></div><button id="sjGuideClose" class="sj-guide-close" type="button" aria-label="Close wedding guide">×</button></header>
     <div class="sj-guide-body">
       <div class="sj-guide-welcome"><img src="assets/guide-companions.jpg" width="70" height="90" alt="" loading="lazy"><div><p id="sjGuideDescription" class="sj-guide-intro">Your celebration, made easier. Ask about a moment, explore the programme, or get help with the app.</p><p class="sj-guide-mode">Local knowledge guide · Not generative AI</p></div></div>
       <div class="sj-guide-chips" aria-label="Suggested questions"><button type="button" data-guide-question="Where is the wedding?">Date &amp; venue</button><button type="button" data-guide-question="Full reception programme">The programme</button><button type="button" data-guide-question="How do I upload photos?">Share photos</button><button type="button" data-guide-question="How do I join Chat?">Join Chat</button><button type="button" data-guide-question="Watch live broadcast">Watch live</button></div>
@@ -1837,13 +1837,13 @@ try{
       <div id="sjGuideResults" aria-live="polite" aria-atomic="false"></div>
       <div id="sjGuideSuggestions" class="sj-guide-chips sj-guide-followups" aria-label="Follow-up questions"></div>
       <details id="sjGuideSchedule" class="sj-guide-schedule" open><summary>Around the celebration</summary><p class="sj-guide-status">Published plans—not confirmation that an activity has started.</p><div id="sjGuideActivities"></div></details>
-      <details class="sj-guide-privacy"><summary>Privacy &amp; activity reminders</summary><p class="sj-guide-status">Questions and up to six recent answers stay in this page’s memory, not on our server. New conversation clears them. The guide cannot read private guest records, messages or payments.</p><label class="sj-guide-alert-setting"><input id="sjGuideAlerts" type="checkbox">Show activity reminders on this device while the app is open</label><p class="sj-guide-status">Reminders follow published times. No SMS, email or background notifications. Only the reminder preference and seen reminder IDs are saved on this device.</p></details>
+      <details class="sj-guide-privacy"><summary>Privacy &amp; activity suggestions</summary><p class="sj-guide-status">Questions and up to six recent answers stay in this page’s memory, not on our server. New conversation clears them. The guide cannot read private guest records, messages or payments.</p><label class="sj-guide-alert-setting"><input id="sjGuideSuggestionsEnabled" type="checkbox" checked>Let Sam &amp; Jossy occasionally suggest published activities and app features</label><label class="sj-guide-alert-setting"><input id="sjGuideAlerts" type="checkbox">Show timed activity reminders on this device while the app is open</label><p class="sj-guide-status">Suggestions appear only while browsing, at most three per visit. Timed reminders follow published times, not confirmed progress. No SMS, email or background notifications. Only these preferences and seen reminder IDs are saved on this device.</p></details>
     </div>
     <form id="sjGuideForm" class="sj-guide-form"><label class="community-sr-only" for="sjGuideQuestion">Ask about the wedding or app. Do not include private information.</label><input id="sjGuideQuestion" type="text" maxlength="400" placeholder="Ask about the wedding or app…" autocomplete="off"><button type="submit">Ask</button></form>
   </div>
 </dialog>
 <script src="wedding-guide-knowledge.js?v=222"></script>
-<script src="wedding-guide.js?v=223"></script>
+<script src="wedding-guide.js?v=224"></script>
 <script src="wedding-community.js?v=218"></script>
 <script src="competitions.js?v=198"></script>
 <script src="competition-notices.js?v=187"></script>

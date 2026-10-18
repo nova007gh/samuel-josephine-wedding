@@ -1,5 +1,34 @@
 # snybena.com live audit — 11 October 2026
 
+## Sam & Jossy golden companions — v224 (18 October)
+
+Named the shared in-house guide **Sam & Jossy** and its edge launchers Sam
+(right) and Jossy (left). Added a soft looping golden glow and eight decorative
+golden hearts on opening either launcher, rendered inside the dialog top layer
+and removed after 1.45 seconds. Existing conversation, privacy and local
+retrieval remain unchanged; no external AI/image service was introduced.
+
+A 2.2-second raised-hand SVG cue and gentle illustration tilt alternate at
+10-minute page-session boundaries: Jossy at minute 10, Sam at minute 20, then
+repeat. These are decorative hand overlays, not regenerated/rigged portraits.
+Hidden/busy slots are skipped without catch-up bursts. Waves avoid inputs,
+uploads, recording views, active media, modal dialogs and other activity toasts.
+Hidden-page glow is paused; reduced-motion disables pulse, waves and hearts.
+
+Dismissible published-content suggestions run no more often than every eight
+minutes while idle/visible, at most three per page visit, with a device opt-out
+under Privacy & activity suggestions. They avoid Chat and all wave blockers,
+expire after 14 seconds and use only allowlisted published cards/activity
+sources and local photos. Existing timed reminders remain separately opt-in;
+no SMS, email or background push was added. Only preferences are persisted,
+not questions or conversations.
+
+All pure suites and six-size responsive guide checks passed. Fixture-controlled
+clock tests verified 10/20-minute alternation, upload/input suppression,
+suggestion source/navigation placement, speaker rotation, cap/opt-out,
+modal-top-layer heart count, focus and reduced-motion. Original Home, five
+tabs, guide sources, guest/chat/payment data and backend remain untouched.
+
 ## Jossy left-hand guide icon — v223 (18 October)
 
 Added the user-supplied Jossy illustration as a second guide launcher on the
