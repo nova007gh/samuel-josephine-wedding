@@ -28,6 +28,11 @@ clock tests verified 10/20-minute alternation, upload/input suppression,
 suggestion source/navigation placement, speaker rotation, cap/opt-out,
 modal-top-layer heart count, focus and reduced-motion. Original Home, five
 tabs, guide sources, guest/chat/payment data and backend remain untouched.
+Deployed `cedaa64` after private snapshot `/root/wedding-pre-v224`. Live browser
+checks passed names, golden-pulse CSS, eight click hearts, real guide answers,
+source navigation and shared conversation. All 105 baseline rows across 13
+audited wedding/chat/payment tables remain unchanged; SQLite integrity `ok`.
+No production submissions, credential edits or backend restart were performed.
 
 ## Jossy left-hand guide icon — v223 (18 October)
 
