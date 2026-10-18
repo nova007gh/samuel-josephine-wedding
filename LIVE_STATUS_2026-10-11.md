@@ -32,6 +32,14 @@ Private pre-deploy frontend/shared-API-knowledge/online database snapshot:
 instructions together. No environment or credential changes or production
 test submissions.
 
+Deployed code `1c232d0`. Guide instruction update was gated on the snapshot
+module hash and an idle API connection check. Live browser navigation passed
+all seven widths, including actual Events → Entertainment → Chat links,
+explicit back arrows, native history, Home header and reduced motion. Public
+assets/cache and guide API confirm the v222 five-tab hierarchy. All 105
+baseline rows across the 13 audited wedding/chat/payment tables remain
+unchanged; SQLite integrity `ok`. No content was deleted or migrated.
+
 ## Right-edge illustrated guide icon — v221 (18 October)
 
 Replaced the sparkle/text launcher with the user-supplied Sam illustration,
