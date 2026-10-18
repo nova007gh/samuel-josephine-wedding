@@ -42,9 +42,12 @@ exports.check=async({call,evaluate,errors,out})=>{
   await evaluate(`[...document.querySelectorAll('#sjGuideSuggestions button')].find(b=>b.textContent==='What time is it?').click();new Promise(r=>setTimeout(r,50))`);
   assert.match(await evaluate(`document.querySelector('#sjGuideResults .sj-guide-turn:last-child').textContent`),/Dinner is served/,'Follow-up keeps activity context');
   await evaluate(`document.getElementById('sjGuideClose').click();new Promise(r=>setTimeout(r,50))`);
+  await call('Page.bringToFront');
   await evaluate(`document.getElementById('sjGuideLaunchJossy').focus()`);
+  assert.equal(await evaluate(`document.activeElement.id`),'sjGuideLaunchJossy','Jossy receives keyboard focus');
   await call('Input.dispatchKeyEvent',{type:'keyDown',key:' ',code:'Space',windowsVirtualKeyCode:32});
   await call('Input.dispatchKeyEvent',{type:'keyUp',key:' ',code:'Space',windowsVirtualKeyCode:32});
+  await evaluate(`new Promise(r=>setTimeout(r,100))`);
   assert.equal(await evaluate(`document.getElementById('sjGuideDialog').open`),true,'Jossy opens via keyboard');
   assert.match(await evaluate(`document.querySelector('#sjGuideResults .sj-guide-turn:last-child').textContent`),/Dinner is served/,'Both icons share the existing conversation');
   const turns=await evaluate(`document.querySelectorAll('.sj-guide-turn').length`);
@@ -74,6 +77,21 @@ exports.check=async({call,evaluate,errors,out})=>{
   await evaluate(`document.getElementById('sjGuideAlerts').checked=false;document.getElementById('sjGuideAlerts').dispatchEvent(new Event('change'))`);
   await evaluate(`switchView('home');window.__guideFixture={mode:'local-knowledge-guide',cards:[{id:'gallery',title:'Share wedding memories',view:'gallery',text:'Published gallery',image:window.__guideImage}],activities:[]};window.__realNow=Date.now;window.__clockBase=Date.now();window.__clockOffset=0;Date.now=()=>window.__clockBase+window.__clockOffset;document.getElementById('sjGuideRefresh').click();new Promise(r=>setTimeout(r,50))`);
   assert.deepEqual(await evaluate(`[...document.querySelectorAll('.sj-guide-launch>span')].map(el=>el.textContent)`),['Sam','Jossy']);
+  assert.match(await evaluate(`getComputedStyle(document.getElementById('sjGuideLaunch')).animationName`),/sjEdgeFloat/,'Edge floating starts immediately');
+  await evaluate(`document.getElementById('sjGuideSuggestionsEnabled').checked=false;document.getElementById('sjGuideSuggestionsEnabled').dispatchEvent(new Event('change'));window.__clockOffset=60000;window.__guideIntervals[0]()`);
+  assert.equal(await evaluate(`document.querySelector('.sj-guide-waving')?.id`),'sjGuideLaunchJossy','Jossy waves one minute after entry');
+  await evaluate(`new Promise(r=>setTimeout(r,2500))`);
+  await evaluate(`window.__clockOffset=120000;window.__guideIntervals[0]()`);
+  assert.equal(await evaluate(`document.querySelector('.sj-guide-waving')?.id`),'sjGuideLaunch','Sam follows at two minutes');
+  await evaluate(`new Promise(r=>setTimeout(r,2500))`);
+  await evaluate(`window.__clockOffset=180000;window.__guideIntervals[0]();new Promise(r=>setTimeout(r,3400))`);
+  assert.equal(await evaluate(`document.querySelectorAll('.sj-guide-meeting').length`),2,'Both companions meet after three idle minutes');
+  assert.equal(await evaluate(`document.querySelectorAll('.sj-companion-love .sj-guide-heart').length`),14,'Smooth red-heart burst accompanies centre kiss');
+  assert.equal(await evaluate(`(()=>{const a=document.getElementById('sjGuideLaunch').getBoundingClientRect(),b=document.getElementById('sjGuideLaunchJossy').getBoundingClientRect(),app=document.getElementById('app').getBoundingClientRect();return Math.abs((a.left+a.right+b.left+b.right)/4-(app.left+app.right)/2)<8&&Math.abs(a.left-b.left)<90;})()`),true,'Both illustrations meet at app centre');
+  {const shot=await call('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(out,'companions-centre-kiss.png'),Buffer.from(shot.data,'base64'));}
+  await evaluate(`document.dispatchEvent(new Event('pointerdown',{bubbles:true}))`);
+  assert.equal(await evaluate(`document.querySelectorAll('.sj-guide-meeting,.sj-companion-love').length`),0,'Interaction cancels meeting and clears red hearts');
+  await evaluate(`switchView('chat')`);
   await evaluate(`document.getElementById('sjGuideSuggestionsEnabled').checked=false;document.getElementById('sjGuideSuggestionsEnabled').dispatchEvent(new Event('change'));window.__clockOffset=10*60000;window.__guideIntervals[0]()`);
   assert.equal(await evaluate(`document.querySelector('.sj-guide-waving')?.id`),'sjGuideLaunchJossy','Jossy raises hand at ten minutes');
   {const shot=await call('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(out,'jossy-wave.png'),Buffer.from(shot.data,'base64'));}
@@ -83,7 +101,7 @@ exports.check=async({call,evaluate,errors,out})=>{
   await evaluate(`new Promise(r=>setTimeout(r,2500))`);
   await evaluate(`window.__uploadsInFlight=1;window.__clockOffset=30*60000;window.__guideIntervals[0]()`);
   assert.equal(await evaluate(`document.querySelectorAll('.sj-guide-waving').length`),0,'No hand wave during uploads');
-  await evaluate(`window.__uploadsInFlight=0;document.getElementById('sjGuideSuggestionsEnabled').checked=true;document.getElementById('sjGuideSuggestionsEnabled').dispatchEvent(new Event('change'));window.__clockOffset=39*60000;const input=document.createElement('input');input.id='guideFixtureTyping';document.body.append(input);input.focus();window.__guideIntervals[0]();new Promise(r=>setTimeout(r,50))`);
+  await evaluate(`window.__uploadsInFlight=0;switchView('gifts');document.getElementById('sjGuideSuggestionsEnabled').checked=true;document.getElementById('sjGuideSuggestionsEnabled').dispatchEvent(new Event('change'));window.__clockOffset=39*60000;const input=document.createElement('input');input.id='guideFixtureTyping';document.body.append(input);input.focus();window.__guideIntervals[0]();new Promise(r=>setTimeout(r,50))`);
   assert.equal(await evaluate(`document.querySelectorAll('.sj-companion-suggestion').length`),0,'Suggestions do not interrupt focused input');
   await evaluate(`document.getElementById('guideFixtureTyping').remove();window.__guideIntervals[0]();new Promise(r=>setTimeout(r,100))`);
   assert.match(await evaluate(`document.querySelector('.sj-companion-suggestion')?.textContent||''`),/Jossy suggests.*Share wedding memories/,'Published-only occasional suggestion');
@@ -100,14 +118,33 @@ exports.check=async({call,evaluate,errors,out})=>{
   await evaluate(`document.getElementById('sjGuideLaunch').click()`);
   assert.equal(await evaluate(`document.querySelectorAll('.sj-guide-heart').length`),0,'Reduced motion disables heart burst');
   assert.equal(await evaluate(`getComputedStyle(document.querySelector('#sjGuideLaunch img')).animationName`),'none','Reduced motion disables pulsing');
-  await evaluate(`document.getElementById('sjGuideClose').click();Date.now=window.__realNow`);
+  assert.equal(await evaluate(`getComputedStyle(document.getElementById('sjGuideLaunch')).animationName`),'none','Reduced motion disables edge drifting');
+  await evaluate(`document.getElementById('sjGuideClose').click()`);
   await call('Emulation.setEmulatedMedia',{features:[]});
-  assert.deepEqual(errors,[]);console.log('PASS Sam/right and Jossy/left icons, composer clearance, keyboard/focus, shared conversation/dialog, responsive guide, private local questions, real source links and opt-in reminders');
+  for(const [width,height] of [[320,568],[844,390]]){
+    await call('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:true});
+    await evaluate(`switchView('home');document.body.classList.add('locked');new Promise(r=>setTimeout(r,50))`);
+    assert.equal(await evaluate(`document.body.classList.contains('sj-companions-floating')`),false,'Floating stops at sign-in gate');
+    await evaluate(`document.body.classList.remove('locked');new Promise(r=>setTimeout(r,50))`);
+    assert.equal(await evaluate(`document.body.classList.contains('sj-companions-floating')`),true,'Floating starts immediately on returning from sign-in');
+    await evaluate(`window.__clockOffset+=60000;window.__guideIntervals[0]()`);
+    assert.equal(await evaluate(`document.querySelector('.sj-guide-waving')?.id`),'sjGuideLaunchJossy','One-minute wave resets after login');
+    await evaluate(`window.__clockOffset+=120000;window.__guideIntervals[0]();new Promise(r=>setTimeout(r,3400))`);
+    assert.equal(await evaluate(`document.querySelectorAll('.sj-guide-meeting').length`),2,'Responsive meeting starts');
+    assert.equal(await evaluate(`[...document.querySelectorAll('.sj-guide-meeting')].every(el=>{const r=el.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth&&r.top>=0&&r.bottom<document.querySelector('.tabbar').getBoundingClientRect().top;})`),true,'Centre kiss stays inside small-phone/landscape viewport');
+    if(width===320){const shot=await call('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(out,'companions-centre-kiss-320.png'),Buffer.from(shot.data,'base64'));}
+    await evaluate(`new Promise(r=>setTimeout(r,4100))`);
+    assert.equal(await evaluate(`document.querySelectorAll('.sj-guide-meeting,.sj-companion-love').length`),0,'Meeting finishes, removes hearts and returns to edges');
+    assert.equal(await evaluate(`[...document.querySelectorAll('.sj-guide-launch')].every(el=>el.getAnimations().length===1)`),true,'No leftover travel animations');
+  }
+  await evaluate(`Date.now=window.__realNow`);
+  assert.deepEqual(errors,[]);console.log('PASS immediate floating/login reset, one-minute waves, responsive centre kiss/red hearts/return, cleanup/cancellation/reduced motion, shared private guide and existing regressions');
 };
 exports.live=async({call,evaluate,errors,out})=>{
   await call('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
   assert.deepEqual(await evaluate(`[...document.querySelectorAll('.sj-guide-launch>span')].map(el=>el.textContent)`),['Sam','Jossy'],'Live companion names');
   assert.match(await evaluate(`getComputedStyle(document.querySelector('#sjGuideLaunch img')).animationName`),/sjGoldenGlow/,'Live golden pulse');
+  assert.match(await evaluate(`getComputedStyle(document.getElementById('sjGuideLaunch')).animationName`),/sjEdgeFloat/,'Live immediate edge floating');
   assert.equal(await evaluate(`Promise.all([...document.querySelectorAll('.sj-guide-launch img')].map(img=>img.decode().then(()=>true).catch(()=>false))).then(ok=>ok.length===2&&ok.every(Boolean))`),true,'Both live illustrations decode');
   await evaluate(`document.getElementById('sjGuideLaunchJossy').click();document.getElementById('sjGuideQuestion').value='Where is the wedding?';document.getElementById('sjGuideForm').requestSubmit()`);
   assert.equal(await evaluate(`document.querySelectorAll('.sj-guide-heart').length`),8,'Live click heart burst');

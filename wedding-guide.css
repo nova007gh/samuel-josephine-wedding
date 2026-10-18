@@ -6,6 +6,14 @@
 .sj-guide-launch--left>img{transform:scaleX(-1);}
 .sj-guide-launch{isolation:isolate;--guide-facing:1;--hello-angle:-3deg;}
 .sj-guide-launch--left{--guide-facing:-1;--hello-angle:3deg;}
+body.sj-companions-floating .sj-guide-launch{animation:sjEdgeFloat 6s ease-in-out infinite;}
+body.sj-companions-floating .sj-guide-launch--left{animation-delay:-3s;}
+body.sj-companions-floating .sj-guide-launch.sj-guide-meeting{animation:none;z-index:90;}
+@keyframes sjEdgeFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-18px);}}
+.sj-companion-love{position:fixed;top:0;height:100dvh;z-index:95;overflow:hidden;pointer-events:none;}
+.sj-companion-love .sj-guide-heart{color:#dd244b;text-shadow:0 0 8px #ef71956e;animation-duration:1.8s;}
+.sj-companion-love .sj-guide-heart:nth-child(even){color:#ee4164;font-size:19px;}
+body.sj-companions-paused.sj-companions-floating .sj-guide-launch{animation-play-state:paused;}
 .sj-guide-launch::before{content:'';position:absolute;z-index:-1;inset:12px 7px 21px;border-radius:45%;background:radial-gradient(ellipse,#f7c95b55,transparent 72%);animation:sjCompanionAura 3.8s ease-in-out infinite;pointer-events:none;}
 .sj-guide-launch>img{animation:sjGoldenGlow 3.8s ease-in-out infinite;will-change:auto;}
 .sj-guide-launch>span{border-color:#c99b3c;box-shadow:0 0 6px #ecc05855;}
@@ -70,3 +78,4 @@ body.locked .sj-guide-launch,body:has(#app.hidden) .sj-guide-launch{display:none
 @media(min-width:760px){.sj-guide-alert.sj-companion-suggestion{right:calc((100vw - 520px)/2 + 12px);}.sj-guide-alert.sj-companion-suggestion--left{right:auto;left:calc((100vw - 520px)/2 + 12px);}}
 @media(min-width:900px){.sj-guide-alert.sj-companion-suggestion{right:calc((100vw - 480px)/2 + 12px);}.sj-guide-alert.sj-companion-suggestion--left{right:auto;left:calc((100vw - 480px)/2 + 12px);}}
 @media(prefers-reduced-motion:reduce){.sj-guide-launch>img,.sj-guide-launch::before,.sj-guide-waving>img,.sj-guide-waving>.sj-guide-hand,.sj-guide-heart{animation:none!important;}.sj-guide-launch>img{filter:drop-shadow(0 0 3px #d8a64488);}.sj-guide-launch::before{opacity:.3;}.sj-guide-hand,.sj-guide-burst{display:none;}}
+@media(prefers-reduced-motion:reduce){body.sj-companions-floating .sj-guide-launch{animation:none!important;}.sj-companion-love{display:none;}}

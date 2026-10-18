@@ -1,5 +1,37 @@
 # snybena.com live audit — 11 October 2026
 
+## Floating companions, early waves and centre kiss — v225 (18 October)
+
+Sam and Jossy float gently 18px along their existing right/left app edges as
+soon as the app is visible after refresh or sign-in. A class-only gate observer
+resets the page-session welcome sequence on gate → app transitions without
+reading identity or sending OTP: Jossy waves after one minute, Sam after two,
+then the previous alternating ten-minute waves continue. Busy/hidden wave
+slots are skipped. The observer does not touch forms, guest data or routing.
+
+After three idle minutes, and then no more often than every eight minutes
+(maximum three meetings per app-entry session), the original launcher buttons
+glide to the centre of the app frame, lean together in a stylised kiss pose,
+emit 14 soft red hearts and return to their respective edges over 7.2 seconds.
+Existing supplied portraits are animated, not regenerated faces/mouths.
+Buttons remain keyboard-accessible and open the same guide. Decorative
+hearts are aria-hidden, clipped to the app width and pointer-transparent.
+
+Meetings avoid Chat, Gifts, sign-in, typing, uploads, recording, playing media,
+open dialogs and activity notifications. Pointer/keyboard input, focused
+controls, viewport/orientation changes, logout, hidden pages and reduced-motion
+cancel travel/heart effects and clean up timers/animations. A temporary
+250ms guard catches uploads/playback starting during travel. Reduced-motion
+also disables edge floating; no guest content or server code was changed.
+
+Passed all pure suites and responsive guide checks at six sizes. Fixture-only
+clock/gate tests verified immediate float, one/two-minute waves, ten/twenty-
+minute waves, centre arrival/14 red hearts, interaction cancellation, natural
+return/cleanup, login sequence reset, reduced-motion, original suggestions and
+private conversation regressions. Centre choreography fit 320×568 and 844×390
+viewports with no overlap of bottom navigation. No real login/OTP or production
+submission was used for these fixture checks.
+
 ## Sam & Jossy golden companions — v224 (18 October)
 
 Named the shared in-house guide **Sam & Jossy** and its edge launchers Sam
