@@ -31,6 +31,13 @@ return/cleanup, login sequence reset, reduced-motion, original suggestions and
 private conversation regressions. Centre choreography fit 320×568 and 844×390
 viewports with no overlap of bottom navigation. No real login/OTP or production
 submission was used for these fixture checks.
+Deployed `c9f9094` after private frontend/online database snapshot
+`/root/wedding-pre-v225`. Live read-only browser checks passed immediate edge
+float, golden glow, named/decoded launchers, click hearts, real guide answers
+and shared-source navigation. Timed choreography was exercised with fixture
+clocks, not by altering live wedding settings. All 105 baseline rows across
+13 audited wedding/chat/payment tables are unchanged; SQLite integrity `ok`.
+No backend restart, credentials, OTP, payments or production writes required.
 
 ## Sam & Jossy golden companions — v224 (18 October)
 
