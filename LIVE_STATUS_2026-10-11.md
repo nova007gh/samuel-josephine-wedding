@@ -1,5 +1,54 @@
 # snybena.com live audit — 11 October 2026
 
+## Wedding Chat and Entertainment — v216 (18 October)
+
+Deployed `143df90`: added Chat and Entertainment bottom destinations while
+retaining Home, Story, Events, Bridal Train, Gallery, Live and Gifts. Sharing
+destinations remain Gallery-only, not bottom tabs. All nine tabs fit at
+320/360/375/390/430/476/1024px; Gallery retains its smaller pulsing seal.
+New pages use the site's configured couple photo and cream/gold styling.
+No sample messages, online counts, performers, portraits or times were seeded.
+
+Chat reads/writes require the existing server-verified guest cookie or valid
+admin authentication. Local profile IDs/names cannot impersonate a guest or
+host. Guest messages default to pending approval (explicit conservative
+default communicated before implementation); sender sees own pending items,
+other guests see approved only. Hosts publish announcements and can approve,
+hide, pin/unpin and remove. Unique identity/message/emoji reactions use
+idempotent desired-state requests. Message send IDs survive local draft and
+lost-response retries. Active count means distinct verified guests with a
+heartbeat in the last 45 seconds, not registrations or an invented count.
+
+Chat supports byte-checked JPEG/PNG/WebP, MP4/WebM, PDF, MP3/WAV attachments
+up to 25 MB, with per-identity upload/send limits. Unchanged cards/media remain
+in place during polling. Voice recording opens the existing voice-memory
+page; Polls opens existing games/competitions, not a second voting backend.
+Initial chat feed is bounded to 150 messages. Random public upload URLs are
+not a private/confidential file store. See `server/COMMUNITY_SETUP.md`.
+
+Entertainment has category filters, real social links and a local-time
+performance schedule, plus Admin Dashboard → Entertainment for confirmed
+names, descriptions, uploaded photos, dates, ordering and publication.
+Empty lineups/categories are explained honestly. Revision conflicts,
+failed saves and background refresh retain admin drafts. No lineup is
+published until confirmed data is saved by an admin.
+
+Passed all ten existing pure unit suites, isolated real-HTTP/SQLite community
+API tests (auth/origin/moderation/idempotency/upload bytes/ownership/limits,
+reactions/presence/validation/conflicts/restart preservation), isolated browser
+Chat/Entertainment tests, full isolated recording/upload/competition regression,
+Share actions and responsive navigation/reduced-motion checks. Physical-phone
+camera/microphone/files and native share behavior are not covered by desktop
+automation. No real OTP, payment or production chat submission was sent.
+
+Pre-release snapshot: `/root/wedding-pre-v216` (frontend, API sources, online
+SQLite backup). Post-deploy audit found every baseline row unchanged and all
+baseline media files present: 23 guests, 1 RSVP, 20 memories, 0 guestbook,
+4 gifts, 2 funds, 39 settings, 2 competitions, 1 vote and 3 existing payment
+attempts. Community message/upload tables are empty, integrity is ok.
+Public entertainment responds 200; unverified chat and protected writes 401.
+OTP remains active and Speso remains TEST. No live payment activation.
+
 ## Sharing removed from bottom menu — v215 (18 October)
 
 At the user's request, removed the Memories and Share bottom navigation
