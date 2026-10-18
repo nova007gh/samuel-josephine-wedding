@@ -1,5 +1,25 @@
 # snybena.com live audit — 11 October 2026
 
+## Right-edge illustrated guide icon — v221 (18 October)
+
+Replaced the sparkle/text launcher with the user-supplied Sam illustration,
+using the matching local transparent-background PNG, resized to a lightweight
+240px-high asset (`assets/guide-launcher.png`). The full illustration is shown
+without a background block or face-only crop, with a small Guide badge. Its
+64×102px button hugs the app’s right edge, clears the bottom bar and moves
+above the Chat composer. Alignment follows both the 520px tablet and 480px
+desktop app frames. Existing guide dialog art/content, Home, all nine tabs,
+knowledge/search, settings and guest content remain unchanged.
+
+Accessible launcher label, native-button keyboard support, focus return and
+minimum touch target are retained. No decorative animation added. Passed all
+eleven pure suites and extended read-only browser checks at 320×568, 375×667,
+390×844, 495×770, 844×390 and 1024×768: image decoding, right-edge alignment,
+actual hit testing, composer/navigation clearance, dialog/source routing and
+existing guide privacy/follow-up/reminder regressions. No API changes/restart,
+production submissions, OTPs or payment actions. Pre-deploy frontend/online
+SQLite snapshot: `/root/wedding-pre-v221`; cache is v221-guide-icon.
+
 ## More useful guide / published activity discovery — v220 (18 October)
 
 User requested continued improvement after the initial guide showed an empty

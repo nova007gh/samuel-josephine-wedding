@@ -1,6 +1,7 @@
 
-const CACHE = 'sj-wedding-v220-guide-answers';
+const CACHE = 'sj-wedding-v221-guide-icon';
 const ASSETS = [
+  './assets/guide-launcher.png',
   './assets/guide-companions.jpg',
   './wedding-guide.css',
   './wedding-guide.js',

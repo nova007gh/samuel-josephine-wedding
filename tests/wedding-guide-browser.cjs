@@ -9,6 +9,13 @@ exports.setup=async({call})=>{
 exports.check=async({call,evaluate,errors,out})=>{
   for(const [width,height] of [[320,568],[375,667],[390,844],[495,770],[844,390],[1024,768]]){
     await call('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:width<900});
+    for(const view of ['home','chat']){
+      await evaluate(`switchView(${JSON.stringify(view)});new Promise(r=>setTimeout(r,200))`);
+      const launcher=await evaluate(`(()=>{const b=document.getElementById('sjGuideLaunch'),r=b.getBoundingClientRect(),app=document.getElementById('app').getBoundingClientRect(),bar=document.querySelector('.tabbar').getBoundingClientRect(),composer=document.getElementById('chatComposer').getBoundingClientRect();return {fits:r.left>=app.left&&r.right<=app.right+1&&r.top>=0&&r.bottom<=bar.top,right:app.right-r.right,width:r.width,height:r.height,clear:r.bottom<=composer.top,clickable:document.elementFromPoint(r.left+r.width/2,r.top+r.height/2)?.closest('#sjGuideLaunch')===b};})()`);
+      assert.equal(launcher.fits,true,'Illustration launcher fits '+view+' '+width);assert.ok(launcher.right<=2,'Launcher hugs app right edge');assert.ok(launcher.width>=44&&launcher.width<=64&&launcher.height<=104,'Compact accessible target');assert.equal(launcher.clickable,true,'Illustration is tappable');if(view==='chat')assert.equal(launcher.clear,true,'Illustration stays above Chat composer');
+      assert.equal(await evaluate(`document.querySelector('#sjGuideLaunch img').decode().then(()=>true).catch(()=>false)`),true,'Supplied illustration decodes');
+      if((width===495&&view==='home')||(width===375&&view==='chat')){const shot=await call('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(out,'guide-launcher-'+view+'-'+width+'.png'),Buffer.from(shot.data,'base64'));}
+    }
     await evaluate(`document.getElementById('sjGuideLaunch').click();new Promise(r=>setTimeout(r,300))`);
     await evaluate(`document.getElementById('sjGuideClear').click()`);
     assert.equal(await evaluate(`(()=>{const d=document.getElementById('sjGuideDialog'),r=d.getBoundingClientRect(),f=document.getElementById('sjGuideForm').getBoundingClientRect();return d.open&&r.left>=0&&r.right<=innerWidth&&r.top>=0&&r.bottom<=innerHeight&&f.bottom<=r.bottom&&d.scrollWidth<=d.clientWidth;})()`),true,'Guide fits '+width+'x'+height);
@@ -51,7 +58,7 @@ exports.check=async({call,evaluate,errors,out})=>{
   await evaluate(`document.querySelector('.sj-guide-alert button').click();document.getElementById('sjGuideRefresh').click();new Promise(r=>setTimeout(r,50))`);
   assert.equal(await evaluate(`document.querySelectorAll('.sj-guide-alert').length`),0,'Reminder does not repeat');
   await evaluate(`document.getElementById('sjGuideAlerts').checked=false;document.getElementById('sjGuideAlerts').dispatchEvent(new Event('change'))`);
-  assert.deepEqual(errors,[]);console.log('PASS guide responsive overview/activity cards, focused local answers/follow-ups, bounded memory/clear, untouched drafts on refresh, private/escaped text, photo decoding, source routing, offline warnings and opt-in deduplicated reminders');
+  assert.deepEqual(errors,[]);console.log('PASS right-edge illustration launcher, tap target/composer clearance, responsive guide, local follow-ups, bounded memory/clear, untouched drafts, private/escaped text, real photos/source links, offline warnings and opt-in reminders');
 };
 exports.live=async({call,evaluate,errors,out})=>{
   await call('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
