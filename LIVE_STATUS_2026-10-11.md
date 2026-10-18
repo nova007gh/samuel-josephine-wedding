@@ -33,6 +33,11 @@ a device test, not something desktop automation verifies.
 
 Frontend/online SQLite snapshot: `/root/wedding-pre-v217`. Cache/asset version
 217 refreshes the new CSS, bouquet SVG and interaction markup together.
+Post-deploy HTTPS checks passed the v217 assets/control markup and all nine
+tabs. Every snapshot row remained unchanged, including the user's existing
+1 chat message, 6 chat reactions and 2 chat uploads. Existing wedding content,
+gifts, settings, votes and payment attempts were unchanged; SQLite integrity
+remained ok. No test content was submitted to production.
 
 ## Wedding Chat and Entertainment — v216 (18 October)
 
