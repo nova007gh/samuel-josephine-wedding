@@ -38,6 +38,7 @@
   <link rel="stylesheet" href="live-broadcast-reference.css?v=199" />
   <link rel="stylesheet" href="app-polish.css?v=216" />
   <link rel="stylesheet" href="wedding-community.css?v=216" />
+  <link rel="stylesheet" href="community-reference.css?v=217" />
   <link rel="stylesheet" href="guest-checkin.css?v=202" />
   <script>
   /* a checked-in guest goes straight into the app — flag it before first
@@ -650,32 +651,34 @@
   </section>
 
   <section class="view hidden community-page" data-view="chat">
-    <header class="community-hero"><img data-community-photo alt="Samuel and Josephine"><div><p>Sam &amp; Jossy &#9829;</p><h1>Wedding Chat</h1><small id="chatPresence">A place to celebrate together</small></div></header>
+    <header class="community-hero community-hero--chat"><nav class="community-hero-nav" aria-label="Chat navigation"><button data-goto="home" type="button" aria-label="Back to Home">&#10094;</button><span></span><button id="chatSearchToggle" type="button" aria-label="Search chat" aria-expanded="false" aria-controls="chatSearchPanel"><span data-community-icon="search"></span></button><button data-goto="more" type="button" aria-label="Open wedding menu">&#8943;</button></nav><img data-community-photo alt="Samuel and Josephine"><div class="community-hero-copy"><p>Sam &amp; Jossy <span class="community-gold-heart">&#9829;</span></p><h1>Wedding Chat</h1><small id="chatPresence" title="Distinct verified guests active in chat during the last 45 seconds">A place to celebrate together</small></div></header>
     <div class="community-filters" id="chatFilters" role="group" aria-label="Chat categories">
       <button type="button" class="chip active" data-chat-filter="all" aria-pressed="true">All Chat</button><button type="button" class="chip" data-chat-filter="announcements" aria-pressed="false">Announcements</button><button type="button" class="chip" data-chat-filter="photos" aria-pressed="false">Photos</button><button type="button" class="chip" data-chat-filter="videos" aria-pressed="false">Videos</button><button type="button" class="chip" data-chat-filter="reactions" aria-pressed="false">Reactions</button><button type="button" class="chip" data-chat-filter="files" aria-pressed="false">Files</button><button type="button" class="chip" data-chat-filter="polls" aria-pressed="false">Polls</button>
     </div>
-    <p class="community-note">Guest messages are reviewed before appearing for everyone. Please keep our chat kind and wedding-related.</p>
+    <div id="chatSearchPanel" class="community-search hidden"><label for="chatSearch">Search loaded messages</label><input id="chatSearch" type="search" maxlength="120" placeholder="Search names or messages…"><button id="chatSearchClear" type="button">Clear</button></div>
+    <div class="chat-room-tools"><details class="community-guidance"><summary>Messages are reviewed by the hosts</summary><p>Guest messages are reviewed before appearing for everyone. Please keep our chat kind and wedding-related. Only the most recent 150 messages are loaded.</p></details><button id="chatRetry" class="community-icon-button" type="button" aria-label="Refresh chat"><span data-community-icon="refresh"></span></button></div>
     <p id="chatStatus" class="upload-status" role="status" aria-live="polite"></p>
-    <button id="chatRetry" class="back-link" type="button">Refresh chat</button>
     <button id="chatVerify" class="map-button hidden" type="button">VERIFY GUEST SIGN-IN</button>
     <div id="chatMessages" class="chat-messages" aria-label="Wedding messages"></div>
     <div id="chatPolls" class="notice-card hidden"><p>Join our wedding polls, games and competitions.</p><button class="map-button" data-goto="competitions" type="button">OPEN POLLS &amp; GAMES</button></div>
     <form id="chatComposer" class="chat-composer">
-      <label class="field">Your message<textarea id="chatText" maxlength="2000" rows="2" placeholder="Share a little love…"></textarea></label>
       <label id="chatAnnouncementLabel" class="hidden"><input id="chatAnnouncement" type="checkbox"> Host announcement</label>
       <div id="chatAttachment" class="community-note" role="status"></div>
-      <div class="chat-compose-actions"><label class="community-attach">＋ Attach<input id="chatFile" type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,application/pdf,audio/mpeg,audio/wav"></label><button id="chatClearAttachment" class="back-link hidden" type="button">Remove attachment</button><button id="chatSend" class="share-btn" type="submit">Send &#10148;</button></div>
-      <small>Photos, videos, PDFs and audio files · up to 25 MB. For a voice recording, <button class="community-inline" data-goto="voicemsg" type="button">record a memory</button>.</small>
+      <div class="chat-compose-row"><label class="community-attach chat-attach-all" aria-label="Attach a file"><span aria-hidden="true">＋</span><input id="chatFile" type="file" aria-label="Attach a file up to 25 MB" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,application/pdf,audio/mpeg,audio/wav"></label><div class="chat-input-pill"><label class="community-sr-only" for="chatText">Your message</label><textarea id="chatText" maxlength="2000" rows="1" placeholder="Type a message…"></textarea><button id="chatEmojiToggle" class="community-icon-button" type="button" aria-label="Add an emoji" aria-expanded="false" aria-controls="chatEmojiPicker"><span data-community-icon="smile"></span></button></div><label class="community-attach chat-camera" aria-label="Take a photo"><span data-community-icon="camera"></span><input id="chatCamera" type="file" aria-label="Take a photo" accept="image/jpeg,image/png,image/webp" capture="environment"></label><button id="chatMediaPick" class="community-icon-button" type="button" aria-label="Attach a photo or video"><span data-community-icon="photos"></span></button><button class="community-icon-button" data-goto="voicemsg" type="button" aria-label="Record a voice memory"><span data-community-icon="mic"></span></button><button id="chatSend" class="share-btn" type="submit" aria-label="Send message"><span data-community-icon="send"></span></button></div>
+      <div id="chatEmojiPicker" class="chat-emoji-picker hidden" role="group" aria-label="Choose a message emoji"></div>
+      <input id="chatMedia" class="hidden" type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm" aria-label="Choose a photo or video">
+      <button id="chatClearAttachment" class="back-link hidden" type="button">Remove attachment</button>
+      <details class="community-guidance chat-file-help"><summary>Attachments · up to 25 MB</summary><p>Photos, MP4/WebM videos, PDFs and MP3/WAV audio files. The microphone opens the separate voice-memory recording page.</p></details>
     </form>
   </section>
 
   <section class="view hidden community-page" data-view="entertainment">
-    <header class="community-hero"><img data-community-photo alt="Samuel and Josephine"><div><p>Sam &amp; Jossy &#9829;</p><h1>Entertainment</h1><small>Amazing talent for an unforgettable celebration</small></div></header>
+    <header class="community-hero community-hero--entertainment"><nav class="community-hero-nav" aria-label="Entertainment navigation"><button data-goto="home" type="button" aria-label="Back to Home">&#10094;</button></nav><img data-community-photo alt="Samuel and Josephine"><div class="community-hero-copy"><p>Sam &amp; Jossy <span class="community-gold-heart">&#9829;</span></p><h1>Entertainment</h1><span class="community-heart-divider" aria-hidden="true">&#9829;</span><small>Amazing talent for an<br>unforgettable celebration</small></div></header>
     <div class="community-filters" id="entertainmentFilters" role="group" aria-label="Entertainment categories"></div>
     <p id="entertainmentStatus" class="upload-status" role="status" aria-live="polite"></p>
     <button id="entertainmentRetry" class="back-link" type="button">Refresh entertainment</button>
     <div id="entertainmentActs" class="entertainment-acts"></div>
-    <section class="entertainment-schedule"><h2>Performance Schedule</h2><p class="community-note">Times are displayed in your device’s local time zone.</p><div id="entertainmentSchedule"></div><button class="back-link" data-goto="program" type="button">View reception program &#10095;</button></section>
+    <section class="entertainment-schedule"><div class="entertainment-schedule-heading"><h2><span data-community-icon="calendar"></span>Performance Schedule</h2><button class="back-link" data-goto="program" type="button">View full timeline &#10095;</button></div><div id="entertainmentSchedule"></div><p class="community-note entertainment-timezone">Times are displayed in your device’s local time zone.</p></section>
   </section>
 
   <section class="view hidden" data-view="more">
@@ -1831,7 +1834,7 @@ try{
 <script src="bridal-train.js?v=200"></script>
 <script src="broadcast-calendar.js?v=196"></script>
 <script src="live-broadcast.js?v=201"></script>
-<script src="wedding-community.js?v=216"></script>
+<script src="wedding-community.js?v=217"></script>
 <script src="competitions.js?v=198"></script>
 <script src="competition-notices.js?v=187"></script>
 </body>

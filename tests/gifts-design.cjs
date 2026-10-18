@@ -98,6 +98,9 @@ const delay = ms => new Promise(resolve=>setTimeout(resolve,ms));
   if(process.argv.includes('--live-broadcast')){
     await require('./live-broadcast-readonly.cjs')({call,evaluate,errors,out});return;
   }
+  if(process.argv.includes('--community-style')){
+    await require('./community-reference-readonly.cjs')({call,evaluate,errors,out});return;
+  }
   if(process.argv.includes('--live-competition')){
     await require('./live-competition-photo.cjs')({call,evaluate,errors,out});return;
   }

@@ -1,5 +1,39 @@
 # snybena.com live audit — 11 October 2026
 
+## Chat / Entertainment reference styling — v217 (18 October)
+
+User requested both pages closely match the supplied visual references.
+Scoped `community-reference.css` adds cream/ivory surfaces, original SVG
+rose/olive-leaf bouquets, a circular Chat portrait, photo-led Entertainment
+header and script heading, icon category strips, serif names, white/gold
+bubbles, compact counted reactions, performer photo badges/social icons,
+detail chevrons and a connected performance timeline. Current configured
+wedding photos are retained in full rather than replacing them with the
+reference's people. Existing nine bottom destinations and smaller Gallery
+seal remain unchanged; no fake phone status bar is drawn.
+
+Chat now fills the available viewport with an internally scrolling feed and
+the compact composer above navigation. Its search, message emoji chooser,
+reaction chooser, general/media attachment pickers and camera capture input
+are wired to existing functionality. Microphone still opens the existing
+voice-memory recorder; it does not claim inline voice sending. Performer
+chevrons expand real saved date/duration details. No server/API/schema,
+credentials, OTP or payment changes; no example messages/roles/online counts,
+performers, social profiles or schedule times were inserted.
+
+Passed updated isolated browser community regression (real disposable API,
+including search/emojis/reactions/attachments/moderation/editor/conflicts),
+all ten pure suites and nine-tab navigation/reduced-motion checks. Added
+GET-only live-content styling preview at 320/360/375/390/430/476/1024px:
+configured photos decoded, seven icon filters per page, no stale header gap,
+no clipped category labels and composer visible above the bottom bar. The
+preview mocks only empty chat/presence responses locally and makes no writes.
+Desktop frame and safe-area layout included; physical camera capture remains
+a device test, not something desktop automation verifies.
+
+Frontend/online SQLite snapshot: `/root/wedding-pre-v217`. Cache/asset version
+217 refreshes the new CSS, bouquet SVG and interaction markup together.
+
 ## Wedding Chat and Entertainment — v216 (18 October)
 
 Deployed `143df90`: added Chat and Entertainment bottom destinations while
