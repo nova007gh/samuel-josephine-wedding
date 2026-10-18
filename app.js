@@ -1006,7 +1006,8 @@ const SUBVIEW_TAB = {
   guestbook:'more', rsvp:'more', voicemsg:'more', videomsg:'more',
   admin:'more', adminlogin:'more', approvals:'more', rsvpAdmin:'more', guestlist:'more',
   guestrsvp:'more', adminmedia:'more', adminvoice:'more', adminvideo:'more', security:'more',
-  competitions:'more', competition:'more', admincompetitions:'more', program:'events', engagementprogram:'events'
+  competitions:'more', competition:'more', admincompetitions:'more', program:'events', engagementprogram:'events',
+  livebroadcast:'events', entertainment:'events', chat:'events'
 };
 const ADMIN_VIEWS = new Set(['admin', 'approvals', 'rsvpAdmin', 'guestlist', 'guestrsvp', 'adminmedia', 'adminvoice', 'adminvideo', 'security', 'admincompetitions']);
 /* Views are pushed onto browser history so the device Back button moves

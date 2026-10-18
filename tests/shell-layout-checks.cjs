@@ -19,9 +19,9 @@ module.exports=async({call,evaluate,errors,out})=>{
     }
     if(!diagnostic){
       const navigation=await evaluate(`(async()=>{const checks=[];for(const tab of document.querySelectorAll('.tabbar .tab')){tab.click();await new Promise(r=>setTimeout(r,600));const b=tab.getBoundingClientRect(),bar=tab.closest('.tabbar'),n=bar.getBoundingClientRect();checks.push({name:tab.dataset.tab,active:tab.getAttribute('aria-current')==='page'&&currentView===tab.dataset.tab,visible:b.left>=n.left-1&&b.right<=n.right+1,touch:b.width>=24&&b.height>=44,rect:[b.left,b.right,n.left,n.right],scroll:bar.scrollLeft});}return checks;})()`);
-      assert.equal(navigation.length,9);assert.ok(navigation.every(x=>x.active&&x.visible&&x.touch),'All tabs visible on selection, active and tappable at '+width+' '+JSON.stringify(navigation));
-      assert.equal(await evaluate(`document.querySelectorAll('.tabbar .tab')[4].dataset.tab`),'gallery');
-      console.log('PASS guest/sign-in pages reach finite bottoms and all nine tabs route/fit at '+width+'px');
+      assert.equal(navigation.length,5);assert.ok(navigation.every(x=>x.active&&x.visible&&x.touch),'All tabs visible on selection, active and tappable at '+width+' '+JSON.stringify(navigation));
+      assert.equal(await evaluate(`document.querySelectorAll('.tabbar .tab')[2].dataset.tab`),'gallery');
+      console.log('PASS guest/sign-in pages reach finite bottoms and all five tabs route/fit at '+width+'px');
     }
   }
   if(!diagnostic){
@@ -34,8 +34,8 @@ module.exports=async({call,evaluate,errors,out})=>{
       const after=await evaluate(`(()=>{const result={y:scrollY,height:document.documentElement.scrollHeight,calls:window.__scrollCalls};window.scrollTo=window.__savedScrollTo;Element.prototype.scrollIntoView=window.__savedScrollIntoView;return result;})()`);
       assert.deepEqual(after.calls,[],view+' polling must not issue scroll commands');
       assert.ok(Math.abs(after.height-start.height)<=2&&Math.abs(after.y-start.y)<=2,view+' stable height/position across polling '+JSON.stringify({start,after}));
-      const retained=await evaluate(`(()=>{const y=scrollY;document.querySelector('.tab.active').click();return Math.abs(y-scrollY)<1;})()`);assert.equal(retained,true,'Tapping active tab does not jump');
-      console.log('PASS '+view+' stays still across a real refresh cycle and repeated active-tab tap');
+      const retained=await evaluate(`(()=>{const y=scrollY;const direct=document.querySelector('.tab[data-tab="${view}"]');if(direct)direct.click();else switchView(${JSON.stringify(view)});return Math.abs(y-scrollY)<1;})()`);assert.equal(retained,true,'Reopening current page does not jump');
+      console.log('PASS '+view+' stays still across a real refresh cycle and same-page navigation');
     }
     await evaluate(`document.querySelector('.lb-menu').click()`);assert.equal(await evaluate(`currentView`),'more','Dynamic broadcast menu routes');
     await evaluate(`switchView('livebroadcast');document.querySelector('.lb-monogram').click()`);assert.equal(await evaluate(`currentView`),'home');

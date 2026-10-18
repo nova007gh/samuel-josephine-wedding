@@ -7,13 +7,13 @@ module.exports=async({call,evaluate,wait,request,out})=>{
   await evaluate(`switchView('home');document.querySelector('[data-view="home"] [data-goto="livebroadcast"]').click()`);
   await wait(`document.querySelector('#lbCountdownNote')?.textContent==='Broadcast details coming soon'`);
   assert.equal(await evaluate(`document.querySelectorAll('#liveBroadcastContent iframe').length`),0,'No provider loads before Play');
-  assert.equal(await evaluate(`document.querySelectorAll('.tabbar [data-tab]').length`),9);
+  assert.equal(await evaluate(`document.querySelectorAll('.tabbar [data-tab]').length`),5);
   for(const width of [320,375,430,1024]){await call('Emulation.setDeviceMetricsOverride',{width,height:1100,deviceScaleFactor:1,mobile:width<600});assert.equal(await evaluate(`document.documentElement.scrollWidth===innerWidth`),true,'Broadcast guest fits '+width);}
   await call('Emulation.setDeviceMetricsOverride',{width:430,height:1100,deviceScaleFactor:1,mobile:true});
   const initialShot=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:true});fs.writeFileSync(path.join(out,'live-broadcast-coming-soon.png'),Buffer.from(initialShot.data,'base64'));
   await evaluate(`switchView('events');document.querySelector('[data-view="events"] [data-goto="livebroadcast"]').click()`);assert.equal(await evaluate('currentView'),'livebroadcast');
   assert.equal(await evaluate(`document.querySelector('[data-view="more"] [data-goto="livebroadcast"]')===null`),true);
-  await evaluate(`document.querySelector('.tabbar [data-tab="livebroadcast"]').click()`);assert.equal(await evaluate('currentView'),'livebroadcast');
+  await evaluate(`document.querySelector('.tabbar [data-tab="events"]').click();document.querySelector('[data-view="events"] [data-goto="livebroadcast"]').click()`);assert.equal(await evaluate('currentView'),'livebroadcast');
   await evaluate(`(async()=>{await adminSignIn('', 'isolated-browser-only');switchView('admin');document.querySelector('[data-admin-section="broadcast"]').click();})()`);
   await wait(`document.querySelectorAll('#liveBroadcastScheduleEditor [data-lb-id]').length===3`);
   await wait(`document.getElementById('liveBroadcastContent').getAttribute('aria-busy')==='false'`);

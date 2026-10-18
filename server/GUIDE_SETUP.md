@@ -59,7 +59,7 @@ date in that programme’s saved dateLabel. They never silently borrow the
 wedding date, so an untimed or differently dated programme cannot trigger
 misdated reminders. Schedule cards are not evidence of actual progress.
 
-Launcher opens an accessible native dialog, without adding a tenth tab or
+Launcher opens an accessible native dialog, without adding a bottom tab or
 changing Home. Chat uses the compact icon-only launcher above its composer.
 Questions and results are not saved across reloads. Reminder dismissal is
 bounded locally and disabling reminders removes an active guide reminder.

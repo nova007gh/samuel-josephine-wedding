@@ -65,10 +65,10 @@ module.exports=async({call,evaluate,errors,out})=>{
   for(const width of [320,375,430,1024]){
     await call('Emulation.setDeviceMetricsOverride',{width,height:1100,deviceScaleFactor:1,mobile:true});
     const layout=await evaluate(`(()=>({appVisible:!gateShowing()&&document.getElementById('app').getBoundingClientRect().width>0,
-      nineTabs:document.querySelectorAll('.tabbar .tab').length===9,noOverflow:document.documentElement.scrollWidth===innerWidth,
+      fiveTabs:document.querySelectorAll('.tabbar .tab').length===5,noOverflow:document.documentElement.scrollWidth===innerWidth,
       buttonsFit:[...document.querySelectorAll('[data-view="competitions"] button')].every(e=>{const r=e.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth+.5;})}))()`);
     for(const [name,ok]of Object.entries(layout))assert.equal(ok,true,name+' at '+width);
-    console.log('PASS competitions list',width,'pixels, nine main tabs available');
+    console.log('PASS competitions list',width,'pixels, five main tabs available');
   }
   await evaluate(`document.querySelector('#competitionFilters [data-comp-filter="upcoming"]').click()`);
   assert.equal(await evaluate('document.querySelectorAll("#competitionList .comp-card").length'),1);

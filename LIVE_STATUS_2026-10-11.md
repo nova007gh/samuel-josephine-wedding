@@ -1,5 +1,37 @@
 # snybena.com live audit — 11 October 2026
 
+## Five-tab navigation / Events entertainment hub — v222 (18 October)
+
+Per user request, removed Home, Live Broadcast, Entertainment and Wedding
+Chat buttons from the bottom bar, preserving all four pages and their data.
+The five remaining tabs are Our Story, Events, Gallery, Bridal Train and
+Gifts, keeping the smaller pulsing Gallery seal centred. The five-column
+bar retains its 76px clearance and compact icon/button styling; no swipe is
+needed. Home remains the opening page and is accessible through the header
+logo. Events retains its existing Live Broadcast link and now has an
+Entertainment card. Entertainment has a prominent Wedding Chat card.
+
+Chat’s back arrow returns to Entertainment; Entertainment’s returns to
+Events. Live, Entertainment and Chat highlight the Events parent tab.
+Existing hashes/deep routes and native history remain valid. No page content,
+chat identity/approval/upload behaviour, Entertainment configuration or payment
+flow is removed or changed. The guide’s public navigation/Chat instructions
+were updated in its shared knowledge module to describe the new hierarchy.
+
+Passed five-tab fit/alignment/centred-seal/touch/routing/reduced-motion tests
+at 320/360/375/390/430/476/1024px, actual nested links and back arrows, native
+Back Chat → Entertainment → Events, header Home, all pure suites, isolated
+verified Chat/Entertainment browser integration, Share/Gallery regressions,
+read-only Broadcast checks, guide illustration/search/privacy/reminder tests,
+community compact-layout checks and targeted 375px shell/polling stability.
+Tests expecting a dedicated Live tab now exercise its Events link instead;
+same-page scroll stability is distinct from tapping the Events parent tab.
+
+Private pre-deploy frontend/shared-API-knowledge/online database snapshot:
+`/root/wedding-pre-v222`. Asset/cache version 222 updates navigation and guide
+instructions together. No environment or credential changes or production
+test submissions.
+
 ## Right-edge illustrated guide icon — v221 (18 October)
 
 Replaced the sparkle/text launcher with the user-supplied Sam illustration,
