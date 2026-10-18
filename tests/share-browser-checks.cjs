@@ -16,6 +16,22 @@ module.exports=async({call,evaluate,errors,out})=>{
     for(let i=0;i<100;i++){if(await evaluate(expr))return;await new Promise(r=>setTimeout(r,30));}
     throw new Error('Timed out: '+expr);
   };
+  assert.equal(await evaluate(`document.querySelectorAll('[data-view="more"] [data-goto="bridaltrain"],[data-view="more"] [data-goto="livebroadcast"],[data-view="more"] [data-goto="memories"]').length`),0,'Moved and removed shortcuts are absent from Share Moments');
+  for(const target of ['memories','more']){
+    await evaluate(`switchView('gallery');document.querySelector('[data-view="gallery"] [data-goto="${target}"]').click()`);
+    assert.equal(await evaluate(`currentView`),target,'Gallery opens '+target);
+    await evaluate(`document.querySelector('[data-view="${target}"] .back-link').click()`);
+    assert.equal(await evaluate(`currentView`),'gallery','Back returns to Gallery');
+  }
+  for(const target of ['bridaltrain','livebroadcast']){
+    await evaluate(`document.querySelector('.tabbar [data-tab="${target}"]').click()`);
+    assert.equal(await evaluate(`currentView`),target,'Dedicated tab retained');
+  }
+  for(const width of [320,375,430,1024]){
+    await call('Emulation.setDeviceMetricsOverride',{width,height:1100,deviceScaleFactor:1,mobile:width<600});
+    await evaluate(`switchView('gallery')`);
+    assert.equal(await evaluate(`document.documentElement.scrollWidth===innerWidth`),true,'Gallery sharing fits '+width);
+  }
   for(const admin of [false,true]){
     await evaluate(`setAdminToken(${admin?"'share-mock-admin'":'null'});switchView('more');if(isAdmin())document.getElementById('songLabel').textContent='Happy Tears '+('VeryLongUnbrokenSongFilename'.repeat(12))+'.mp3'`);
     for(const width of [320,375,430,1024]){

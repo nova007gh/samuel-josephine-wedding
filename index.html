@@ -486,6 +486,19 @@
     <div class="divider"><span></span><i>&#10084;</i><span></span></div>
     <p class="page-sub">A collection of our favorite moments,<br>memories and milestones.</p>
 
+    <div class="menu-list" aria-label="Share in the gallery">
+      <button class="menu-item" data-goto="memories" type="button">
+        <span class="menu-icon menu-icon--purple">&#128247;</span>
+        <span class="menu-text"><strong>Share Memories</strong><small>Photos, videos &amp; messages</small></span>
+        <span class="menu-chev">&#10095;</span>
+      </button>
+      <button class="menu-item" data-goto="more" type="button">
+        <span class="menu-icon menu-icon--gold">&#10084;</span>
+        <span class="menu-text"><strong>Share Moments</strong><small>Guest book, competitions &amp; celebration updates</small></span>
+        <span class="menu-chev">&#10095;</span>
+      </button>
+    </div>
+
     <div class="chips chips--scroll" id="galleryChips">
       <button class="chip active" data-kind="all">All</button>
       <button class="chip" data-kind="photos">Photos</button>
@@ -636,13 +649,12 @@
   </section>
 
   <section class="view hidden" data-view="more">
+    <button class="back-link" data-goto="gallery" type="button">&#10094; Gallery</button>
     <h1 class="page-title">Share Moments</h1>
     <div class="divider"><span></span><i>&#10084;</i><span></span></div>
     <p class="page-sub">Share memories and wishes, join competitions, and keep up with the celebration.</p>
 
     <div class="menu-list">
-      <button class="menu-item" data-goto="bridaltrain" type="button"><span class="menu-icon menu-icon--gold">&#10084;</span><span class="menu-text"><strong>Our Bridal Train</strong><small>The people walking this journey with us</small></span><span class="menu-chev">&#10095;</span></button>
-      <button class="menu-item" data-goto="livebroadcast" type="button"><span class="menu-icon menu-icon--gold">&#9673;</span><span class="menu-text"><strong>Live Broadcast</strong><small>Watch, find the schedule and share the live page</small></span><span class="menu-chev">&#10095;</span></button>
       <button class="menu-item" data-goto="competitions" type="button">
         <span class="menu-icon menu-icon--gold">&#127918;</span>
         <span class="menu-text"><strong>Wedding Games &amp; Competitions</strong><small>Join the fun, vote and see results</small></span>
@@ -651,11 +663,6 @@
       <button class="menu-item" data-goto="guestbook" type="button">
         <span class="menu-icon menu-icon--gold">&#128172;</span>
         <span class="menu-text"><strong>Guest Book</strong><small>Leave your love &amp; wishes</small></span>
-        <span class="menu-chev">&#10095;</span>
-      </button>
-      <button class="menu-item" data-goto="memories" type="button">
-        <span class="menu-icon menu-icon--purple">&#128247;</span>
-        <span class="menu-text"><strong>Share Memories</strong><small>Photos, videos &amp; messages</small></span>
         <span class="menu-chev">&#10095;</span>
       </button>
       <button class="menu-item" id="notifToggle" type="button">
@@ -717,7 +724,7 @@
 
   <!-- ---------- Share Memories ---------- -->
   <section class="view hidden" data-view="memories">
-    <button class="back-link" data-goto="more" type="button">&#10094; Back</button>
+    <button class="back-link" data-goto="gallery" type="button">&#10094; Gallery</button>
     <h1 class="page-title">Share Memories</h1>
     <div class="divider"><span></span><i>&#10084;</i><span></span></div>
     <p class="page-sub">Share a photo or video</p>

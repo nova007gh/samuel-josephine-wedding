@@ -1,5 +1,19 @@
 # snybena.com live audit — 11 October 2026
 
+## Gallery sharing navigation — v214 (18 October)
+
+Added Share Memories and Share Moments entry cards to Gallery. Moved the
+Share Memories shortcut out of the Share Moments menu and made both sharing
+pages' back links return to Gallery. Removed only the Bridal Train and Live
+Broadcast shortcuts from Share Moments; their dedicated bottom tabs remain.
+All nine bottom tabs, gallery uploads, recording controls and other menu
+actions are retained. No API, database, payment or environment changes.
+
+Read-only preview checks passed Gallery sharing routes/back links, removed
+shortcuts, retained dedicated tabs and Gallery widths 320/375/430/1024.
+Existing Share guest/admin layouts and mocked action tests passed, alongside
+the service-worker suite. Cache updated to v214 for refreshed HTML.
+
 ## Sandbox callback URL saved; provider delivery still pending (17 October)
 
 User confirmed Speso saved the dedicated test callback URL. Ran one further

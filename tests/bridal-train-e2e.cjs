@@ -2,7 +2,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path');
 module.exports=async({call,evaluate,wait,request,out})=>{
   const baseline=(await request('/settings')).data;
-  await evaluate(`switchView('story');document.querySelector('[data-view="story"] [data-goto="bridaltrain"]').click()`);
+  await evaluate(`document.querySelector('.tabbar [data-tab="bridaltrain"]').click()`);
   await wait(`document.querySelectorAll('#bridalTrainContent .bt-card').length===19`);
   assert.equal(await evaluate(`document.querySelectorAll('#bridalTrainContent .bt-photo-note').length`),19,'No mock portraits published as real people');
   assert.equal(await evaluate(`document.getElementById('bt-heading-bridesmaids').textContent.includes('(9)')&&document.getElementById('bt-heading-groomsmen').textContent.includes('(10)')`),true);
@@ -19,7 +19,8 @@ module.exports=async({call,evaluate,wait,request,out})=>{
   await evaluate(`switchView('bridaltrain')`);
   await evaluate(`document.querySelector('[data-view="bridaltrain"] .back-link').click()`);
   assert.equal(await evaluate(`currentView`),'story');
-  await evaluate(`switchView('more');document.querySelector('[data-view="more"] [data-goto="bridaltrain"]').click()`);
+  assert.equal(await evaluate(`document.querySelector('[data-view="more"] [data-goto="bridaltrain"]')===null`),true);
+  await evaluate(`document.querySelector('.tabbar [data-tab="bridaltrain"]').click()`);
   assert.equal(await evaluate(`currentView`),'bridaltrain');
   await evaluate(`(async()=>{await adminSignIn('', 'isolated-browser-only');switchView('admin');document.querySelector('[data-admin-section="bridal"]').click();})()`);
   await wait(`document.querySelectorAll('#bridalTrainEditor [data-bt-id]').length===19`);

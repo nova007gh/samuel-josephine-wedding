@@ -5,11 +5,17 @@ module.exports=async({evaluate,wait})=>{
   assert.equal(await view(),'competitions');
   await evaluate(`document.querySelector('[data-view="competitions"] [data-goto="more"]').click()`);
   assert.equal(await view(),'more');
-  for(const target of ['competitions','guestbook','memories']){
+  for(const target of ['competitions','guestbook']){
     await evaluate(`switchView('more');document.querySelector('[data-view="more"] [data-goto="${target}"]').click()`);
     assert.equal(await view(),target);
     await evaluate(`document.querySelector('[data-view="${target}"] .back-link,[data-view="${target}"] .comp-back').click()`);
     assert.equal(await view(),'more');
+  }
+  for(const target of ['memories','more']){
+    await evaluate(`switchView('gallery');document.querySelector('[data-view="gallery"] [data-goto="${target}"]').click()`);
+    assert.equal(await view(),target);
+    await evaluate(`document.querySelector('[data-view="${target}"] .back-link').click()`);
+    assert.equal(await view(),'gallery');
   }
   for(const tab of ['timeline','sjgallery','journey','met']){
     await evaluate(`switchView('story');document.querySelector('[data-story-tab="${tab}"]').click()`);

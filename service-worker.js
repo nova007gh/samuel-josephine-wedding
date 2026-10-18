@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v213-speso-mode-guard';
+const CACHE = 'sj-wedding-v214-gallery-sharing';
 const ASSETS = [
   './',
   './index.html',
