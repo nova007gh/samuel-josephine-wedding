@@ -1,6 +1,10 @@
 
-const CACHE = 'sj-wedding-v218-chat-space';
+const CACHE = 'sj-wedding-v219-inhouse-guide';
 const ASSETS = [
+  './assets/guide-companions.jpg',
+  './wedding-guide.css',
+  './wedding-guide.js',
+  './wedding-guide-knowledge.js',
   './',
   './index.html',
   './app.css',

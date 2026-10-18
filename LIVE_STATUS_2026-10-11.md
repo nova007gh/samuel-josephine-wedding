@@ -1,5 +1,48 @@
 # snybena.com live audit — 11 October 2026
 
+## In-house S&J Guide — v219 (18 October)
+
+User selected a lightweight in-house knowledge guide on the existing 1 CPU /
+0.94 GiB server, rather than a generative model or outside AI API. Floating
+S&J Guide opens a cream/gold native dialog using the supplied couple
+illustration, source-linked answers, suggested questions, public-photo cards
+and optional activity reminders. Original Home, compact Chat and all nine
+bottom destinations remain intact; no tenth tab was added.
+
+`GET /api/guide` reads an explicit settings allowlist only: published wedding
+facts/story/timeline, events/programmes, saved Bridal Train, Entertainment and
+Broadcast. It reads no guest/contact/session/OTP/chat/payment tables and writes
+nothing. Questions are searched on the device with deterministic keyword/text
+matching; they are not submitted or stored. No model, third-party AI, crawling,
+new dependency, credentials, database migration or training process is used.
+The UI clearly says this is a local knowledge guide, not generative AI; it
+offers closest sources and honest unknown/private-data fallbacks, not a claim
+to answer every possible question. Public changes refresh on open/request and
+every minute while visible and relevant. Failed refreshes label stale results.
+
+Activity cards use existing published local wedding/performer/broadcast
+photos, not remote link scraping. Missing photos are omitted. Reminders are
+off by default, opt-in per device, only while the app is open/visible, and
+bounded/deduplicated locally. They reference published Ghana-GMT event times,
+absolute performer dates or a host-marked live broadcast. Reminders explicitly
+do not establish real activity progress and do not send email/SMS/web push.
+Existing announcement/competition systems remain unchanged. Uploads, recording
+pages, focused inputs and existing activity toasts suppress guide reminders.
+
+Passed eleven pure suites, local-search/private allowlist tests, real HTTP
+Express testing against read-only production SQLite, and fixture-only browser
+tests at 320×568, 375×667, 390×844, 495×770, 844×390 and 1024×768. Browser
+checks cover decoded real published photos, dialog fit/focus, source routing,
+escaped text, private-answer fallback, no question requests, stale-state
+warning, opt-in reminders/photo decoding and non-repetition. Navigation and
+community-reference/compact-chat regressions also passed all existing widths.
+Resize tests do not claim physical-phone keyboard or camera validation.
+
+Private pre-deploy frontend/API/online database snapshot:
+`/root/wedding-pre-v219`. Flat API deployment includes the identical shared
+`wedding-guide-knowledge.js` alongside `wedding-guide.js` and the one-line
+`server.js` registration. Operational notes: `server/GUIDE_SETUP.md`.
+
 ## More conversation space / compact controls — v218 (18 October)
 
 User reported the Chat header used too much vertical space and requested a

@@ -1,0 +1,15 @@
+'use strict';
+const assert=require('node:assert/strict'),{build,answer,photo}=require('../wedding-guide-knowledge');
+const now=Date.UTC(2027,0,9,9,55),settings={weddingFormal:'SAMUEL & JOSEPHINE',weddingDateISO:'2027-01-09T10:00',weddingVenue:'Confirmed Hall',couplePhotoUrl:'/uploads/couple.jpg',events:JSON.stringify([{name:'Ceremony',time:'10:00 AM'},{name:'Reception',time:'18:30'},{name:'Untimed',time:'TBC'},{name:'Invalid',time:'33:90'}]),receptionProgram:JSON.stringify({title:'Reception Programme',items:[{time:'18:30',title:'First dance',details:'Couple dance'}]}),entertainment:JSON.stringify({acts:[{id:'dj',name:'Confirmed DJ',category:'dj',description:'Published act',photoUrl:'/uploads/dj.webp',startsAt:now+600000}]}),adminEmails:'PRIVATE',unknownPrivate:'PRIVATE',announcement:JSON.stringify({text:'NOT APPROVED FOR GUIDE'})};
+const data=build(settings,now);assert.doesNotMatch(JSON.stringify(data),/PRIVATE|NOT APPROVED FOR GUIDE/);
+assert.equal(data.activities.find(a=>a.id==='event-0').at,Date.UTC(2027,0,9,10));assert.equal(data.activities.find(a=>a.id==='event-1').at,Date.UTC(2027,0,9,18,30));assert.ok(!data.activities.some(a=>['event-2','event-3'].includes(a.id)));
+assert.ok(data.cards.find(c=>c.id==='receptionProgram').text.includes('First dance'));
+for(const [question,id] of [['Where is the wedding?','wedding'],['How do I upload photos?','gallery'],['How do I join Chat?','chat'],['Watch live broadcast','broadcast'],['Who is the DJ?','entertainment'],['How do I pay?','gifts'],['First dance reception programme','receptionProgram']])assert.ok(answer(data,question).cards.some(c=>c.id===id),question);
+for(const q of ['What is my payment status?','Tell me the password','Give me the guest list']){assert.equal(answer(data,q).cards.length,0);assert.match(answer(data,q).text,/cannot access/);}
+assert.equal(answer(data,'quantum astrophysics').cards.length,0);assert.match(answer(data,'quantum astrophysics').text,/do not have a confirmed answer/);
+assert.match(answer(build({}), 'Where is the wedding?').cards[0].text,/not published/);
+assert.equal(photo('https://outside.example/pic.jpg'),'');assert.equal(photo('/uploads/../../private.jpg'),'');assert.equal(photo('javascript:alert(1)'),'');
+const routes={};const queried=[];require('../server/wedding-guide')({app:{get:(p,h)=>routes[p]=h},db:{prepare:sql=>{assert.equal(sql,'SELECT value FROM settings WHERE key=?');return {get:key=>{queried.push(key);return settings[key]?{value:settings[key]}:undefined;}}}}});
+let result,cache;routes['/api/guide']({}, {set:(k,v)=>{cache=v;return {json:x=>result=x};}});assert.equal(cache,'no-store');assert.equal(result.mode,'local-knowledge-guide');assert.ok(!queried.includes('adminEmails'));assert.doesNotMatch(JSON.stringify(result),/PRIVATE/);
+const fresh=build({...settings,weddingVenue:'Updated Hall'},now);assert.match(answer(fresh,'wedding venue').cards.find(c=>c.id==='wedding').text,/Updated Hall/);
+console.log('PASS in-house guide allowlist, private-data boundary, local answers, unknowns, dates/GMT, programme, images and content refresh');

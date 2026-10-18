@@ -39,6 +39,7 @@
   <link rel="stylesheet" href="app-polish.css?v=218" />
   <link rel="stylesheet" href="wedding-community.css?v=216" />
   <link rel="stylesheet" href="community-reference.css?v=218" />
+  <link rel="stylesheet" href="wedding-guide.css?v=219" />
   <link rel="stylesheet" href="guest-checkin.css?v=202" />
   <script>
   /* a checked-in guest goes straight into the app — flag it before first
@@ -1834,6 +1835,25 @@ try{
 <script src="bridal-train.js?v=200"></script>
 <script src="broadcast-calendar.js?v=196"></script>
 <script src="live-broadcast.js?v=201"></script>
+<button id="sjGuideLaunch" class="sj-guide-launch" type="button" aria-haspopup="dialog" aria-controls="sjGuideDialog" aria-label="Open S and J wedding guide"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.3 6.7L21 12l-6.7 2.3L12 21l-2.3-6.7L3 12l6.7-2.3Z"/></svg><span>S&amp;J Guide</span></button>
+<dialog id="sjGuideDialog" class="sj-guide-dialog" aria-labelledby="sjGuideTitle" aria-describedby="sjGuideDescription">
+  <div class="sj-guide-shell">
+    <header class="sj-guide-head"><span class="sj-guide-mark" aria-hidden="true">S&amp;J</span><div><h2 id="sjGuideTitle">Your wedding companion</h2><p>Private by design · Built in-house</p></div><button id="sjGuideClose" class="sj-guide-close" type="button" aria-label="Close wedding guide">×</button></header>
+    <div class="sj-guide-body">
+      <div class="sj-guide-welcome"><img src="assets/guide-companions.jpg" width="80" height="120" alt="" loading="lazy"><p id="sjGuideDescription" class="sj-guide-intro">Hello! Explore Sam &amp; Jossy’s celebration with source-linked answers and activity cards. I’m a local knowledge guide, not a generative AI. I only know published details—not private guest information.</p></div>
+      <div class="sj-guide-chips" aria-label="Suggested questions"><button type="button" data-guide-question="Where is the wedding?">Date &amp; venue</button><button type="button" data-guide-question="How do I upload photos?">Share photos</button><button type="button" data-guide-question="How do I join Chat?">Join Chat</button><button type="button" data-guide-question="Watch live broadcast">Watch live</button><button type="button" id="sjGuideRefresh">Refresh details</button></div>
+      <p id="sjGuideStatus" class="sj-guide-status" role="status">Loading published information…</p>
+      <div id="sjGuideResults" aria-live="polite" aria-atomic="false"></div>
+      <h3 class="sj-guide-activity-title">Around the celebration</h3>
+      <label class="sj-guide-alert-setting"><input id="sjGuideAlerts" type="checkbox">Show activity reminders on this device while the app is open</label>
+      <p class="sj-guide-status">Reminders use published times, not confirmed activity progress. No SMS, email or background notifications.</p>
+      <div id="sjGuideActivities"></div>
+    </div>
+    <form id="sjGuideForm" class="sj-guide-form"><label class="community-sr-only" for="sjGuideQuestion">Ask about the wedding or app. Do not include private information.</label><input id="sjGuideQuestion" type="text" maxlength="400" placeholder="Ask about the wedding or app…" autocomplete="off"><button type="submit">Ask</button></form>
+  </div>
+</dialog>
+<script src="wedding-guide-knowledge.js?v=219"></script>
+<script src="wedding-guide.js?v=219"></script>
 <script src="wedding-community.js?v=218"></script>
 <script src="competitions.js?v=198"></script>
 <script src="competition-notices.js?v=187"></script>

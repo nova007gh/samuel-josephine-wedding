@@ -56,6 +56,7 @@ const delay = ms => new Promise(resolve=>setTimeout(resolve,ms));
     return r.result.value;
   };
   await call('Page.enable'); await call('Runtime.enable');
+  if(process.argv.includes('--guide'))await require('./wedding-guide-browser.cjs').setup({call});
   if(process.argv.includes('--speso'))await require('./speso-browser-checks.cjs').setup({call});
   if(process.argv.includes('--refresh')){
     await require('./refresh-browser-checks.cjs').setup({call});
@@ -89,6 +90,7 @@ const delay = ms => new Promise(resolve=>setTimeout(resolve,ms));
   if(process.argv.includes('--navigation')){
     await require('./navigation-style-checks.cjs')({call,evaluate,errors,out});return;
   }
+  if(process.argv.includes('--guide')){await require('./wedding-guide-browser.cjs').check({call,evaluate,errors,out});return;}
   if(process.argv.includes('--shell')){
     await require('./shell-layout-checks.cjs')({call,evaluate,errors,out});return;
   }
