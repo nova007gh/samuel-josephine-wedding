@@ -43,6 +43,17 @@ bounded conversation/clear/draft-refresh tests, opt-in deduplicated reminders,
 and existing navigation/community/compact-chat width regressions. Public
 guide-source testing uses read-only SQLite and no production submissions.
 
+Deployed code `64c8c36` after private frontend/API/online database snapshot
+`/root/wedding-pre-v220`. API shared-module replacement was gated on matching
+snapshot hashes and no established port-3100 connections. Live checks passed
+v220 assets/cache, 15 upcoming published schedule entries, real-photo decoding,
+Events navigation, specific dinner retrieval and its contextual follow-up.
+No production submissions, OTPs, payments or reminder sends were triggered.
+Preservation audit: 23 guests, 1 RSVP, 20 memories, 0 guestbook, 4 gifts, 2 funds,
+39 settings, 2 competitions, 1 vote, 3 payment attempts, 2 chat messages,
+6 reactions and 2 chat uploads; every baseline row unchanged, none missing,
+SQLite integrity `ok`. No environment, credentials or saved content changed.
+
 ## In-house S&J Guide — v219 (18 October)
 
 User selected a lightweight in-house knowledge guide on the existing 1 CPU /
