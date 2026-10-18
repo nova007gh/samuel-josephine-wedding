@@ -36,7 +36,8 @@
   <link rel="stylesheet" href="bridal-train-reference.css?v=200" />
   <link rel="stylesheet" href="live-broadcast.css?v=197" />
   <link rel="stylesheet" href="live-broadcast-reference.css?v=199" />
-  <link rel="stylesheet" href="app-polish.css?v=215" />
+  <link rel="stylesheet" href="app-polish.css?v=216" />
+  <link rel="stylesheet" href="wedding-community.css?v=216" />
   <link rel="stylesheet" href="guest-checkin.css?v=202" />
   <script>
   /* a checked-in guest goes straight into the app — flag it before first
@@ -648,6 +649,35 @@
     <button class="back-link" data-goto="story" type="button">&#10094; Our Story</button>
   </section>
 
+  <section class="view hidden community-page" data-view="chat">
+    <header class="community-hero"><img data-community-photo alt="Samuel and Josephine"><div><p>Sam &amp; Jossy &#9829;</p><h1>Wedding Chat</h1><small id="chatPresence">A place to celebrate together</small></div></header>
+    <div class="community-filters" id="chatFilters" role="group" aria-label="Chat categories">
+      <button type="button" class="chip active" data-chat-filter="all" aria-pressed="true">All Chat</button><button type="button" class="chip" data-chat-filter="announcements" aria-pressed="false">Announcements</button><button type="button" class="chip" data-chat-filter="photos" aria-pressed="false">Photos</button><button type="button" class="chip" data-chat-filter="videos" aria-pressed="false">Videos</button><button type="button" class="chip" data-chat-filter="reactions" aria-pressed="false">Reactions</button><button type="button" class="chip" data-chat-filter="files" aria-pressed="false">Files</button><button type="button" class="chip" data-chat-filter="polls" aria-pressed="false">Polls</button>
+    </div>
+    <p class="community-note">Guest messages are reviewed before appearing for everyone. Please keep our chat kind and wedding-related.</p>
+    <p id="chatStatus" class="upload-status" role="status" aria-live="polite"></p>
+    <button id="chatRetry" class="back-link" type="button">Refresh chat</button>
+    <button id="chatVerify" class="map-button hidden" type="button">VERIFY GUEST SIGN-IN</button>
+    <div id="chatMessages" class="chat-messages" aria-label="Wedding messages"></div>
+    <div id="chatPolls" class="notice-card hidden"><p>Join our wedding polls, games and competitions.</p><button class="map-button" data-goto="competitions" type="button">OPEN POLLS &amp; GAMES</button></div>
+    <form id="chatComposer" class="chat-composer">
+      <label class="field">Your message<textarea id="chatText" maxlength="2000" rows="2" placeholder="Share a little love…"></textarea></label>
+      <label id="chatAnnouncementLabel" class="hidden"><input id="chatAnnouncement" type="checkbox"> Host announcement</label>
+      <div id="chatAttachment" class="community-note" role="status"></div>
+      <div class="chat-compose-actions"><label class="community-attach">＋ Attach<input id="chatFile" type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,application/pdf,audio/mpeg,audio/wav"></label><button id="chatClearAttachment" class="back-link hidden" type="button">Remove attachment</button><button id="chatSend" class="share-btn" type="submit">Send &#10148;</button></div>
+      <small>Photos, videos, PDFs and audio files · up to 25 MB. For a voice recording, <button class="community-inline" data-goto="voicemsg" type="button">record a memory</button>.</small>
+    </form>
+  </section>
+
+  <section class="view hidden community-page" data-view="entertainment">
+    <header class="community-hero"><img data-community-photo alt="Samuel and Josephine"><div><p>Sam &amp; Jossy &#9829;</p><h1>Entertainment</h1><small>Amazing talent for an unforgettable celebration</small></div></header>
+    <div class="community-filters" id="entertainmentFilters" role="group" aria-label="Entertainment categories"></div>
+    <p id="entertainmentStatus" class="upload-status" role="status" aria-live="polite"></p>
+    <button id="entertainmentRetry" class="back-link" type="button">Refresh entertainment</button>
+    <div id="entertainmentActs" class="entertainment-acts"></div>
+    <section class="entertainment-schedule"><h2>Performance Schedule</h2><p class="community-note">Times are displayed in your device’s local time zone.</p><div id="entertainmentSchedule"></div><button class="back-link" data-goto="program" type="button">View reception program &#10095;</button></section>
+  </section>
+
   <section class="view hidden" data-view="more">
     <button class="back-link" data-goto="gallery" type="button">&#10094; Gallery</button>
     <h1 class="page-title">Share Moments</h1>
@@ -957,6 +987,7 @@
       <button id="admin-tab-story" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-story" data-admin-section="story" type="button"><span aria-hidden="true">&#9825;</span>Our Story</button>
       <button id="admin-tab-bridal" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-bridal" data-admin-section="bridal" type="button"><span aria-hidden="true">&#10084;</span>Bridal Train</button>
       <button id="admin-tab-broadcast" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-broadcast" data-admin-section="broadcast" type="button"><span aria-hidden="true">&#9673;</span>Live Broadcast</button>
+      <button id="admin-tab-entertainment" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-entertainment" data-admin-section="entertainment" type="button"><span aria-hidden="true">&#9835;</span>Entertainment</button>
       <button id="admin-tab-announcements" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-announcements" data-admin-section="announcements" type="button"><span aria-hidden="true">&#128227;</span>Announcements</button>
       <button id="admin-tab-gifts" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-gifts" data-admin-section="gifts" type="button"><span aria-hidden="true">&#127873;</span>Gifts &amp; MoMo</button>
       <button id="admin-tab-access" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-access" data-admin-section="access" type="button"><span aria-hidden="true">&#128737;</span>Access &amp; Security</button>
@@ -1128,6 +1159,14 @@
         <p id="engagementEditorStatus" class="upload-status" role="status" aria-live="polite"></p>
       </form>
     </div>
+    <div id="admin-panel-entertainment" class="admin-section-panel hidden" role="tabpanel" aria-labelledby="admin-tab-entertainment" tabindex="0">
+      <h2 class="admin-section-title">Entertainment Lineup</h2>
+      <p class="community-note">Add only confirmed performers and times. Dates use your device’s local time zone. Uploaded photos stay in your draft until you save.</p>
+      <form id="entertainmentEditor" class="aq-card"><div id="entertainmentRows"></div><div class="aq-actions"><button type="button" class="aq-approve" id="entertainmentAdd">ADD ACT</button><button type="button" class="aq-reject" id="entertainmentReload">RELOAD SAVED</button><button type="submit" class="map-button">SAVE ENTERTAINMENT</button></div></form>
+      <p id="entertainmentEditorStatus" class="upload-status" role="status" aria-live="polite"></p>
+      <h3>Wedding Chat Moderation</h3><p>Open Chat while signed in as admin to approve, hide, pin or remove messages, and publish host announcements.</p><button class="map-button" data-goto="chat" type="button">OPEN CHAT MODERATION</button>
+    </div>
+
     <div id="admin-panel-broadcast" class="admin-section-panel hidden" role="tabpanel" aria-labelledby="admin-tab-broadcast" tabindex="0">
       <h2 class="settings-heading">Live Broadcast</h2>
       <p class="page-sub">Configure real broadcast links, dates and replays. SAVE BROADCAST publishes your changes. The app does not generate a live video feed or invent viewer counts.</p>
@@ -1695,6 +1734,12 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M3 8h18v3H3zM12 8v13"/><path d="M12 8S9.5 8 8.5 6.5 11 3 12 5c1-2 2.5-1.5 3.5 1.5S14 8 12 8z"/></svg>
       <span class="tab-label">Gifts</span>
     </button>
+    <button class="tab" data-tab="chat" aria-label="Wedding Chat">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11a9 8 0 0 1-9 8H7l-5 3 1.5-7A8 8 0 0 1 3 11a9 8 0 0 1 18 0Z"/><path d="M7 11h.01M12 11h.01M17 11h.01"/></svg><span class="tab-label">Chat</span>
+    </button>
+    <button class="tab" data-tab="entertainment" aria-label="Entertainment">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13M9 8l12-2"/><ellipse cx="6" cy="18" rx="3" ry="3"/><ellipse cx="18" cy="16" rx="3" ry="3"/></svg><span class="tab-label"><span>Enter<wbr>tainment</span></span>
+    </button>
   </nav>
 </main>
 
@@ -1786,6 +1831,7 @@ try{
 <script src="bridal-train.js?v=200"></script>
 <script src="broadcast-calendar.js?v=196"></script>
 <script src="live-broadcast.js?v=201"></script>
+<script src="wedding-community.js?v=216"></script>
 <script src="competitions.js?v=198"></script>
 <script src="competition-notices.js?v=187"></script>
 </body>

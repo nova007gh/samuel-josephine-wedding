@@ -7,7 +7,7 @@ module.exports=async({call,evaluate,wait,request,out})=>{
   await evaluate(`switchView('home');document.querySelector('[data-view="home"] [data-goto="livebroadcast"]').click()`);
   await wait(`document.querySelector('#lbCountdownNote')?.textContent==='Broadcast details coming soon'`);
   assert.equal(await evaluate(`document.querySelectorAll('#liveBroadcastContent iframe').length`),0,'No provider loads before Play');
-  assert.equal(await evaluate(`document.querySelectorAll('.tabbar [data-tab]').length`),7);
+  assert.equal(await evaluate(`document.querySelectorAll('.tabbar [data-tab]').length`),9);
   for(const width of [320,375,430,1024]){await call('Emulation.setDeviceMetricsOverride',{width,height:1100,deviceScaleFactor:1,mobile:width<600});assert.equal(await evaluate(`document.documentElement.scrollWidth===innerWidth`),true,'Broadcast guest fits '+width);}
   await call('Emulation.setDeviceMetricsOverride',{width:430,height:1100,deviceScaleFactor:1,mobile:true});
   const initialShot=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:true});fs.writeFileSync(path.join(out,'live-broadcast-coming-soon.png'),Buffer.from(initialShot.data,'base64'));

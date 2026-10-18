@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v215-gallery-only-sharing';
+const CACHE = 'sj-wedding-v216-chat-entertainment';
 const ASSETS = [
   './',
   './index.html',
@@ -7,6 +7,8 @@ const ASSETS = [
   './assets/seal-logo.png',
   './app-views.css',
   './app-polish.css',
+  './wedding-community.css',
+  './wedding-community.js',
   './guest-checkin.css',
   './app-forms.css',
   './app-social.css',

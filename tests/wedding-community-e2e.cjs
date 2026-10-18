@@ -1,0 +1,88 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+module.exports=async({call,evaluate,wait,request,out,errors})=>{
+  const baseline=(await request('/settings')).data;
+  await evaluate(`setAdminToken(null);switchView('chat')`);
+  await wait(`!document.getElementById('chatVerify').classList.contains('hidden')`);
+  await evaluate(`(async()=>{const r=await api('/guests/login',{method:'POST',body:{phone:'+233240000001',code:'123456'}});setGuest(r.guest);document.getElementById('chatRetry').click();})()`);
+  await wait(`document.getElementById('chatVerify').classList.contains('hidden')`);
+  await evaluate(`document.getElementById('chatText').value='A verified guest message <script>not markup</script>';document.getElementById('chatText').dispatchEvent(new Event('input',{bubbles:true}));window.__communityApi=api;window.__communitySends=0;api=async(p,o)=>{const r=await window.__communityApi(p,o);if(p==='/chat/messages'&&++window.__communitySends===1)throw new Error('Synthetic lost response');return r;};document.getElementById('chatComposer').requestSubmit();`);
+  await wait(`document.getElementById('chatStatus').textContent.includes('Synthetic lost response')`);
+  assert.equal(await evaluate(`document.getElementById('chatText').value.includes('verified guest message')`),true,'Failed send keeps draft');
+  await evaluate(`document.getElementById('chatComposer').requestSubmit();document.getElementById('chatComposer').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}))`);
+  await wait(`document.getElementById('chatStatus').textContent.includes('awaiting host approval')`);
+  assert.equal(await evaluate(`document.querySelectorAll('.chat-card').length`),1,'Lost response retry reuses one message');
+  assert.equal(await evaluate(`document.querySelectorAll('.chat-card script').length`),0,'Message is escaped');
+  assert.equal(await evaluate(`document.getElementById('chatText').value`),'');await evaluate(`api=window.__communityApi`);
+  const messageId=await evaluate(`document.querySelector('.chat-card').dataset.chatId`);
+  await evaluate(`(async()=>{await adminSignIn('','isolated-browser-only');switchView('chat');document.getElementById('chatRetry').click();})()`);
+  await wait(`!!document.querySelector('[data-chat-action="approve"]')`);
+  await evaluate(`document.querySelector('[data-chat-action="approve"]').click()`);
+  await wait(`!!document.querySelector('[data-chat-action="hide"]')`);
+  await evaluate(`document.querySelector('[data-chat-action="pin"]').click()`);
+  await wait(`document.querySelector('.chat-card').classList.contains('is-pinned')`);
+  await evaluate(`document.querySelector('[data-chat-react="❤️"]').click()`);
+  await wait(`document.querySelector('[data-chat-react="❤️"]').getAttribute('aria-pressed')==='true'`);
+  await evaluate(`document.getElementById('chatAnnouncement').checked=true;document.getElementById('chatText').value='Confirmed host announcement';document.getElementById('chatComposer').requestSubmit()`);
+  await wait(`document.querySelectorAll('.chat-card').length===2`);
+  await evaluate(`document.querySelector('[data-chat-filter="announcements"]').click()`);
+  assert.equal(await evaluate(`document.querySelectorAll('.chat-card').length`),1);
+  await evaluate(`document.querySelector('[data-chat-filter="polls"]').click()`);
+  assert.equal(await evaluate(`!document.getElementById('chatPolls').classList.contains('hidden')`),true);
+  await evaluate(`document.querySelector('[data-chat-filter="all"]').click()`);
+  await evaluate(`(async()=>{const canvas=document.createElement('canvas');canvas.width=30;canvas.height=30;canvas.getContext('2d').fillRect(0,0,30,30);const blob=await new Promise(r=>canvas.toBlob(r,'image/png'));const dt=new DataTransfer();dt.items.add(new File([blob],'wedding-chat.png',{type:'image/png'}));const input=document.getElementById('chatFile');input.files=dt.files;input.dispatchEvent(new Event('change'));})()`);
+  await wait(`document.getElementById('chatStatus').textContent.includes('Attachment ready')`);
+  await evaluate(`document.getElementById('chatText').value='Our photo';document.getElementById('chatComposer').requestSubmit()`);
+  await wait(`document.querySelectorAll('.chat-card').length===3`);
+  assert.equal(await evaluate(`document.querySelectorAll('.chat-bubble img').length`),1);
+  for(const width of [320,375,430,1024]){
+    await call('Emulation.setDeviceMetricsOverride',{width,height:1000,deviceScaleFactor:1,mobile:width<600});
+    assert.equal(await evaluate(`document.documentElement.scrollWidth===innerWidth`),true,'Chat fits '+width);
+  }
+  await evaluate(`switchView('entertainment')`);
+  await wait(`document.getElementById('entertainmentActs').textContent.includes('being arranged')`);
+  assert.equal(await evaluate(`document.querySelectorAll('.entertainment-card').length`),0,'No fabricated bookings');
+  await evaluate(`switchView('admin');document.querySelector('[data-admin-section="entertainment"]').click()`);
+  await wait(`document.getElementById('entertainmentEditorStatus').textContent===''`);
+  await evaluate(`document.getElementById('entertainmentAdd').click()`);
+  await wait(`!!document.querySelector('[data-ent-field="name"]')`);
+  await evaluate(`(()=>{const root=document.getElementById('entertainmentRows'),field=(k,v)=>root.querySelector('[data-ent-field="'+k+'"]').value=v;field('name','Confirmed rehearsal band');field('description','Real API test, isolated only');field('startsAt','2027-01-09T17:00');field('duration','2 hours');field('instagram','https://instagram.com/example');root.dispatchEvent(new Event('input',{bubbles:true}));})()`);
+  await evaluate(`(async()=>{const c=document.createElement('canvas');c.width=40;c.height=30;c.getContext('2d').fillRect(0,0,40,30);const b=await new Promise(r=>c.toBlob(r,'image/png'));const dt=new DataTransfer();dt.items.add(new File([b],'performer.png',{type:'image/png'}));const input=document.querySelector('[data-ent-photo]');input.files=dt.files;input.dispatchEvent(new Event('change',{bubbles:true}));})()`);
+  await wait(`!!document.querySelector('[data-ent-field="photoUrl"]').value`);
+  await wait(`document.getElementById('entertainmentEditor').getAttribute('aria-busy')==='false'`);
+  await evaluate(`api=async(p,o)=>{if(p==='/admin/entertainment')throw new Error('Synthetic entertainment save failure');return window.__communityApi(p,o);};document.getElementById('entertainmentEditor').requestSubmit()`);
+  await wait(`document.getElementById('entertainmentEditorStatus').textContent.includes('Synthetic entertainment save failure')`);
+  assert.equal(await evaluate(`document.querySelector('[data-ent-field="name"]').value`),'Confirmed rehearsal band');
+  await evaluate(`api=window.__communityApi;document.getElementById('entertainmentEditor').requestSubmit();document.getElementById('entertainmentEditor').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}))`);
+  await wait(`document.getElementById('entertainmentEditorStatus').textContent.includes('Entertainment saved')`);
+  assert.equal((await request('/entertainment')).data.data.acts.length,1);
+  await evaluate(`switchView('entertainment')`);
+  await wait(`!!document.querySelector('.entertainment-card h2')`);
+  assert.equal(await evaluate(`document.querySelector('.entertainment-card h2').textContent`),'Confirmed rehearsal band');
+  assert.equal(await evaluate(`document.querySelector('.entertainment-socials a').getAttribute('rel')`),'noopener noreferrer');
+  await evaluate(`document.querySelector('[data-ent-filter="dj"]').click()`);
+  assert.equal(await evaluate(`document.querySelectorAll('.entertainment-card').length`),0);
+  await evaluate(`document.querySelector('[data-ent-filter="all"]').click()`);
+  for(const width of [320,375,430,1024]){
+    await call('Emulation.setDeviceMetricsOverride',{width,height:1000,deviceScaleFactor:1,mobile:width<600});
+    for(const view of ['entertainment','chat']){await evaluate(`switchView('${view}')`);assert.equal(await evaluate(`document.documentElement.scrollWidth===innerWidth`),true,view+' fits '+width);}
+    await evaluate(`switchView('admin');document.querySelector('[data-admin-section="entertainment"]').click()`);
+    assert.equal(await evaluate(`document.documentElement.scrollWidth===innerWidth`),true,'Entertainment editor fits '+width);
+  }
+  let saved=(await request('/entertainment')).data;
+  await evaluate(`document.querySelector('[data-ent-field="name"]').value='Local unsaved name';document.getElementById('entertainmentRows').dispatchEvent(new Event('input',{bubbles:true}))`);
+  await request('/admin/entertainment',{method:'PATCH',admin:true,body:{data:{acts:saved.data.acts.map(a=>({...a,name:'Remote confirmed name'}))},expectedRevision:saved.revision}});
+  await evaluate(`document.getElementById('entertainmentEditor').requestSubmit()`);
+  await wait(`document.getElementById('entertainmentEditorStatus').textContent.includes('changed on another device')`);
+  assert.equal(await evaluate(`document.querySelector('[data-ent-field="name"]').value`),'Local unsaved name');
+  await evaluate(`window.__communityConfirm=confirm;confirm=()=>true;document.getElementById('entertainmentReload').click()`);
+  await wait(`document.querySelector('[data-ent-field="name"]').value==='Remote confirmed name'`);
+  await evaluate(`confirm=window.__communityConfirm;setAdminToken(null);switchView('chat');document.getElementById('chatRetry').click()`);
+  await wait(`document.getElementById('chatAnnouncementLabel').classList.contains('hidden')`);
+  await wait(`document.querySelectorAll('.chat-card').length===3`);
+  assert.equal(await evaluate(`document.querySelectorAll('[data-chat-action="approve"],[data-chat-action="pin"]').length`),0,'Guest has no moderation controls');
+  assert.equal(await evaluate(`document.getElementById('entertainmentRows').children.length`),0,'Sign-out clears admin drafts');
+  const after=(await request('/settings')).data;for(const k of Object.keys(baseline))assert.equal(after[k],baseline[k],'Existing setting preserved '+k);
+  await call('Emulation.setDeviceMetricsOverride',{width:430,height:1000,deviceScaleFactor:1,mobile:true});
+  for(const view of ['chat','entertainment']){await evaluate(`switchView('${view}');window.scrollTo({top:0,behavior:'instant'})`);const shot=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:true});fs.writeFileSync(path.join(out,view+'-mobile.png'),Buffer.from(shot.data,'base64'));}
+  assert.deepEqual(errors,[]);console.log('PASS isolated browser Chat/Entertainment: verified sign-in, lost-response/duplicate recovery, escaped messages, host moderation/pins/reactions/announcements, photo attachments, poll route, honest empty lineup, draft uploads/save failure/conflicts, filters, responsive pages/editor and sign-out cleanup.');
+};

@@ -909,6 +909,7 @@ app.post('/api/guestbook/:id/reply', publicWrite, (req, res) => {
 const storyGalleryOrder = require('./story-gallery-order')({app,db,requireAdmin,decorate:mediaThumbnails.decorate});
 require('./bridal-train')({app,db,requireAdmin,multer,storage,uploadsDir:UPLOADS_DIR,previews:sitePhotoPreviews});
 require('./live-broadcast')({app,db,requireAdmin,multer,storage,uploadsDir:UPLOADS_DIR,previews:sitePhotoPreviews});
+require('./wedding-community')({app,db,requireAdmin,publicWrite,multer,uploadsDir:UPLOADS_DIR,guest:competitionAuth.guest});
 app.get('/api/memories', (req, res) => {
   const rows = db.prepare(storyGalleryOrder.select+` WHERE m.status = 'approved' ORDER BY m.createdAt DESC`).all();
   res.json(rows.map(mediaThumbnails.decorate));

@@ -27,6 +27,11 @@ module.exports=async({call,evaluate,errors,out})=>{
     await require('./live-broadcast-e2e.cjs')({call,evaluate,wait,request,out});
     await request('/admin/logout',{method:'POST',admin:true});return;
   }
+  if(process.env.WEDDING_E2E_COMMUNITY_ONLY==='1'){
+    controllerToken=(await request('/admin/login',{method:'POST',body:{password:'isolated-browser-only'}})).data.token;
+    await require('./wedding-community-e2e.cjs')({call,evaluate,wait,request,out,errors});
+    await request('/admin/logout',{method:'POST',admin:true});return;
+  }
   if(process.env.WEDDING_E2E_COUNTDOWN_ONLY==='1'){
     controllerToken=(await request('/admin/login',{method:'POST',body:{password:'isolated-browser-only'}})).data.token;
     await require('./countdown-e2e-checks.cjs')({evaluate,wait,request});

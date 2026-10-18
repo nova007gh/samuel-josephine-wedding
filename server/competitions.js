@@ -291,5 +291,5 @@ module.exports = function installCompetitions({app,db,requireAdmin,publicWrite,m
     if(!req.file) return res.status(400).json({error:'Choose a photo.'});
     res.json({url:'/uploads/'+req.file.filename});
   });
-  return {issueSession};
+  return {issueSession,guest};
 };
