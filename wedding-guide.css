@@ -13,7 +13,8 @@ body.locked .sj-guide-launch,body:has(#app.hidden) .sj-guide-launch{display:none
 .sj-guide-close{margin-left:auto;min-width:44px;min-height:44px;background:transparent;border:0;font-size:26px;color:inherit;}
 .sj-guide-body{overflow:auto;overscroll-behavior:contain;flex:1;min-height:0;padding:12px 14px;}
 .sj-guide-intro{font:13px/1.5 system-ui;margin:0 0 12px;}
-.sj-guide-welcome{display:flex;align-items:center;gap:12px;margin-bottom:12px;}.sj-guide-welcome>img{flex:none;width:70px;height:110px;object-fit:cover;border-radius:14px;}.sj-guide-welcome .sj-guide-intro{margin:0;}
+.sj-guide-welcome{display:flex;align-items:center;gap:12px;margin-bottom:12px;}.sj-guide-welcome>img{flex:none;width:60px;height:90px;object-fit:cover;border-radius:14px;}.sj-guide-welcome .sj-guide-intro{margin:0;}
+.sj-guide-mode{font:11px/1.4 system-ui;color:#75634d;margin:6px 0 0;}
 .sj-guide-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
 .sj-guide-chips button{min-height:36px;padding:7px 10px;border-radius:20px;border:1px solid #dfc99f;background:#fffdf8;color:#684d28;font:12px system-ui;}
 .sj-guide-status,.sj-guide-answer{font:13px/1.55 system-ui;white-space:pre-line;}
@@ -22,6 +23,13 @@ body.locked .sj-guide-launch,body:has(#app.hidden) .sj-guide-launch{display:none
 .sj-guide-card img{width:100%;height:135px;object-fit:contain;background:#f2e7d6;display:block;}
 .sj-guide-card-content{padding:11px 12px;}.sj-guide-card h3{font:19px Georgia;margin:0 0 7px;}.sj-guide-card p{font:13px/1.5 system-ui;white-space:pre-line;margin:0 0 9px;overflow-wrap:anywhere;}
 .sj-guide-card a{display:inline-flex;align-items:center;min-height:40px;color:#74531d;font:600 12px system-ui;text-decoration:underline;text-underline-offset:3px;}
+.sj-guide-card--compact{display:flex;align-items:flex-start;}.sj-guide-card--compact>img{width:64px;height:88px;flex:none;object-fit:cover;margin:11px 0 11px 10px;border-radius:10px;}.sj-guide-card--compact .sj-guide-card-content{min-width:0;flex:1;}.sj-guide-card--compact h3{font-size:17px;}.sj-guide-card--compact p{font-size:12px;}
+.sj-guide-tools{display:flex;justify-content:space-between;gap:8px;}.sj-guide-tools button{min-height:36px;padding:5px 1px;background:transparent;border:0;color:#755626;text-decoration:underline;text-underline-offset:3px;font:12px system-ui;}
+.sj-guide-next{font:12px/1.5 system-ui;color:#654923;padding:9px 11px;background:#f1e5cf;border-radius:10px;}
+.sj-guide-question{margin:12px 0 8px;padding:9px 12px;border-radius:12px;background:#efe0c4;font:600 13px/1.5 system-ui;overflow-wrap:anywhere;color:#4e3a23;}
+.sj-guide-past{margin:8px 0;border-bottom:1px solid #e4d3b6;}.sj-guide-past>summary{cursor:pointer;min-height:38px;box-sizing:border-box;}.sj-guide-followups{margin-top:12px;}
+.sj-guide-schedule,.sj-guide-privacy{border-top:1px solid #e4d3b6;padding-top:5px;margin-top:12px;}.sj-guide-schedule>summary,.sj-guide-privacy>summary{cursor:pointer;min-height:44px;align-content:center;font:600 13px/1.5 system-ui;}.sj-guide-schedule>summary{font:20px/1.5 Georgia;}
+.sj-guide-form button:disabled{opacity:.6;cursor:wait;}
 .sj-guide-activity-title{font:20px Georgia;margin:18px 0 5px;}
 .sj-guide-alert-setting{display:flex;align-items:center;gap:8px;font:12px/1.4 system-ui;margin:10px 0;min-height:40px;}.sj-guide-alert-setting input{width:19px;height:19px;}
 .sj-guide-form{display:flex;gap:7px;padding:10px 12px;border-top:1px solid #e6d8c1;background:#fffaf2;}

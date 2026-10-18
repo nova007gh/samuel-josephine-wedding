@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v219-inhouse-guide';
+const CACHE = 'sj-wedding-v220-guide-answers';
 const ASSETS = [
   './assets/guide-companions.jpg',
   './wedding-guide.css',

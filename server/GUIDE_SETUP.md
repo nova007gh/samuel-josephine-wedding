@@ -22,6 +22,26 @@ as stale. The browser matches questions against titles, keywords and public
 text. Unknown topics receive an explicit fallback, not a generated answer.
 This is not capable of answering every possible phrasing or arbitrary question.
 
+The guide now opens with the saved wedding overview and upcoming activity
+cards, rather than an empty question panel. Individual programme rows and
+published hosts/MCs have their own source cards, so questions about dinner,
+cake cutting, performers or a first dance can retrieve the specific entry.
+Entertainment distinguishes its separately saved lineup from performances
+already named in the reception programme. Generic app instructions also cover
+OTP delivery, upload/camera trouble, playback/sound and installation.
+
+Local ranking uses canonical terms/synonyms, document-frequency weighting,
+conservative one-edit/transposition spelling matches and minimum term coverage.
+It can handle limited explicit follow-ups such as “What time is it?” using the
+previous answer’s source IDs. This is bounded retrieval, not language-model
+reasoning. Up to six turns are retained only in page memory; older turns are
+collapsed in the UI. New conversation clears the turns, context and draft.
+Refresh recomputes saved answer sources only when public content changes; it
+never submits an unsubmitted draft or duplicates a conversation turn.
+“Today” and “now” questions use Ghana GMT calendar days and published start
+times, not inferred activity progress. No scheduled activity is declared live
+solely because its start time passed.
+
 Reminders are **opt-in per browser/device**; only preferences and bounded seen
 IDs are saved locally. They run only with the app open and visible, near a
 published event/performance time (10 minutes before to 20 minutes after) or
@@ -30,6 +50,14 @@ performer times use the saved absolute timestamps. Untimed/invalid schedules
 never trigger reminders. A scheduled time does not establish that an activity
 is actually underway. Reminder wording reflects this. No email/SMS/web push is
 sent; existing app announcement/competition systems remain unchanged.
+
+Event start parsing accepts published single times, ranges (hyphen/en dash/
+em dash), 24-hour clocks and open-ended “Till…” labels. Only the first clock
+is used; no end time is invented. Calendar days and clock bounds are checked.
+Programme reminders require a separate explicit ISO or English month-name
+date in that programme’s saved dateLabel. They never silently borrow the
+wedding date, so an untimed or differently dated programme cannot trigger
+misdated reminders. Schedule cards are not evidence of actual progress.
 
 Launcher opens an accessible native dialog, without adding a tenth tab or
 changing Home. Chat uses the compact icon-only launcher above its composer.

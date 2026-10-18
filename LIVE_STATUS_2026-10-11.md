@@ -1,5 +1,48 @@
 # snybena.com live audit — 11 October 2026
 
+## More useful guide / published activity discovery — v220 (18 October)
+
+User requested continued improvement after the initial guide showed an empty
+activity area. Root cause: saved Event times are ranges/open-ended strings
+(`07:00 AM - 11:00 AM`, `2:00 PM - 08:15 PM`, `08:15 PM Till…`), while the
+first parser only accepted a standalone clock. The new parser recognises
+those explicit start clocks, validates calendar/clock bounds, preserves Ghana
+GMT and never invents an end time. Individual reception/engagement programme
+rows now have their own search/source cards and, only with their programme’s
+explicit saved date, scheduled reminder entries. Saved hosts/MCs have a
+separate source card. Read-only real-HTTP/SQLite checking discovered 15 actual
+future entries instead of zero and correctly retrieved Dinner and the MCs.
+
+Guide opens with a real saved wedding overview, human-readable date, next
+published scheduled start and photo activity previews/full-programme link.
+Disclosures/reminder controls remain accessible in a compact expandable panel.
+The introduction is shorter; answering moves directly to the newest result.
+Past questions collapse, with at most six turns kept in page memory only.
+New conversation clears questions/context/draft; no conversation persistence,
+logging, private-data ingestion, external service or generative model added.
+
+Local matching now handles synonyms, conservative one-edit/transposition
+typos, document-frequency weighting, focused individual programme entries,
+app troubleshooting and limited source-ID follow-ups (e.g. dinner → “What
+time is it?”). OTP-delivery help no longer incorrectly triggers the private
+code guard; requests to reveal codes still do. Today/now/next questions use
+published timestamps in Ghana GMT and never claim actual progress from a
+schedule. Entertainment’s empty separate lineup is distinguished from
+performances already named in the published reception programme.
+
+Refresh only recomputes answer cards when public content changes and never
+submits a typed draft, duplicates a turn or discards the draft. Sources remain
+linked to real app routes. Original Home, compact Chat and all nine tabs are
+unchanged; reminder opt-in, media/upload safeguards and payment boundaries
+remain in place. No saved schedule, wedding setting or guest content is edited.
+
+Passed all eleven pure suites, enhanced range/date/unknown/privacy/search/
+typo/context/temporal tests, responsive fixture browser checks at 320×568,
+375×667, 390×844, 495×770, 844×390 and 1024×768, decoded real wedding photos,
+bounded conversation/clear/draft-refresh tests, opt-in deduplicated reminders,
+and existing navigation/community/compact-chat width regressions. Public
+guide-source testing uses read-only SQLite and no production submissions.
+
 ## In-house S&J Guide — v219 (18 October)
 
 User selected a lightweight in-house knowledge guide on the existing 1 CPU /
