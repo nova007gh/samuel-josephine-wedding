@@ -57,9 +57,9 @@
       turns=[...turns,{question:q,context,result}].slice(-6);$('sjGuideQuestion').value='';$('sjGuideSchedule').open=false;renderResults(true);
     }finally{sending=false;send.disabled=false;send.textContent='Ask';}
   }
-  function open(){if(dialog.open)return;returnFocus=button;dismissAlert();dialog.showModal();refresh();}
+  function open(launcher=button){if(dialog.open)return;returnFocus=launcher;returnFocus.focus({preventScroll:true});dismissAlert();dialog.showModal();refresh();}
   function close(){if(dialog.open)dialog.close();}
-  button.addEventListener('click',open);$('sjGuideClose').addEventListener('click',close);
+  document.querySelectorAll('.sj-guide-launch[aria-controls="sjGuideDialog"]').forEach(launcher=>launcher.addEventListener('click',()=>open(launcher)));$('sjGuideClose').addEventListener('click',close);
   dialog.addEventListener('close',()=>{if(returnFocus?.isConnected)returnFocus.focus({preventScroll:true});});
   dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)close();}});
   $('sjGuideForm').addEventListener('submit',e=>{e.preventDefault();submit($('sjGuideQuestion').value);});

@@ -1,5 +1,28 @@
 # snybena.com live audit — 11 October 2026
 
+## Jossy left-hand guide icon — v223 (18 October)
+
+Added the user-supplied Jossy illustration as a second guide launcher on the
+left edge, retaining Sam on the right. Background transparency was prepared
+locally from the supplied JPEG (edge-connected background only), resized to a
+240px PNG (`assets/guide-launcher-jossy.png`), and mirrored in CSS so Jossy
+peeks inward from the left edge. No outside image/AI service was used.
+
+Both 64×102px controls open the same existing S&J Guide dialog and in-memory
+conversation; no second assistant, model, identity or polling loop is created.
+Focus returns to the launcher used, with native keyboard/button semantics and
+accessible labels. Both move above the Chat composer, clear the bottom bar,
+respect locked/gate screens and align with phone/tablet/desktop app frames.
+Original Home, five bottom tabs, community content and guide knowledge remain
+unchanged. No backend change/restart, database migration or environment edit.
+
+Passed pure suites and fixture-only responsive guide checks at 320×568,
+375×667, 390×844, 495×770, 844×390 and 1024×768, including both decoded assets,
+edge alignment, hit targets, composer clearance, Jossy’s keyboard activation,
+launcher-specific focus return, shared conversation, local/private questions,
+source links and optional reminders. Cache/CSS/guide script use v223.
+Private pre-deploy frontend/online database snapshot: `/root/wedding-pre-v223`.
+
 ## Five-tab navigation / Events entertainment hub — v222 (18 October)
 
 Per user request, removed Home, Live Broadcast, Entertainment and Wedding

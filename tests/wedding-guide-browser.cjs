@@ -11,11 +11,17 @@ exports.check=async({call,evaluate,errors,out})=>{
     await call('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:width<900});
     for(const view of ['home','chat']){
       await evaluate(`switchView(${JSON.stringify(view)});new Promise(r=>setTimeout(r,200))`);
-      const launcher=await evaluate(`(()=>{const b=document.getElementById('sjGuideLaunch'),r=b.getBoundingClientRect(),app=document.getElementById('app').getBoundingClientRect(),bar=document.querySelector('.tabbar').getBoundingClientRect(),composer=document.getElementById('chatComposer').getBoundingClientRect();return {fits:r.left>=app.left&&r.right<=app.right+1&&r.top>=0&&r.bottom<=bar.top,right:app.right-r.right,width:r.width,height:r.height,clear:r.bottom<=composer.top,clickable:document.elementFromPoint(r.left+r.width/2,r.top+r.height/2)?.closest('#sjGuideLaunch')===b};})()`);
-      assert.equal(launcher.fits,true,'Illustration launcher fits '+view+' '+width);assert.ok(launcher.right<=2,'Launcher hugs app right edge');assert.ok(launcher.width>=44&&launcher.width<=64&&launcher.height<=104,'Compact accessible target');assert.equal(launcher.clickable,true,'Illustration is tappable');if(view==='chat')assert.equal(launcher.clear,true,'Illustration stays above Chat composer');
-      assert.equal(await evaluate(`document.querySelector('#sjGuideLaunch img').decode().then(()=>true).catch(()=>false)`),true,'Supplied illustration decodes');
+      for(const id of ['sjGuideLaunch','sjGuideLaunchJossy']){
+        const launcher=await evaluate(`(()=>{const b=document.getElementById('${id}'),r=b.getBoundingClientRect(),app=document.getElementById('app').getBoundingClientRect(),bar=document.querySelector('.tabbar').getBoundingClientRect(),composer=document.getElementById('chatComposer').getBoundingClientRect();return {fits:r.left>=app.left-1&&r.right<=app.right+1&&r.top>=0&&r.bottom<=bar.top,edge:b.classList.contains('sj-guide-launch--left')?r.left-app.left:app.right-r.right,width:r.width,height:r.height,clear:r.bottom<=composer.top,clickable:document.elementFromPoint(r.left+r.width/2,r.top+r.height/2)?.closest('.sj-guide-launch')===b};})()`);
+        assert.equal(launcher.fits,true,'Illustration launcher fits '+id+' '+view+' '+width);assert.ok(Math.abs(launcher.edge)<=2,'Launcher hugs its app edge');assert.ok(launcher.width>=44&&launcher.width<=64&&launcher.height<=104,'Compact accessible target');assert.equal(launcher.clickable,true,'Illustration is tappable');if(view==='chat')assert.equal(launcher.clear,true,'Illustration stays above Chat composer');
+        assert.equal(await evaluate(`document.querySelector('#${id} img').decode().then(()=>true).catch(()=>false)`),true,'Supplied illustration decodes');
+      }
       if((width===495&&view==='home')||(width===375&&view==='chat')){const shot=await call('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(out,'guide-launcher-'+view+'-'+width+'.png'),Buffer.from(shot.data,'base64'));}
     }
+    await evaluate(`document.getElementById('sjGuideLaunchJossy').click();new Promise(r=>setTimeout(r,100))`);
+    assert.equal(await evaluate(`document.querySelectorAll('dialog[open]').length===1&&document.getElementById('sjGuideDialog').open`),true,'Jossy opens the same single guide dialog');
+    await evaluate(`document.getElementById('sjGuideClose').click();new Promise(r=>setTimeout(r,50))`);
+    assert.equal(await evaluate(`document.activeElement.id`),'sjGuideLaunchJossy','Focus returns to Jossy when used');
     await evaluate(`document.getElementById('sjGuideLaunch').click();new Promise(r=>setTimeout(r,300))`);
     await evaluate(`document.getElementById('sjGuideClear').click()`);
     assert.equal(await evaluate(`(()=>{const d=document.getElementById('sjGuideDialog'),r=d.getBoundingClientRect(),f=document.getElementById('sjGuideForm').getBoundingClientRect();return d.open&&r.left>=0&&r.right<=innerWidth&&r.top>=0&&r.bottom<=innerHeight&&f.bottom<=r.bottom&&d.scrollWidth<=d.clientWidth;})()`),true,'Guide fits '+width+'x'+height);
@@ -33,6 +39,12 @@ exports.check=async({call,evaluate,errors,out})=>{
   assert.match(await evaluate(`document.querySelector('#sjGuideResults .sj-guide-turn:last-child').textContent`),/5:45 PM/);
   await evaluate(`[...document.querySelectorAll('#sjGuideSuggestions button')].find(b=>b.textContent==='What time is it?').click();new Promise(r=>setTimeout(r,50))`);
   assert.match(await evaluate(`document.querySelector('#sjGuideResults .sj-guide-turn:last-child').textContent`),/Dinner is served/,'Follow-up keeps activity context');
+  await evaluate(`document.getElementById('sjGuideClose').click();new Promise(r=>setTimeout(r,50))`);
+  await evaluate(`document.getElementById('sjGuideLaunchJossy').focus()`);
+  await call('Input.dispatchKeyEvent',{type:'keyDown',key:' ',code:'Space',windowsVirtualKeyCode:32});
+  await call('Input.dispatchKeyEvent',{type:'keyUp',key:' ',code:'Space',windowsVirtualKeyCode:32});
+  assert.equal(await evaluate(`document.getElementById('sjGuideDialog').open`),true,'Jossy opens via keyboard');
+  assert.match(await evaluate(`document.querySelector('#sjGuideResults .sj-guide-turn:last-child').textContent`),/Dinner is served/,'Both icons share the existing conversation');
   const turns=await evaluate(`document.querySelectorAll('.sj-guide-turn').length`);
   await evaluate(`document.getElementById('sjGuideQuestion').value='unsubmitted draft';document.getElementById('sjGuideRefresh').click();new Promise(r=>setTimeout(r,50))`);
   assert.equal(await evaluate(`document.querySelectorAll('.sj-guide-turn').length`),turns,'Refresh does not send drafts or duplicate answers');
@@ -58,11 +70,12 @@ exports.check=async({call,evaluate,errors,out})=>{
   await evaluate(`document.querySelector('.sj-guide-alert button').click();document.getElementById('sjGuideRefresh').click();new Promise(r=>setTimeout(r,50))`);
   assert.equal(await evaluate(`document.querySelectorAll('.sj-guide-alert').length`),0,'Reminder does not repeat');
   await evaluate(`document.getElementById('sjGuideAlerts').checked=false;document.getElementById('sjGuideAlerts').dispatchEvent(new Event('change'))`);
-  assert.deepEqual(errors,[]);console.log('PASS right-edge illustration launcher, tap target/composer clearance, responsive guide, local follow-ups, bounded memory/clear, untouched drafts, private/escaped text, real photos/source links, offline warnings and opt-in reminders');
+  assert.deepEqual(errors,[]);console.log('PASS Sam/right and Jossy/left icons, composer clearance, keyboard/focus, shared conversation/dialog, responsive guide, private local questions, real source links and opt-in reminders');
 };
 exports.live=async({call,evaluate,errors,out})=>{
   await call('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
-  await evaluate(`document.getElementById('sjGuideLaunch').click();document.getElementById('sjGuideQuestion').value='Where is the wedding?';document.getElementById('sjGuideForm').requestSubmit()`);
+  assert.equal(await evaluate(`Promise.all([...document.querySelectorAll('.sj-guide-launch img')].map(img=>img.decode().then(()=>true).catch(()=>false))).then(ok=>ok.length===2&&ok.every(Boolean))`),true,'Both live illustrations decode');
+  await evaluate(`document.getElementById('sjGuideLaunchJossy').click();document.getElementById('sjGuideQuestion').value='Where is the wedding?';document.getElementById('sjGuideForm').requestSubmit()`);
   for(let i=0;i<200;i++){if(await evaluate(`document.querySelector('#sjGuideResults a[href="#events"]')!==null`))break;await new Promise(r=>setTimeout(r,100));}
   assert.equal(await evaluate(`document.querySelector('#sjGuideResults a[href="#events"]')!==null`),true,'Real endpoint produces wedding source');
   assert.equal(await evaluate(`document.querySelector('#sjGuideResults img').decode().then(()=>true).catch(()=>false)`),true,'Live published photo decodes');
