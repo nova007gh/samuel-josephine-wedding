@@ -47,6 +47,16 @@ Remaining real-world prerequisites are unchanged: physical-phone capture and
 native-share/keyboard checks, actual livestream/operator rehearsal, handset OTP
 delivery, credential rotation and automatic Speso signed callback delivery.
 No live money tests or payment activation are authorized or performed.
+Deployed `bd23c83` after frontend/nginx/online database snapshot
+`/root/wedding-pre-v227`. The live nginx change was additive against a pinned
+snapshot hash, preserving the actual site's existing cache durations rather
+than overwriting its configuration from the repository. Full nginx -t passed
+and nginx reloaded gracefully; the API service was not restarted.
+Post-deploy GET-only audit passed all 59 precached assets, headers on each,
+API no-store, uploaded photo MIME, health, private-setting exclusions, live OTP
+on and Speso TEST. Live browser guide, seven-width navigation and initial/
+reloaded current-Home-photo checks passed. All 105 baseline rows across 13
+audited wedding/chat/payment tables are unchanged; SQLite integrity `ok`.
 
 ## Companion lifecycle verification and fixes — v226 (19 October)
 
