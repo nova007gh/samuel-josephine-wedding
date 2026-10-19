@@ -1,6 +1,7 @@
 
-const CACHE = 'sj-wedding-v227-transport-security';
+const CACHE = 'sj-wedding-v228-admin-companions';
 const ASSETS = [
+  './admin-companion-alerts.js',
   './assets/guide-launcher-jossy.png',
   './assets/guide-launcher.png',
   './assets/guide-companions.jpg',

@@ -1,5 +1,50 @@
 # snybena.com live audit — 11 October 2026
 
+## Private Sam/Jossy admin alerts and glass guide — v228 (19 October)
+
+Added a separate `GET /api/admin/companion-alerts` feed protected by the
+existing server requireAdmin/session guard. No schema, credential, OTP,
+payment-mode or public guide knowledge changes. Explicit saved connections to
+Sam/Samuel/groom or Jossy/Josephine/bride select the companion. Unknown,
+ambiguous, both-sided and negated connections are skipped; school names alone
+do not establish a side.
+
+The read-only feed returns bounded recent (24-hour) guest entries, Chat,
+grouped competition voting, media/guestbook/RSVP/gift submissions. Guest-ID
+links are used where available. Legacy name-only submissions require an exact
+unique normalised guest-name match, and the UI explicitly labels these as
+**not verified ownership**. No message text, ballot choices, phone/email,
+payment amounts or credentials are selected/returned. Gift notices describe
+records/submissions, not paid or settled gifts. Ambiguous names are skipped.
+
+Admins receive staggered Sam/Jossy recent-activity greetings, then grouped,
+deduplicated in-app alerts with a Review activity route to the appropriate
+admin page/section. Polling is 15 seconds while visible, signed in and not
+uploading; display defers during typing, dialogs and other activity toasts.
+Private queued/seen data remains only in page memory and is cleared on
+sign-out; epoch checks discard late responses after logout/mute. The on/off
+preference alone is stored. Mute/status live under the guide's Privacy &
+activity suggestions → Admin-only alerts. No SMS/email/background push or
+external AI was added. The public/local guide cannot query this private feed.
+
+The shared guide is now a small glass-style non-modal panel (up to 360×420px,
+58dvh on small screens) above the bottom navigation, with translucent
+background/blur and opaque readable text. It no longer dims or makes the
+whole page inert; actual bottom-tab clicks work while the panel stays open.
+Internal scrolling keeps its composer visible, with native buttons/focus and
+Escape inside the panel. Original Home, compact Chat, five tabs and companion
+animations remain unchanged.
+
+Passed pure suites, standalone disposable SQLite/HTTP privacy/auth tests,
+and actual isolated API/browser admin tests: guests make zero private-feed
+requests; missing/guest/expired credentials are rejected; side routing,
+dedupe, escaped names, real review routes, upload deferral, mute, sign-out,
+late-response rejection and no private local persistence passed. Toasts fit
+320×568, 390×844, 844×390 and 1024×768. Guide checks passed six sizes, small
+translucent/non-modal geometry, actual background navigation, source photos,
+questions/follow-ups, launcher lifecycle and reduced-motion. API candidate:
+`/root/wedding-v228-candidate`; no production submissions used for these tests.
+
 ## Broad regression audit and transport/edge hardening — v227 (19 October)
 
 Preserved the original Home, five-tab hierarchy, compact Chat, Sam/Jossy

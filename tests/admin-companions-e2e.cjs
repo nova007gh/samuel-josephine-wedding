@@ -1,0 +1,52 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+exports.setup=async({call})=>{
+  await call('Page.addScriptToEvaluateOnNewDocument',{source:`window.__adminCompanionTicks={};window.__privateAlertRequests=0;const realInterval=setInterval;window.setInterval=(fn,ms,...args)=>{if(['pollAdminCompanions','displayAdminCompanion'].includes(fn.name))window.__adminCompanionTicks[fn.name]=fn;return realInterval(fn,ms,...args);};const realFetch=fetch;window.fetch=(url,...args)=>{if(String(url).includes('/admin/companion-alerts'))window.__privateAlertRequests++;return realFetch(url,...args);};`});
+};
+exports.check=async({call,evaluate,wait,request,out,errors,token})=>{
+  await request('/admin/companion-alerts',{status:401});
+  assert.equal(await evaluate(`window.__privateAlertRequests`),0,'Ordinary guests never request the private activity feed');
+  assert.equal(await evaluate(`document.getElementById('sjGuideAdminControls').hidden`),true);
+  const guest=async(name,relation)=>request('/admin/guests',{method:'POST',admin:true,body:{name,relation,status:'approved'}});
+  await guest('Jossy Fixture Friend',"JOSSY'S FRIEND");await guest('Sam Fixture Family',"SAM'S FAMILY");await guest('Unassigned Fixture','CHURCH FAMILY');
+  await evaluate(`document.querySelectorAll('.activity-toast,.competition-toast').forEach(el=>el.remove());document.activeElement?.blur();window.__companionRealNow=Date.now;window.__companionOffset=0;Date.now=()=>window.__companionRealNow()+window.__companionOffset;setAdminToken(${JSON.stringify(token)});switchView('admin');`);
+  await wait(`window.__privateAlertRequests>0&&!document.getElementById('sjGuideAdminControls').hidden`);
+  await evaluate(`window.__companionOffset=2000;window.__adminCompanionTicks.displayAdminCompanion()`);
+  await wait(`!!document.querySelector('.sj-admin-companion-alert')`);
+  assert.match(await evaluate(`document.querySelector('.sj-admin-companion-alert').textContent`),/Jossy.*Admin only.*recent activities/s);
+  await evaluate(`document.querySelector('.sj-admin-companion-close').click();window.__companionOffset+=15000;window.__adminCompanionTicks.displayAdminCompanion()`);
+  assert.match(await evaluate(`document.querySelector('.sj-admin-companion-alert').textContent`),/Sam.*Admin only/s);
+  await evaluate(`document.querySelector('.sj-admin-companion-close').click()`);
+  const before=await evaluate(`window.__privateAlertRequests`);
+  await evaluate(`window.__companionOffset+=15000;window.__adminCompanionTicks.pollAdminCompanions();new Promise(r=>setTimeout(r,100))`);
+  assert.equal(await evaluate(`document.querySelectorAll('.sj-admin-companion-alert').length`),0,'Unchanged feed does not repeat alerts');
+  assert.ok(await evaluate(`window.__privateAlertRequests`)>before);
+  await guest('<img src=x onerror="window.__adminXss=1">',"JOSSY'S FAMILY");
+  await evaluate(`window.__adminCompanionTicks.pollAdminCompanions();new Promise(r=>setTimeout(r,100))`);
+  await wait(`!!document.querySelector('.sj-admin-companion-alert')`);
+  assert.match(await evaluate(`document.querySelector('.sj-admin-companion-alert').textContent`),/<img src=x/);
+  assert.equal(await evaluate(`!!window.__adminXss||!!document.querySelector('.sj-admin-companion-alert img[src="x"]')`),false,'Private names are escaped');
+  await evaluate(`document.querySelector('.sj-admin-companion-open').click()`);
+  assert.equal(await evaluate(`currentView==='admin'&&!document.getElementById('admin-panel-guests').classList.contains('hidden')`),true,'Alert opens actual admin guest review');
+  await guest('Sam New Upload',"SAM'S FRIEND");
+  await evaluate(`window.__companionOffset+=15000;window.__uploadsInFlight=1;window.__adminCompanionTicks.pollAdminCompanions();new Promise(r=>setTimeout(r,50))`);
+  assert.equal(await evaluate(`document.querySelectorAll('.sj-admin-companion-alert').length`),0,'No alerts interrupt uploads');
+  await evaluate(`window.__uploadsInFlight=0;window.__adminCompanionTicks.pollAdminCompanions();new Promise(r=>setTimeout(r,100))`);
+  await wait(`!!document.querySelector('.sj-admin-companion-alert')`);
+  for(const [width,height] of [[320,568],[390,844],[844,390],[1024,768]]){
+    await call('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:width<900});
+    assert.equal(await evaluate(`(()=>{const r=document.querySelector('.sj-admin-companion-alert').getBoundingClientRect();return r.left>=0&&r.right<=innerWidth&&r.top>=0&&r.bottom<=document.querySelector('.tabbar').getBoundingClientRect().top;})()`),true,'Private toast fits '+width+'x'+height);
+  }
+  const shot=await call('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(out,'admin-companion-alert.png'),Buffer.from(shot.data,'base64'));
+  await evaluate(`document.getElementById('sjAdminCompanionAlerts').checked=false;document.getElementById('sjAdminCompanionAlerts').dispatchEvent(new Event('change'))`);
+  assert.equal(await evaluate(`document.querySelectorAll('.sj-admin-companion-alert').length`),0,'Mute clears private alerts immediately');
+  await guest('Late Private Jossy',"JOSSY'S FRIEND");
+  await evaluate(`window.__alertOriginalApi=api;window.__holdAlert=new Promise(resolve=>window.__releaseAlert=resolve);api=async(p,o)=>{const result=await window.__alertOriginalApi(p,o);if(p==='/admin/companion-alerts'){window.__alertResponseHeld=true;await window.__holdAlert;}return result;};document.getElementById('sjAdminCompanionAlerts').checked=true;document.getElementById('sjAdminCompanionAlerts').dispatchEvent(new Event('change'))`);
+  await wait(`window.__alertResponseHeld===true`);
+  await evaluate(`setAdminToken(null);window.__releaseAlert();new Promise(r=>setTimeout(r,100))`);
+  assert.equal(await evaluate(`document.getElementById('sjGuideAdminControls').hidden&&document.querySelectorAll('.sj-admin-companion-alert').length===0`),true,'Sign-out clears private UI');
+  await evaluate(`api=window.__alertOriginalApi`);
+  const after=await evaluate(`window.__privateAlertRequests`);await evaluate(`window.__adminCompanionTicks.pollAdminCompanions()`);assert.equal(await evaluate(`window.__privateAlertRequests`),after,'Signed-out tab never polls admin feed');
+  assert.equal(await evaluate(`Object.values(localStorage).some(value=>/Jossy Fixture Friend|Sam Fixture Family|Unassigned Fixture/.test(value))`),false,'Private activity never persisted');
+  await evaluate(`Date.now=window.__companionRealNow`);assert.deepEqual(errors,[]);
+  console.log('PASS real isolated admin-only Sam/Jossy alerts: auth gate, saved connections, no duplicate alerts, escaped names, actual review route, upload deferral, responsive toasts, mute/sign-out and no private persistence');
+};

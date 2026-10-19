@@ -39,7 +39,7 @@
   <link rel="stylesheet" href="app-polish.css?v=222" />
   <link rel="stylesheet" href="wedding-community.css?v=216" />
   <link rel="stylesheet" href="community-reference.css?v=218" />
-  <link rel="stylesheet" href="wedding-guide.css?v=226" />
+  <link rel="stylesheet" href="wedding-guide.css?v=228" />
   <link rel="stylesheet" href="guest-checkin.css?v=202" />
   <script>
   /* a checked-in guest goes straight into the app — flag it before first
@@ -1837,13 +1837,14 @@ try{
       <div id="sjGuideResults" aria-live="polite" aria-atomic="false"></div>
       <div id="sjGuideSuggestions" class="sj-guide-chips sj-guide-followups" aria-label="Follow-up questions"></div>
       <details id="sjGuideSchedule" class="sj-guide-schedule" open><summary>Around the celebration</summary><p class="sj-guide-status">Published plans—not confirmation that an activity has started.</p><div id="sjGuideActivities"></div></details>
-      <details class="sj-guide-privacy"><summary>Privacy &amp; activity suggestions</summary><p class="sj-guide-status">Questions and up to six recent answers stay in this page’s memory, not on our server. New conversation clears them. The guide cannot read private guest records, messages or payments.</p><label class="sj-guide-alert-setting"><input id="sjGuideSuggestionsEnabled" type="checkbox" checked>Let Sam &amp; Jossy occasionally suggest published activities and app features</label><label class="sj-guide-alert-setting"><input id="sjGuideAlerts" type="checkbox">Show timed activity reminders on this device while the app is open</label><p class="sj-guide-status">Suggestions appear only while browsing, at most three per visit. Timed reminders follow published times, not confirmed progress. No SMS, email or background notifications. Only these preferences and seen reminder IDs are saved on this device.</p></details>
+      <details class="sj-guide-privacy"><summary>Privacy &amp; activity suggestions</summary><p class="sj-guide-status">Questions and up to six recent answers stay in this page’s memory, not on our server. New conversation clears them. The public guide cannot read private guest records, messages or payments.</p><label class="sj-guide-alert-setting"><input id="sjGuideSuggestionsEnabled" type="checkbox" checked>Let Sam &amp; Jossy occasionally suggest published activities and app features</label><label class="sj-guide-alert-setting"><input id="sjGuideAlerts" type="checkbox">Show timed activity reminders on this device while the app is open</label><p class="sj-guide-status">Suggestions appear only while browsing, at most three per visit. Timed reminders follow published times, not confirmed progress. No SMS, email or background notifications. Only these preferences and seen reminder IDs are saved on this device.</p><section id="sjGuideAdminControls" hidden><label class="sj-guide-alert-setting"><input id="sjAdminCompanionAlerts" type="checkbox" checked>Admin-only alerts from Sam &amp; Jossy</label><p class="sj-guide-status">A separate authenticated feed watches recent guest activity while you are signed in as admin. Saved connections choose Sam or Jossy; ambiguous connections are skipped. Legacy submissions matched by unique name are labelled, not treated as verified ownership. Alerts never enter the public guide or its conversation.</p></section></details>
     </div>
     <form id="sjGuideForm" class="sj-guide-form"><label class="community-sr-only" for="sjGuideQuestion">Ask about the wedding or app. Do not include private information.</label><input id="sjGuideQuestion" type="text" maxlength="400" placeholder="Ask about the wedding or app…" autocomplete="off"><button type="submit">Ask</button></form>
   </div>
 </dialog>
 <script src="wedding-guide-knowledge.js?v=222"></script>
-<script src="wedding-guide.js?v=226"></script>
+<script src="wedding-guide.js?v=228"></script>
+<script src="admin-companion-alerts.js?v=228"></script>
 <script src="wedding-community.js?v=218"></script>
 <script src="competitions.js?v=198"></script>
 <script src="competition-notices.js?v=187"></script>

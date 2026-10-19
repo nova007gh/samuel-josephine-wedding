@@ -60,7 +60,7 @@
       turns=[...turns,{question:q,context,result}].slice(-6);$('sjGuideQuestion').value='';$('sjGuideSchedule').open=false;renderResults(true);
     }finally{sending=false;send.disabled=false;send.textContent='Ask';}
   }
-  function open(launcher=button){if(dialog.open)return;stopMeeting();lastInteraction=Date.now();returnFocus=launcher;returnFocus.focus({preventScroll:true});dismissAlert();dismissSuggestion();dialog.showModal();heartBurst(launcher);refresh();}
+  function open(launcher=button){if(dialog.open)return;stopMeeting();lastInteraction=Date.now();returnFocus=launcher;returnFocus.focus({preventScroll:true});dismissAlert();dismissSuggestion();dialog.show();heartBurst(launcher);refresh();}
   function close(){if(dialog.open)dialog.close();}
   document.querySelectorAll('.sj-guide-launch[aria-controls="sjGuideDialog"]').forEach(launcher=>launcher.addEventListener('click',()=>open(launcher)));$('sjGuideClose').addEventListener('click',close);
   dialog.addEventListener('close',()=>{
@@ -71,6 +71,7 @@
     if(returnFocus?.isConnected&&(active===document.body||active===dialog||dialog.contains(active)))returnFocus.focus({preventScroll:true});
   });
   dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)close();}});
+  dialog.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();close();}});
   $('sjGuideForm').addEventListener('submit',e=>{e.preventDefault();submit($('sjGuideQuestion').value);});
   document.querySelectorAll('[data-guide-question]').forEach(b=>b.addEventListener('click',()=>submit(b.dataset.guideQuestion)));
   $('sjGuideRefresh').addEventListener('click',()=>refresh(true));

@@ -1,0 +1,35 @@
+/* Disposable SQLite/HTTP only. No live guest data. */
+const assert=require('node:assert/strict'),path=require('node:path'),express=require(path.join(process.argv[2],'node_modules/express')),DB=require(path.join(process.argv[2],'node_modules/better-sqlite3'));
+const install=require(process.argv[3]),db=new DB(':memory:');let server;
+db.exec(`CREATE TABLE guests(id TEXT,name TEXT,relation TEXT,checkedInAt INTEGER,status TEXT,phone TEXT,email TEXT);
+CREATE TABLE wedding_chat(id TEXT,actorId TEXT,host INTEGER,status TEXT,createdAt INTEGER,text TEXT);
+CREATE TABLE competition_votes(competitionId TEXT,guestId TEXT,choiceId TEXT,createdAt INTEGER);
+CREATE TABLE memories(id TEXT,guestName TEXT,createdAt INTEGER,status TEXT);
+CREATE TABLE guestbook(id TEXT,name TEXT,createdAt INTEGER,status TEXT);
+CREATE TABLE rsvps(id TEXT,name TEXT,submittedAt INTEGER);
+CREATE TABLE gifts(id TEXT,name TEXT,createdAt INTEGER);`);
+(async()=>{try{
+  const now=Date.now();
+  const guest=db.prepare('INSERT INTO guests VALUES (?,?,?,?,?,?,?)');
+  for(const row of [['sam','Sam Guest',"SAM'S FRIEND"],['jossy','Jossy Guest',"JOSSY'S FAMILY"],['unknown','Unknown Guest','CHURCH FAMILY'],['both','Both Guest','Sam and Jossy'],['dupe1','Duplicate Name',"SAM'S FRIEND"],['dupe2','Duplicate Name',"JOSSY'S FRIEND"]])guest.run(...row,now-1000,'approved','PRIVATE_PHONE','PRIVATE_EMAIL');
+  db.prepare('INSERT INTO memories VALUES (?,?,?,?)').run('media','Jossy Guest',now-800,'pending');
+  db.prepare('INSERT INTO memories VALUES (?,?,?,?)').run('duplicate','Duplicate Name',now-800,'pending');
+  db.prepare('INSERT INTO wedding_chat VALUES (?,?,?,?,?,?)').run('chat','sam',0,'pending',now-700,'PRIVATE_MESSAGE');
+  db.prepare('INSERT INTO wedding_chat VALUES (?,?,?,?,?,?)').run('hidden','sam',0,'hidden',now-700,'HIDDEN_MESSAGE');
+  db.prepare('INSERT INTO competition_votes VALUES (?,?,?,?)').run('game','jossy','PRIVATE_CHOICE',now-600);
+  db.prepare('INSERT INTO competition_votes VALUES (?,?,?,?)').run('game','jossy','OTHER_CHOICE',now-600);
+  db.prepare('INSERT INTO gifts VALUES (?,?,?)').run('gift','Sam Guest',now-500);
+  db.prepare('INSERT INTO rsvps VALUES (?,?,?)').run('old','Sam Guest',now-25*3600000);
+  const before=db.serialize();const app=express();install({app,db,requireAdmin:(req,res,next)=>req.get('Authorization')==='Bearer valid-admin'?next():res.status(401).json({error:'Not signed in'})});
+  server=app.listen(0,'127.0.0.1');await new Promise(resolve=>server.once('listening',resolve));const url='http://127.0.0.1:'+server.address().port+'/api/admin/companion-alerts';
+  for(const headers of [{},{Cookie:'sj_guest_session=guest-only'}, {Authorization:'Bearer expired-admin'}])assert.equal((await fetch(url,{headers})).status,401);
+  const response=await fetch(url,{headers:{Authorization:'Bearer valid-admin'}});assert.equal(response.status,200);assert.equal(response.headers.get('cache-control'),'no-store');const body=await response.json();
+  const media=body.events.find(row=>row.kind==='upload');assert.equal(media.side,'jossy');assert.equal(media.match,'unique-name');assert.equal(media.view,'adminmedia');
+  assert.equal(body.events.filter(row=>row.kind==='vote').length,1,'Multi-choice voting produces one activity, not ballot disclosure');
+  assert.equal(body.events.find(row=>row.kind==='chat').side,'sam');
+  assert.equal(body.events.filter(row=>row.kind==='gift').length,1);
+  assert.equal(body.events.some(row=>/duplicate|unknown|both|hidden|old/i.test(row.id)),false);
+  assert.doesNotMatch(JSON.stringify(body),/PRIVATE_|OTHER_CHOICE|HIDDEN_MESSAGE/);
+  assert.equal(db.serialize().equals(before),true,'Private feed performs no database writes');
+  console.log('PASS admin-only feed: real 401s, Sam/Jossy routing, exact-name disclosures/ambiguity exclusion, grouped votes, redacted fields, recent window and read-only preservation');
+}finally{if(server){server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}db.close();}})().catch(error=>{console.error(error);process.exitCode=1;});

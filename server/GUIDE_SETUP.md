@@ -59,11 +59,40 @@ date in that programme’s saved dateLabel. They never silently borrow the
 wedding date, so an untimed or differently dated programme cannot trigger
 misdated reminders. Schedule cards are not evidence of actual progress.
 
-Launcher opens an accessible native dialog, without adding a bottom tab or
-changing Home. Chat uses the compact icon-only launcher above its composer.
+Launchers open a compact translucent, non-modal native dialog, without adding
+a bottom tab or changing Home. The page and bottom navigation remain usable;
+Escape within the panel or its close button closes it. Text stays opaque for
+readability while the glass background lets page activity show through.
 Questions and results are not saved across reloads. Reminder dismissal is
 bounded locally and disabling reminders removes an active guide reminder.
 Shared devices share reminder settings; this is not verified guest identity.
+
+## Private admin companion alerts
+
+`admin-companion-alerts.js` is a **separate authenticated feature**, not a data
+source for local guide answers. `GET /api/admin/companion-alerts` uses the same
+server `requireAdmin` guard as the dashboard. Guest cookies, locally saved
+names and expired admin tokens cannot access it. The public `/api/guide`
+allowlist and data boundary are unchanged.
+
+The feed reads recent (24-hour, bounded) saved guest entries, Chat, grouped
+competition votes, uploads, guestbook/RSVP and gift submissions. Explicit
+Sam/Samuel/groom or Jossy/Josephine/bride saved relations determine the side;
+both-sided, unknown, school-only and negated relations are skipped. Chat/votes
+link by guest ID. Legacy name-only submission tables require a unique exact
+normalised name match and the alert **discloses that this is not verified
+ownership**. Gift alerts describe a recorded submission, never payment
+confirmation. No message bodies, ballot choices, phones, emails or amounts
+are selected/returned by this endpoint. It performs no database writes.
+
+While an admin is signed in, the browser polls every 15 seconds when visible
+and not uploading. A recent-activity greeting is followed by deduplicated,
+grouped Sam/Jossy alerts; they do not steal focus or interrupt focused inputs,
+uploads or dialogs. Review opens the correct dashboard/page. Private queues,
+seen IDs and DOM are cleared on sign-out and late responses are discarded.
+Only the on/off preference is persisted. Mute under the guide's **Privacy &
+activity suggestions → Admin-only alerts**. No SMS, email or background push
+is sent, and no external AI is used.
 
 ## Deployment
 
@@ -73,11 +102,15 @@ directory, install `server/wedding-guide.js` and the identical root
 `wedding-guide-knowledge.js`, alongside the updated `server.js` registration.
 No npm dependency, database migration, environment value or model service is
 needed. Repository mode resolves the shared module one directory up.
+For private admin alerts, also serve root `admin-companion-alerts.js`, install
+`server/admin-companion-alerts.js` in the flat API directory and register it
+with `{app,db,requireAdmin}` after the community/competition tables exist.
 
 ## Tests
 
 ```
 node tests/wedding-guide.test.cjs
+node tests/admin-companions.test.cjs
 node tests/readonly-preview.cjs /absolute/output/directory --guide
 ```
 

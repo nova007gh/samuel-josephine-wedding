@@ -32,12 +32,19 @@ exports.check=async({call,evaluate,errors,out})=>{
     await evaluate(`document.getElementById('sjGuideLaunch').click();new Promise(r=>setTimeout(r,300))`);
     await evaluate(`document.getElementById('sjGuideClear').click()`);
     assert.equal(await evaluate(`(()=>{const d=document.getElementById('sjGuideDialog'),r=d.getBoundingClientRect(),f=document.getElementById('sjGuideForm').getBoundingClientRect();return d.open&&r.left>=0&&r.right<=innerWidth&&r.top>=0&&r.bottom<=innerHeight&&f.bottom<=r.bottom&&d.scrollWidth<=d.clientWidth;})()`),true,'Guide fits '+width+'x'+height);
+    assert.equal(await evaluate(`(()=>{const d=document.getElementById('sjGuideDialog'),r=d.getBoundingClientRect(),color=getComputedStyle(d).backgroundColor;return !d.matches(':modal')&&r.height<innerHeight*.65&&r.width<=362&&color.startsWith('rgba(')&&r.bottom<=document.querySelector('.tabbar').getBoundingClientRect().top;})()`),true,'Small translucent non-modal guide preserves visible page/navigation');
+    if(width===495){
+      const point=await evaluate(`(()=>{const r=document.querySelector('.tab[data-tab="events"]').getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2};})()`);
+      await call('Input.dispatchMouseEvent',{type:'mousePressed',button:'left',clickCount:1,...point});await call('Input.dispatchMouseEvent',{type:'mouseReleased',button:'left',clickCount:1,...point});
+      assert.equal(await evaluate(`currentView==='events'&&document.getElementById('sjGuideDialog').open`),true,'Actual background navigation click works while translucent guide stays open');
+      await evaluate(`document.getElementById('sjGuideQuestion').focus()`);
+    }
     assert.match(await evaluate(`document.getElementById('sjGuideOverview').textContent`),/Guide test venue/,'Useful overview before a question');
     assert.match(await evaluate(`document.getElementById('sjGuideActivities').textContent`),/Traditional Wedding/,'Time ranges produce activity cards');
     if(width===495){const shot=await call('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(out,'guide-welcome-495x770.png'),Buffer.from(shot.data,'base64'));}
     await evaluate(`document.getElementById('sjGuideQuestion').value='Where is the wedding?';document.getElementById('sjGuideForm').requestSubmit();new Promise(r=>setTimeout(r,50))`);
     assert.match(await evaluate(`document.getElementById('sjGuideResults').textContent`),/Guide test venue/);
-    assert.equal(await evaluate(`Promise.race([document.querySelector('#sjGuideResults .sj-guide-turn:last-child img').decode().then(()=>true).catch(()=>false),new Promise(r=>setTimeout(()=>r(false),15000))])`),true,'Real source photo decodes');
+    assert.equal(await evaluate(`(()=>{const img=document.querySelector('#sjGuideResults .sj-guide-turn:last-child img');img.loading='eager';return Promise.race([img.decode().then(()=>true).catch(()=>false),new Promise(r=>setTimeout(()=>r(false),30000))]);})()`),true,'Real source photo decodes even below the compact panel fold');
     if(width===495){const shot=await call('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(out,'guide-495x770.png'),Buffer.from(shot.data,'base64'));}
     await evaluate(`document.getElementById('sjGuideClose').click();new Promise(r=>setTimeout(r,50))`);
     assert.equal(await evaluate(`document.activeElement.id`),'sjGuideLaunch','Focus returns to launcher');
