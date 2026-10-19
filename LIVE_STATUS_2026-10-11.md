@@ -44,6 +44,18 @@ late-response rejection and no private local persistence passed. Toasts fit
 translucent/non-modal geometry, actual background navigation, source photos,
 questions/follow-ups, launcher lifecycle and reduced-motion. API candidate:
 `/root/wedding-v228-candidate`; no production submissions used for these tests.
+Deployed `93c3bf3` after private frontend/API/online database snapshot
+`/root/wedding-pre-v228`. API bootstrap matched the pinned prior hash; the
+module/bootstrap were installed atomically after zero established port-3100
+connections and zero API child processes, followed by a healthy service
+restart. Frontend deployment followed. No environment or schema changed.
+Live checks passed compact glass/non-modal geometry, real guide sources and
+follow-ups, no guest private-feed requests, all 60 cached public assets and
+security headers, health, OTP enabled and Speso TEST. The private feed returns
+401/no activity data without admin authentication. All 107 baseline rows
+across 13 audited wedding/chat/payment tables are unchanged; SQLite integrity
+`ok`. The larger snapshot count includes concurrent guest activity preserved
+before deployment, not test submissions.
 
 ## Broad regression audit and transport/edge hardening — v227 (19 October)
 

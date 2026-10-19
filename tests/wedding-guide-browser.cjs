@@ -165,7 +165,9 @@ exports.live=async({call,evaluate,errors,out})=>{
   assert.equal(await evaluate(`document.querySelectorAll('.sj-guide-heart').length`),8,'Live click heart burst');
   for(let i=0;i<200;i++){if(await evaluate(`document.querySelector('#sjGuideResults a[href="#events"]')!==null`))break;await new Promise(r=>setTimeout(r,100));}
   assert.equal(await evaluate(`document.querySelector('#sjGuideResults a[href="#events"]')!==null`),true,'Real endpoint produces wedding source');
-  assert.equal(await evaluate(`document.querySelector('#sjGuideResults img').decode().then(()=>true).catch(()=>false)`),true,'Live published photo decodes');
+  assert.equal(await evaluate(`(()=>{const img=document.querySelector('#sjGuideResults img');img.loading='eager';return img.decode().then(()=>true).catch(()=>false);})()`),true,'Live published photo decodes');
+  assert.equal(await evaluate(`(()=>{const d=document.getElementById('sjGuideDialog'),r=d.getBoundingClientRect();return !d.matches(':modal')&&r.height<innerHeight*.65&&getComputedStyle(d).backgroundColor.startsWith('rgba(')&&r.bottom<=document.querySelector('.tabbar').getBoundingClientRect().top;})()`),true,'Live compact transparent non-modal guide');
+  assert.equal(await evaluate(`document.getElementById('sjGuideAdminControls').hidden&&performance.getEntriesByType('resource').every(row=>!row.name.includes('/admin/companion-alerts'))`),true,'Guest sees no private controls and makes no private feed requests');
   assert.match(await evaluate(`document.getElementById('sjGuideStatus').textContent`),/Published information refreshed/);
   assert.equal(await evaluate(`document.getElementById('sjGuideAlerts').checked`),false,'Reminders stay opt-in');
   assert.match(await evaluate(`document.getElementById('sjGuideActivities').textContent`),/Traditional Wedding/,'Published time ranges populate real activity cards');
