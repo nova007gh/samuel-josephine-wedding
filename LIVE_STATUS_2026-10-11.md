@@ -29,6 +29,12 @@ regressions. Existing pure suites and seven-width navigation checks passed.
 Fixed an unhandled read-only preview streaming-timeout error using pipeline
 cleanup; the proxy remains GET-only. No wedding content, authentication,
 payments, credentials or backend code changed.
+Deployed `395e856` after private snapshot `/root/wedding-pre-v226`. Resumed
+full guide/lifecycle checks passed after the harness restart; completed pure
+and seven-width navigation results were retained. Live read-only guide checks
+passed and public HTML/script/worker hashes match the verified v226 files.
+All 105 baseline rows across 13 wedding/chat/payment tables remain unchanged;
+SQLite integrity `ok`. No backend restart or production submissions required.
 
 ## Floating companions, early waves and centre kiss — v225 (18 October)
 
