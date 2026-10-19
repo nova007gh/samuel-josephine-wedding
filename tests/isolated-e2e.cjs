@@ -8,7 +8,9 @@ const root=path.resolve(__dirname,'..');
 const types={'.html':'text/html','.js':'text/javascript','.css':'text/css','.jpg':'image/jpeg','.png':'image/png','.svg':'image/svg+xml','.webmanifest':'application/manifest+json'};
 const candidate=process.env.WEDDING_E2E_SERVER||'/opt/wedding-api/server.js';
 if(!/^\/[a-zA-Z0-9/_-]+\.js$/.test(candidate))throw new Error('Invalid isolated server path');
-const tunnel=spawn('ssh',['-T','-o','ControlMaster=no','-o','ControlPath=none','-o','ConnectTimeout=15','-o','ExitOnForwardFailure=yes','-L','127.0.0.1:3197:127.0.0.1:3196','-L','127.0.0.1:3194:127.0.0.1:3195','snybena','node /opt/wedding-api/isolated-browser-api.cjs '+candidate]);
+const runner=process.env.WEDDING_E2E_RUNNER||'/opt/wedding-api/isolated-browser-api.cjs';
+if(!/^\/[a-zA-Z0-9/_-]+\.cjs$/.test(runner))throw new Error('Invalid isolated runner path');
+const tunnel=spawn('ssh',['-T','-o','ControlMaster=no','-o','ControlPath=none','-o','ConnectTimeout=15','-o','ExitOnForwardFailure=yes','-L','127.0.0.1:3197:127.0.0.1:3196','-L','127.0.0.1:3194:127.0.0.1:3195','snybena','node '+runner+' '+candidate+(process.env.WEDDING_E2E_QUICK_ONLY==='1'?' --otp-off':'')]);
 let child,server;
 const ready=new Promise((resolve,reject)=>{
   let output='';

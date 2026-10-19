@@ -66,7 +66,7 @@ async function api(path, opts = {}){
   if (admin && adminToken) headers['Authorization'] = `Bearer ${adminToken}`;
   if (body !== undefined && !form) headers['Content-Type'] = 'application/json';
 
-  let res;
+  let res, data = null, unreadable = false;
   const ctrl = new AbortController();
   /* large phone videos on mobile data need far more than 2 minutes */
   const timer = setTimeout(() => ctrl.abort(), form ? 60 * 60000 : 15000);
@@ -75,6 +75,7 @@ async function api(path, opts = {}){
   try {
     if (form){
       await optimiseUploadImage(path, form);
+      if (ctrl.signal.aborted) throw new Error('Upload timed out. Try a smaller file or a stronger connection.');
       res = await new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.open(method, API_BASE + path);
@@ -100,6 +101,9 @@ async function api(path, opts = {}){
       signal: ctrl.signal,
       cache: 'no-store'
     });
+    // Keep the timeout active until the body has finished, not just headers.
+    try { data = await res.json(); }
+    catch(e){ if (ctrl.signal.aborted) throw e; unreadable = true; }
   } catch(e){
     const err = new Error(e.message && /Upload timed out/.test(e.message)
       ? e.message : 'No connection. Please check your network and try again.');
@@ -110,8 +114,6 @@ async function api(path, opts = {}){
     if (form) window.__uploadsInFlight--;
   }
 
-  let data = null;
-  try { data = await res.json(); } catch {}
   if (!res.ok){
     const err = new Error((data && data.error) || (res.status === 413 ? 'Upload is too large. The limit is 10 MB for competition and bridal train photos, or 1 GB for other files.' : `Request failed (${res.status}).`));
     err.code = (data && data.code)
@@ -119,6 +121,13 @@ async function api(path, opts = {}){
         : res.status === 429 ? 'auth/too-many-requests' : 'unknown');
     // expired/invalid admin session: drop it so the UI falls back to login
     if (admin && res.status === 401 && adminToken) setAdminToken(null);
+    throw err;
+  }
+  if (unreadable || data === null){
+    const err = new Error(method === 'GET'
+      ? 'The server returned an unreadable response. Please try again.'
+      : 'The server response could not be confirmed. Check your submissions before trying again.');
+    err.code = 'api/unconfirmed-response';
     throw err;
   }
   return data;

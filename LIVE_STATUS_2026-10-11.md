@@ -1,5 +1,53 @@
 # snybena.com live audit — 11 October 2026
 
+## Broad regression audit and transport/edge hardening — v227 (19 October)
+
+Preserved the original Home, five-tab hierarchy, compact Chat, Sam/Jossy
+companions, content, OTP policy and Speso TEST mode. No backend JS, schema,
+credential or provider changes. Candidate `api-data.js?v=227` and worker cache
+`sj-wedding-v227-transport-security` include these targeted fixes:
+
+- Keep request deadlines active through JSON response-body consumption, not
+  merely response headers. A stalled body now releases busy UI/feed state.
+- Reject malformed/null successful responses instead of treating an unknown
+  save result as success. Explain that guests should check submissions before
+  retrying; never automatically repeat a write or claim it was saved.
+- Do not start an upload if its deadline expired during image preparation;
+  preserve upload-counter cleanup and existing one-hour/1 GiB limits.
+- Add nginx nosniff, SAMEORIGIN framing and strict-origin-when-cross-origin
+  referrer headers, repeated in Cache-Control locations to preserve nginx
+  inheritance. API responses/errors receive no-store. Outbound Vimeo/YouTube
+  embeds, guest capture and native sharing are not restricted by a new CSP.
+- As this nginx is the public edge, replace rather than append client-supplied
+  X-Forwarded-For before Express trusts it; spoofed chains cannot choose the
+  rate-limit identity. Preserve existing TLS, routing, cache periods, upload
+  MIME mappings, streaming buffers/timeouts and API service configuration.
+
+Passed all pure suites plus disposable browser/API checks for core gallery
+uploads, actual synthetic-mic MediaRecorder capture/recovery, admin sign-in,
+OTP-session voting, competitions/moderation/privacy/race guards, countdowns,
+Chat/Entertainment, Broadcast, reception/engagement programmes and Bridal
+Train uploads/order/conflict handling. Share/Gifts mocks, guide lifecycle,
+refresh/offline/current-photo recovery and five-width shell/polling checks
+passed. Live read-only OTP UI passed without sending any code. Speso isolated
+API tests passed with a completely mocked provider and no real collections.
+
+Large-upload replay through disposable nginx/API accepted 257 MiB and exactly
+1 GiB, rejected/cleaned over 1 GiB, and remained responsive across 198 health
+checks (maximum 67ms; peak API RSS 106.7 MiB). No live rows/files involved.
+Isolated real nginx confirmed forged forwarding headers are discarded and
+security/cache headers are present; staged full TLS config passed nginx -t.
+
+Corrected the legacy quick-entry test fixture to explicitly disable OTP only
+in its disposable API; the default fixture and live app retain OTP. Improved
+temporary Chrome-profile cleanup so late helper-file writes do not overwrite
+test results. Staged test runner: `/root/wedding-audit-v227`.
+
+Remaining real-world prerequisites are unchanged: physical-phone capture and
+native-share/keyboard checks, actual livestream/operator rehearsal, handset OTP
+delivery, credential rotation and automatic Speso signed callback delivery.
+No live money tests or payment activation are authorized or performed.
+
 ## Companion lifecycle verification and fixes — v226 (19 October)
 
 Reproduced a lost-click bug with real browser pointer down/up events during

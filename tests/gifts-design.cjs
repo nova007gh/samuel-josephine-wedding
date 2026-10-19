@@ -229,5 +229,8 @@ const delay = ms => new Promise(resolve=>setTimeout(resolve,ms));
      chrome.kill();await Promise.race([stopped,delay(5000)]);
      if(chrome.exitCode===null&&chrome.signalCode===null){chrome.kill('SIGKILL');await Promise.race([stopped,delay(5000)]);}
    }
-   if(chrome.exitCode!==null||chrome.signalCode!==null)fs.rmSync(profile,{recursive:true,force:true,maxRetries:10,retryDelay:100});
+   if(chrome.exitCode!==null||chrome.signalCode!==null){
+     try{await fs.promises.rm(profile,{recursive:true,force:true,maxRetries:10,retryDelay:200});}
+     catch(error){console.warn('Temporary test profile retained for inspection:',profile,error.code);}
+   }
 });

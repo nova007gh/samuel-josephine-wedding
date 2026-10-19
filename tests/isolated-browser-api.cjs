@@ -15,7 +15,7 @@ const media=http.createServer((req,res)=>{
   res.setHeader('Content-Type',types[path.extname(name)]||'application/octet-stream');fs.createReadStream(file).pipe(res);
 });
 media.listen(3195,'127.0.0.1');
-const child=spawn(process.execPath,[server],{env:{PATH:process.env.PATH,PORT:'3196',HOST:'127.0.0.1',DATA_DIR:dir,ADMIN_PASSWORD:'isolated-browser-only',FFMPEG_BIN:'disabled-test-ffmpeg'}});
+const child=spawn(process.execPath,[server],{env:{PATH:process.env.PATH,PORT:'3196',HOST:'127.0.0.1',DATA_DIR:dir,ADMIN_PASSWORD:'isolated-browser-only',FFMPEG_BIN:'disabled-test-ffmpeg',GUEST_OTP_REQUIRED:process.argv[3]==='--otp-off'?'false':'true'}});
 let ready=false,closing=false;
 child.stderr.on('data',data=>process.stderr.write(data));
 child.stdout.on('data',data=>{
