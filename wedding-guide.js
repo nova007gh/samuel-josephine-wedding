@@ -63,7 +63,13 @@
   function open(launcher=button){if(dialog.open)return;stopMeeting();lastInteraction=Date.now();returnFocus=launcher;returnFocus.focus({preventScroll:true});dismissAlert();dismissSuggestion();dialog.showModal();heartBurst(launcher);refresh();}
   function close(){if(dialog.open)dialog.close();}
   document.querySelectorAll('.sj-guide-launch[aria-controls="sjGuideDialog"]').forEach(launcher=>launcher.addEventListener('click',()=>open(launcher)));$('sjGuideClose').addEventListener('click',close);
-  dialog.addEventListener('close',()=>{clearBurst();if(returnFocus?.isConnected)returnFocus.focus({preventScroll:true});});
+  dialog.addEventListener('close',()=>{
+    // A queued close event must not steal a newer focus choice or clear the
+    // hearts from a dialog that has already been reopened.
+    if(dialog.open)return;clearBurst();
+    const active=document.activeElement;
+    if(returnFocus?.isConnected&&(active===document.body||active===dialog||dialog.contains(active)))returnFocus.focus({preventScroll:true});
+  });
   dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)close();}});
   $('sjGuideForm').addEventListener('submit',e=>{e.preventDefault();submit($('sjGuideQuestion').value);});
   document.querySelectorAll('[data-guide-question]').forEach(b=>b.addEventListener('click',()=>submit(b.dataset.guideQuestion)));
@@ -125,17 +131,17 @@
     const current=meeting;meeting=null;current.animations.forEach(animation=>animation.cancel());current.timers.forEach(clearTimeout);clearInterval(current.guard);current.hearts?.remove();
     document.querySelectorAll('.sj-guide-meeting').forEach(launcher=>launcher.classList.remove('sj-guide-meeting'));
   }
-  function meetingAllowed(){return !reducedMotion.matches&&guestsIdle()&&!suggestion&&!alert&&!document.querySelector('[data-view="chat"]:not(.hidden),[data-view="gifts"]:not(.hidden)');}
+  function meetingAllowed(){return !reducedMotion.matches&&guestsIdle()&&!suggestion&&!alert&&!document.querySelector('[data-view="chat"]:not(.hidden),[data-view="gifts"]:not(.hidden),[data-view="livebroadcast"]:not(.hidden)');}
   function startMeeting(){
-    if(meeting||!meetingAllowed())return;
+    if(meeting||!meetingAllowed()||typeof button.animate!=='function')return;
     clearWaves();meetingCount++;nextMeetingAt=Date.now()+8*60000;
     const app=$('app').getBoundingClientRect(),bar=document.querySelector('.tabbar').getBoundingClientRect(),center=(app.left+app.right)/2;
     const y=Math.max(90,Math.min(innerHeight*.46,bar.top-130));
     const current={animations:[],timers:[],guard:null,hearts:null};meeting=current;
     for(const [id,side] of [['sjGuideLaunchJossy',-1],['sjGuideLaunch',1]]){
-      const launcher=$(id);launcher.classList.add('sj-guide-meeting');const r=launcher.getBoundingClientRect(),dx=center+side*21-(r.left+r.width/2),dy=y-(r.top+r.height/2);
+      const launcher=$(id),from=getComputedStyle(launcher).transform;launcher.classList.add('sj-guide-meeting');const r=launcher.getBoundingClientRect(),dx=center+side*21-(r.left+r.width/2),dy=y-(r.top+r.height/2);
       const together=`translate(${dx}px,${dy}px)`,kiss=`${together} rotate(${-side*11}deg)`;
-      current.animations.push(launcher.animate([{transform:'translate(0,0)',offset:0},{transform:together,offset:.32},{transform:kiss,offset:.43},{transform:kiss,offset:.57},{transform:together,offset:.68},{transform:'translate(0,0)',offset:1}],{duration:7200,easing:'ease-in-out'}));
+      current.animations.push(launcher.animate([{transform:from,offset:0},{transform:together,offset:.32},{transform:kiss,offset:.43},{transform:kiss,offset:.57},{transform:together,offset:.68},{transform:'translate(0,0)',offset:1}],{duration:7200,easing:'ease-in-out'}));
     }
     current.timers.push(setTimeout(()=>{
       if(meeting!==current||!meetingAllowed()){stopMeeting();return;}
@@ -165,12 +171,23 @@
     if(!visible){stopMeeting();clearWaves();dismissSuggestion();}
   }
   function syncMotion(){document.body.classList.toggle('sj-companions-paused',document.hidden);if(document.hidden||reducedMotion.matches){clearWaves();clearBurst();stopMeeting();}if(document.hidden)dismissSuggestion();}
-  function interact(){lastInteraction=Date.now();stopMeeting();}
-  document.addEventListener('pointerdown',interact,{passive:true});
+  function interact(event){
+    lastInteraction=Date.now();
+    const launcher=event?.target?.closest?.('.sj-guide-launch[aria-controls="sjGuideDialog"]');
+    // Open before cancelling travel: moving a pointer target between down/up
+    // otherwise loses the native click. Keyboard activation keeps its focus.
+    if(meeting&&launcher&&event.type==='pointerdown'&&event.isPrimary!==false&&event.button===0){event.preventDefault();open(launcher);return;}
+    stopMeeting();
+  }
+  document.addEventListener('pointerdown',interact);
   document.addEventListener('keydown',interact,{passive:true});
+  document.addEventListener('wheel',interact,{passive:true});
+  document.addEventListener('scroll',interact,{passive:true,capture:true});
+  window.addEventListener('popstate',interact);window.addEventListener('hashchange',interact);
   document.addEventListener('focusin',()=>{if(!guestsIdle())stopMeeting();});
   window.addEventListener('resize',stopMeeting);window.addEventListener('orientationchange',stopMeeting);
   const sessionObserver=new MutationObserver(syncSession);sessionObserver.observe(document.body,{attributes:true,attributeFilter:['class']});sessionObserver.observe($('app'),{attributes:true,attributeFilter:['class']});syncSession();
+  window.addEventListener('wedding:view',()=>{interact();if(!guestsIdle())dismissSuggestion();});
   reducedMotion.addEventListener('change',syncMotion);syncMotion();setInterval(tickCompanions,15000);
   function checkAlert(){
     if(!data||!$('sjGuideAlerts').checked||document.hidden||dialog.open||alert||suggestion||meeting||Date.now()-lastFetch>120000)return;

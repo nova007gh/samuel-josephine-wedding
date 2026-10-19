@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v225-floating-companions';
+const CACHE = 'sj-wedding-v226-companion-lifecycle';
 const ASSETS = [
   './assets/guide-launcher-jossy.png',
   './assets/guide-launcher.png',

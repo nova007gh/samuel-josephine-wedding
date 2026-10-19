@@ -1,11 +1,11 @@
 /* Candidate frontend + GET-only public live API/media proxy; cannot submit data. */
-const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),{Readable}=require('node:stream'),{spawn}=require('node:child_process');
+const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),{Readable,pipeline}=require('node:stream'),{spawn}=require('node:child_process');
 const root=path.resolve(__dirname,'..'),types={'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml','.jpg':'image/jpeg','.png':'image/png','.webmanifest':'application/manifest+json'};
 const server=http.createServer(async(req,res)=>{
   if(req.method!=='GET'){res.writeHead(405);res.end('Read-only preview');return;}
   const pathname=new URL(req.url,'http://localhost').pathname;
   if(pathname.startsWith('/api/')||pathname.startsWith('/uploads/')){
-    try{const r=await fetch('https://snybena.com'+req.url,{signal:AbortSignal.timeout(45000)});res.writeHead(r.status,{'Content-Type':r.headers.get('content-type')||'application/octet-stream','Cache-Control':'no-store'});if(r.body)Readable.fromWeb(r.body).pipe(res);else res.end();}catch{res.writeHead(502);res.end('Preview upstream unavailable');}return;
+    try{const r=await fetch('https://snybena.com'+req.url,{signal:AbortSignal.timeout(45000)});res.writeHead(r.status,{'Content-Type':r.headers.get('content-type')||'application/octet-stream','Cache-Control':'no-store'});if(r.body)pipeline(Readable.fromWeb(r.body),res,()=>{});else res.end();}catch{if(!res.headersSent)res.writeHead(502);res.end('Preview upstream unavailable');}return;
   }
   const file=path.resolve(root,'.'+(pathname==='/'?'/index.html':decodeURIComponent(pathname)));
   if(!file.startsWith(root+path.sep)||!fs.existsSync(file)||fs.statSync(file).isDirectory()){res.writeHead(404);res.end();return;}

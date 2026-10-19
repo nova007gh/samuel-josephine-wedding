@@ -1,5 +1,35 @@
 # snybena.com live audit — 11 October 2026
 
+## Companion lifecycle verification and fixes — v226 (19 October)
+
+Reproduced a lost-click bug with real browser pointer down/up events during
+centre travel: cancelling on pointer-down moved the button before pointer-up.
+Primary pointer-down on a travelling companion now opens the same guide before
+cancelling travel, preserving reliable touch/mouse activation. Existing native
+keyboard activation remains intact. Secondary clicks do not open the dialog.
+
+Fixed queued dialog-close events stealing a newly chosen focus target or
+clearing hearts after the guide had already reopened. Fallback focus restoration
+now runs only if focus is still in the closed dialog or on the document body.
+Added regression checks for both delayed-close scenarios.
+
+Centre choreography now stops on wheel/scroll, native history and the existing
+`wedding:view` routing event (including programmatic navigation). It never
+starts on Live Broadcast, protecting embedded players whose playback state
+cannot be read across origins. Preserved Chat/Gifts exclusions, upload and
+media guards. Travel starts from the current edge-float transform rather than
+snapping down first. Browsers without Web Animations keep working launchers
+and skip centre travel safely.
+
+Expanded disposable browser checks passed real in-flight clicking, routing,
+scrolling, uploads beginning mid-flight, live-player view exclusion, background
+pause/cleanup, reduced-motion changes during travel, immediate float/login
+reset, welcome/regular waves, centre/red-heart/return geometry and conversation
+regressions. Existing pure suites and seven-width navigation checks passed.
+Fixed an unhandled read-only preview streaming-timeout error using pipeline
+cleanup; the proxy remains GET-only. No wedding content, authentication,
+payments, credentials or backend code changed.
+
 ## Floating companions, early waves and centre kiss — v225 (18 October)
 
 Sam and Jossy float gently 18px along their existing right/left app edges as

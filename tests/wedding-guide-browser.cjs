@@ -8,6 +8,11 @@ exports.setup=async({call})=>{
   await call('Page.addScriptToEvaluateOnNewDocument',{source:`window.__guideImage=${JSON.stringify(image)};window.__guideFetches=[];window.__guideFail=false;const nativeFetch=window.fetch;window.fetch=function(url,options){if(String(url)==='/api/guide'){window.__guideFetches.push({url:String(url),options});return window.__guideFail?Promise.reject(new Error('offline')):Promise.resolve(new Response(JSON.stringify(window.__guideFixture||${JSON.stringify(fixture)}),{status:200,headers:{'Content-Type':'application/json'}}));}return nativeFetch.apply(this,arguments);};`});
 };
 exports.check=async({call,evaluate,errors,out})=>{
+  if(process.env.WEDDING_GUIDE_LIFECYCLE_ONLY==='1'){
+    await evaluate(`window.__realNow=Date.now;window.__clockBase=Date.now();window.__clockOffset=0;Date.now=()=>window.__clockBase+window.__clockOffset`);
+    await require('./guide-companion-lifecycle.cjs')({call,evaluate});
+    await evaluate(`Date.now=window.__realNow`);assert.deepEqual(errors,[]);return;
+  }
   for(const [width,height] of [[320,568],[375,667],[390,844],[495,770],[844,390],[1024,768]]){
     await call('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:width<900});
     for(const view of ['home','chat']){
@@ -76,6 +81,8 @@ exports.check=async({call,evaluate,errors,out})=>{
   assert.equal(await evaluate(`document.querySelectorAll('.sj-guide-alert').length`),0,'Reminder does not repeat');
   await evaluate(`document.getElementById('sjGuideAlerts').checked=false;document.getElementById('sjGuideAlerts').dispatchEvent(new Event('change'))`);
   await evaluate(`switchView('home');window.__guideFixture={mode:'local-knowledge-guide',cards:[{id:'gallery',title:'Share wedding memories',view:'gallery',text:'Published gallery',image:window.__guideImage}],activities:[]};window.__realNow=Date.now;window.__clockBase=Date.now();window.__clockOffset=0;Date.now=()=>window.__clockBase+window.__clockOffset;document.getElementById('sjGuideRefresh').click();new Promise(r=>setTimeout(r,50))`);
+  await evaluate(`document.activeElement?.blur();document.body.classList.add('locked');new Promise(r=>setTimeout(r,50))`);
+  await evaluate(`document.body.classList.remove('locked');new Promise(r=>setTimeout(r,350))`);
   assert.deepEqual(await evaluate(`[...document.querySelectorAll('.sj-guide-launch>span')].map(el=>el.textContent)`),['Sam','Jossy']);
   assert.match(await evaluate(`getComputedStyle(document.getElementById('sjGuideLaunch')).animationName`),/sjEdgeFloat/,'Edge floating starts immediately');
   await evaluate(`document.getElementById('sjGuideSuggestionsEnabled').checked=false;document.getElementById('sjGuideSuggestionsEnabled').dispatchEvent(new Event('change'));window.__clockOffset=60000;window.__guideIntervals[0]()`);
@@ -103,7 +110,7 @@ exports.check=async({call,evaluate,errors,out})=>{
   assert.equal(await evaluate(`document.querySelectorAll('.sj-guide-waving').length`),0,'No hand wave during uploads');
   await evaluate(`window.__uploadsInFlight=0;switchView('gifts');document.getElementById('sjGuideSuggestionsEnabled').checked=true;document.getElementById('sjGuideSuggestionsEnabled').dispatchEvent(new Event('change'));window.__clockOffset=39*60000;const input=document.createElement('input');input.id='guideFixtureTyping';document.body.append(input);input.focus();window.__guideIntervals[0]();new Promise(r=>setTimeout(r,50))`);
   assert.equal(await evaluate(`document.querySelectorAll('.sj-companion-suggestion').length`),0,'Suggestions do not interrupt focused input');
-  await evaluate(`document.getElementById('guideFixtureTyping').remove();window.__guideIntervals[0]();new Promise(r=>setTimeout(r,100))`);
+  await evaluate(`document.getElementById('guideFixtureTyping').remove();window.__clockOffset+=16000;window.__guideIntervals[0]();new Promise(r=>setTimeout(r,100))`);
   assert.match(await evaluate(`document.querySelector('.sj-companion-suggestion')?.textContent||''`),/Jossy suggests.*Share wedding memories/,'Published-only occasional suggestion');
   assert.equal(await evaluate(`(()=>{const r=document.querySelector('.sj-companion-suggestion').getBoundingClientRect();return r.top>=0&&r.bottom<document.querySelector('.tabbar').getBoundingClientRect().top&&r.left>=0&&r.right<=innerWidth;})()`),true,'Suggestion stays within viewport above bottom navigation');
   await evaluate(`document.querySelector('.sj-companion-suggestion button').click();document.getElementById('sjGuideSuggestionsEnabled').checked=false;document.getElementById('sjGuideSuggestionsEnabled').dispatchEvent(new Event('change'));window.__clockOffset=49*60000;window.__guideIntervals[0]();new Promise(r=>setTimeout(r,50))`);
@@ -123,7 +130,7 @@ exports.check=async({call,evaluate,errors,out})=>{
   await call('Emulation.setEmulatedMedia',{features:[]});
   for(const [width,height] of [[320,568],[844,390]]){
     await call('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:true});
-    await evaluate(`switchView('home');document.body.classList.add('locked');new Promise(r=>setTimeout(r,50))`);
+    await evaluate(`switchView('home');document.activeElement?.blur();document.body.classList.add('locked');new Promise(r=>setTimeout(r,350))`);
     assert.equal(await evaluate(`document.body.classList.contains('sj-companions-floating')`),false,'Floating stops at sign-in gate');
     await evaluate(`document.body.classList.remove('locked');new Promise(r=>setTimeout(r,50))`);
     assert.equal(await evaluate(`document.body.classList.contains('sj-companions-floating')`),true,'Floating starts immediately on returning from sign-in');
@@ -137,6 +144,7 @@ exports.check=async({call,evaluate,errors,out})=>{
     assert.equal(await evaluate(`document.querySelectorAll('.sj-guide-meeting,.sj-companion-love').length`),0,'Meeting finishes, removes hearts and returns to edges');
     assert.equal(await evaluate(`[...document.querySelectorAll('.sj-guide-launch')].every(el=>el.getAnimations().length===1)`),true,'No leftover travel animations');
   }
+  await require('./guide-companion-lifecycle.cjs')({call,evaluate});
   await evaluate(`Date.now=window.__realNow`);
   assert.deepEqual(errors,[]);console.log('PASS immediate floating/login reset, one-minute waves, responsive centre kiss/red hearts/return, cleanup/cancellation/reduced motion, shared private guide and existing regressions');
 };
