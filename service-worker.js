@@ -1,6 +1,9 @@
 
-const CACHE = 'sj-wedding-v228-admin-companions';
+const CACHE = 'sj-wedding-v229-vendors';
 const ASSETS = [
+  './vendors.js',
+  './vendors.css',
+  './vendor-schema.js',
   './admin-companion-alerts.js',
   './assets/guide-launcher-jossy.png',
   './assets/guide-launcher.png',

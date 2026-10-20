@@ -93,6 +93,7 @@ const delay = ms => new Promise(resolve=>setTimeout(resolve,ms));
   }
   if(process.argv.includes('--guide')){await require('./wedding-guide-browser.cjs').check({call,evaluate,errors,out});return;}
   if(process.argv.includes('--guide-live')){await require('./wedding-guide-browser.cjs').live({call,evaluate,errors,out});return;}
+  if(process.argv.includes('--vendors-live')){await require('./vendors-live-readonly.cjs')({call,evaluate,errors,out});return;}
   if(process.argv.includes('--shell')){
     await require('./shell-layout-checks.cjs')({call,evaluate,errors,out});return;
   }

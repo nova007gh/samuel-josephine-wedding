@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
-const names = ['overview','guests','content','photos','wedding','program','story','bridal','broadcast','announcements','gifts','access','competitions'];
+const names = ['overview','guests','content','photos','wedding','program','story','bridal','broadcast','announcements','gifts','access','competitions','entertainment','vendors'];
 let admin = true;
 const saved = new Map();
 const handlers = {};
@@ -45,4 +45,4 @@ assert.equal(scrolled,true);assert.equal(photoFocused,true);
 admin=false;
 handlers.click({target:tabs[5]});
 assert.equal(tabs[3].attrs['aria-selected'],'true','Unauthenticated clicks cannot operate dashboard tabs');
-console.log('PASS: all thirteen sections, ARIA/keyboard navigation, Gift Page Photo shortcut and admin guard');
+console.log('PASS: all dashboard sections including Vendors, ARIA/keyboard navigation, Gift Page Photo shortcut and admin guard');

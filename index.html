@@ -38,6 +38,7 @@
   <link rel="stylesheet" href="live-broadcast-reference.css?v=199" />
   <link rel="stylesheet" href="app-polish.css?v=222" />
   <link rel="stylesheet" href="wedding-community.css?v=216" />
+  <link rel="stylesheet" href="vendors.css?v=229" />
   <link rel="stylesheet" href="community-reference.css?v=218" />
   <link rel="stylesheet" href="wedding-guide.css?v=228" />
   <link rel="stylesheet" href="guest-checkin.css?v=202" />
@@ -615,6 +616,7 @@
     </div>
     <button class="menu-item menu-item--wide" data-goto="livebroadcast" type="button"><span class="menu-icon menu-icon--gold">&#9673;</span><span class="menu-text"><strong>Our Live Broadcast</strong><small>Broadcast details, schedule and replays</small></span><span class="menu-chev">&#10095;</span></button>
     <button class="menu-item menu-item--wide" data-goto="entertainment" type="button"><span class="menu-icon menu-icon--gold">&#9835;</span><span class="menu-text"><strong>Entertainment</strong><small>Explore the performances, schedule and Wedding Chat</small></span><span class="menu-chev">&#10095;</span></button>
+    <button class="menu-item menu-item--wide" data-goto="vendors" type="button"><span class="menu-icon menu-icon--gold">&#9814;</span><span class="menu-text"><strong>Our Vendors</strong><small>Discover our wedding partners</small></span><span class="menu-chev">&#10095;</span></button>
     <button class="menu-item menu-item--wide" data-goto="engagementprogram" type="button"><span class="menu-icon menu-icon--gold">&#128141;</span><span class="menu-text"><strong>Engagement / Traditional Program</strong><small>View the traditional wedding ceremony lineup</small></span><span class="menu-chev">&#10095;</span></button>
     <button class="menu-item menu-item--wide" data-goto="program" type="button"><span class="menu-icon menu-icon--gold">&#128220;</span><span class="menu-text"><strong>Reception Program</strong><small>View the complete celebration lineup</small></span><span class="menu-chev">&#10095;</span></button>
 
@@ -672,6 +674,16 @@
       <button id="chatClearAttachment" class="back-link hidden" type="button">Remove attachment</button>
       <details class="community-guidance chat-file-help"><summary>Attachments · up to 25 MB</summary><p>Photos, MP4/WebM videos, PDFs and MP3/WAV audio files. The microphone opens the separate voice-memory recording page.</p></details>
     </form>
+  </section>
+
+  <section class="view hidden vendor-page" data-view="vendors">
+    <header class="vendor-hero"><img id="vendorHeroPhoto" alt="Samuel and Josephine"><button data-goto="events" type="button" class="vendor-back" aria-label="Back to Events">&#10094;</button><div class="vendor-hero-copy"><p id="vendorEyebrow"></p><h1 id="vendorTitle"></h1><span class="vendor-divider" aria-hidden="true">&#9829;</span><p id="vendorSubtitle"></p></div></header>
+    <div id="vendorCategories" class="vendor-categories" role="group" aria-label="Vendor categories"></div>
+    <div class="vendor-search"><label><span aria-hidden="true">⌕</span><input id="vendorSearch" type="search" maxlength="120" aria-label="Search vendors"></label><button id="vendorFilterToggle" type="button" aria-expanded="false" aria-controls="vendorFilters"></button></div>
+    <div id="vendorFilters" class="vendor-filter-panel" hidden><label><input id="vendorFeatured" type="checkbox"><span id="vendorFeaturedLabel"></span></label></div>
+    <div class="vendor-heading"><h2 id="vendorHeading"></h2><span id="vendorTagline"></span></div>
+    <p id="vendorStatus" class="upload-status" role="status" aria-live="polite"></p><button id="vendorRetry" class="back-link" type="button">Refresh vendors</button>
+    <div id="vendorCards" class="vendor-grid"></div><p id="vendorContactNote" class="vendor-note"></p>
   </section>
 
   <section class="view hidden community-page" data-view="entertainment">
@@ -994,6 +1006,7 @@
       <button id="admin-tab-bridal" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-bridal" data-admin-section="bridal" type="button"><span aria-hidden="true">&#10084;</span>Bridal Train</button>
       <button id="admin-tab-broadcast" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-broadcast" data-admin-section="broadcast" type="button"><span aria-hidden="true">&#9673;</span>Live Broadcast</button>
       <button id="admin-tab-entertainment" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-entertainment" data-admin-section="entertainment" type="button"><span aria-hidden="true">&#9835;</span>Entertainment</button>
+      <button id="admin-tab-vendors" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-vendors" data-admin-section="vendors" type="button"><span aria-hidden="true">&#9814;</span>Vendors</button>
       <button id="admin-tab-announcements" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-announcements" data-admin-section="announcements" type="button"><span aria-hidden="true">&#128227;</span>Announcements</button>
       <button id="admin-tab-gifts" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-gifts" data-admin-section="gifts" type="button"><span aria-hidden="true">&#127873;</span>Gifts &amp; MoMo</button>
       <button id="admin-tab-access" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-access" data-admin-section="access" type="button"><span aria-hidden="true">&#128737;</span>Access &amp; Security</button>
@@ -1165,6 +1178,14 @@
         <p id="engagementEditorStatus" class="upload-status" role="status" aria-live="polite"></p>
       </form>
     </div>
+    <div id="admin-panel-vendors" class="admin-section-panel hidden" role="tabpanel" aria-labelledby="admin-tab-vendors" tabindex="0">
+      <h2 class="section-title">Vendors</h2><p class="vendor-note">Edit every page heading, banner, category and vendor card below. Only publish confirmed details and contact numbers you have permission to share. Hidden vendor drafts are admin-only; uploaded photo URLs are not confidential.</p>
+      <form id="vendorEditor" class="aq-card"><h3>Page design &amp; wording</h3><div id="vendorPageFields" class="settings-fields"></div><input id="vendorHeroUrl" type="hidden"><div id="vendorHeroPreview" class="vendor-edit-preview"></div><label class="field">Banner photo (JPEG, PNG, WebP; up to 8 MB)<input id="vendorHeroUpload" type="file" accept="image/jpeg,image/png,image/webp"></label><button type="button" id="vendorHeroClear">Use current couple photo</button><label class="field">Banner horizontal focus (0 = left, 100 = right)<input id="vendorHeroPosition" type="range" min="0" max="100" value="50"></label>
+      <h3>Categories</h3><p class="vendor-note">Rename, reorder or add up to 12 categories. Move vendors out of a category before removing it.</p><div id="vendorCategoryRows"></div><button type="button" id="vendorAddCategory">Add category</button>
+      <h3>Vendor cards</h3><div id="vendorEditRows"></div><div class="aq-actions"><button type="button" id="vendorAdd">ADD VENDOR</button><button type="button" id="vendorReload">RELOAD SAVED</button><button type="submit" class="map-button">SAVE VENDORS</button><button type="button" data-goto="vendors">VIEW PAGE</button></div></form>
+      <p id="vendorEditorStatus" class="upload-status" role="status" aria-live="polite"></p>
+    </div>
+
     <div id="admin-panel-entertainment" class="admin-section-panel hidden" role="tabpanel" aria-labelledby="admin-tab-entertainment" tabindex="0">
       <h2 class="admin-section-title">Entertainment Lineup</h2>
       <p class="community-note">Add only confirmed performers and times. Dates use your device’s local time zone. Uploaded photos stay in your draft until you save.</p>
@@ -1814,7 +1835,7 @@ try{
   </div>
 </div>
 <script src="api-data.js?v=227"></script>
-<script src="app.js?v=222"></script>
+<script src="app.js?v=229"></script>
 <script src="app-data.js?v=194"></script>
 <script src="app-social.js?v=212"></script>
 <script src="speso-gifts.js?v=213"></script>
@@ -1846,6 +1867,8 @@ try{
 <script src="wedding-guide.js?v=228"></script>
 <script src="admin-companion-alerts.js?v=228"></script>
 <script src="wedding-community.js?v=218"></script>
+<script src="vendor-schema.js?v=229"></script>
+<script src="vendors.js?v=229"></script>
 <script src="competitions.js?v=198"></script>
 <script src="competition-notices.js?v=187"></script>
 </body>

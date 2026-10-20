@@ -1,5 +1,41 @@
 # snybena.com live audit — 11 October 2026
 
+## Reference-style admin-editable Vendors — v229
+
+Added **Events → Our Vendors** and **Admin Dashboard → Vendors**, preserving
+the original Home, five bottom tabs, compact Chat and companions. The cream/
+gold reference is implemented as a responsive banner, category icon tabs,
+search, featured filter and photo-card grid with optional Call/WhatsApp links.
+No reference-image vendors, stock photos, contacts or unconfirmed bookings
+are published; the default banner uses the current saved couple photo and
+the default vendor list is empty.
+
+Admin can edit page wording, banner/description/focus, category names/icons/
+order, card names/labels/descriptions/photos/numbers, featured/publication
+flags and card order/removal. Hidden drafts stay outside public API/settings
+and the guide. New cards start hidden. Uploaded media URLs are public random
+URLs, not confidential storage. Removing cards/photos does not delete shared
+files. No schema migration or initial settings write occurs on deployment.
+
+The separate Vendors API uses existing server admin sessions and write-origin
+checks; all content is validated, photos are bounded/signature-checked, and
+revision-based atomic saves reject stale edits. Failed saves retain drafts;
+the editor blocks duplicate submission and clears private state on sign-out.
+Only explicit saving changes Vendors content; OTP/payment settings and all
+other wedding content are untouched. See `server/VENDORS_SETUP.md`.
+
+Passed all pure suites and disposable real API/browser Vendors tests: admin
+and write-origin guards, complete editor, category creation/icons, banner/card
+uploads and signature rejection, duplicate submit, hidden-draft exclusion
+from public API/settings, failed-save draft retention, stale-edit conflicts,
+search/category/featured filters, safe contact links, reorder/removal without
+shared-photo deletion, sign-out cleanup and unchanged unrelated settings.
+Guest page and editor fit 320, 375, 430, 844 and 1024px. A transient local
+disk-full error prevented screenshots on two reruns; the final complete run
+passed and saved screenshots. Separate seven-width navigation regression
+passed, including reduced-motion and header Home. Candidate runtime:
+`/root/wedding-v229-candidate`; all fixture edits used disposable data only.
+
 ## Private Sam/Jossy admin alerts and glass guide — v228 (19 October)
 
 Added a separate `GET /api/admin/companion-alerts` feed protected by the

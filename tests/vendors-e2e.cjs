@@ -1,0 +1,64 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+module.exports=async({call,evaluate,wait,request,out,errors,token})=>{
+  const baseline=(await request('/settings')).data;
+  await request('/admin/vendors',{status:401});await request('/admin/vendors',{method:'PATCH',body:{},status:401});
+  const origin=await evaluate('location.origin');
+  const cross=await fetch(origin+'/api/admin/vendors',{method:'PATCH',headers:{Authorization:'Bearer '+token,Origin:'https://untrusted.example','Content-Type':'application/json'},body:'{}'});assert.equal(cross.status,403);
+  await evaluate(`switchView('vendors')`);await wait(`document.getElementById('vendorCards').textContent.includes('Confirmed vendors')`);
+  assert.equal(await evaluate(`document.querySelectorAll('.vendor-card').length`),0,'No fabricated bookings');
+  await evaluate(`setAdminToken(${JSON.stringify(token)});switchView('admin');document.querySelector('[data-admin-section="vendors"]').click()`);
+  await wait(`!!document.querySelector('[data-vendor-page="title"]')&&!document.getElementById('vendorAdd').disabled`);
+  await evaluate(`document.querySelector('[data-vendor-page="title"]').value='Wedding Partners';document.querySelector('[data-vendor-page="heading"]').value='Featured Vendors';document.getElementById('vendorEditor').dispatchEvent(new Event('input',{bubbles:true}));document.getElementById('vendorAddCategory').click()`);
+  await evaluate(`document.querySelector('#vendorCategoryRows>div:last-child input').value='Our special partners';document.getElementById('vendorCategoryRows').dispatchEvent(new Event('input',{bubbles:true}));document.getElementById('vendorAdd').click()`);
+  await evaluate(`(()=>{const row=document.querySelector('[data-vendor-id]'),set=(k,v)=>row.querySelector('[data-vendor-field="'+k+'"]').value=v;set('name','Rehearsal Catering');set('description','Isolated service fixture — not a real booking');set('phone','+233240000001');set('whatsapp','+233240000002');row.querySelector('[data-vendor-field="published"]').checked=true;row.querySelector('[data-vendor-field="featured"]').checked=true;document.getElementById('vendorEditor').dispatchEvent(new Event('input',{bubbles:true}));})()`);
+  async function upload(selector){await evaluate(`(async()=>{const canvas=document.createElement('canvas');canvas.width=400;canvas.height=250;const ctx=canvas.getContext('2d');ctx.fillStyle='#b38a40';ctx.fillRect(0,0,400,250);ctx.fillStyle='#fff5df';ctx.font='25px Georgia';ctx.fillText('Isolated photo fixture',50,130);const blob=await new Promise(r=>canvas.toBlob(r,'image/png'));const dt=new DataTransfer();dt.items.add(new File([blob],'fixture.png',{type:'image/png'}));const input=document.querySelector(${JSON.stringify(selector)});input.files=dt.files;input.dispatchEvent(new Event('change',{bubbles:true}));})()`);await wait(`document.getElementById('vendorEditor').getAttribute('aria-busy')==='false'`);}
+  await upload('[data-vendor-photo]');assert.match(await evaluate(`document.querySelector('[data-vendor-field="photoUrl"]').value`),/^\/uploads\//);
+  await upload('#vendorHeroUpload');assert.match(await evaluate(`document.getElementById('vendorHeroUrl').value`),/^\/uploads\//);
+  await evaluate(`document.getElementById('vendorAdd').click();(()=>{const row=document.querySelector('#vendorEditRows>fieldset:last-child');row.querySelector('[data-vendor-field="name"]').value='Hidden Private Draft';row.querySelector('[data-vendor-field="phone"]').value='+233240000003';})()`);
+  await evaluate(`window.__vendorsRealApi=api;api=async(p,o)=>{if(p==='/admin/vendors'&&o?.method==='PATCH')throw new Error('Synthetic save failure');return window.__vendorsRealApi(p,o);};document.getElementById('vendorEditor').requestSubmit()`);
+  await wait(`document.getElementById('vendorEditorStatus').textContent.includes('Synthetic save failure')`);
+  assert.equal(await evaluate(`document.querySelector('[data-vendor-field="name"]').value`),'Rehearsal Catering','Save failure preserves draft');
+  await evaluate(`api=window.__vendorsRealApi;document.getElementById('vendorEditor').requestSubmit();document.getElementById('vendorEditor').dispatchEvent(new Event('submit',{cancelable:true,bubbles:true}))`);
+  await wait(`document.getElementById('vendorEditorStatus').textContent.includes('Vendors saved')`);
+  let saved=(await request('/admin/vendors',{admin:true})).data;assert.equal(saved.data.vendors.length,2,'Double submit does not duplicate cards');
+  const publicData=(await request('/vendors')).data;assert.equal(publicData.data.vendors.length,1);assert.equal(JSON.stringify(publicData).includes('Hidden Private Draft'),false);
+  assert.equal(Object.hasOwn((await request('/settings')).data,'vendors'),false,'General settings never exposes hidden drafts');
+  await request('/admin/vendors',{method:'PATCH',admin:true,body:{data:{...saved.data,heroUrl:'/uploads/missing.png'},expectedRevision:saved.revision},status:400});
+  await request('/admin/vendors',{method:'PATCH',admin:true,body:{data:{...saved.data,vendors:[{...saved.data.vendors[0],phone:'javascript:alert(1)'}]},expectedRevision:saved.revision},status:400});
+  const invalidPhoto=await evaluate(`(async()=>{const fd=new FormData();fd.append('file',new Blob(['not an image'],{type:'image/png'}),'spoof.png');try{await api('/admin/vendors/photo',{method:'POST',admin:true,form:fd});return false;}catch{return true;}})()`);assert.equal(invalidPhoto,true,'Spoofed image rejected');
+  await evaluate(`switchView('vendors')`);await wait(`document.querySelectorAll('.vendor-card').length===1`);
+  assert.equal(await evaluate(`document.getElementById('vendorTitle').textContent`),'Wedding Partners');
+  assert.equal(await evaluate(`document.querySelector('.vendor-contacts a').getAttribute('href')`),'tel:+233240000001');
+  assert.equal(await evaluate(`document.querySelector('.vendor-contacts a[href^="https"]').getAttribute('href')`),'https://wa.me/233240000002');
+  await evaluate(`document.getElementById('vendorSearch').value='no match';document.getElementById('vendorSearch').dispatchEvent(new Event('input'))`);assert.equal(await evaluate(`document.querySelectorAll('.vendor-card').length`),0);
+  await evaluate(`document.getElementById('vendorSearch').value='Catering';document.getElementById('vendorSearch').dispatchEvent(new Event('input'))`);assert.equal(await evaluate(`document.querySelectorAll('.vendor-card').length`),1);
+  await evaluate(`document.getElementById('vendorSearch').value='';document.getElementById('vendorSearch').dispatchEvent(new Event('input'));document.getElementById('vendorFilterToggle').click();document.getElementById('vendorFeatured').checked=true;document.getElementById('vendorFeatured').dispatchEvent(new Event('change'))`);assert.equal(await evaluate(`document.querySelectorAll('.vendor-card').length`),1);
+  await evaluate(`document.querySelectorAll('[data-vendor-category]')[2].click()`);assert.equal(await evaluate(`document.querySelectorAll('.vendor-card').length`),0);
+  await evaluate(`document.querySelector('[data-vendor-category="all"]').click()`);
+  for(const [width,height] of [[320,568],[375,812],[430,932],[844,390],[1024,768]]){
+    await call('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:width<900});
+    assert.equal(await evaluate(`document.documentElement.scrollWidth===innerWidth`),true,'Vendors fits '+width);
+    assert.equal(await evaluate(`document.querySelectorAll('.tab').length===5&&document.querySelector('.tab[data-tab="events"]').classList.contains('active')`),true,'Preserved five-tab hierarchy');
+    const shot=await call('Page.captureScreenshot',{format:'png'});try{fs.writeFileSync(path.join(out,'vendors-'+width+'.png'),Buffer.from(shot.data,'base64'));}catch(error){if(error.code!=='ENOSPC')throw error;console.warn('Screenshot not saved: local disk full at '+width+'px; continuing functional assertions.');}
+    await evaluate(`switchView('admin');document.querySelector('[data-admin-section="vendors"]').click()`);
+    assert.equal(await evaluate(`document.documentElement.scrollWidth===innerWidth`),true,'Vendor admin editor fits '+width);
+    await evaluate(`switchView('vendors')`);
+  }
+  await evaluate(`switchView('admin');document.querySelector('[data-admin-section="vendors"]').click()`);await wait(`document.querySelector('[data-vendor-page="title"]').value==='Wedding Partners'`);
+  await evaluate(`document.querySelector('[data-vendor-page="title"]').value='My unsaved draft';document.getElementById('vendorEditor').dispatchEvent(new Event('input',{bubbles:true}))`);
+  await request('/admin/vendors',{method:'PATCH',admin:true,body:{data:{...saved.data,title:'Remote published title'},expectedRevision:saved.revision}});
+  await evaluate(`document.getElementById('vendorEditor').requestSubmit()`);await wait(`document.getElementById('vendorEditorStatus').textContent.includes('changed on another device')`);
+  assert.equal(await evaluate(`document.querySelector('[data-vendor-page="title"]').value`),'My unsaved draft','Conflict keeps local edits');
+  await evaluate(`window.__vendorConfirm=confirm;confirm=()=>true;document.getElementById('vendorReload').click()`);await wait(`document.querySelector('[data-vendor-page="title"]').value==='Remote published title'`);
+  await evaluate(`document.querySelector('[data-vendor-field="name"]').value='<img src=x onerror="window.__vendorXss=1">';document.querySelector('[data-vendor-action="down"]').click();document.getElementById('vendorHeroClear').click();document.getElementById('vendorEditor').requestSubmit()`);await wait(`document.getElementById('vendorEditorStatus').textContent.includes('Vendors saved')`);
+  saved=(await request('/admin/vendors',{admin:true})).data;assert.equal(saved.data.vendors[0].name,'Hidden Private Draft','Order editable');assert.equal(saved.data.heroUrl,'','Banner can revert to couple photo');
+  await evaluate(`switchView('vendors')`);await wait(`!!document.querySelector('.vendor-card h3')&&document.querySelector('.vendor-card h3').textContent.includes('<img')`);assert.equal(await evaluate(`!!window.__vendorXss||!!document.querySelector('.vendor-card img[src="x"]')`),false,'Card copy escaped');
+  await evaluate(`switchView('admin');document.querySelector('[data-admin-section="vendors"]').click()`);await wait(`document.getElementById('vendorEditor').getAttribute('aria-busy')==='false'`);
+  const photoUrl=saved.data.vendors.find(v=>v.published).photoUrl;
+  await evaluate(`document.querySelectorAll('[data-vendor-action="remove"]')[1].click();document.getElementById('vendorEditor').requestSubmit()`);await wait(`document.getElementById('vendorEditorStatus').textContent.includes('Vendors saved')`);assert.equal((await request('/vendors')).data.data.vendors.length,0,'Removal publishes correctly');
+  assert.equal((await fetch(origin+photoUrl)).status,200,'Removing vendor does not delete media used elsewhere');
+  await evaluate(`setAdminToken(null);confirm=window.__vendorConfirm`);assert.equal(await evaluate(`document.querySelectorAll('[data-vendor-id]').length===0&&document.getElementById('vendorHeroUrl').value===''`),true,'Logout clears admin drafts');
+  assert.equal(await evaluate(`Object.values(localStorage).some(value=>value.includes('Hidden Private Draft'))`),false,'Private drafts not persisted locally');
+  assert.deepEqual((await request('/settings')).data,baseline,'No unrelated wedding setting changed');assert.deepEqual(errors,[]);
+  console.log('PASS vendors real isolated API/browser: admin guards, CSRF, full editing/uploads, publication privacy, filters/contact links, responsive layout, duplicate/failure/conflict safety, removal and logout');
+};

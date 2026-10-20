@@ -27,6 +27,11 @@ module.exports=async({call,evaluate,errors,out})=>{
     await require('./admin-companions-e2e.cjs').check({call,evaluate,wait,request,out,errors,token:controllerToken});
     await request('/admin/logout',{method:'POST',admin:true});return;
   }
+  if(process.env.WEDDING_E2E_VENDORS_ONLY==='1'){
+    controllerToken=(await request('/admin/login',{method:'POST',body:{password:'isolated-browser-only'}})).data.token;
+    await require('./vendors-e2e.cjs')({call,evaluate,wait,request,out,errors,token:controllerToken});
+    await request('/admin/logout',{method:'POST',admin:true});return;
+  }
   if(process.env.WEDDING_E2E_BROADCAST_ONLY==='1'){
     controllerToken=(await request('/admin/login',{method:'POST',body:{password:'isolated-browser-only'}})).data.token;
     await require('./live-broadcast-e2e.cjs')({call,evaluate,wait,request,out});
