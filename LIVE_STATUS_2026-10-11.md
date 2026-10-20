@@ -36,6 +36,19 @@ passed and saved screenshots. Separate seven-width navigation regression
 passed, including reduced-motion and header Home. Candidate runtime:
 `/root/wedding-v229-candidate`; all fixture edits used disposable data only.
 
+Deployed `feb5223` after a fresh private frontend/API/online SQLite snapshot
+at `/root/wedding-pre-v229`. Pinned API baseline matched, with zero established
+API connections and zero API children before atomic module/bootstrap install
+and healthy service restart. Frontend followed by fast-forward deployment.
+No environment, schema, OTP or payment-mode changes. Live GET-only Vendors
+checks passed configured couple-photo decoding, published-only public data,
+category icons, editor registration, five-tab Events highlighting and five
+responsive widths. Public audit passed all 63 precached resources, health,
+security/API no-store, OTP enabled and Speso TEST. All **109 baseline rows**
+across 13 wedding/chat/payment tables are unchanged; SQLite integrity `ok`.
+There is no production Vendors settings row or sample vendor fixture; admin
+must add and explicitly publish confirmed vendors.
+
 ## Private Sam/Jossy admin alerts and glass guide — v228 (19 October)
 
 Added a separate `GET /api/admin/companion-alerts` feed protected by the
