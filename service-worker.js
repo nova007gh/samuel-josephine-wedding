@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v240-visible-couple';
+const CACHE = 'sj-wedding-v241-manual-cash-gifts';
 const ASSETS = [
   './guest-arrival.js',
   './guest-arrival.css',
@@ -49,7 +49,6 @@ const ASSETS = [
   './app.js',
   './app-data.js',
   './app-social.js',
-  './speso-gifts.js',
   './admin-dashboard.js',
   './api-data.js',
   './manifest.webmanifest',

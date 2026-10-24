@@ -378,9 +378,8 @@ function scanForIntrusion(req){
 /* ---------- app ---------- */
 const app = express();
 app.disable('x-powered-by');
-app.use(express.json({ limit: '1mb',verify:(req,res,buffer)=>{
-  if(/^\/api\/payments\/speso\/(test|live)\/webhook(?:\?|$)/.test(req.originalUrl))req.rawBody=Buffer.from(buffer);
-} }));
+app.use(require('./manual-gifts').retiredPayments);
+app.use(express.json({ limit: '1mb' }));
 app.set('trust proxy', true);
 /* intrusion-shaped traffic is logged for the admin Security page — the
    request still proceeds (all queries are parameterized anyway) */
@@ -1203,7 +1202,7 @@ app.post('/api/admin/settings/song/:index/move', requireAdmin, (req, res) => {
 
 /* ---------- gift funds (admin-managed) ---------- */
 app.get('/api/gift-funds', (req, res) => {
-  const rows = db.prepare('SELECT id, label, description FROM gift_funds WHERE enabled = 1 ORDER BY sortOrder, label').all();
+  const rows = db.prepare("SELECT id, label, description FROM gift_funds WHERE enabled = 1 AND id = 'cash' ORDER BY sortOrder, label").all();
   res.json(rows);
 });
 
@@ -1270,48 +1269,7 @@ app.patch('/api/admin/momo-settings', requireAdmin, (req, res) => {
 });
 
 /* ---------- gifts (Mobile Money) ---------- */
-const spesoPayments=require('./speso-payments')({app,db,requireAdmin,publicWrite,paymentLimit:rateLimit(30,60000),notifyAll});
-const GIFTS_PUBLIC = Object.freeze({
-  cash:     { label: 'Cash Gift',       min: 50,    max: 2000000 },
-  house:    { label: 'House Fund',      min: 50,    max: 2000000 },
-  honeymoon:{ label: 'Honeymoon Fund',  min: 50,    max: 2000000 }
-});
-const giftPublic = r => ({
-  name: r.name, fund: r.fund, amountCents: r.amountCents,
-  message: r.message, createdAt: r.createdAt
-});
-
-/* Public feed: the thank-you wall. Contact details never leave the admin API. */
-app.get('/api/gifts', (req, res) => {
-  const rows = db.prepare('SELECT id, name, fund, amountCents, message, createdAt FROM gifts ORDER BY createdAt DESC LIMIT 40').all();
-  res.json(rows.map(({id,...row})=>({...row,paymentVerified:spesoPayments.isVerifiedGift(id)})));
-});
-
-app.post('/api/gifts', publicWrite, (req, res) => {
-  const b = req.body || {};
-  const name = str(b.name, 120);
-  if (!name) return res.status(400).json({ error: 'Please enter your name.' });
-  const selected = db.prepare('SELECT id, label FROM gift_funds WHERE id = ? AND enabled = 1').get(str(b.fund, 40));
-  if (!selected) return res.status(400).json({ error: 'Choose an available gift option.' });
-  const fund = selected.id;
-  /* money travels as integer cents. The client may post amountCents
-     directly, or a cedis "amount" — never accept a float and never divide,
-     or a GHS 200 gift silently records as GHS 2. */
-  let cents = NaN;
-  if (b.amountCents != null && b.amountCents !== '') cents = Math.round(Number(b.amountCents));
-  else if (b.amount != null && b.amount !== '') cents = Math.round(Number(b.amount) * 100);
-  if (!Number.isFinite(cents)) cents = 0;
-  if (cents < 5000 || cents > 2000000)
-    return res.status(400).json({ error: 'That amount is outside the allowed range.' });
-  const provider = ['mtn', 'telecel', 'airteltigo'].includes(b.provider) ? b.provider : '';
-  const id = uid();
-  db.prepare(`INSERT INTO gifts (id, name, phone, email, fund, amountCents, provider, txnRef, message, createdAt)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
-    .run(id, name, str(b.phone, 40), str(b.email, 200), fund, cents,
-         provider, str(b.txnRef, 80), str(b.message, 500), now());
-  notifyAll('Gift confirmation submitted', `${name} reported GHS ${(cents / 100).toFixed(2)} toward the ${selected.label} — verify the payment in your MoMo account.`);
-  res.json({ ok: true, id });
-});
+require('./manual-gifts')({app,db,publicWrite,notifyAll,guest:guestAccess.resolveGuest});
 
 app.get('/api/admin/gifts', requireAdmin, (req, res) => {
   res.json(db.prepare('SELECT * FROM gifts ORDER BY createdAt DESC').all());

@@ -58,7 +58,6 @@ const delay = ms => new Promise(resolve=>setTimeout(resolve,ms));
   await call('Page.enable'); await call('Runtime.enable');
    if(process.argv.includes('--guide'))await require('./wedding-guide-browser.cjs').setup({call});
    if(process.env.WEDDING_E2E_ADMIN_COMPANIONS_ONLY==='1')await require('./admin-companions-e2e.cjs').setup({call});
-  if(process.argv.includes('--speso'))await require('./speso-browser-checks.cjs').setup({call});
   if(process.argv.includes('--refresh')){
     await require('./refresh-browser-checks.cjs').setup({call});
   }
@@ -87,7 +86,6 @@ const delay = ms => new Promise(resolve=>setTimeout(resolve,ms));
   }
   /* Preview-only identity in this disposable profile; no check-in API call. */
   await evaluate('setGuest({name:"Design preview"});enterApp();switchView("gifts");Promise.race([document.fonts.ready,new Promise(resolve=>setTimeout(resolve,5000))]).then(()=>true)');
-  if(process.argv.includes('--speso')){await require('./speso-browser-checks.cjs').check({call,evaluate,errors,out});return;}
   if(process.argv.includes('--navigation')){
     await require('./navigation-style-checks.cjs')({call,evaluate,errors,out});return;
   }

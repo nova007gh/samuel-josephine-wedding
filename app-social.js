@@ -2093,6 +2093,7 @@ async function initGifts(){
     flashGiftStatus(`Open your ${provider} app or its official payment menu and send GHS ${cedi} to ${num}. Verify the account name before confirming. This website does not process or verify the payment.`);
   });
 
+  let giftReportKey=null;
   document.getElementById('giftForm')?.addEventListener('submit', async e => {
     e.preventDefault();
     const btn = document.getElementById('giftSubmit');
@@ -2107,7 +2108,9 @@ async function initGifts(){
     const original = btn.textContent;
     btn.textContent = 'Sending…';
     try {
+      giftReportKey ||= crypto.randomUUID();
       await api('/gifts', { method:'POST', body:{
+        requestKey:giftReportKey,
         name,
         phone: document.getElementById('giftPhone')?.value || '',
         fund: giftState.fund,
@@ -2116,7 +2119,8 @@ async function initGifts(){
         txnRef: document.getElementById('giftTxn')?.value || '',
         message: document.getElementById('giftMessage')?.value || ''
       }});
-      if (status) status.textContent = 'Thank you! Your confirmation was recorded. The couple will verify the payment.';
+      giftReportKey=null;
+      if (status) status.textContent = 'Thank you! Your report was saved, not a verified payment. The couple will check their MoMo account.';
       e.target.reset();
       await renderGiftList();
     } catch (err){

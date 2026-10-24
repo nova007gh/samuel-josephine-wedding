@@ -9,7 +9,7 @@ for(const path of ['/api/memories','/api/chat','/api/vendors','/api/guide','/api
   for(const guest of [null,{id:'g',status:'pending'},{id:'g',status:'rejected'},{id:'g',status:'APPROVED'}]){const r=check(path,method,guest);assert.equal(r.passed,false);assert.equal(r.res.statusCode,403);assert.equal(r.res.body.code,'guest/approval-required');}
   assert.equal(check(path,method,{id:'g',status:'approved'}).passed,true);assert.equal(check(path,method,null,'Bearer valid').passed,true);assert.equal(check(path,method,null,'Bearer forged').res.statusCode,401);
 }
-for(const mode of ['test','live'])assert.equal(check('/api/payments/speso/'+mode+'/webhook','POST').passed,true);
+for(const mode of ['test','live'])assert.equal(check('/api/payments/speso/'+mode+'/webhook','POST').passed,false);
 assert.equal(check('/api/payments/speso/test/webhook','GET').passed,false);
 assert.equal(check('/api/payments/speso/test/webhook/extra','POST').passed,false);
 assert.equal(api.homeKeys.has('couplePhotoUrl'),true);for(const key of ['vendors','storyItems','events','songs','adminEmails','liveBroadcast'])assert.equal(api.homeKeys.has(key),false);

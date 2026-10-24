@@ -1,5 +1,11 @@
 # Speso gift collection
 
+> **Retired in v241 at the couple’s request.** This document is historical,
+> not an activation checklist. The provider implementation and UI are removed;
+> all former payment routes return HTTP 410. Existing records remain intact.
+> Use `MANUAL_GIFTS.md` instead. Do not restore provider credentials or enable
+> collections without new explicit authorization.
+
 Reference: <https://docs.speso.co/api/collections>,
 <https://docs.speso.co/api/webhooks>, <https://docs.speso.co/api/environments>.
 

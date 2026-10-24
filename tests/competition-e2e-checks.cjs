@@ -27,6 +27,12 @@ module.exports=async({call,evaluate,errors,out})=>{
     await require('./guest-approval-e2e.cjs')({call,evaluate,wait,request,out,errors,token:controllerToken});
     await request('/admin/logout',{method:'POST',admin:true});return;
   }
+  if(process.env.WEDDING_E2E_APPROVED_SUITE==='gifts'){
+    controllerToken=(await request('/admin/login',{method:'POST',body:{password:'isolated-browser-only'}})).data.token;
+    await evaluate(`(async()=>{const r=await api('/guests/login',{method:'POST',body:{phone:'+233240000001',code:'123456'}});setGuest(r.guest);await WeddingAccess.refresh();})()`);await wait('WeddingAccess.canUse()');
+    await require('./manual-gifts-e2e.cjs')({call,evaluate,wait,request,out,errors});
+    await request('/admin/logout',{method:'POST',admin:true});return;
+  }
   if(process.env.WEDDING_E2E_APPROVED_SUITE){
     const suites={arrivals:'guest-arrival-e2e.cjs',vendors:'vendors-e2e.cjs',broadcast:'live-broadcast-e2e.cjs',bridal:'bridal-train-e2e.cjs',program:'program-e2e-checks.cjs',engagement:'engagement-e2e-checks.cjs',community:'wedding-community-e2e.cjs',voice:'voice-recording-checks.cjs'};
     const suite=suites[process.env.WEDDING_E2E_APPROVED_SUITE];if(!suite)throw new Error('Unknown approved regression suite');

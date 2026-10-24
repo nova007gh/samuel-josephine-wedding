@@ -29,7 +29,7 @@
   <link rel="stylesheet" href="app-views.css?v=187" />
   <link rel="stylesheet" href="app-forms.css?v=198" />
   <link rel="stylesheet" href="app-social.css?v=192" />
-  <link rel="stylesheet" href="gifts.css?v=212" />
+  <link rel="stylesheet" href="gifts.css?v=241" />
   <link rel="stylesheet" href="competitions.css?v=188" />
   <link rel="stylesheet" href="reception-program.css?v=190" />
   <link rel="stylesheet" href="bridal-train.css?v=232" />
@@ -1634,11 +1634,11 @@
         <h1 class="gifts-title">Gifts</h1>
         <div class="gifts-heart-rule" aria-hidden="true"><span></span><i>&#9829;</i><span></span></div>
         <p id="giftIntroText">Your love, support and generosity<br>mean the world to us.</p>
-        <p id="giftMessageText">If you would like to bless us with a gift, you can do so conveniently through Mobile Money (MoMo).</p>
+        <p id="giftMessageText">To bless Sam &amp; Jossy with a cash gift, send directly to the MoMo number below using your own provider’s app or official menu.</p>
       </div>
     </div>
 
-    <h2 class="settings-heading gifts-heading">Choose a gift option</h2>
+    <h2 class="settings-heading gifts-heading">Cash gifts for Sam &amp; Jossy</h2>
     <div class="gift-funds" id="giftFunds" role="radiogroup" aria-label="Gift fund"></div>
 
     <h2 class="settings-heading gifts-heading">Select amount (GHS)</h2>
@@ -1668,38 +1668,14 @@
         </label>
       </div>
       <a class="gift-pay-btn" id="giftPayBtn" href="#" rel="noopener">
-        <span>&#8599; Open MoMo to pay</span>
+        <span>&#8599; Copy number &amp; view sending instructions</span>
         <span>&#10095;</span>
       </a>
     </div>
     </div>
     <p class="gift-payment-note" id="giftPaymentNote" role="status" aria-live="polite">Pay in your provider’s app or official MoMo menu. Confirm the recipient before sending.</p>
 
-    <section class="speso-payment-panel hidden" id="spesoPaymentPanel" aria-labelledby="spesoPaymentTitle">
-      <h2 id="spesoPaymentTitle">Pay securely with Speso</h2>
-      <p id="spesoModeNotice"></p>
-      <p id="spesoSelection"></p>
-      <form id="spesoPaymentForm">
-        <label for="spesoPayerName">Your name</label>
-        <input id="spesoPayerName" type="text" required maxlength="120" autocomplete="name" />
-        <label for="spesoPayerPhone">Your Ghana MoMo number</label>
-        <input id="spesoPayerPhone" type="tel" required maxlength="30" inputmode="tel" autocomplete="tel" placeholder="e.g. 024 123 4567" />
-        <label for="spesoPayerMessage">Message to the couple (optional)</label>
-        <textarea id="spesoPayerMessage" rows="2" maxlength="500"></textarea>
-        <p>Approve only the amount shown here in your provider’s MoMo prompt. Never enter your MoMo PIN on this website.</p>
-        <button id="spesoRequestPayment" type="submit">Request MoMo payment</button>
-      </form>
-      <p id="spesoPaymentStatus" role="status" aria-live="polite"></p>
-      <div class="speso-actions">
-        <button id="spesoCheckPayment" type="button" class="hidden">Check payment status</button>
-        <button id="spesoNewPayment" type="button" class="hidden">Start another gift</button>
-      </div>
-      <details id="spesoAdminActivity" class="hidden">
-        <summary>Speso payment activity (admin only)</summary>
-        <button id="spesoRefreshActivity" type="button">Refresh payment activity</button>
-        <div id="spesoPaymentActivity"></div>
-      </details>
-    </section>
+    <p class="gift-payment-note">Send directly using your own MoMo app or official menu. This app never requests a debit or verifies a transfer. Never enter your MoMo PIN here.</p>
 
     <details class="gift-confirm" id="giftConfirmWrap">
       <summary><svg class="gift-confirm-icon" viewBox="0 0 32 36" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M16 2 29 8v10c0 8-6 13-13 16C9 31 3 26 3 18V8Z"/><path d="m10 17 4 4 8-10"/></svg><span>After payment, kindly fill in the confirmation form below so we can acknowledge your gift.</span><span class="gift-confirm-chevron" aria-hidden="true">&#10095;</span></summary>
@@ -1712,7 +1688,7 @@
         <textarea id="giftMessage" rows="2" maxlength="500" placeholder="God bless you both!"></textarea>
         <label class="field-label" for="giftTxn">MoMo transaction reference (optional)</label>
         <input id="giftTxn" type="text" maxlength="80" placeholder="e.g. MP260101.1234.ABCD" />
-        <button class="aq-approve" id="giftSubmit" type="submit">Submit gift</button>
+        <button class="aq-approve" id="giftSubmit" type="submit">Report a gift already sent</button>
         <small id="giftStatus" role="status" aria-live="polite"></small>
       </form>
     </details>
@@ -1723,7 +1699,7 @@
     <!-- Admin-only: Manage Gift Funds -->
     <section class="admin-only hidden" id="adminGiftFundsSection" aria-labelledby="adminGiftFundsTitle">
       <h2 class="settings-heading gifts-heading" id="adminGiftFundsTitle">Manage Gift Funds</h2>
-      <p class="page-sub">Add, edit or remove the fund options guests see. Changes appear instantly.</p>
+      <p class="page-sub">Only the enabled Cash Gift option is offered to guests. Older funds and records remain here for reference.</p>
       <button class="aq-approve" id="addGiftFundBtn" type="button">+ ADD FUND</button>
       <div class="gr-form" id="giftFundEditor"></div>
       <div class="gf-list" id="adminGiftFundsList"></div>
@@ -1850,8 +1826,7 @@ try{
 <script src="guest-access.js?v=238"></script>
 <script src="app.js?v=236"></script>
 <script src="app-data.js?v=194"></script>
-<script src="app-social.js?v=212"></script>
-<script src="speso-gifts.js?v=213"></script>
+<script src="app-social.js?v=241"></script>
 <script src="admin-dashboard.js?v=187"></script>
 <script src="reception-program.js?v=190"></script>
 <script src="bridal-train.js?v=200"></script>
@@ -1876,7 +1851,7 @@ try{
     <form id="sjGuideForm" class="sj-guide-form"><label class="community-sr-only" for="sjGuideQuestion">Ask about the wedding or app. Do not include private information.</label><input id="sjGuideQuestion" type="text" maxlength="400" placeholder="Ask about the wedding or app…" autocomplete="off"><button type="submit">Ask</button></form>
   </div>
 </dialog>
-<script src="wedding-guide-knowledge.js?v=222"></script>
+<script src="wedding-guide-knowledge.js?v=241"></script>
 <script src="wedding-guide.js?v=238"></script>
 <script src="admin-companion-alerts.js?v=228"></script>
 <script src="wedding-community.js?v=218"></script>

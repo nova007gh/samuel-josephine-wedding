@@ -9,7 +9,6 @@ module.exports=({app,db,requireAdmin,guest,renewSession=()=>{}})=>{
   function entryGuest(req){const token=/(?:^|;\s*)sj_entry_session=([a-f0-9]{64})(?:;|$)/.exec(req.headers.cookie||'')?.[1];return token?db.prepare('SELECT g.* FROM guest_entry_keys e JOIN guests g ON g.id=e.guestId WHERE e.tokenHash=? AND e.expiresAt>?').get(crypto.createHash('sha256').update(token).digest('hex'),Date.now()):null;}
   app.use((req,res,next)=>{
     if(!req.path.startsWith('/api/'))return next();
-    if(req.method==='POST'&&/^\/api\/payments\/speso\/(test|live)\/webhook$/.test(req.path))return next(); // Provider authentication remains in the payment handler.
     if(req.path.startsWith('/api/admin/'))return next(); // Existing requireAdmin guards own these routes.
     const proceed=()=>{
       const g=guest(req)||entryGuest(req);req.weddingApproved=req.weddingAdmin||g?.status==='approved';

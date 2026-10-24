@@ -1,5 +1,53 @@
 # snybena.com live audit — 11 October 2026
 
+## Manual cash gifts only and launch-checklist review — v241
+
+At the couple’s request, removed the Speso provider module, browser integration,
+payment form/styles and precache entry. Former payment collection/config/status/
+callback/admin-activity paths return HTTP 410 before body parsing, including
+from stale browser tabs. There are no outgoing payment-provider calls. Guest
+approval has no provider-callback exception. Only enabled Cash Gifts are
+offered/accepted for new gift reports. Historical funds, gifts and payment rows
+remain intact; prior authoritative live settlements retain their existing
+verified marker without calling a provider. New manual reports never verify
+payment. Published instructions and the local guide direct guests to their
+own MoMo app/official menu, not an in-app checkout or PIN form.
+
+Preserved the actual admin-saved destination **+233594204990 — Samuel & Josephine**;
+this is not independent confirmation of account ownership. Couple/admin must
+check it before collecting funds. Added atomic per-attempt retry receipts for
+manual gift reports, so concurrent submissions/lost-response retries reuse one
+record. Public wall still omits contact details and transaction references.
+
+Candidate manual-gift API/browser tests passed retired endpoints, approval,
+cash-only submission, concurrent retry deduplication, changed-payload conflicts,
+amount validation, public privacy, actual browser reporting and five widths.
+No real SMS, payment, guest fixture, seating or venue arrival is created by
+these disposable tests. Candidate `/root/wedding-v241-candidate`; private
+baseline API/configuration and online SQLite snapshot `/root/wedding-pre-v241`.
+Live API baseline hashes matched the current deployed source before changes.
+
+All 16 pure test files passed. Separate disposable entrance/seating, Chat and
+Entertainment, Vendors, Bridal Train and Broadcast suites passed actual
+API/browser edit/upload/duplicate/conflict/logout and responsive regressions.
+The approval regression’s historical provider assumptions were updated to
+expect 410 retirement (including for approved guests), not restored callbacks.
+Full disposable approval regression subsequently passed registration, forged
+identity rejection, approval/unlock/revocation, offline lockdown, approved
+Chat/photo/RSVP/manual-gift flows, admin access and late-response logout privacy.
+Seven-width navigation/native Back and reduced-motion checks passed. Recovered
+from a harness restart/Chrome startup failure; fixed the test's intentionally
+held promise to run in the background and allowed history tasks to settle.
+No production app navigation/approval code was changed for these harness fixes.
+
+See `server/MANUAL_GIFTS.md` for the consolidated remaining launch checklist.
+Payment activation/webhook rehearsals are retired, not blocked work to resume.
+SMS delivery, real-phone scanner/mic/share/push rehearsals, confirmed seating,
+livestream inputs, remaining approved content and off-site backup destination
+still need external input; they are **not** marked complete. API removal does
+not revoke keys in the provider dashboard: exposed keys still need owner-side
+revocation. Do not change SMS senders or send paid tests without permission.
+
 ## More visible couple in Bridal Train banner — v240
 
 Increased banner height to 320–384px and aligned the saved photo to the top,
