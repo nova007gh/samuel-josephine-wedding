@@ -1,5 +1,14 @@
 # snybena.com live audit — 11 October 2026
 
+## Pink neon Gallery seal — v234
+
+Changed only the Gallery seal halo to layered pink neon shadows, following
+its existing double heartbeat. Seal artwork, size, transparent button and
+vendor contacts remain unchanged. Reduced motion retains a static pink halo.
+Candidate browser tests passed pink-shadow/reduced-motion assertions, six
+responsive widths, Home photo and approval lockdown. Private frontend backup
+at `/root/wedding-pre-v234`; no API restart, settings or database changes.
+
 ## Heartbeat seal and transparent vendor contacts — v233
 
 Gallery seal now has a two-second double-beat heartbeat with matching gold

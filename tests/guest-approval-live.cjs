@@ -6,6 +6,10 @@ module.exports=async({call,evaluate,errors,out})=>{
   await evaluate(`document.querySelector('.tab[data-tab="gallery"]').click()`);assert.equal(await evaluate('currentView'),'home');
   assert.equal(await evaluate(`getComputedStyle(document.querySelector('.sj-guide-launch')).display`),'none','Guide locked before approval');
   assert.equal(await evaluate(`document.querySelector('[data-view="gallery"]').inert`),true);
+  assert.equal(await evaluate(`getComputedStyle(document.querySelector('.tab-seal')).filter.includes('255, 41, 148')`),true,'Neon pink halo follows the seal');
+  await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
+  assert.equal(await evaluate(`(()=>{const css=getComputedStyle(document.querySelector('.tab-seal'));return css.animationName==='none'&&css.filter.includes('255, 41, 148');})()`),true,'Reduced motion retains static pink glow');
+  await call('Emulation.setEmulatedMedia',{features:[]});
   for(const width of [320,375,390,430,768,1024]){
     await call('Emulation.setDeviceMetricsOverride',{width,height:900,deviceScaleFactor:1,mobile:width<900});
     assert.equal(await evaluate(`document.documentElement.scrollWidth===innerWidth`),true,'Welcome gate fits '+width);
