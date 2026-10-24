@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 module.exports=async({call,evaluate,wait,request,out,errors})=>{
   const before=(await request('/admin/guests',{admin:true})).data;
-  await evaluate(`clearGuest();document.getElementById('app').classList.add('hidden');document.body.classList.add('locked');showGate(guestLoginScreen);window.__entryApi=api;window.__otpCalls=0;window.__entryCalls=0;api=async(p,o)=>{if(p.startsWith('/otp/')||p==='/guests/login'){window.__otpCalls++;throw new Error('Unexpected OTP request');}return window.__entryApi(p,o);};`);
+  await evaluate(`clearGuest();document.getElementById('app').classList.add('hidden');document.body.classList.add('locked');showGate(guestLoginScreen);window.__entryApi=api;window.__otpCalls=0;window.__entryCalls=0;api=async(p,o)=>{if(p.startsWith('/otp/')||p==='/guests/login'){window.__otpCalls++;throw new Error('Unexpected OTP request');}return window.__entryApi(p,o);};loadOnboarding()`);
   await wait(`!document.getElementById('guestOptionalNote').classList.contains('hidden')`);
   assert.equal(await evaluate(`document.getElementById('guestEmail').required||document.getElementById('guestCity').required||document.getElementById('guestCountry').required||document.getElementById('guestRelation').required`),false);
   await evaluate(`document.getElementById('guestName').value='';document.getElementById('guestPhone').value='';document.getElementById('guestLoginForm').requestSubmit()`);
@@ -49,17 +49,23 @@ module.exports=async({call,evaluate,wait,request,out,errors})=>{
   const own=await evaluate(`getGuest()`);assert.equal(own.checkinMethod,'quick');assert.equal(own.email,'');
   assert.equal(own.attending,false);assert.equal(own.tableGuests,0,'Non-attending check-in never saves extra guests');
   const after=(await request('/admin/guests',{admin:true})).data;assert.equal(after.length,before.length+1);assert.equal(after.find(g=>g.id===own.id).checkinMethod,'quick');
-  assert.equal((await request('/competitions/session')).data.verified,false);
+  await request('/competitions/session',{status:403});
+  const origin=await evaluate('location.origin'),entryCookie=(await call('Network.getCookies',{urls:[origin+'/api/guest-access']})).cookies.filter(c=>c.name==='sj_entry_session').map(c=>c.name+'='+c.value).join('; ');assert.ok(entryCookie);
+  assert.equal((await request('/guest-access',{cookie:entryCookie})).data.authenticated,true);
+  await request('/competitions/session',{cookie:entryCookie,status:403});
+  const retry=(await request('/guest-entry',{method:'POST',cookie:entryCookie,body:{entryKey:'f'.repeat(64),name:'Second identity attempt',phone:'+233240000099'}})).data;assert.equal(retry.guest.id,own.id);assert.equal((await request('/admin/guests',{admin:true})).data.length,after.length,'Signed-in quick entry cannot create another registration');
+  await request('/admin/guests/'+own.id,{method:'PATCH',admin:true,body:{status:'approved'}});await evaluate(`WeddingAccess.refresh()`);await wait(`WeddingAccess.canUse()`);
+  assert.equal((await request('/competitions/session',{cookie:entryCookie})).data.verified,false);
   const competition=(await request('/admin/competitions',{method:'POST',admin:true,status:201,body:{title:'Verified-only onboarding test',description:'Disposable',status:'active',audience:'all',guestIds:[],voteMode:'single',showResults:true,showPhotos:true,allowChange:false,commentsEnabled:false,requireVerified:true,choices:[{name:'A'},{name:'B'}]}})).data;
-  const game=(await request('/competitions/'+competition.id)).data;assert.equal(game.canVote,false);
-  await request('/competitions/'+competition.id+'/vote',{method:'POST',body:{choices:[game.choices[0].id]},status:401});
+  const game=(await request('/competitions/'+competition.id,{cookie:entryCookie})).data;assert.equal(game.canVote,false);
+  await request('/competitions/'+competition.id+'/vote',{method:'POST',cookie:entryCookie,body:{choices:[game.choices[0].id]},status:401});
   await evaluate(`switchView('competitions')`);await wait(`!!document.querySelector('[data-comp-action="open"][data-id="${competition.id}"]')`);
   await evaluate(`document.querySelector('[data-comp-action="open"][data-id="${competition.id}"]').click()`);await wait(`!!document.querySelector('[data-comp-action="verify"]')`);
   await evaluate(`document.querySelector('[data-comp-action="verify"]').click()`);await wait(`document.getElementById('competitionVoteStatus').textContent.includes('Quick check-in does not verify')`);
   assert.equal(await evaluate(`gateShowing()`),false,'Verified game explains restriction rather than creating an onboarding loop');
   await evaluate(`window.__checkinReloadBefore=true`);
   await call('Page.reload',{ignoreCache:true});await wait(`typeof window.__checkinReloadBefore==='undefined'&&document.readyState==='complete'&&typeof getGuest==='function'&&getGuest()?.id===${JSON.stringify(own.id)}&&!gateShowing()`);
-  await evaluate(`clearGuest();document.getElementById('app').classList.add('hidden');document.body.classList.add('locked');showGate(guestLoginScreen);document.getElementById('returnGuestLink').click()`);
+  await evaluate(`(async()=>{await api('/guests/logout',{method:'POST'});clearGuest();document.getElementById('app').classList.add('hidden');document.body.classList.add('locked');showGate(guestLoginScreen);document.getElementById('returnGuestLink').click();})()`);
   await wait(`document.getElementById('guestCheckinNotice').textContent.includes('On another device?')`);
   assert.equal(await evaluate(`document.getElementById('guestLoginError').textContent`),'','Returning help is not an error');
   assert.equal(await evaluate(`document.getElementById('returnPane').classList.contains('hidden')&&document.getElementById('otpPane').classList.contains('hidden')`),true);

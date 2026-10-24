@@ -40,6 +40,7 @@
   <link rel="stylesheet" href="guest-access.css?v=230" />
   <link rel="stylesheet" href="wedding-community.css?v=216" />
   <link rel="stylesheet" href="vendors.css?v=233" />
+  <link rel="stylesheet" href="guest-arrival.css?v=238" />
   <link rel="stylesheet" href="community-reference.css?v=218" />
   <link rel="stylesheet" href="wedding-guide.css?v=228" />
   <link rel="stylesheet" href="guest-checkin.css?v=202" />
@@ -352,6 +353,7 @@
     <button id="enterFromHome" class="enter-wide" type="button">
       <span id="homeCheckinLabel" aria-live="polite">Enter our wedding to check in</span><span id="homeCheckinArrow" aria-hidden="true">&#10095;</span>
     </button>
+    <section id="guestArrivalCard" class="arrival-card" hidden aria-labelledby="guestArrivalTitle"><h2 id="guestArrivalTitle">Your wedding entrance pass</h2><p id="guestArrivalMessage" role="status"></p><div id="guestArrivalGuide" hidden><img id="guestArrivalAvatar" alt="" width="66" height="90"><div><strong id="guestArrivalSpeaker"></strong><p id="guestArrivalTable"></p><p id="guestArrivalLocation"></p></div></div><button id="guestArrivalPass" type="button">Show my entrance QR</button><div id="guestArrivalQR" hidden><canvas id="guestArrivalCanvas" aria-label="Your private wedding entrance QR code" role="img"></canvas><p>Present this pass to the entrance admin. Please do not share it.</p></div><button id="guestArrivalRefresh" type="button">Refresh my arrival &amp; table</button></section>
     <button class="menu-item menu-item--wide" data-goto="competitions" type="button">
       <span class="menu-icon menu-icon--gold">&#127918;</span><span class="menu-text"><strong>Wedding Games &amp; Competitions</strong><small>Join the fun, vote and see live results</small></span><span class="menu-chev">&#10095;</span>
     </button>
@@ -1000,6 +1002,7 @@
     <div class="admin-section-tabs" role="tablist" aria-label="Dashboard sections">
       <button id="admin-tab-overview" role="tab" aria-selected="true" aria-controls="admin-panel-overview" data-admin-section="overview" type="button"><span aria-hidden="true">&#9638;</span>Overview</button>
       <button id="admin-tab-guests" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-guests" data-admin-section="guests" type="button"><span aria-hidden="true">&#128101;</span>Guests &amp; RSVPs</button>
+      <button id="admin-tab-arrivals" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-arrivals" data-admin-section="arrivals" type="button"><span aria-hidden="true">&#128205;</span>Entrance &amp; Tables</button>
       <button id="admin-tab-content" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-content" data-admin-section="content" type="button"><span aria-hidden="true">&#128247;</span>Guest Content</button>
       <button id="admin-tab-photos" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-photos" data-admin-section="photos" type="button"><span aria-hidden="true">&#9835;</span>Photos &amp; Music</button>
       <button id="admin-tab-wedding" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-wedding" data-admin-section="wedding" type="button"><span aria-hidden="true">&#128197;</span>Wedding Details</button>
@@ -1015,6 +1018,13 @@
       <button id="admin-tab-competitions" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-competitions" data-admin-section="competitions" type="button"><span aria-hidden="true">&#127918;</span>Competitions</button>
     </div>
 
+    <div id="admin-panel-arrivals" class="admin-section-panel hidden" role="tabpanel" aria-labelledby="admin-tab-arrivals" tabindex="0">
+      <section class="arrival-admin"><h2>Guest Check-In</h2><p>Scan a guest’s private QR pass, verify their name, then confirm arrival. Repeated scans never count twice.</p><div id="arrivalStats" class="arrival-stats" aria-live="polite"></div><p class="page-sub">Counts are approved registered guests, not invitations or unregistered plus-ones.</p>
+      <div class="arrival-camera"><video id="arrivalVideo" muted playsinline hidden></video><div id="arrivalScanHint">Position the guest’s QR code inside the camera view.</div></div>
+      <div class="arrival-actions"><button id="arrivalCameraStart" type="button">Start QR scanner</button><button id="arrivalCameraStop" type="button" hidden>Stop camera</button><button id="arrivalTorch" type="button" hidden>Flashlight</button><label class="arrival-file">Scan QR image<input id="arrivalImage" type="file" accept="image/jpeg,image/png,image/webp"></label></div><p id="arrivalAdminStatus" role="status" aria-live="polite"></p><div id="arrivalScanReview" hidden><h3 id="arrivalScanName"></h3><p id="arrivalScanDetails"></p><button id="arrivalConfirmQR" type="button">Confirm entrance check-in</button><button id="arrivalScanCancel" type="button">Cancel scan</button></div>
+      <h3>Manual check-in &amp; table assignment</h3><label class="field">Find a registered guest by name or phone<input id="arrivalSearch" type="search" autocomplete="off"></label><button id="arrivalAdminRefresh" type="button">Refresh guest list</button><div id="arrivalGuestList" class="arrival-guest-list"></div>
+      <form id="arrivalSeatingForm" hidden><h3 id="arrivalSelectedName"></h3><p id="arrivalSelectedStatus"></p><label class="field">Table number or name<input id="arrivalTableNumber" maxlength="60" autocomplete="off"></label><label class="field">Table location / directions<textarea id="arrivalTableLocation" maxlength="400" rows="3" placeholder="Enter confirmed directions, e.g. room, section or landmark"></textarea></label><p>Party size is separate from the assigned table. No table is invented if these fields are blank.</p><div class="arrival-actions"><button id="arrivalSaveSeat" type="submit">Save table assignment</button><button id="arrivalReloadSeat" type="button">Reload saved assignment</button><button id="arrivalConfirmManual" type="button">Confirm manual entrance check-in</button></div><p id="arrivalSeatStatus" role="status"></p></form></section>
+    </div>
     <div id="admin-panel-overview" class="admin-section-panel" role="tabpanel" aria-labelledby="admin-tab-overview" tabindex="0">
 
     <h3 class="stats-group-label">&#128101; Guests &amp; RSVPs</h3>
@@ -1837,7 +1847,7 @@ try{
   </div>
 </div>
 <script src="api-data.js?v=230"></script>
-<script src="guest-access.js?v=237"></script>
+<script src="guest-access.js?v=238"></script>
 <script src="app.js?v=236"></script>
 <script src="app-data.js?v=194"></script>
 <script src="app-social.js?v=212"></script>
@@ -1867,12 +1877,15 @@ try{
   </div>
 </dialog>
 <script src="wedding-guide-knowledge.js?v=222"></script>
-<script src="wedding-guide.js?v=230"></script>
+<script src="wedding-guide.js?v=238"></script>
 <script src="admin-companion-alerts.js?v=228"></script>
 <script src="wedding-community.js?v=218"></script>
 <script src="vendor-schema.js?v=229"></script>
 <script src="vendors.js?v=229"></script>
 <script src="competitions.js?v=198"></script>
 <script src="competition-notices.js?v=230"></script>
+<script src="assets/vendor/qrcode-generator-1.4.4.js"></script>
+<script src="assets/vendor/jsqr-1.4.0.js"></script>
+<script src="guest-arrival.js?v=238"></script>
 </body>
 </html>

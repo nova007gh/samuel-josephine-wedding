@@ -19,7 +19,7 @@ module.exports = function installCompetitions({app,db,requireAdmin,publicWrite,m
   `);
   const uid = () => crypto.randomUUID();
   const hash = token => crypto.createHash('sha256').update(token).digest('hex');
-  const ttl = 90 * 24 * 3600 * 1000;
+  const ttl = 400 * 24 * 3600 * 1000;
   function issueSession(res,guestId){
     const token = crypto.randomBytes(32).toString('hex');
     db.prepare('DELETE FROM guest_sessions WHERE expiresAt < ?').run(Date.now());
@@ -27,6 +27,11 @@ module.exports = function installCompetitions({app,db,requireAdmin,publicWrite,m
     res.cookie('sj_guest_session',token,{httpOnly:true,secure:res.req.secure,sameSite:'strict',path:'/api',maxAge:ttl});
   }
   function cookieToken(req){ return /(?:^|;\s*)sj_guest_session=([a-f0-9]{64})(?:;|$)/.exec(req.headers.cookie || '')?.[1]; }
+  function renewSession(req,res){
+    const token=cookieToken(req);if(!token)return;
+    const session=db.prepare('SELECT expiresAt FROM guest_sessions WHERE tokenHash=? AND expiresAt>?').get(hash(token),Date.now());
+    if(session&&session.expiresAt<Date.now()+ttl-24*3600000){db.prepare('UPDATE guest_sessions SET expiresAt=? WHERE tokenHash=?').run(Date.now()+ttl,hash(token));res.cookie('sj_guest_session',token,{httpOnly:true,secure:req.secure,sameSite:'strict',path:'/api',maxAge:ttl});}
+  }
   function guest(req){
     const token = cookieToken(req);
     return token ? db.prepare(`SELECT g.* FROM guest_sessions s JOIN guests g ON g.id=s.guestId
@@ -294,5 +299,5 @@ module.exports = function installCompetitions({app,db,requireAdmin,publicWrite,m
     if(!req.file) return res.status(400).json({error:'Choose a photo.'});
     res.json({url:'/uploads/'+req.file.filename});
   });
-  return {issueSession,guest};
+  return {issueSession,guest,renewSession};
 };

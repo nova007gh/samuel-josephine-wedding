@@ -23,6 +23,7 @@ function headers(response){
       if(typeof photo==='string'&&/^\/uploads\/[\w.-]+$/.test(photo)){const media=await get(photo);headers(media);assert.match(media.headers.get('content-type')||'',/^image\//);await media.body?.cancel();}
     }
   }
-  for(const route of ['api/guide','api/memories','api/guestbook','api/vendors','api/entertainment','api/live-broadcast','api/bridal-train','api/competitions','api/gift-payments/config','api/gifts']){const response=await fetch(new URL(route,base),{cache:'no-store'});assert.equal(response.status,403,route);assert.equal((await response.json()).code,'guest/approval-required');}
+  for(const route of ['api/guide','api/memories','api/guestbook','api/vendors','api/entertainment','api/live-broadcast','api/bridal-train','api/competitions','api/gift-payments/config','api/gifts','api/guest-arrival']){const response=await fetch(new URL(route,base),{cache:'no-store'});assert.equal(response.status,403,route);assert.equal((await response.json()).code,'guest/approval-required');}
+  assert.equal((await fetch(new URL('api/admin/arrivals',base),{cache:'no-store'})).status,401,'Entrance admin data requires admin session');
   console.log(`PASS ${assets.length} precached assets, security headers/API no-store, welcome photo MIME, health, live OTP on and unapproved feature lockdown; GET-only`);
 })().catch(error=>{console.error(error.message);process.exitCode=1;});

@@ -8,7 +8,7 @@
   function requestAllowed(path,method){return canUse()||!!adminToken||path.startsWith('/admin/')||(['GET','HEAD'].includes(method)?openGet.has(path):method==='POST'&&openPost.has(path));}
   function render(){
     const checkin=document.getElementById('enterFromHome'),label=document.getElementById('homeCheckinLabel'),arrow=document.getElementById('homeCheckinArrow');
-    const checkinCopy=checkedIn?'Thanks for coming, you are now checked in!':'Enter our wedding to check in';if(label&&label.textContent!==checkinCopy)label.textContent=checkinCopy;
+    const checkinCopy=checkedIn?'Thanks for coming. You are checked in':'Enter our wedding to check in';if(label&&label.textContent!==checkinCopy)label.textContent=checkinCopy;
     if(checkin)checkin.disabled=checkedIn;
     if(arrow)arrow.hidden=checkedIn;
     const locked=!canUse(),adminUI=typeof isAdmin==='function'&&isAdmin();document.body.classList.toggle('access-limited',locked);
@@ -28,14 +28,16 @@
     if(!canUse()||!('Notification' in window)||Notification.permission!=='granted'||!navigator.serviceWorker)return;
     const run=generation;try{const reg=await navigator.serviceWorker.getRegistration(),sub=await reg?.pushManager?.getSubscription();if(sub&&run===generation&&canUse())await api('/push/subscribe',{method:'POST',body:sub.toJSON()});}catch{/* Keep existing device permission unchanged; no new prompt or subscription. */}
   }
-  function set(value){const was=canUse(),changed=status!==value;status=value;render();if(changed&&canUse())bindExistingPush();if(was!==canUse()){window.dispatchEvent(new Event('wedding:access'));if(typeof syncSiteSettings==='function')syncSiteSettings();}}
+  function set(value){const was=canUse(),changed=status!==value;status=value;render();if(changed)window.dispatchEvent(new Event('wedding:session-state'));if(changed&&canUse())bindExistingPush();if(was!==canUse()){window.dispatchEvent(new Event('wedding:access'));if(typeof syncSiteSettings==='function')syncSiteSettings();}}
   function lock(){generation++;guestApproved=false;set('pending');}
   async function refresh(){
     if(document.hidden)return;if(busy){queued=true;return;}busy=true;const run=generation;
-    try{const result=await api('/guest-access');if(run!==generation)return;if(!result||typeof result.approved!=='boolean')throw new Error('Invalid approval response');checkedIn=result.authenticated===true;guestApproved=result.guestApproved===true;set(result.admin?'admin':result.approved?'approved':result.authenticated?'pending':'unverified');}
+    try{const result=await api('/guest-access');if(run!==generation)return;if(!result||typeof result.approved!=='boolean')throw new Error('Invalid approval response');const beforeStatus=status,beforeIdentity=checkedIn+':'+guestApproved;checkedIn=result.authenticated===true;guestApproved=result.guestApproved===true;
+      if(checkedIn&&result.guest?.id&&typeof result.guest.name==='string'){const previous=getGuest(),resume=!hasEntered()&&gateShowing();setGuest(previous?.id===result.guest.id?{...previous,name:result.guest.name}:{id:result.guest.id,name:result.guest.name});if(resume)enterApp();}
+      set(result.admin?'admin':result.approved?'approved':result.authenticated?'pending':'unverified');if(beforeStatus===status&&beforeIdentity!==checkedIn+':'+guestApproved)window.dispatchEvent(new Event('wedding:session-state'));}
     catch{if(run===generation){guestApproved=false;set('offline');}}finally{busy=false;if(queued){queued=false;queueMicrotask(refresh);}}
   }
-  window.WeddingAccess={canUse,requestAllowed,refresh,lock,isCheckedIn:()=>checkedIn};document.body.classList.add('access-limited');
+  window.WeddingAccess={canUse,requestAllowed,refresh,lock,isCheckedIn:()=>checkedIn,isGuestApproved:()=>guestApproved};document.body.classList.add('access-limited');
   function blocked(event){
     if(canUse()||!event.target.closest?.('#app'))return;
     const view=event.target.closest('.view');if(typeof isAdmin==='function'&&isAdmin()&&view&&typeof ADMIN_VIEWS!=='undefined'&&ADMIN_VIEWS.has(view.dataset.view))return;

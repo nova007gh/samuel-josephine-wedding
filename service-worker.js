@@ -1,6 +1,10 @@
 
-const CACHE = 'sj-wedding-v237-checkin-copy';
+const CACHE = 'sj-wedding-v238-entrance-tables';
 const ASSETS = [
+  './guest-arrival.js',
+  './guest-arrival.css',
+  './assets/vendor/qrcode-generator-1.4.4.js',
+  './assets/vendor/jsqr-1.4.0.js',
   './guest-access.js',
   './guest-access.css',
   './vendors.js',

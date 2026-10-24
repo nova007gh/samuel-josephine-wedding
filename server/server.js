@@ -413,7 +413,7 @@ function requireAdmin(req, res, next){
   next();
 }
 
-const guestAccess=require('./guest-access')({app,db,requireAdmin,guest:req=>competitionAuth.guest(req)});
+const guestAccess=require('./guest-access')({app,db,requireAdmin,guest:req=>competitionAuth.guest(req),renewSession:(req,res)=>competitionAuth.renewSession(req,res)});
 app.get('/api/health', (req, res) => res.json({ ok: true }));
 
 app.post('/api/admin/login', loginLimit, (req, res) => {
@@ -441,10 +441,13 @@ app.post('/api/admin/logout', requireAdmin, (req, res) => {
 });
 
 const competitionAuth = require('./competitions')({app,db,requireAdmin,publicWrite,multer,storage,uploadsDir:UPLOADS_DIR});
-const onboarding = require('./guest-onboarding')({app,db,publicWrite,normPhone,notifyAll});
+const onboarding = require('./guest-onboarding')({app,db,publicWrite,normPhone,notifyAll,resolveGuest:guestAccess.resolveGuest});
+require('./guest-arrival')({app,db,requireAdmin,publicWrite,guest:guestAccess.resolveGuest});
 
 /* ---------- guests (check-in) ---------- */
 app.post('/api/guests', publicWrite, (req, res) => {
+  const signedIn=guestAccess.resolveGuest(req);
+  if(signedIn)return res.json({id:signedIn.id}); // A signed-in browser cannot register a second identity; sign out first.
   const g = req.body || {};
   const name = str(g.name, 120);
   if (!name) return res.status(400).json({ error: 'Name is required.' });
@@ -462,8 +465,8 @@ app.post('/api/guests', publicWrite, (req, res) => {
   /* same number re-registering updates their record instead of duplicating */
   const existing = findGuestByPhone(tail);
   if (existing){
-    db.prepare(`UPDATE guests SET name=?, phone=?, email=?, relation=?, city=?, state=?, country=?, attending=?, tableGuests=?, checkedInAt=? WHERE id=?`)
-      .run(...vals, existing.id);
+    db.prepare(`UPDATE guests SET name=?, phone=?, email=?, relation=?, city=?, state=?, country=?, attending=?, tableGuests=? WHERE id=?`)
+      .run(...vals.slice(0,-1), existing.id);
     competitionAuth.issueSession(res, existing.id);
     return res.json({ id: existing.id });
   }

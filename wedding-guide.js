@@ -54,6 +54,7 @@
   }
   async function submit(question){
     const q=question.trim().slice(0,400);if(!q||sending)return;
+    if(/\b(my|our)\b.*\b(table|seat|seating|entrance|qr|check[ -]?in)\b/i.test(q)&&window.WeddingArrival){$('sjGuideQuestion').value='';WeddingArrival.showAssistance();return;}
     const version=generation,send=$('sjGuideForm').querySelector('button');sending=true;send.disabled=true;send.textContent='…';
     try{await refresh();if(!data||version!==generation)return;
       const context={ids:turns.at(-1)?.result.contextIds||[]},result=K.answer(data,q,context);

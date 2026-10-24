@@ -1,5 +1,63 @@
 # snybena.com live audit — 11 October 2026
 
+## Private entrance QR, table assignment and companion assistance — v238
+
+User chose admin scanning each guest's private QR and admin-managed seating.
+Added **Admin Dashboard → Entrance & Tables** with confirmed table number/name
+and location fields, revision-safe saves, real approved-guest arrival counts,
+manual name/phone search and an opt-in camera / local QR-image scanner.
+Scanning previews the guest; an explicit admin confirmation records entrance
+arrival. Repeated/concurrent scans and lost-response retries reuse one guest-ID
+primary-key arrival/timestamp. No reference counts, guest fixtures or tables
+are seeded. Registration timestamps and party size are not physical arrivals
+or assigned table numbers.
+
+Approved authenticated guests can show their stable random QR on Home. After
+entrance confirmation, a private own-guest feed shows table/location through
+the matching Sam/Jossy companion. Explicit connections choose the side; mixed/
+unknown/negated relations use a stable fallback. Unassigned seats/directions
+refer to an usher, never invented. Home card and dismissible deferred notice
+are separate from public guide knowledge/conversation; no external AI, camera
+upload or external QR service. Private data/pass are cleared on sign-out and
+late responses discarded. New assignments replace stale table notices.
+
+Home copy is exactly “Enter our wedding to check in” before confirmed sign-in,
+then “Thanks for coming. You are checked in”. A signed-in browser cannot
+register a second identity; existing OTP phone registrations retain their
+original timestamp. Secure guest sessions now persist with a rolling 400-day
+browser-safe cap, renew at most daily and restore a minimal ID/name profile
+without registration. Expired/revoked tokens are never revived. Sign-out ends
+the device session but never erases arrival, so returning cannot count twice.
+Browser-cleared/private storage or security expiry can still require sign-in.
+Admin approval and admin-session lifetime remain unchanged; OTP stays enabled.
+
+Pure suites and initial disposable arrival browser/API tests passed private
+QR generation + actual image decoding, admin/origin/approval guards, no arrival
+on preview, concurrent/repeated confirmation, own-table isolation, companion
+routing, manual arrival/unassigned fallback, conflict/failed-draft safety,
+synthetic camera denial/recovery/stop and five widths. A later validation run
+was interrupted by a test-browser startup failure after the harness restart;
+resumed arrival checks passed including lost-response reconciliation, late
+camera grants, stale-response logout cleanup and persistent session restore.
+Further regression results and deployment verification are recorded below.
+
+Final disposable entrance suite passed real QR generation/image decoding,
+concurrent scans, lost-response reconciliation, private own-table feed,
+personal-table guide routing without public history, Sam/Jossy/fallback sides,
+unassigned seats, revision conflicts, retained failed drafts, synthetic camera
+denial/recovery/late-grant cleanup, five widths, stale-table notice replacement,
+session restoration and late-response/logout privacy. Separate check-in,
+Chat/Entertainment, Vendors and optional quick-entry suites passed. The legacy
+quick-entry test was updated to require admin approval before feature access;
+the app's approval policy was not weakened. Pure suites passed. Physical-phone
+scanner/torch and actual entrance rehearsal are not claimed as completed.
+
+New additive tables: `guest_seating`, `guest_arrivals`, `guest_arrival_passes`.
+Candidate runtime `/root/wedding-v238-candidate`; fresh private baseline,
+frontend/API/environment snapshot and online database backup at
+`/root/wedding-pre-v238`. All four live API file hashes matched the baseline.
+See `server/ARRIVAL_SETUP.md` for workflow, privacy and device limitations.
+
 ## Check-in wording — v237
 
 Updated the confirmed Home acknowledgement to exactly “Thanks for coming,
