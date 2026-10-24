@@ -58,6 +58,24 @@ frontend/API/environment snapshot and online database backup at
 `/root/wedding-pre-v238`. All four live API file hashes matched the baseline.
 See `server/ARRIVAL_SETUP.md` for workflow, privacy and device limitations.
 
+Deployed `cbaf598` after verifying all five candidate runtime hashes against
+the tested sources and all four prior live API files against the snapshot.
+Took a second online SQLite backup immediately before installation at
+`/root/wedding-pre-v238/deploy.db`, verified zero active API requests/workers,
+installed the five API files atomically and confirmed healthy restart and
+anonymous arrival-feed rejection, then fast-forwarded the frontend. No private
+environment changes, OTP sends, payment actions or production fixtures.
+
+Live GET-only verification passed all 69 precached assets, security/no-store
+headers, Home photo, six-width approval lockdown, private arrival-card absence,
+protected admin arrival feed and golden heartbeat seal. All **127 baseline
+rows** across 13 wedding/chat/payment tables are unchanged, including statuses
+and original registration timestamps. The three new tables remain empty;
+SQLite integrity `ok`, private environment bytes unchanged, OTP enabled and
+Speso TEST. Real table assignments must be entered by admin; the site does not
+invent seating. Actual entrance-phone camera/torch rehearsal and existing SMS
+provider delivery remediation remain pending and are not claimed as solved.
+
 ## Check-in wording — v237
 
 Updated the confirmed Home acknowledgement to exactly “Thanks for coming,
