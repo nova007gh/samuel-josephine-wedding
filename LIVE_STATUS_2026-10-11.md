@@ -40,6 +40,25 @@ from a harness restart/Chrome startup failure; fixed the test's intentionally
 held promise to run in the background and allowed history tasks to settle.
 No production app navigation/approval code was changed for these harness fixes.
 
+Deployed feature commit `b3005f9`: verified candidate hashes, unchanged live API
+baseline and clean frontend, zero established API connections and no media
+worker, then took fresh online `deploy.db` plus frontend/configuration backups.
+Installed API files atomically, removed the provider runtime and only SPESO
+environment entries, restarted healthy, verified retired routes, then
+fast-forwarded the frontend. Non-payment configuration is byte-for-byte
+unchanged, including OTP configuration. Private backup remains root-only.
+
+Live GET-only audit passed all **68 precached assets**, security/no-store
+headers, welcome-photo MIME, health, OTP-on, approval lockdown and former
+payment routes returning 410. Six-width live browser checks passed Home/pass
+order, restricted deep links, sign-in guidance, golden seal and private-card
+absence before authentication, with no OTP sends or submissions. Fresh SQLite
+audit preserved **all 144 rows across 18 wedding/chat/payment/arrival tables**
+against the deploy snapshot, including guest status/registration timestamps,
+configured MoMo destination and all settings/media. Integrity `ok`; new manual
+retry-receipt table is empty. No production registrations, gift reports,
+payments, seating changes or entrance confirmations were created by testing.
+
 See `server/MANUAL_GIFTS.md` for the consolidated remaining launch checklist.
 Payment activation/webhook rehearsals are retired, not blocked work to resume.
 SMS delivery, real-phone scanner/mic/share/push rehearsals, confirmed seating,
