@@ -15,12 +15,12 @@ module.exports=async({call,evaluate,wait,request,out,errors,token})=>{
   await evaluate(`enterApp()`);
   await evaluate(`(async()=>{const verified=await api('/otp/verify',{method:'POST',body:{phone:'+233240000004',code:'123456'}});const saved=await api('/guests',{method:'POST',body:{name:'New approval fixture',phone:'+233240000004',otpToken:verified.otpToken,status:'approved',attending:true}});setGuest({id:saved.id,name:'New approval fixture',status:'approved'});window.__approvalGuest=saved.id;await WeddingAccess.refresh();})()`);
   await wait(`document.getElementById('guestApprovalTitle').textContent==='Waiting for admin approval'`);
-  assert.equal(await evaluate(`document.getElementById('homeCheckinLabel').textContent`),'Thanks for coming. You are checked in');
+  assert.equal(await evaluate(`document.getElementById('homeCheckinLabel').textContent`),'Thanks for coming, you are now checked in!');
   assert.equal(await evaluate(`document.getElementById('enterFromHome').disabled&&document.getElementById('homeCheckinArrow').hidden`),true,'Saved pending registration is checked in, not approved; duplicate check-in disabled');
   const guestId=await evaluate(`window.__approvalGuest`),cookies=(await call('Network.getCookies',{urls:[origin+'/api/guest-access']})).cookies,cookie=cookies.filter(c=>c.name==='sj_guest_session').map(c=>c.name+'='+c.value).join('; ');assert.ok(cookie);
   if(process.env.WEDDING_E2E_CHECKIN_ONLY==='1'){
     await evaluate(`WeddingAccess.refresh()`);await wait(`WeddingAccess.isCheckedIn()`);
-    assert.equal(await evaluate(`document.getElementById('homeCheckinLabel').textContent`),'Thanks for coming. You are checked in');
+    assert.equal(await evaluate(`document.getElementById('homeCheckinLabel').textContent`),'Thanks for coming, you are now checked in!');
     await evaluate(`api('/guests/logout',{method:'POST'})`);await evaluate(`WeddingAccess.refresh()`);
     await wait(`!WeddingAccess.isCheckedIn()&&document.getElementById('homeCheckinLabel').textContent==='Enter our wedding to check in'`);
     assert.equal(await evaluate(`document.getElementById('enterFromHome').disabled`),false);

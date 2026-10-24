@@ -1,5 +1,12 @@
 # snybena.com live audit — 11 October 2026
 
+## Check-in wording — v237
+
+Updated the confirmed Home acknowledgement to exactly “Thanks for coming,
+you are now checked in!” No behaviour or approval changes. Focused disposable
+check-in tests passed exact copy, pending registration, refresh and logout
+reset without OTP sends. Frontend snapshot: `/root/wedding-pre-v237`.
+
 ## Home check-in acknowledgement — v236
 
 Home button now reads “Enter our wedding to check in” before server-confirmed

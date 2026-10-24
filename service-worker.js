@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v236-checkin-label';
+const CACHE = 'sj-wedding-v237-checkin-copy';
 const ASSETS = [
   './guest-access.js',
   './guest-access.css',

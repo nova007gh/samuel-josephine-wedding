@@ -8,7 +8,7 @@
   function requestAllowed(path,method){return canUse()||!!adminToken||path.startsWith('/admin/')||(['GET','HEAD'].includes(method)?openGet.has(path):method==='POST'&&openPost.has(path));}
   function render(){
     const checkin=document.getElementById('enterFromHome'),label=document.getElementById('homeCheckinLabel'),arrow=document.getElementById('homeCheckinArrow');
-    const checkinCopy=checkedIn?'Thanks for coming. You are checked in':'Enter our wedding to check in';if(label&&label.textContent!==checkinCopy)label.textContent=checkinCopy;
+    const checkinCopy=checkedIn?'Thanks for coming, you are now checked in!':'Enter our wedding to check in';if(label&&label.textContent!==checkinCopy)label.textContent=checkinCopy;
     if(checkin)checkin.disabled=checkedIn;
     if(arrow)arrow.hidden=checkedIn;
     const locked=!canUse(),adminUI=typeof isAdmin==='function'&&isAdmin();document.body.classList.toggle('access-limited',locked);
