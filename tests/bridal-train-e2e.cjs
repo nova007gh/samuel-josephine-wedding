@@ -12,6 +12,7 @@ module.exports=async({call,evaluate,wait,request,out})=>{
     await call('Emulation.setDeviceMetricsOverride',{width,height:1000,deviceScaleFactor:1,mobile:width<600});assert.equal(await evaluate(`document.documentElement.scrollWidth===innerWidth`),true,'Bridal guest fits '+width);
     assert.deepEqual(await evaluate(`(()=>{const cards=[...document.querySelectorAll('.bt-section:first-of-type .bt-card')],rows=[];for(const c of cards){const top=c.getBoundingClientRect().top;let row=rows.find(r=>Math.abs(r.top-top)<1);if(!row){row={top,count:0};rows.push(row);}row.count++;}return rows.map(r=>r.count);})()`),[5,4],'Reference bridesmaid rows at '+width);
     assert.equal(await evaluate(`(()=>{const photos=[...document.querySelectorAll('.bt-section:first-of-type .bt-portrait')];return Math.abs(photos[0].getBoundingClientRect().height-photos[8].getBoundingClientRect().height)<1;})()`),true,'Matching portrait heights across rows');
+    assert.equal(await evaluate(`(()=>{const hero=document.querySelector('.bt-hero'),photo=document.querySelector('.bt-hero-view'),copy=document.querySelector('.bt-hero-copy');return Math.abs(hero.getBoundingClientRect().width-photo.getBoundingClientRect().width)<1&&getComputedStyle(document.querySelector('.bt-hero-photo')).objectFit==='cover'&&getComputedStyle(hero,'::before').backgroundImage.includes('linear-gradient')&&Number(getComputedStyle(copy).zIndex)>Number(getComputedStyle(photo).zIndex);})()`),true,'Full-width blended background with overlaid text at '+width);
   }
   assert.equal(await evaluate(`document.querySelector('.bt-footer-title').textContent`),'Together in Love');
   await evaluate(`document.querySelector('.bt-menu').click()`);assert.equal(await evaluate(`currentView`),'more');
@@ -73,6 +74,8 @@ module.exports=async({call,evaluate,wait,request,out})=>{
   await evaluate(`closeLightbox()`);
   const after=(await request('/settings')).data;
   for(const key of ['events','receptionProgram','engagementProgram','couplePhotoUrl'])assert.equal(after[key],baseline[key],'Other wedding setting unchanged: '+key);
-  await call('Emulation.setDeviceMetricsOverride',{width:375,height:1000,deviceScaleFactor:1,mobile:true});const shot=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:true});fs.writeFileSync(path.join(out,'bridal-train-mobile.png'),Buffer.from(shot.data,'base64'));
+  await call('Emulation.setDeviceMetricsOverride',{width:375,height:1000,deviceScaleFactor:1,mobile:true});
+  if(process.env.WEDDING_BRIDAL_BANNER_PREVIEW){const source='data:image/jpeg;base64,'+fs.readFileSync(process.env.WEDDING_BRIDAL_BANNER_PREVIEW).toString('base64');await evaluate(`(()=>{const img=document.querySelector('.bt-hero-photo');img.src=${JSON.stringify(source)};return img.decode();})()`);}
+  const shot=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:true});fs.writeFileSync(path.join(out,'bridal-train-mobile.png'),Buffer.from(shot.data,'base64'));
   console.log('PASS actual Bridal Train guest links/counts/roles, responsive layouts, add/remove/reorder, portrait draft/upload/save/view, failed retry, duplicate guard, conflict/reload and sign-out cleanup (disposable API)');
 };

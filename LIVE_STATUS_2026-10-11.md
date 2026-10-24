@@ -1,5 +1,23 @@
 # snybena.com live audit — 11 October 2026
 
+## Home pass placement and blended Bridal Train banner — v239
+
+Moved the existing entrance pass/table card to the end of Home, below Games
+and Live Broadcast, without changing QR/arrival/approval behaviour. Bridal
+Train now uses its saved banner photo as a full-width cover layer, with soft
+cream horizontal/bottom fades and gold text layered above on the left, like
+the Gifts composition. Removed the striped backdrop; top navigation controls
+have translucent cream circles for contrast. Original saved photos/settings
+and individual full-frame portrait styling are unchanged.
+
+Disposable Bridal Train API/browser tests passed editor/save/upload/conflict/
+logout flows and four-width full-width-background/overlay assertions. A local
+preview using the existing saved header photo was visually checked; its test
+title/guest fixtures were never published. Six-width read-only Home checks
+passed final-card order, approval/privacy and configured Home photo. Worker
+tests passed. Frontend-only backup: `/root/wedding-pre-v239`, including private
+Bridal Train settings fingerprint; no API restart or database modification.
+
 ## Private entrance QR, table assignment and companion assistance — v238
 
 User chose admin scanning each guest's private QR and admin-managed seating.

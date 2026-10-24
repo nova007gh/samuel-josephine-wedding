@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v238-entrance-tables';
+const CACHE = 'sj-wedding-v239-home-bridal-banner';
 const ASSETS = [
   './guest-arrival.js',
   './guest-arrival.css',

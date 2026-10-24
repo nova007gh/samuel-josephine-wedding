@@ -4,6 +4,7 @@ module.exports=async({call,evaluate,errors,out})=>{
   assert.equal(await evaluate(`!WeddingAccess.canUse()&&currentView==='home'`),true,'Saved preview profile cannot bypass approval');
   assert.equal(await evaluate(`document.getElementById('homeCheckinLabel').textContent`),'Enter our wedding to check in','Unverified session shows check-in prompt, not false confirmation');
   assert.equal(await evaluate(`document.getElementById('guestArrivalCard').hidden&&document.getElementById('guestArrivalQR').hidden&&document.getElementById('arrivalGuestList').textContent===''`),true,'No private pass, table or entrance guest list before approved sign-in');
+  assert.equal(await evaluate(`document.querySelector('[data-view="home"]').lastElementChild.id`),'guestArrivalCard','Entrance pass is the final Home section');
   for(const view of ['story','events','gallery','gifts','chat','vendors','competitions','bridaltrain']){await evaluate(`switchView(${JSON.stringify(view)})`);assert.equal(await evaluate('currentView'),'home');}
   await evaluate(`document.querySelector('.tab[data-tab="gallery"]').click()`);assert.equal(await evaluate('currentView'),'home');
   assert.equal(await evaluate(`getComputedStyle(document.querySelector('.sj-guide-launch')).display`),'none','Guide locked before approval');
