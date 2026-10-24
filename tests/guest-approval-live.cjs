@@ -9,7 +9,7 @@ module.exports=async({call,evaluate,errors,out})=>{
   for(const width of [320,375,390,430,768,1024]){
     await call('Emulation.setDeviceMetricsOverride',{width,height:900,deviceScaleFactor:1,mobile:width<900});
     assert.equal(await evaluate(`document.documentElement.scrollWidth===innerWidth`),true,'Welcome gate fits '+width);
-    assert.equal(await evaluate(`(()=>{const seal=document.querySelector('.tab--center .tab-seal'),button=seal.closest('button'),css=getComputedStyle(seal);return parseFloat(css.width)>=44&&getComputedStyle(button).borderWidth==='0px'&&getComputedStyle(button).backgroundColor==='rgba(0, 0, 0, 0)'&&css.animationName==='gallerySealPulse';})()`),true,'Large unboxed pulsing seal');
+    assert.equal(await evaluate(`(()=>{const seal=document.querySelector('.tab--center .tab-seal'),button=seal.closest('button'),css=getComputedStyle(seal);return parseFloat(css.width)>=60&&parseFloat(css.width)<=72&&getComputedStyle(button).borderWidth==='0px'&&getComputedStyle(button).backgroundColor==='rgba(0, 0, 0, 0)'&&css.animationName==='gallerySealPulse';})()`),true,'Large unboxed pulsing seal');
   }
   await evaluate(`document.querySelector('#guestApproval [data-goto="adminlogin"]').click()`);assert.equal(await evaluate('currentView'),'adminlogin','Admin sign-in remains reachable');await evaluate(`document.querySelector('.app-brand').click()`);assert.equal(await evaluate('currentView'),'home');
   assert.equal(await evaluate(`performance.getEntriesByType('resource').some(r=>r.name.includes('/otp/send'))`),false,'No OTP requests');

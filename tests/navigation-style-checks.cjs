@@ -16,7 +16,7 @@ module.exports=async({call,evaluate,errors,out})=>{
         if(index!==2)assert.ok(Math.abs(item.iconY-styles[0].iconY)<1,'Neighbouring icon centres align');
         assert.ok(Math.abs(item.labelY-styles[0].labelY)<1,'Labels align, including larger Gallery '+JSON.stringify({index,label:item.labelY,base:styles[0].labelY}));
       }
-      assert.equal(await evaluate(`(()=>{const size=parseFloat(getComputedStyle(document.querySelector('.tab--center .tab-seal')).width);return size>=44&&size<=56;})()`),true,'Larger unboxed pulsing seal');
+      assert.equal(await evaluate(`(()=>{const size=parseFloat(getComputedStyle(document.querySelector('.tab--center .tab-seal')).width);return size>=60&&size<=72;})()`),true,'Larger unboxed pulsing seal');
       assert.equal(await evaluate(`getComputedStyle(document.querySelector('.tab--center .tab-seal')).animationName`),'gallerySealPulse');
       assert.equal(await evaluate(`document.documentElement.scrollWidth===innerWidth`),true);
       assert.deepEqual(await evaluate(`[...document.querySelectorAll('.tabbar .tab')].map(b=>b.dataset.tab)`),['story','events','gallery','bridaltrain','gifts']);

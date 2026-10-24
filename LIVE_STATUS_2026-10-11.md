@@ -1,5 +1,17 @@
 # snybena.com live audit — 11 October 2026
 
+## Larger floating Gallery seal — v231
+
+Enlarged the unboxed Gallery seal to a responsive 60–72px square, retaining
+its gold pulse, label alignment and reduced-motion fallback. The navigation
+bar allows its upper edge/glow to float above the bar rather than clipping it.
+Five tabs still fit without horizontal scrolling at all seven tested widths.
+No approval, API, payment, OTP or content changes. Candidate read-only browser
+checks passed six widths, Home photo and approval lockdown. The broader
+isolated rerun passed all seven navigation/reduced-motion checks, then timed
+out during later unchanged feature checks; no complete broad-rerun pass is
+claimed for this cosmetic release.
+
 ## Welcome-only until admin approval / unboxed seal — v230 (24 October)
 
 Added a fail-closed server approval gate before all guest feature routes,

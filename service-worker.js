@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v230-guest-approval';
+const CACHE = 'sj-wedding-v231-larger-seal';
 const ASSETS = [
   './guest-access.js',
   './guest-access.css',
