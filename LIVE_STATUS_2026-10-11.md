@@ -1,5 +1,20 @@
 # snybena.com live audit — 11 October 2026
 
+## Heartbeat seal and transparent vendor contacts — v233
+
+Gallery seal now has a two-second double-beat heartbeat with matching gold
+glow and a resting phase; its enlarged unboxed dimensions remain unchanged.
+Vendor phone/WhatsApp buttons now have transparent backgrounds, readable dark
+text, thin gold outlines and a subtle pulsing halo, without moving hit targets.
+Hover/focus pauses the contact pulse; both effects respect reduced motion.
+Contact numbers, hrefs, content, approval, OTP and payments are unchanged.
+
+Disposable Vendors API/browser tests passed editor/publication/privacy,
+contact hrefs, transparent button styles, 44px targets, exact heartbeat peaks,
+reduced-motion overrides and five responsive widths. Service-worker tests
+passed. Private frontend backup and Vendors/Bridal Train settings fingerprint
+saved at `/root/wedding-pre-v233`; frontend-only deployment, no API restart.
+
 ## Bridal Train photo framing — v232
 
 Changed portrait frames and admin thumbnails to centred `object-fit:contain`
