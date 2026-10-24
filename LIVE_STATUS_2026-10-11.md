@@ -11,6 +11,10 @@ checks passed six widths, Home photo and approval lockdown. The broader
 isolated rerun passed all seven navigation/reduced-motion checks, then timed
 out during later unchanged feature checks; no complete broad-rerun pass is
 claimed for this cosmetic release.
+Deployed `daa95ef` after private frontend snapshot `/root/wedding-pre-v231`,
+without restarting the API or touching the database. Live six-width approval/
+seal/Home-photo checks and all 65 cached resources/security/lockdown checks
+passed; no submissions or OTP sends.
 
 ## Welcome-only until admin approval / unboxed seal — v230 (24 October)
 
