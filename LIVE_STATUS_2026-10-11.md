@@ -1,5 +1,16 @@
 # snybena.com live audit — 11 October 2026
 
+## More visible couple in Bridal Train banner — v240
+
+Increased banner height to 320–384px and aligned the saved photo to the top,
+showing more of both Sam and Jossy. Replaced the broad cream veil with a much
+lighter wash and a short bottom fade. Moved title/copy to the lower left with
+a local soft cream backing, leaving the couple's upper photo clearer. Original
+photo, portrait cards, Home pass order and all data/behaviour are unchanged.
+Disposable Bridal Train editor/navigation/upload/conflict/portrait tests and
+four-width banner assertions passed; local preview using the saved header
+photo was visually checked. Private frontend snapshot `/root/wedding-pre-v240`.
+
 ## Home pass placement and blended Bridal Train banner — v239
 
 Moved the existing entrance pass/table card to the end of Home, below Games
