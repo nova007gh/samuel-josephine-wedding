@@ -26,6 +26,7 @@ child.stdout.on('data',data=>{
     db.prepare('INSERT INTO guests (id,name,phone,status,attending,checkedInAt) VALUES (?,?,?,?,?,?)').run(id,id,phone,status,attending,Date.now());
     db.prepare('INSERT INTO otps (phone,code,expiresAt,attempts,sentAt) VALUES (?,?,?,?,?)').run(phone.slice(-9),crypto.createHash('sha256').update('123456').digest('hex'),Date.now()+10*60000,0,Date.now());
   }
+  db.prepare('INSERT INTO otps (phone,code,expiresAt,attempts,sentAt) VALUES (?,?,?,?,?)').run('240000004',crypto.createHash('sha256').update('123456').digest('hex'),Date.now()+10*60000,0,Date.now());
   db.close();console.log('ISOLATED_BROWSER_READY');
 });
 async function close(){

@@ -55,6 +55,7 @@ function onAdminAuth(callback){
 /* ---------- fetch helper ---------- */
 async function api(path, opts = {}){
   const { method = 'GET', body, form = null, admin = false, onProgress } = opts;
+  if(window.WeddingAccess&&!window.WeddingAccess.requestAllowed(path,method))throw Object.assign(new Error('Waiting for admin approval. Only the welcome page is available.'),{code:'guest/approval-required'});
   if (form){
     const file = form.get('file') || form.get('selfie');
     const photoOnly = ['/admin/competition-photos','/admin/bridal-train/photo','/admin/live-broadcast/photo'].includes(path);
@@ -63,7 +64,7 @@ async function api(path, opts = {}){
       throw new Error(photoOnly ? 'Photo exceeds the 10 MB upload limit.' : 'The file exceeds the 1 GB upload limit. Trim or compress the video, then try again.');
   }
   const headers = { 'X-Device-Id': DEVICE_ID, 'X-Network-Type': deviceNetType() };
-  if (admin && adminToken) headers['Authorization'] = `Bearer ${adminToken}`;
+  if (adminToken) headers['Authorization'] = `Bearer ${adminToken}`;
   if (body !== undefined && !form) headers['Content-Type'] = 'application/json';
 
   let res, data = null, unreadable = false;
@@ -120,7 +121,8 @@ async function api(path, opts = {}){
       || (res.status === 401 || res.status === 403 ? 'auth/invalid-credential'
         : res.status === 429 ? 'auth/too-many-requests' : 'unknown');
     // expired/invalid admin session: drop it so the UI falls back to login
-    if (admin && res.status === 401 && adminToken) setAdminToken(null);
+    if (res.status === 401 && adminToken) setAdminToken(null);
+    if(data?.code==='guest/approval-required')window.WeddingAccess?.lock();
     throw err;
   }
   if (unreadable || data === null){
@@ -130,6 +132,7 @@ async function api(path, opts = {}){
     err.code = 'api/unconfirmed-response';
     throw err;
   }
+  if(method==='POST'&&['/guests','/guests/login','/guest-entry','/guests/logout'].includes(path))window.dispatchEvent(new Event('wedding:guest-session'));
   return data;
 }
 

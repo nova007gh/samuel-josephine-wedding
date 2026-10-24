@@ -1,6 +1,8 @@
 
-const CACHE = 'sj-wedding-v229-vendors';
+const CACHE = 'sj-wedding-v230-guest-approval';
 const ASSETS = [
+  './guest-access.js',
+  './guest-access.css',
   './vendors.js',
   './vendors.css',
   './vendor-schema.js',

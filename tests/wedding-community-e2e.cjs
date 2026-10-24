@@ -2,8 +2,11 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 module.exports=async({call,evaluate,wait,request,out,errors})=>{
   const baseline=(await request('/settings')).data;
   await evaluate(`setAdminToken(null);switchView('chat')`);
-  await wait(`!document.getElementById('chatVerify').classList.contains('hidden')`);
-  await evaluate(`(async()=>{const r=await api('/guests/login',{method:'POST',body:{phone:'+233240000001',code:'123456'}});setGuest(r.guest);document.getElementById('chatRetry').click();})()`);
+  if(!await evaluate(`!!window.WeddingAccess&&WeddingAccess.canUse()`)){
+    await evaluate(`(async()=>{const r=await api('/guests/login',{method:'POST',body:{phone:'+233240000001',code:'123456'}});setGuest(r.guest);await WeddingAccess.refresh();})()`);
+    await wait(`WeddingAccess.canUse()`);await evaluate(`switchView('chat')`);
+  }
+  await evaluate(`document.getElementById('chatRetry').click()`);
   await wait(`document.getElementById('chatVerify').classList.contains('hidden')`);
   await evaluate(`document.getElementById('chatEmojiToggle').click()`);
   assert.equal(await evaluate(`document.getElementById('chatEmojiToggle').getAttribute('aria-expanded')`),'true');

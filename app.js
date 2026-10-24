@@ -1031,6 +1031,7 @@ function flashPageLoader(){
 
 function switchView(name, fromHistory = false){
   if(!$$('.view').some(v=>v.dataset.view===name))return;
+  if(window.WeddingAccess&&!window.WeddingAccess.canUse()&&!isAdmin()&&!['home','adminlogin'].includes(name))name='home';
   /* guest pages need a check-in; only the admin sign-in page is open to all */
   if (name !== 'adminlogin' && !ADMIN_VIEWS.has(name) && !isAdmin() && !getGuest()?.name && !gateShowing()){
     requireCheckIn();

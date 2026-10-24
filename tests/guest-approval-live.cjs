@@ -1,0 +1,18 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+module.exports=async({call,evaluate,errors,out})=>{
+  for(let i=0;i<100;i++){if(await evaluate(`document.getElementById('guestApprovalTitle')?.textContent==='Verify your sign-in'`))break;await new Promise(r=>setTimeout(r,200));}
+  assert.equal(await evaluate(`!WeddingAccess.canUse()&&currentView==='home'`),true,'Saved preview profile cannot bypass approval');
+  for(const view of ['story','events','gallery','gifts','chat','vendors','competitions','bridaltrain']){await evaluate(`switchView(${JSON.stringify(view)})`);assert.equal(await evaluate('currentView'),'home');}
+  await evaluate(`document.querySelector('.tab[data-tab="gallery"]').click()`);assert.equal(await evaluate('currentView'),'home');
+  assert.equal(await evaluate(`getComputedStyle(document.querySelector('.sj-guide-launch')).display`),'none','Guide locked before approval');
+  assert.equal(await evaluate(`document.querySelector('[data-view="gallery"]').inert`),true);
+  for(const width of [320,375,390,430,768,1024]){
+    await call('Emulation.setDeviceMetricsOverride',{width,height:900,deviceScaleFactor:1,mobile:width<900});
+    assert.equal(await evaluate(`document.documentElement.scrollWidth===innerWidth`),true,'Welcome gate fits '+width);
+    assert.equal(await evaluate(`(()=>{const seal=document.querySelector('.tab--center .tab-seal'),button=seal.closest('button'),css=getComputedStyle(seal);return parseFloat(css.width)>=44&&getComputedStyle(button).borderWidth==='0px'&&getComputedStyle(button).backgroundColor==='rgba(0, 0, 0, 0)'&&css.animationName==='gallerySealPulse';})()`),true,'Large unboxed pulsing seal');
+  }
+  await evaluate(`document.querySelector('#guestApproval [data-goto="adminlogin"]').click()`);assert.equal(await evaluate('currentView'),'adminlogin','Admin sign-in remains reachable');await evaluate(`document.querySelector('.app-brand').click()`);assert.equal(await evaluate('currentView'),'home');
+  assert.equal(await evaluate(`performance.getEntriesByType('resource').some(r=>r.name.includes('/otp/send'))`),false,'No OTP requests');
+  const shot=await call('Page.captureScreenshot',{format:'png'});try{fs.writeFileSync(path.join(out,'approval-home-live.png'),Buffer.from(shot.data,'base64'));}catch(e){if(e.code!=='ENOSPC')throw e;}
+  assert.deepEqual(errors,[]);console.log('PASS live welcome-only gate, blocked deep links/taps, verification guidance, reachable admin sign-in, six widths, large unboxed neon seal and zero OTP sends; no submissions');
+};

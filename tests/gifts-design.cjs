@@ -94,6 +94,7 @@ const delay = ms => new Promise(resolve=>setTimeout(resolve,ms));
   if(process.argv.includes('--guide')){await require('./wedding-guide-browser.cjs').check({call,evaluate,errors,out});return;}
   if(process.argv.includes('--guide-live')){await require('./wedding-guide-browser.cjs').live({call,evaluate,errors,out});return;}
   if(process.argv.includes('--vendors-live')){await require('./vendors-live-readonly.cjs')({call,evaluate,errors,out});return;}
+  if(process.argv.includes('--approval-live')){await require('./guest-approval-live.cjs')({call,evaluate,errors,out});return;}
   if(process.argv.includes('--shell')){
     await require('./shell-layout-checks.cjs')({call,evaluate,errors,out});return;
   }
@@ -234,5 +235,6 @@ const delay = ms => new Promise(resolve=>setTimeout(resolve,ms));
    if(chrome.exitCode!==null||chrome.signalCode!==null){
      try{await fs.promises.rm(profile,{recursive:true,force:true,maxRetries:10,retryDelay:200});}
      catch(error){console.warn('Temporary test profile retained for inspection:',profile,error.code);}
-   }
+    }
+   chrome.stdout?.destroy();chrome.stderr?.destroy();chrome.unref();
 });

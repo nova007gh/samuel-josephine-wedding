@@ -1,5 +1,53 @@
 # snybena.com live audit — 11 October 2026
 
+## Welcome-only until admin approval / unboxed seal — v230 (24 October)
+
+Added a fail-closed server approval gate before all guest feature routes,
+including competitions, uploads and payments. New and existing pending guests
+can see Home/welcome and a Waiting for admin approval card, but cannot use
+navigation, media uploads, Chat, guide, gifts, voting, reactions, RSVPs,
+guest-book, vendor/programme/broadcast pages or notifications. Deep links and
+history cannot bypass the gate. Approved guests unlock automatically via
+visible-tab 15-second status checks; revocation and failed checks lock access.
+Missing/expired sessions show verified-sign-in guidance. Local names, IDs or
+forged approved status never grant access. All existing guest statuses remain
+unchanged; no automatic approval or rejection is performed.
+
+Home settings are explicitly minimised before approval. Admin login and
+secure guest logout remain accessible; authenticated admin feature requests
+use existing bearer-session validation. Exact Speso TEST/LIVE webhook POSTs
+retain their original signature/settlement gates and are not blocked by guest
+approval. OTP stays enabled; no message sends, provider collection, live-mode
+activation or credential changes are part of this release.
+
+An additive `push_access` table binds notifications to authenticated sessions.
+Delivery checks current approval and session validity; legacy anonymous
+subscriptions are kept but paused until safely rebound. Only existing
+subscriptions with already-granted permission are rebound automatically;
+there are no new permission prompts or automatic new subscriptions. Quick
+entry, if separately enabled, gets a distinct HTTP-only approval cookie and
+remains unverified for phone-verified features. Guest logout revokes it.
+Static frontend assets and existing uploaded-media URLs remain public, not
+confidential storage; previously downloaded content is not recalled.
+
+The Gallery navigation seal is enlarged to 44–56px, its box/border/background
+removed, gold neon pulse retained and labels aligned. Five-tab navigation,
+Home design, reduced-motion behaviour and configured photos are preserved.
+
+Passed pure suites and real disposable API/browser approval tests: genuinely
+new OTP registration remains pending despite forged status; anonymous/pending
+read/write route matrix rejects access before upload/payment handlers; admin
+approval/unlock/revocation, offline fail-closed, stale response after logout,
+real pending-account admin login and callback signature boundary passed.
+Approved Chat, media upload/moderation, guest-book/reactions, RSVP, manual gift
+submission and idempotent competition voting passed. Seven-width navigation
+and larger unboxed seal/reduced motion passed. Separate approved suites passed
+Vendors, Broadcast, Bridal Train, reception/engagement editors, Chat/Entertainment
+and synthetic microphone permission/recording/upload recovery. All use
+disposable fixtures, never production test registrations/gifts. Test runner
+cleanup now closes inherited Chrome stdio handles to avoid post-pass hangs.
+Candidate runtime: `/root/wedding-v230-candidate`. See `server/APPROVAL_SETUP.md`.
+
 ## Reference-style admin-editable Vendors — v229
 
 Added **Events → Our Vendors** and **Admin Dashboard → Vendors**, preserving

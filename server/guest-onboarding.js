@@ -34,7 +34,8 @@ module.exports=({app,db,publicWrite,normPhone,notifyAll})=>{
     if(b.attending!==undefined&&typeof b.attending!=='boolean')return res.status(400).json({error:'Choose whether you are attending.'});
     try{
       const {guest:g,created}=create(b,key);
-      // No verified-voting cookie is issued. Quick entry is self-reported.
+      // Approval cookie is not a verified-phone/competition identity.
+      res.cookie('sj_entry_session',key,{httpOnly:true,secure:req.secure,sameSite:'strict',path:'/api',maxAge:24*3600000});
       res.json({ok:true,guest:{id:g.id,name:g.name,phone:g.phone,email:g.email,relation:g.relation,city:g.city,state:g.state,country:g.country,attending:!!g.attending,tableGuests:g.tableGuests||0,checkinMethod:'quick'}});
       if(created)notifyAll('New guest checked in',`${g.name} joined ${g.attending?'to attend':'to explore'} — quick check-in, pending approval`);
     }catch(err){res.status(err.status||500).json({error:err.status?err.message:'Check-in could not save. Please try again.',...(err.status===410?{code:'ENTRY_EXPIRED'}:{})});}

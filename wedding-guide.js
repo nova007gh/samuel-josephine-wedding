@@ -84,7 +84,7 @@
   $('sjGuideAlerts').addEventListener('change',()=>{write('sj_guide_alerts',$('sjGuideAlerts').checked);if(!$('sjGuideAlerts').checked)dismissAlert();else refresh(true);});
   function dismissAlert(){clearTimeout(expiry);alert?.remove();alert=null;}
   function guestsIdle(){
-    if(document.hidden||dialog.open||window.__uploadsInFlight||document.body.classList.contains('locked')||$('app')?.classList.contains('hidden'))return false;
+    if(document.hidden||dialog.open||window.__uploadsInFlight||document.body.classList.contains('locked')||$('app')?.classList.contains('hidden')||window.WeddingAccess&&!WeddingAccess.canUse())return false;
     if(typeof gateShowing==='function'&&gateShowing())return false;
     if(typeof isAdmin==='function'&&isAdmin())return false;
     if(document.querySelector('.activity-toast,.competition-toast,dialog[open],.sheet:not(.hidden),.lightbox:not(.hidden)'))return false;
@@ -191,7 +191,7 @@
   window.addEventListener('wedding:view',()=>{interact();if(!guestsIdle())dismissSuggestion();});
   reducedMotion.addEventListener('change',syncMotion);syncMotion();setInterval(tickCompanions,15000);
   function checkAlert(){
-    if(!data||!$('sjGuideAlerts').checked||document.hidden||dialog.open||alert||suggestion||meeting||Date.now()-lastFetch>120000)return;
+    if(!data||!$('sjGuideAlerts').checked||document.hidden||dialog.open||alert||suggestion||meeting||Date.now()-lastFetch>120000||window.WeddingAccess&&!WeddingAccess.canUse())return;
     if(typeof gateShowing==='function'&&gateShowing())return;
     if(typeof isAdmin==='function'&&isAdmin())return;
     if(window.__uploadsInFlight||document.querySelector('.activity-toast,.competition-toast'))return;

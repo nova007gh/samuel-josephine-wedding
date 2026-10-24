@@ -36,7 +36,8 @@
   <link rel="stylesheet" href="bridal-train-reference.css?v=200" />
   <link rel="stylesheet" href="live-broadcast.css?v=197" />
   <link rel="stylesheet" href="live-broadcast-reference.css?v=199" />
-  <link rel="stylesheet" href="app-polish.css?v=222" />
+  <link rel="stylesheet" href="app-polish.css?v=230" />
+  <link rel="stylesheet" href="guest-access.css?v=230" />
   <link rel="stylesheet" href="wedding-community.css?v=216" />
   <link rel="stylesheet" href="vendors.css?v=229" />
   <link rel="stylesheet" href="community-reference.css?v=218" />
@@ -299,6 +300,7 @@
 
   <!-- ---------- SCREEN 3 — Home ---------- -->
   <section class="view" data-view="home">
+    <section id="guestApproval" class="guest-approval" role="status" aria-live="polite"><span aria-hidden="true">⌛</span><h2 id="guestApprovalTitle">Checking your approval…</h2><p id="guestApprovalText">Your welcome page is ready. We’re securely checking your guest sign-in.</p><div class="guest-approval-actions"><button id="guestApprovalRefresh" type="button">Check approval</button><button id="guestApprovalVerify" type="button" hidden>Verify sign-in</button><button id="guestApprovalSignOut" type="button">Sign out</button></div><button class="guest-approval-admin" data-goto="adminlogin" type="button">Admin sign-in</button></section>
     <div class="home-hero">
       <h1 class="home-welcome">Welcome</h1>
       <div class="home-rule">
@@ -1834,8 +1836,9 @@ try{
     <div class="sheet-actions"><button class="sheet-cancel" data-close-sheet type="button">Close</button></div>
   </div>
 </div>
-<script src="api-data.js?v=227"></script>
-<script src="app.js?v=229"></script>
+<script src="api-data.js?v=230"></script>
+<script src="guest-access.js?v=230"></script>
+<script src="app.js?v=230"></script>
 <script src="app-data.js?v=194"></script>
 <script src="app-social.js?v=212"></script>
 <script src="speso-gifts.js?v=213"></script>
@@ -1864,12 +1867,12 @@ try{
   </div>
 </dialog>
 <script src="wedding-guide-knowledge.js?v=222"></script>
-<script src="wedding-guide.js?v=228"></script>
+<script src="wedding-guide.js?v=230"></script>
 <script src="admin-companion-alerts.js?v=228"></script>
 <script src="wedding-community.js?v=218"></script>
 <script src="vendor-schema.js?v=229"></script>
 <script src="vendors.js?v=229"></script>
 <script src="competitions.js?v=198"></script>
-<script src="competition-notices.js?v=187"></script>
+<script src="competition-notices.js?v=230"></script>
 </body>
 </html>

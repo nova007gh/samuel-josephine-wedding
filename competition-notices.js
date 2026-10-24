@@ -7,7 +7,7 @@
   const guestKey=()=>{
     const g=getGuest();return g?.id||g?.name||'';
   };
-  const available=()=>!document.hidden&&!gateShowing()&&!isAdmin()&&!!guestKey()&&!window.__uploadsInFlight;
+  const available=()=>!document.hidden&&!gateShowing()&&!isAdmin()&&!!guestKey()&&!window.__uploadsInFlight&&(!window.WeddingAccess||WeddingAccess.canUse());
   function syncOwner(){
     const key=guestKey();
     if(key===owner)return;

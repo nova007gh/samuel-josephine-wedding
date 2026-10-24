@@ -12,16 +12,17 @@ function headers(response){
   const assets=vm.runInNewContext(source.slice(0,source.indexOf("self.addEventListener"))+';ASSETS');
   let cursor=0;
   await Promise.all(Array.from({length:4},async()=>{while(cursor<assets.length){const asset=assets[cursor++],response=await get(asset);headers(response);await response.body?.cancel();}}));
-  for(const route of ['api/health','api/onboarding','api/settings','api/guide','api/gift-payments/config']){
+  for(const route of ['api/health','api/onboarding','api/settings','api/guest-access']){
     const response=await get(route);headers(response);assert.match(response.headers.get('cache-control')||'',/no-store/);const body=await response.json();
     if(route==='api/health')assert.equal(body.ok,true);
     if(route==='api/onboarding')assert.equal(body.otpRequired,true,'Live OTP stays enabled');
-    if(route==='api/gift-payments/config')assert.equal(body.mode,'test','No live payment activation');
+    if(route==='api/guest-access'){assert.equal(body.approved,false);assert.equal(body.status,'unverified');}
     if(route==='api/settings'){
       assert.equal(Object.hasOwn(body,'adminEmails'),false);assert.equal(Object.hasOwn(body,'eventPushSent'),false);
       const photo=body.couplePhotoUrl;
       if(typeof photo==='string'&&/^\/uploads\/[\w.-]+$/.test(photo)){const media=await get(photo);headers(media);assert.match(media.headers.get('content-type')||'',/^image\//);await media.body?.cancel();}
     }
   }
-  console.log(`PASS ${assets.length} precached public assets, security headers/API no-store, current uploaded image MIME, health, live OTP on, Speso TEST and private-setting exclusions; GET-only`);
+  for(const route of ['api/guide','api/memories','api/guestbook','api/vendors','api/entertainment','api/live-broadcast','api/bridal-train','api/competitions','api/gift-payments/config','api/gifts']){const response=await fetch(new URL(route,base),{cache:'no-store'});assert.equal(response.status,403,route);assert.equal((await response.json()).code,'guest/approval-required');}
+  console.log(`PASS ${assets.length} precached assets, security headers/API no-store, welcome photo MIME, health, live OTP on and unapproved feature lockdown; GET-only`);
 })().catch(error=>{console.error(error.message);process.exitCode=1;});

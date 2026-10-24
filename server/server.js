@@ -413,6 +413,7 @@ function requireAdmin(req, res, next){
   next();
 }
 
+const guestAccess=require('./guest-access')({app,db,requireAdmin,guest:req=>competitionAuth.guest(req)});
 app.get('/api/health', (req, res) => res.json({ ok: true }));
 
 app.post('/api/admin/login', loginLimit, (req, res) => {
@@ -1062,7 +1063,7 @@ const PRIVATE_SETTINGS = new Set(['adminEmails', 'eventPushSent', 'vendors']);
 app.get('/api/settings', (req, res) => {
   const out = {};
   for (const row of db.prepare('SELECT key, value FROM settings').all())
-    if (!PRIVATE_SETTINGS.has(row.key)) out[row.key] = row.value;
+    if (!PRIVATE_SETTINGS.has(row.key)&&(req.weddingApproved||guestAccess.homeKeys.has(row.key))) out[row.key] = row.value;
   const previews={};
   for(const [key,url] of Object.entries(out)){
     if((key==='couplePhotoUrl'||key.startsWith('photo:'))&&/^\/uploads\/[\w.-]+\.(jpe?g|png|webp|heic|heif)$/i.test(url)){
@@ -1505,6 +1506,7 @@ app.post('/api/push/subscribe', publicWrite, (req, res) => {
   db.prepare(`INSERT INTO push_subs (endpoint, p256dh, auth, createdAt) VALUES (?, ?, ?, ?)
               ON CONFLICT(endpoint) DO UPDATE SET p256dh = excluded.p256dh, auth = excluded.auth`)
     .run(endpoint, p256dh, auth, now());
+  guestAccess.bindPush(req,endpoint);
   res.json({ ok: true });
 });
 
@@ -1513,6 +1515,7 @@ function notifyAll(title, body){
   if (!webpush || !vapid) return;
   const payload = JSON.stringify({ title, body, icon: '/assets/icons/icon-192.png', url: '/' });
   for (const sub of db.prepare('SELECT * FROM push_subs').all()){
+    if(!guestAccess.pushAllowed(sub.endpoint))continue;
     webpush.sendNotification(
       { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
       payload

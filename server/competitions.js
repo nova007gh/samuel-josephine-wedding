@@ -56,6 +56,9 @@ module.exports = function installCompetitions({app,db,requireAdmin,publicWrite,m
     next();
   }
   app.post('/api/guests/logout',sameOrigin,(req,res)=>{
+    const entry=/(?:^|;\s*)sj_entry_session=([a-f0-9]{64})(?:;|$)/.exec(req.headers.cookie||'')?.[1];
+    if(entry)db.prepare('UPDATE guest_entry_keys SET expiresAt=0 WHERE tokenHash=?').run(hash(entry));
+    res.clearCookie('sj_entry_session',{httpOnly:true,secure:req.secure,sameSite:'strict',path:'/api'});
     const token = cookieToken(req);
     if(token) db.prepare('DELETE FROM guest_sessions WHERE tokenHash=?').run(hash(token));
     res.clearCookie('sj_guest_session',{path:'/api',httpOnly:true,secure:req.secure,sameSite:'strict'});

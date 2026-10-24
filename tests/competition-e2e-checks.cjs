@@ -9,7 +9,7 @@ module.exports=async({call,evaluate,errors,out})=>{
   assert.match(origin,/^http:\/\/127\.0\.0\.1:\d+$/);
   let controllerToken;
   const request=async(p,{method='GET',body,admin=false,cookie='',status=200}={})=>{
-    const response=await fetch(origin+'/api'+p,{method,headers:{...(body?{'Content-Type':'application/json'}:{}),...(admin?{Authorization:'Bearer '+controllerToken}:{}),...(cookie?{Cookie:cookie}:{})},body:body?JSON.stringify(body):undefined});
+    const response=await fetch(origin+'/api'+p,{method,headers:{...(body?{'Content-Type':'application/json'}:{}),...(admin?{Authorization:'Bearer '+controllerToken}:{}),...(cookie?{Cookie:cookie}:{})},body:body?JSON.stringify(body):undefined,signal:AbortSignal.timeout(20000)});
     const data=(response.headers.get('content-type')||'').includes('json')?await response.json():await response.text();
     assert.equal(response.status,status,p+' '+JSON.stringify(data));return {data,cookie:response.headers.get('set-cookie')?.split(';')[0]};
   };
@@ -20,6 +20,20 @@ module.exports=async({call,evaluate,errors,out})=>{
   if(process.env.WEDDING_E2E_QUICK_ONLY==='1'){
     controllerToken=(await request('/admin/login',{method:'POST',body:{password:'isolated-browser-only'}})).data.token;
     await require('./quick-onboarding-e2e.cjs')({call,evaluate,wait,request,out,errors});
+    await request('/admin/logout',{method:'POST',admin:true});return;
+  }
+  if(process.env.WEDDING_E2E_APPROVAL_ONLY==='1'){
+    controllerToken=(await request('/admin/login',{method:'POST',body:{password:'isolated-browser-only'}})).data.token;
+    await require('./guest-approval-e2e.cjs')({call,evaluate,wait,request,out,errors,token:controllerToken});
+    await request('/admin/logout',{method:'POST',admin:true});return;
+  }
+  if(process.env.WEDDING_E2E_APPROVED_SUITE){
+    const suites={vendors:'vendors-e2e.cjs',broadcast:'live-broadcast-e2e.cjs',bridal:'bridal-train-e2e.cjs',program:'program-e2e-checks.cjs',engagement:'engagement-e2e-checks.cjs',community:'wedding-community-e2e.cjs',voice:'voice-recording-checks.cjs'};
+    const suite=suites[process.env.WEDDING_E2E_APPROVED_SUITE];if(!suite)throw new Error('Unknown approved regression suite');
+    controllerToken=(await request('/admin/login',{method:'POST',body:{password:'isolated-browser-only'}})).data.token;
+    await evaluate(`(async()=>{const r=await api('/guests/login',{method:'POST',body:{phone:'+233240000001',code:'123456'}});setGuest(r.guest);await WeddingAccess.refresh();})()`);await wait('WeddingAccess.canUse()');
+    const authenticatedRequest=(p,o={})=>request(p,{...o,admin:o.admin??(!p.startsWith('/admin/')&&!o.cookie&&![401,403].includes(o.status))});
+    await require('./'+suite)({call,evaluate,wait,request:authenticatedRequest,out,errors,token:controllerToken});
     await request('/admin/logout',{method:'POST',admin:true});return;
   }
   if(process.env.WEDDING_E2E_ADMIN_COMPANIONS_ONLY==='1'){

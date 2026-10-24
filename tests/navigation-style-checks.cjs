@@ -11,11 +11,12 @@ module.exports=async({call,evaluate,errors,out})=>{
         assert.ok(item.width>=44);assert.equal(item.height,index===2?64:56);
         assert.equal(item.visible,true,'Every button is visible without swiping at '+width);
         assert.equal(item.labelFits,true,'No clipped labels at '+width+' index '+index);
-        for(const key of index===2?['margin','border','font','glow']:['radius','padding','margin','border','font','glow'])assert.equal(item[key],styles[0][key],view+' consistent '+key+' at '+width);
+        for(const key of index===2?['margin','font']:['radius','padding','margin','border','font','glow'])assert.equal(item[key],styles[0][key],view+' consistent '+key+' at '+width);
+        if(index===2)assert.equal(item.border,'0px','Gallery seal has no surrounding box');
         if(index!==2)assert.ok(Math.abs(item.iconY-styles[0].iconY)<1,'Neighbouring icon centres align');
         assert.ok(Math.abs(item.labelY-styles[0].labelY)<1,'Labels align, including larger Gallery '+JSON.stringify({index,label:item.labelY,base:styles[0].labelY}));
       }
-      assert.equal(await evaluate(`(()=>{const size=parseFloat(getComputedStyle(document.querySelector('.tab--center .tab-seal')).width);return size>=28&&size<=38;})()`),true,'Reduced seal size');
+      assert.equal(await evaluate(`(()=>{const size=parseFloat(getComputedStyle(document.querySelector('.tab--center .tab-seal')).width);return size>=44&&size<=56;})()`),true,'Larger unboxed pulsing seal');
       assert.equal(await evaluate(`getComputedStyle(document.querySelector('.tab--center .tab-seal')).animationName`),'gallerySealPulse');
       assert.equal(await evaluate(`document.documentElement.scrollWidth===innerWidth`),true);
       assert.deepEqual(await evaluate(`[...document.querySelectorAll('.tabbar .tab')].map(b=>b.dataset.tab)`),['story','events','gallery','bridaltrain','gifts']);
