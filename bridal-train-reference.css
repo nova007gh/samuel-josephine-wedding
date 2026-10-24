@@ -8,7 +8,7 @@
 #bridalTrainContent{container-type:inline-size;max-width:none;margin:0;padding:0;border-radius:0;overflow:hidden;background:linear-gradient(#fff8ed,#fbf0e2);color:#38291b;}
 #bridalTrainContent .bt-hero{position:relative;display:block;min-height:190px;border:0;border-radius:0;margin:0;background:repeating-linear-gradient(104deg,#f1d9b6 0,#fff0d9 18px,#fff7e9 30px,#ebd1ab 46px,#fff0d9 65px);box-shadow:none;isolation:isolate;}
 #bridalTrainContent .bt-hero-view{position:absolute;inset:0 auto 0 0;width:70%;height:100%;z-index:0;}
-#bridalTrainContent .bt-hero-photo{width:100%;height:100%;min-height:0;max-height:none;object-fit:cover;object-position:45% 40%;}
+#bridalTrainContent .bt-hero-photo{width:100%;height:100%;min-height:0;max-height:none;object-fit:contain;object-position:left center;}
 #bridalTrainContent .bt-hero-view>span{left:8px;bottom:6px;font-size:8px;padding:3px 6px;opacity:0;}
 #bridalTrainContent .bt-hero-view:focus-visible>span,#bridalTrainContent .bt-hero-view:hover>span{opacity:1;}
 #bridalTrainContent .bt-hero::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 27%,#fff1dd0a 38%,#fff1ddc9 55%,#fff1ddf0 70%,#fff1dd99);z-index:1;pointer-events:none;}
@@ -33,7 +33,7 @@
 #bridalTrainContent .bt-grid{display:flex;flex-wrap:wrap;justify-content:center;align-items:stretch;gap:6px;}
 #bridalTrainContent .bt-card{flex:1 1 calc(20% - 6px);max-width:calc(25% - 5px);min-width:0;border:1px solid #f3e7d7;border-radius:5px;background:#fffaf1;box-shadow:0 2px 3px #a77b3f08;}
 #bridalTrainContent .bt-portrait{aspect-ratio:auto;height:21cqw;background:radial-gradient(ellipse at 25% 20%,#fff8e6,#eddbbd);}
-#bridalTrainContent .bt-portrait img{object-fit:cover;}
+#bridalTrainContent .bt-portrait img{object-fit:contain;object-position:center;}
 #bridalTrainContent .bt-portrait::after{display:none;}
 #bridalTrainContent .bt-initials{font:400 clamp(19px,5.6cqw,32px)/1 'Cormorant Garamond',Georgia,serif;color:#aa7b3f;}
 #bridalTrainContent .bt-photo-note{bottom:5px;left:3px;right:3px;font:400 clamp(7px,1.7cqw,10px)/1.25 Georgia,serif;color:#806342;}

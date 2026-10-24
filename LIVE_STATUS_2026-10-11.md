@@ -1,5 +1,23 @@
 # snybena.com live audit — 11 October 2026
 
+## Bridal Train photo framing — v232
+
+Changed portrait frames and admin thumbnails to centred `object-fit:contain`
+instead of zoom/crop, with a small inset and soft cream background. All source
+photo edges remain visible, including heads/outfits in differing aspect ratios.
+Initials are hidden when an image is present so transparent PNG portraits do
+not show letters behind them; missing/failed-photo fallbacks remain intact.
+The header image also fits without cropping. Existing reference layout, names,
+roles, equal frame heights, tap-to-enlarge and missing-photo placeholders remain.
+No photos, settings, guest approvals or API code are changed.
+
+The disposable approved Bridal Train browser/API suite passed full editing,
+portrait upload/save/view, conflict/failure/logout safety and new full-frame
+portrait assertions at 320/375/430/768/1024 widths. Service-worker tests passed.
+Read-only production checks confirmed all 19 configured images (header plus
+18 portraits) are available. Frontend snapshot and Bridal Train settings hash
+saved privately at `/root/wedding-pre-v232` before deployment.
+
 ## Larger floating Gallery seal — v231
 
 Enlarged the unboxed Gallery seal to a responsive 60–72px square, retaining

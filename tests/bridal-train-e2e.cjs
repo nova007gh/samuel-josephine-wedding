@@ -59,6 +59,11 @@ module.exports=async({call,evaluate,wait,request,out})=>{
   assert.equal(await evaluate(`document.querySelectorAll('#bridalTrainContent .bt-card').length`),20);
   const viewer=await evaluate(`(()=>{const original=openLightbox;let url;openLightbox=u=>url=u;document.querySelector('#bridalTrainContent .bt-portrait[data-bt-view]').click();openLightbox=original;return url;})()`);
   assert.equal(viewer,saved.data.bridesmaids[0].photoUrl);
+  await wait(`document.querySelector('#bridalTrainContent .bt-portrait img')?.naturalWidth>0`);
+  for(const width of [320,375,430,768,1024]){
+    await call('Emulation.setDeviceMetricsOverride',{width,height:1000,deviceScaleFactor:1,mobile:width<600});
+    assert.equal(await evaluate(`(()=>{const img=document.querySelector('#bridalTrainContent .bt-portrait img'),frame=img.parentElement,css=getComputedStyle(img),r=img.getBoundingClientRect(),f=frame.getBoundingClientRect();return css.objectFit==='contain'&&css.objectPosition==='50% 50%'&&r.width<=f.width+1&&r.height<=f.height+1&&getComputedStyle(frame.querySelector('.bt-initials')).display==='none'&&document.documentElement.scrollWidth===innerWidth;})()`),true,'Full portrait fits neatly at '+width);
+  }
   await evaluate(`document.querySelector('#bridalTrainContent .bt-portrait[data-bt-view]').click()`);
   await wait(`document.querySelector('#lightboxBody img')?.naturalWidth>0`);
   await evaluate(`document.querySelector('#lightboxBody img').dispatchEvent(new Event('error'))`);
