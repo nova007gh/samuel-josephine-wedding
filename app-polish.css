@@ -24,9 +24,9 @@ html{scroll-padding-bottom:calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 
 #app .tabbar .tab--center .tab-seal{--gallery-seal-size:clamp(60px,16cqw,72px);position:absolute;bottom:27px;left:50%;margin-left:calc(var(--gallery-seal-size) / -2);width:var(--gallery-seal-size);height:var(--gallery-seal-size);animation:gallerySealPulse 2s ease-in-out infinite;transform-origin:center;}
 #app .tabbar .tab--center .tab-label{position:absolute;bottom:7px;height:18px;}
 /* Two soft beats, followed by a resting phase; glow follows the heartbeat. */
-@keyframes gallerySealPulse{0%,22%,46%,100%{transform:scale(1);filter:drop-shadow(0 0 3px #ff66ba99) drop-shadow(0 0 7px #ff299455);}12%{transform:scale(1.1);filter:drop-shadow(0 0 5px #ff8acfff) drop-shadow(0 0 13px #ff2994bb);}34%{transform:scale(1.065);filter:drop-shadow(0 0 4px #ff8acfee) drop-shadow(0 0 10px #ff299499);}}
+@keyframes gallerySealPulse{0%,22%,46%,100%{transform:scale(1);filter:drop-shadow(0 0 3px #ffd16699) drop-shadow(0 0 7px #ffb82955);}12%{transform:scale(1.1);filter:drop-shadow(0 0 5px #ffe49aff) drop-shadow(0 0 13px #ffb829bb);}34%{transform:scale(1.065);filter:drop-shadow(0 0 4px #ffe49aee) drop-shadow(0 0 10px #ffb82999);}}
 #app .tabbar .tab:focus-visible{outline:2px solid #875719;outline-offset:-3px;}
 #app .tabbar .tab::before{content:'';position:absolute;inset:0;z-index:-1;border:0;border-radius:inherit;background:transparent;box-shadow:0 0 3px #c9943555;animation:showcaseGoldGlow 3.6s ease-in-out infinite;pointer-events:none;}
 @keyframes showcaseGoldGlow{0%,100%{opacity:.5;box-shadow:0 0 3px #c9943533,inset 0 0 3px #efbc5633;}50%{opacity:1;box-shadow:0 0 9px #dfa23988,inset 0 0 6px #efbc5655;}}
 @media(min-width:430px){#app .tabbar .tab{font-size:8.5px;}}
-@media(prefers-reduced-motion:reduce){#app .tabbar .tab::before{animation:none;opacity:.75;}#app .tabbar .tab{transition:none;}#app .tabbar .tab--center .tab-seal{animation:none;transform:none;filter:drop-shadow(0 0 3px #ff66ba99) drop-shadow(0 0 7px #ff299455);}#app .tabbar{scroll-behavior:auto;}}
+@media(prefers-reduced-motion:reduce){#app .tabbar .tab::before{animation:none;opacity:.75;}#app .tabbar .tab{transition:none;}#app .tabbar .tab--center .tab-seal{animation:none;transform:none;filter:drop-shadow(0 0 3px #ffd16699) drop-shadow(0 0 7px #ffb82955);}#app .tabbar{scroll-behavior:auto;}}

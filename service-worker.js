@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v234-pink-seal';
+const CACHE = 'sj-wedding-v235-golden-seal';
 const ASSETS = [
   './guest-access.js',
   './guest-access.css',

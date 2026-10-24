@@ -1,5 +1,14 @@
 # snybena.com live audit — 11 October 2026
 
+## Golden neon Gallery seal — v235
+
+Recoloured the layered seal halo from pink to golden amber with pale-gold
+highlights. Existing heartbeat timing, scale, artwork and size are unchanged;
+reduced motion keeps a static golden glow. Vendor buttons remain unchanged.
+Candidate browser checks passed golden colour/reduced-motion assertions,
+six responsive widths, Home photo and approval lockdown; worker tests passed.
+Frontend-only snapshot `/root/wedding-pre-v235`; no API or database changes.
+
 ## Pink neon Gallery seal — v234
 
 Changed only the Gallery seal halo to layered pink neon shadows, following
