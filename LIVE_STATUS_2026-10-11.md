@@ -1,5 +1,21 @@
 # snybena.com live audit — 11 October 2026
 
+## Home check-in acknowledgement — v236
+
+Home button now reads “Enter our wedding to check in” before server-confirmed
+guest sign-in, then “Thanks for coming. You are checked in” after a confirmed
+registration/sign-in (including pending approval). The checked-in button is
+disabled and its arrow hidden to avoid repeat registration; sign-out resets
+the prompt. A local profile or admin-only session cannot claim guest check-in.
+The check-in action remains accessible while features are approval-locked and
+opens the existing entry/verification form without automatically sending OTP.
+No approval restrictions or server behaviour changed.
+
+Focused disposable API/browser tests passed prompt, opening check-in, no OTP
+send, genuinely new pending registration acknowledgement, status refresh and
+logout reset. Broader rerun passed seven-width navigation/reduced motion then
+timed out later; no complete broad rerun pass is claimed. Frontend-only release.
+
 ## Golden neon Gallery seal — v235
 
 Recoloured the layered seal halo from pink to golden amber with pale-gold

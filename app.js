@@ -985,18 +985,12 @@ function updateGuestUI(){
   }
 }
 
-$('#enterFromHome')?.addEventListener('click', () => {
-  // Guests who skipped check-in (chose "can't make it" → explore) get the
-  // details form first — we still want their name/phone/email on record.
-  if (!getGuest()){
-    pendingAttending = false;
-    syncGuestRsvpPills();
-    showGate(guestLoginScreen);
-    return;
-  }
-  // Smooth scroll to the countdown section
-  const bigday = document.querySelector('.bigday');
-  if (bigday) bigday.scrollIntoView({ behavior:'smooth', block:'center' });
+$('#enterFromHome')?.addEventListener('click', async () => {
+  if(window.WeddingAccess?.isCheckedIn())return;
+  requireCheckIn();
+  showGate(guestLoginScreen);
+  try{const config=await loadOnboarding();showPane(config.otpRequired&&getGuest()?.name?'return':'form');}
+  catch{showPane('form');}
 });
 
 /* ---------------------------------------------------------

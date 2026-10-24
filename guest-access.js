@@ -1,12 +1,16 @@
 /* Fail-closed approval state; never trust local guest IDs, names or status. */
 (()=>{
   'use strict';
-  let status='checking',busy=false,queued=false,generation=0,lastAdminToken,guestApproved=false;
+  let status='checking',busy=false,queued=false,generation=0,lastAdminToken,guestApproved=false,checkedIn=false;
   const canUse=()=>status==='approved'||status==='admin';
   const openGet=new Set(['/health','/settings','/onboarding','/guest-access']);
   const openPost=new Set(['/admin/login','/guests','/guest-entry','/guests/login','/guests/lookup','/guests/logout','/otp/send','/otp/verify']);
   function requestAllowed(path,method){return canUse()||!!adminToken||path.startsWith('/admin/')||(['GET','HEAD'].includes(method)?openGet.has(path):method==='POST'&&openPost.has(path));}
   function render(){
+    const checkin=document.getElementById('enterFromHome'),label=document.getElementById('homeCheckinLabel'),arrow=document.getElementById('homeCheckinArrow');
+    const checkinCopy=checkedIn?'Thanks for coming. You are checked in':'Enter our wedding to check in';if(label&&label.textContent!==checkinCopy)label.textContent=checkinCopy;
+    if(checkin)checkin.disabled=checkedIn;
+    if(arrow)arrow.hidden=checkedIn;
     const locked=!canUse(),adminUI=typeof isAdmin==='function'&&isAdmin();document.body.classList.toggle('access-limited',locked);
     const panel=document.getElementById('guestApproval');if(!panel)return;panel.hidden=!locked;
     const copy={checking:['Checking your approval…','Your welcome page is ready. We’re securely checking your guest sign-in.'],pending:['Waiting for admin approval','Thank you for registering! Enjoy the welcome page while Sam & Jossy review your registration. All other features will unlock here automatically after approval.'],unverified:['Verify your sign-in','Your saved profile alone cannot unlock the app. Verify your sign-in so we can securely check your admin approval.'],offline:['Approval check unavailable','We couldn’t confirm your access. The welcome page remains available; reconnect and check again to unlock approved features.']};
@@ -28,14 +32,14 @@
   function lock(){generation++;guestApproved=false;set('pending');}
   async function refresh(){
     if(document.hidden)return;if(busy){queued=true;return;}busy=true;const run=generation;
-    try{const result=await api('/guest-access');if(run!==generation)return;if(!result||typeof result.approved!=='boolean')throw new Error('Invalid approval response');guestApproved=result.guestApproved===true;set(result.admin?'admin':result.approved?'approved':result.authenticated?'pending':'unverified');}
+    try{const result=await api('/guest-access');if(run!==generation)return;if(!result||typeof result.approved!=='boolean')throw new Error('Invalid approval response');checkedIn=result.authenticated===true;guestApproved=result.guestApproved===true;set(result.admin?'admin':result.approved?'approved':result.authenticated?'pending':'unverified');}
     catch{if(run===generation){guestApproved=false;set('offline');}}finally{busy=false;if(queued){queued=false;queueMicrotask(refresh);}}
   }
-  window.WeddingAccess={canUse,requestAllowed,refresh,lock};document.body.classList.add('access-limited');
+  window.WeddingAccess={canUse,requestAllowed,refresh,lock,isCheckedIn:()=>checkedIn};document.body.classList.add('access-limited');
   function blocked(event){
     if(canUse()||!event.target.closest?.('#app'))return;
     const view=event.target.closest('.view');if(typeof isAdmin==='function'&&isAdmin()&&view&&typeof ADMIN_VIEWS!=='undefined'&&ADMIN_VIEWS.has(view.dataset.view))return;
-    if(event.target.closest('[data-view="adminlogin"],#guestApproval,#guestSignOut,[data-goto="adminlogin"],.app-brand'))return;
+    if(event.target.closest('[data-view="adminlogin"],#guestApproval,#guestSignOut,#enterFromHome,[data-goto="adminlogin"],.app-brand'))return;
     if(!event.target.closest('button,a,input,select,textarea,[role="button"],[data-goto],[data-tab]'))return;
     event.preventDefault();event.stopImmediatePropagation();document.getElementById('guestApproval')?.scrollIntoView({behavior:'smooth',block:'center'});
   }
@@ -48,6 +52,6 @@
     document.getElementById('guestApprovalSignOut').addEventListener('click',()=>document.getElementById('guestSignOut').click());
     onAdminAuth(()=>{if(lastAdminToken===adminToken)return;lastAdminToken=adminToken;generation++;if(!adminToken)set(guestApproved?'approved':'checking');else if(!canUse())set('checking');refresh();});render();refresh();
   });
-  window.addEventListener('wedding:guest-session',()=>{generation++;guestApproved=false;set('checking');refresh();});window.addEventListener('sj:entered',refresh);
+  window.addEventListener('wedding:guest-session',()=>{generation++;guestApproved=false;checkedIn=false;set('checking');refresh();});window.addEventListener('sj:entered',refresh);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});window.addEventListener('online',refresh);setInterval(refresh,15000);
 })();
