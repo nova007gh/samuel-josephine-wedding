@@ -48,6 +48,25 @@ disposable fixtures, never production test registrations/gifts. Test runner
 cleanup now closes inherited Chrome stdio handles to avoid post-pass hangs.
 Candidate runtime: `/root/wedding-v230-candidate`. See `server/APPROVAL_SETUP.md`.
 
+Deployed `634d4b1` after private frontend/API/config snapshot and online SQLite
+backup at `/root/wedding-pre-v230`. All three prior API file hashes matched;
+deployment checked zero active API requests and zero media workers, installed
+the four API files atomically and verified healthy restart, then fast-forwarded
+the frontend. Private environment bytes are unchanged, OTP remains enabled and
+Speso remains TEST. The new push table is additive; no existing approval or
+other wedding row is backfilled or rewritten.
+
+Live GET-only browser checks passed welcome-only routing/taps, expired/missing
+session guidance, reachable admin sign-in, configured Home photo decode,
+six responsive widths, larger unboxed pulsing seal and zero OTP sends. All
+65 cached public resources, security/API cache headers, health and anonymous
+feature API rejection passed. All **125 baseline rows** across 13 audited
+wedding/chat/payment tables are unchanged, including guest statuses; SQLite
+integrity `ok`. No production registrations, votes, uploads or gifts were
+created by verification. Existing SMS-provider failures, physical-phone
+capture checks, actual livestream rehearsal and automatic Speso callback
+delivery remain separate pending prerequisites, not claimed as solved.
+
 ## Reference-style admin-editable Vendors — v229
 
 Added **Events → Our Vendors** and **Admin Dashboard → Vendors**, preserving

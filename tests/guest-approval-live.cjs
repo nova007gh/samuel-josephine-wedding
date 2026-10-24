@@ -13,6 +13,8 @@ module.exports=async({call,evaluate,errors,out})=>{
   }
   await evaluate(`document.querySelector('#guestApproval [data-goto="adminlogin"]').click()`);assert.equal(await evaluate('currentView'),'adminlogin','Admin sign-in remains reachable');await evaluate(`document.querySelector('.app-brand').click()`);assert.equal(await evaluate('currentView'),'home');
   assert.equal(await evaluate(`performance.getEntriesByType('resource').some(r=>r.name.includes('/otp/send'))`),false,'No OTP requests');
+  await evaluate(`new Promise(resolve=>setTimeout(resolve,800))`);
+  assert.equal(await evaluate(`document.getElementById('couplePhoto').decode().then(()=>true).catch(()=>false)`),true,'Configured Home photo remains available while locked');
   const shot=await call('Page.captureScreenshot',{format:'png'});try{fs.writeFileSync(path.join(out,'approval-home-live.png'),Buffer.from(shot.data,'base64'));}catch(e){if(e.code!=='ENOSPC')throw e;}
   assert.deepEqual(errors,[]);console.log('PASS live welcome-only gate, blocked deep links/taps, verification guidance, reachable admin sign-in, six widths, large unboxed neon seal and zero OTP sends; no submissions');
 };
