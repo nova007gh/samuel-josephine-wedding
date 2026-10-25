@@ -59,6 +59,24 @@ restarts it and verifies real tracks stop on Escape. Personal-QR preview was
 visually checked and explicitly labelled disposable/not a live pass; no
 synthetic camera image or fixture count is published into the app.
 
+Deployed feature `4e6a6c4` by frontend fast-forward after a fresh online
+`/root/wedding-pre-v242/deploy.db` snapshot, clean live frontend and zero API
+connections/media workers. No API files, private configuration, OTP mode or
+manual-gift destination were changed and no API restart was needed. Live
+GET-only audit passed all 68 precached assets, security/no-store headers,
+health, OTP-on, approval lockdown and retired payment routes. Six-width live
+browser checks passed public check-in choices without camera/private data or
+OTP sends. Opened the actual live check-in dialog in the Review browser and
+captured the signed-out page; guest/admin sign-in choices and role restrictions
+were confirmed. The personal-QR image shown separately is labelled disposable.
+
+Fresh data audit preserved **all 147 existing rows across 18 wedding/chat/
+payment/arrival tables** against the deploy snapshot; SQLite integrity `ok`;
+private environment fingerprint unchanged. No live registration, private QR
+fixture, guest report, seating or arrival confirmation was created by these
+checks. Physical entrance-phone camera/torch and door rehearsal remain an
+explicit real-world prerequisite, not a claim established by synthetic tests.
+
 ## Manual cash gifts only and launch-checklist review — v241
 
 At the couple’s request, removed the Speso provider module, browser integration,
