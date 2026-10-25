@@ -31,6 +31,25 @@ seven-width native Back/reduced-motion/approval regressions. Headless camera
 screenshots remain unreliable, so optional capture is now gated behind
 `WEDDING_CAMERA_CAPTURE=1`; actual decoding/camera/privacy tests still run.
 
+Deployed feature `4d3b72c`. Private frontend/API/environment backup and online
+SQLite snapshots: `/root/wedding-pre-v243/{baseline,deploy}.db`. Prior live API
+hash matched the deployed source; candidate hash matched the tested own-profile
+module. Verified zero active API connections/media workers, atomically
+installed the single API module, restarted healthy, confirmed anonymous own
+feed rejection and unchanged private configuration, then fast-forwarded the
+frontend. No schema migrations, reference records or auto-seat backfill.
+
+Live GET-only checks passed all **69 precached assets**, security/no-store
+headers, Home photo, health, OTP-on, approval lockdown and retired payment
+routes. Six-width live check-in/privacy/approval checks passed with no camera,
+OTP send or private-data exposure while signed out. Post-deploy SQLite audit
+preserved **all 149 existing rows across 18 wedding/chat/payment/arrival tables**
+against the fresh snapshot, including photos/settings and original registration
+timestamps; integrity `ok`; private environment fingerprint unchanged. No live
+guest, pass fixture, arrival, seat or gift report was created by verification.
+Automatic RSVP/inviter seating still awaits actual tables/capacities/rules;
+physical-phone scanner/torch and existing external launch prerequisites remain.
+
 ## Home camera / personal QR check-in screen — v242
 
 Home's **Enter our wedding to check in** now opens an accessible cream/gold
