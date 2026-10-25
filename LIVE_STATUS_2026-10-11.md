@@ -50,6 +50,33 @@ guest, pass fixture, arrival, seat or gift report was created by verification.
 Automatic RSVP/inviter seating still awaits actual tables/capacities/rules;
 physical-phone scanner/torch and existing external launch prerequisites remain.
 
+## v244 pass polish and full-flow verification
+
+Polished the reference pass after visual comparison: pressed 320px seal in the
+banner (rounded), script "Sam & Jossy" brand heading using the loaded wedding
+fonts, compact identity grid with initials avatar and RSVP badge
+("RSVP: NOT ATTENDING" replacing the informal EXPLORING copy), smaller framed
+QR with quiet-zone border, tighter table/location row, floral information
+cards, shorter IMPORTANT bullets, gold gradient action button with QR icon,
+arrow and entrance-admin sign-in, and 350px compaction. All facts still come
+only from the own-guest API; no reference guest data was copied.
+
+Full verification before deploy: reference-pass suite (own identity/party/RSVP,
+no pre-arrival seating leak, real post-arrival table/directions, local QR
+decode, overflow menu, five widths, layout and header-containment checks,
+escaped long names, programme routing, logout privacy), check-in camera suite,
+arrivals suite and approval suite all PASS; all 17 pure tests PASS. v244 is
+frontend-only. Deployed as `83c5831`: live file hashes matched the commit for
+index.html, guest-arrival.js, guest-pass.css and service-worker.js; live
+worker cache `sj-wedding-v244-pass-polish-verification`; retired-payment
+`/api/...` boundary still 410 `manualOnly`. Pre-deploy frontend snapshot:
+`/root/wedding-pre-v244/`. Post-deploy audit preserved all 149 rows across 18
+tables (integrity `ok`); the only diff from the v243 snapshot is the organic
+`homeLikes` 15→16 guest counter. Live six-width welcome-gate checks passed
+with zero OTP sends; the live 69-asset readonly audit passed. No API restart
+was needed (API unchanged since v243). Automatic seating still awaits the
+couple's real seating plan; phone-camera rehearsal remains pending.
+
 ## Home camera / personal QR check-in screen — v242
 
 Home's **Enter our wedding to check in** now opens an accessible cream/gold
