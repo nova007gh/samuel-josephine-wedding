@@ -41,6 +41,7 @@
   <link rel="stylesheet" href="wedding-community.css?v=216" />
   <link rel="stylesheet" href="vendors.css?v=233" />
   <link rel="stylesheet" href="guest-arrival.css?v=242" />
+  <link rel="stylesheet" href="guest-pass.css?v=243" />
   <link rel="stylesheet" href="community-reference.css?v=218" />
   <link rel="stylesheet" href="wedding-guide.css?v=228" />
   <link rel="stylesheet" href="guest-checkin.css?v=202" />
@@ -357,7 +358,20 @@
       <span class="menu-icon menu-icon--gold">&#127918;</span><span class="menu-text"><strong>Wedding Games &amp; Competitions</strong><small>Join the fun, vote and see live results</small></span><span class="menu-chev">&#10095;</span>
     </button>
     <button class="menu-item menu-item--wide" data-goto="livebroadcast" type="button"><span class="menu-icon menu-icon--gold">&#9673;</span><span class="menu-text"><strong>Our Live Broadcast</strong><small>Watch from wherever you are</small></span><span class="menu-chev">&#10095;</span></button>
-    <section id="guestArrivalCard" class="arrival-card" hidden aria-labelledby="guestArrivalTitle"><h2 id="guestArrivalTitle">Your wedding entrance pass</h2><p id="guestArrivalMessage" role="status"></p><div id="guestArrivalGuide" hidden><img id="guestArrivalAvatar" alt="" width="66" height="90"><div><strong id="guestArrivalSpeaker"></strong><p id="guestArrivalTable"></p><p id="guestArrivalLocation"></p></div></div><button id="guestArrivalPass" type="button">Show my entrance QR</button><div id="guestArrivalQR" hidden><canvas id="guestArrivalCanvas" aria-label="Your private wedding entrance QR code" role="img"></canvas><p>Present this pass to the entrance admin. Please do not share it.</p></div><button id="guestArrivalRefresh" type="button">Refresh my arrival &amp; table</button></section>
+    <section id="guestArrivalCard" class="arrival-card guest-pass" hidden aria-labelledby="guestArrivalTitle">
+      <div class="guest-pass-hero"><img class="guest-pass-photo" src="assets/photo-placeholder.svg" data-site-photo="couple" alt="Sam and Jossy" loading="lazy" decoding="async"><div class="guest-pass-seal"><img src="assets/seal-transparent-320.png" alt="S and J" width="100" height="100"><span data-wed="hashtag">#AlwaysAndForever</span><span aria-hidden="true">&#9829;</span></div></div>
+      <div class="guest-pass-body">
+        <div class="guest-pass-identity"><span id="guestPassInitials" class="guest-pass-initials" aria-hidden="true"></span><div class="guest-pass-person"><strong id="guestPassName"></strong><span class="guest-pass-tier">APPROVED GUEST</span><span id="guestPassParty" hidden></span><span id="guestPassConnection" hidden></span></div><span id="guestPassRSVP" class="guest-pass-rsvp" hidden></span></div>
+        <h2 id="guestArrivalTitle">Your wedding entrance pass</h2><p id="guestArrivalMessage" role="status"></p>
+        <button id="guestArrivalPass" type="button">Show my entrance QR</button>
+        <div id="guestArrivalQR" hidden><canvas id="guestArrivalCanvas" aria-label="Your private wedding entrance QR code" role="img"></canvas><p>Show this QR code at the entrance<br>to check in. Please keep it private.</p></div>
+        <section class="guest-pass-seat" aria-labelledby="guestPassSeatLabel"><span class="guest-pass-seat-icon" aria-hidden="true"><svg width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="24" cy="19" rx="12" ry="6"/><path d="M12 19v9m24-9v9M18 24v13m12-13v13M8 10v14H3V13m37-3v14h5V13M10 31h8v10m20-10h-8v10M20 6h8v6"/></svg></span><div class="guest-pass-seat-copy"><span id="guestPassSeatLabel" class="guest-pass-eyebrow">ASSIGNED TABLE</span><strong id="guestPassTableName">Available after check-in</strong><p id="guestPassSeatNote"></p></div><button id="guestPassViewLocation" type="button" disabled aria-expanded="false" aria-controls="guestPassDirections">View Table Location &#10095;</button><p id="guestPassDirections" hidden></p></section>
+        <div id="guestArrivalGuide" hidden><img id="guestArrivalAvatar" alt="" width="66" height="90"><div><strong id="guestArrivalSpeaker"></strong><p id="guestArrivalTable"></p><p id="guestArrivalLocation"></p></div></div>
+        <section class="guest-pass-programme" aria-labelledby="guestPassProgrammeTitle"><h3 id="guestPassProgrammeTitle" class="guest-pass-eyebrow">WEDDING INFORMATION</h3><div><button id="guestPassEvents" type="button"><span aria-hidden="true">&#10047;</span><strong>Wedding Programme</strong><small>View the published events</small></button><button id="guestPassHelp" type="button"><span aria-hidden="true">&#9825;</span><strong>Table Assistance</strong><small>Let Sam or Jossy help you</small></button></div></section>
+        <aside class="guest-pass-important"><strong>ⓘ &nbsp; IMPORTANT</strong><ul><li>Each registered guest has a unique QR pass.</li><li>Present your code at the entrance for admin check-in.</li><li>A saved screenshot can be scanned. Please do not share it.</li></ul></aside>
+        <button id="guestArrivalRefresh" type="button">Refresh my arrival &amp; table</button>
+      </div>
+    </section>
   </section>
 
   <!-- ---------- SCREEN 4 — Our Story ---------- -->
@@ -1824,7 +1838,7 @@ try{
 </div>
 <script src="api-data.js?v=230"></script>
 <dialog id="arrivalCheckinDialog" class="checkin-dialog" aria-labelledby="arrivalCheckinTitle" aria-describedby="arrivalCheckinSubtitle">
-  <header class="checkin-header"><button id="arrivalCheckinClose" type="button" aria-label="Back to wedding">&#10094;</button><span aria-hidden="true"><svg width="38" height="38" viewBox="0 0 40 40" fill="#b78a3d"><circle cx="20" cy="10" r="6"/><circle cx="7" cy="15" r="4"/><circle cx="33" cy="15" r="4"/><path d="M10 35v-9a10 10 0 0 1 20 0v9Zm-8-3v-9a5 5 0 0 1 7-4 14 14 0 0 0-3 9v4Zm36 0h-4v-4a14 14 0 0 0-3-9 5 5 0 0 1 7 4Z"/></svg></span><h2 id="arrivalCheckinTitle">Guest Check-In</h2><p id="arrivalCheckinSubtitle">Scan an entrance pass or show your personal QR code.</p></header>
+  <header class="checkin-header"><button id="arrivalCheckinClose" type="button" aria-label="Back to wedding">&#10094;</button><span aria-hidden="true"><svg width="38" height="38" viewBox="0 0 40 40" fill="#b78a3d"><circle cx="20" cy="10" r="6"/><circle cx="7" cy="15" r="4"/><circle cx="33" cy="15" r="4"/><path d="M10 35v-9a10 10 0 0 1 20 0v9Zm-8-3v-9a5 5 0 0 1 7-4 14 14 0 0 0-3 9v4Zm36 0h-4v-4a14 14 0 0 0-3-9 5 5 0 0 1 7 4Z"/></svg></span><h2 id="arrivalCheckinTitle">Guest Check-In</h2><p id="arrivalCheckinSubtitle">Scan an entrance pass or show your personal QR code.</p><div class="guest-pass-brand"><em>The Wedding of</em><strong><span data-wed="nameA">Samuel</span> &amp; <span data-wed="nameB">Josephine</span></strong></div><button id="guestPassMore" type="button" aria-label="More check-in options" aria-expanded="false">&#8943;</button></header>
   <div class="checkin-choices" role="group" aria-label="Check-in options">
     <button id="arrivalCheckinScan" type="button" aria-pressed="false"><strong>Scan Guest QR Code</strong><span>Entrance admins · use the phone camera</span></button>
     <button id="arrivalCheckinManual" type="button"><strong>Manual Check-In</strong><span>Entrance admins · search by name or phone</span></button>
@@ -1873,6 +1887,6 @@ try{
 <script src="competition-notices.js?v=230"></script>
 <script src="assets/vendor/qrcode-generator-1.4.4.js"></script>
 <script src="assets/vendor/jsqr-1.4.0.js"></script>
-<script src="guest-arrival.js?v=242"></script>
+<script src="guest-arrival.js?v=243"></script>
 </body>
 </html>

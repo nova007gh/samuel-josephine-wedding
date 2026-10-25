@@ -15,7 +15,7 @@ module.exports=({app,db,requireAdmin,publicWrite,guest})=>{
   }
   function self(req,res,next){const g=guest(req);if(!g)return res.status(401).json({error:'Verify your guest sign-in first.'});if(g.status!=='approved')return res.status(403).json({error:'Admin approval is required.',code:'guest/approval-required'});req.arrivalGuest=g;next();}
   app.use((req,res,next)=>{if(/^\/api\/(?:guest-arrival|admin\/arrivals)(?:\/|$)/.test(req.path))res.set('Cache-Control','no-store');next();});
-  app.get('/api/guest-arrival',self,(req,res)=>{const g=req.arrivalGuest,a=arrival(g.id);res.json({name:g.name,side:sideFor(g),arrival:a,seating:a?seat(g.id):null});});
+  app.get('/api/guest-arrival',self,(req,res)=>{const g=req.arrivalGuest,a=arrival(g.id);res.json({name:g.name,attending:!!g.attending,partySize:1+Math.min(20,Math.max(0,Number(g.tableGuests)||0)),connection:g.relation||'',side:sideFor(g),arrival:a,seating:a?seat(g.id):null});});
   const issue=db.transaction(id=>{
     let p=db.prepare('SELECT code FROM guest_arrival_passes WHERE guestId=?').get(id);
     if(!p){p={code:'SJ1-'+crypto.randomBytes(32).toString('hex')};db.prepare('INSERT INTO guest_arrival_passes VALUES (?,?)').run(id,p.code);}return p.code;

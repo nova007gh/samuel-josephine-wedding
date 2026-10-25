@@ -11,7 +11,7 @@
   function say(id,text){$(id).textContent=text;}
   function clearPass(){const c=$('guestArrivalCanvas');c.getContext('2d').clearRect(0,0,c.width,c.height);$('guestArrivalQR').hidden=true;}
   function clearNotice(){notice?.remove();notice=null;pendingNotice=null;}
-  function guestReset(){card.hidden=true;clearPass();clearNotice();lastGuestKey='';say('guestArrivalMessage','');say('guestArrivalTable','');say('guestArrivalLocation','');say('guestArrivalSpeaker','');$('guestArrivalGuide').hidden=true;}
+  function guestReset(){card.hidden=true;clearPass();clearNotice();lastGuestKey='';for(const id of ['guestArrivalMessage','guestArrivalTable','guestArrivalLocation','guestArrivalSpeaker','guestPassName','guestPassInitials','guestPassParty','guestPassConnection','guestPassRSVP','guestPassTableName','guestPassSeatNote','guestPassDirections'])say(id,'');for(const id of ['guestPassParty','guestPassConnection','guestPassRSVP','guestPassDirections'])$(id).hidden=true;delete $('guestPassRSVP').dataset.attending;$('guestPassViewLocation').disabled=true;$('guestPassViewLocation').setAttribute('aria-expanded','false');$('guestArrivalGuide').hidden=true;}
   function tableMessage(data){const seat=data.seating;if(!seat?.tableNumber)return 'Your table has not been assigned yet. Please ask an usher for help.';return 'Your table: '+seat.tableNumber+(seat.location?'\nLocation: '+seat.location:'\nPlease ask an usher for directions to your table.');}
   function showNotice(){
     if(!pendingNotice||notice||!guestReady()||document.hidden||window.__uploadsInFlight||document.querySelector('dialog[open],.activity-toast,.competition-toast,.sj-guide-alert,.sj-admin-companion-alert')||document.activeElement?.matches('input,textarea,select,[contenteditable="true"]')||['chat','gifts','livebroadcast','admin'].includes(currentView))return;
@@ -20,6 +20,11 @@
   }
   function renderGuest(data){
     card.hidden=false;$('guestArrivalPass').hidden=false;$('guestArrivalGuide').hidden=!data.arrival;
+    say('guestPassName',data.name);const parts=data.name.trim().split(/\s+/);say('guestPassInitials',[parts[0],parts.length>1?parts[parts.length-1]:''].map(s=>Array.from(s)[0]||'').join('').toLocaleUpperCase());
+    $('guestPassParty').hidden=!Number.isInteger(data.partySize);say('guestPassParty',Number.isInteger(data.partySize)?'Party size: '+data.partySize:'');$('guestPassConnection').hidden=!data.connection;say('guestPassConnection',data.connection?'Connection: '+data.connection:'');
+    $('guestPassRSVP').hidden=typeof data.attending!=='boolean';$('guestPassRSVP').dataset.attending=String(data.attending);say('guestPassRSVP',data.attending?'✓ RSVP: ATTENDING':'RSVP: EXPLORING');
+    const seat=data.arrival?data.seating:null,table=seat?.tableNumber||'',directions=seat?.location||'';say('guestPassTableName',table?(/^\d+$/.test(table)?'Table '+table:table):data.arrival?'See an usher':'After entrance check-in');say('guestPassSeatNote',table?'Your saved table assignment':data.arrival?'Your table has not been assigned yet.':'Your table will appear after your arrival is confirmed.');
+    if($('guestPassDirections').textContent!==directions){$('guestPassDirections').hidden=true;$('guestPassViewLocation').setAttribute('aria-expanded','false');}say('guestPassDirections',directions);$('guestPassViewLocation').disabled=!table||!directions;
     if(!data.arrival){say('guestArrivalTitle','Your wedding entrance pass');say('guestArrivalMessage','Your registration is saved. Present your QR pass to the entrance admin to confirm your arrival. Your table will appear here after entrance check-in.');}
     else{
       if(!checkin.open||checkinMode!=='pass')clearPass();const name=data.side==='jossy'?'Jossy':'Sam';say('guestArrivalTitle','Welcome to the celebration');say('guestArrivalMessage','Entrance check-in confirmed. Your arrival is recorded once.');say('guestArrivalSpeaker',name+' · Your wedding companion');$('guestArrivalAvatar').src=data.side==='jossy'?'assets/guide-launcher-jossy.png':'assets/guide-launcher.png';say('guestArrivalTable',data.seating?.tableNumber?'Your table: '+data.seating.tableNumber:'Your table has not been assigned yet.');say('guestArrivalLocation',data.seating?.location?'Location: '+data.seating.location:'Please ask an usher '+(data.seating?.tableNumber?'for directions to your table.':'for help with your seat.'));
@@ -37,11 +42,12 @@
     catch(error){if(run===epoch&&(portalRun===null||portalRun===checkinRun))say('guestArrivalMessage',error.message||'Pass could not load. Retry safely.');}finally{passBusy=false;$('guestArrivalPass').disabled=false;if(portalRun!==null&&portalRun!==checkinRun&&checkin.open&&checkinMode==='pass'&&guestReady()&&$('guestArrivalQR').hidden)queueMicrotask(showPass);}
   }
   function showAssistance(){if(!guestReady()){say('sjGuideStatus','Your own approved guest sign-in is needed to show your entrance pass and table.');return;}closeCheckIn();document.getElementById('sjGuideDialog')?.close();switchView('home');refreshGuest();card.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'instant':'smooth'});}
-  function restoreCheckIn(){checkinRun++;checkinMode='';stopCamera();clearPass();review=null;$('arrivalScanReview').hidden=true;adminHome.after(adminCard);guestHome.after(card);$('arrivalCheckinScannerHost').hidden=true;$('arrivalCheckinPassHost').hidden=true;document.body.classList.remove('checkin-open');}
+  function restoreCheckIn(){checkinRun++;checkinMode='';checkin.classList.remove('checkin-pass-view','pass-options-open');$('guestPassMore').setAttribute('aria-expanded','false');stopCamera();clearPass();review=null;$('arrivalScanReview').hidden=true;adminHome.after(adminCard);guestHome.after(card);$('arrivalCheckinScannerHost').hidden=true;$('arrivalCheckinPassHost').hidden=true;document.body.classList.remove('checkin-open');}
   function closeCheckIn(){if(checkin.open)checkin.close();restoreCheckIn();}
   async function chooseCheckIn(mode,{camera=false,manual=false}={}){
     if(checkin.open&&mode===checkinMode&&(mode==='pass'&&(passBusy||!$('guestArrivalQR').hidden)||mode==='scan'&&camera&&!manual&&!checkin.classList.contains('checkin-manual')&&(starting||stream)))return;
     if(!checkin.open)return;const run=++checkinRun;stopCamera();checkinMode=mode;clearPass();review=null;$('arrivalScanReview').hidden=true;checkin.scrollTop=0;
+    checkin.classList.toggle('checkin-pass-view',mode==='pass'&&guestReady());checkin.classList.remove('pass-options-open');$('guestPassMore').setAttribute('aria-expanded','false');
     checkin.classList.toggle('checkin-manual',manual);$('arrivalCheckinManual').setAttribute('aria-pressed',String(manual));$('arrivalCheckinScan').setAttribute('aria-pressed',String(mode==='scan'&&!manual));$('arrivalCheckinPass').setAttribute('aria-pressed',String(mode==='pass'));
     $('arrivalCheckinScannerHost').hidden=true;$('arrivalCheckinPassHost').hidden=true;$('arrivalCheckinSignin').hidden=guestReady();$('arrivalCheckinAdmin').hidden=isAdmin();
     if(mode==='pass'){
@@ -56,7 +62,10 @@
   function openCheckIn(){if(checkin.open)return;document.querySelectorAll('dialog[open]').forEach(d=>d.close());checkinReturn=document.activeElement;checkin.showModal();document.body.classList.add('checkin-open');chooseCheckIn(isAdmin()?'scan':guestReady()?'pass':'scan',{camera:isAdmin()});}
   checkin.addEventListener('close',()=>{if(checkin.open)return;restoreCheckIn();if(checkinReturn?.isConnected)checkinReturn.focus({preventScroll:true});});
   checkin.addEventListener('cancel',closeCheckIn);$('arrivalCheckinClose').onclick=closeCheckIn;
-  $('arrivalCheckinScan').onclick=()=>chooseCheckIn('scan',{camera:true});$('arrivalCheckinManual').onclick=()=>chooseCheckIn('scan',{manual:true});$('arrivalCheckinPass').onclick=()=>chooseCheckIn('pass');
+  $('arrivalCheckinScan').onclick=()=>chooseCheckIn('scan',{camera:true});$('arrivalCheckinManual').onclick=()=>chooseCheckIn('scan',{manual:true});$('arrivalCheckinPass').onclick=()=>{if(checkinMode==='pass'&&!$('guestArrivalQR').hidden)$('guestArrivalQR').scrollIntoView({block:'center',behavior:'instant'});else chooseCheckIn('pass');};
+  $('guestPassMore').onclick=()=>{$('guestPassMore').setAttribute('aria-expanded',String(checkin.classList.toggle('pass-options-open')));};
+  $('guestPassViewLocation').onclick=()=>{if($('guestPassViewLocation').disabled)return;$('guestPassDirections').hidden=!$('guestPassDirections').hidden;$('guestPassViewLocation').setAttribute('aria-expanded',String(!$('guestPassDirections').hidden));};
+  $('guestPassEvents').onclick=()=>{if(guestReady()){closeCheckIn();switchView('events');}};$('guestPassHelp').onclick=showAssistance;
   $('arrivalCheckinSignin').onclick=async()=>{closeCheckIn();requireCheckIn();showGate(guestLoginScreen);try{const config=await loadOnboarding();showPane(config.otpRequired?'return':'form');}catch{showPane('return');}};
   $('arrivalCheckinAdmin').onclick=()=>{closeCheckIn();enterApp();switchView('adminlogin');};
   window.WeddingArrival={showAssistance,openCheckIn};

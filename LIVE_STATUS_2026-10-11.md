@@ -1,5 +1,36 @@
 # snybena.com live audit — 11 October 2026
 
+## Reference-style guest QR and table card — v243
+
+Restyled the approved guest's pass to follow the supplied cream/gold design:
+configured couple-photo banner and seal, wedding heading/back/overflow controls,
+verified guest name with initials fallback, Approved Guest badge, saved RSVP /
+party / connection details, large framed QR, assigned-table/location panel,
+floral information cards and gold Show My Check-In QR Code action. Existing
+Sam/Jossy private assistance remains. No reference guest portrait/name, VIP
+status, Table 12, access rights or event times were copied into live data.
+
+Own-guest API adds read-only attendance, party-size and connection fields from
+the authenticated approved record. Party size is one guest plus the existing
+additional-guest count; it is not a table number or venue-arrival total. Seating
+still appears only after confirmed entrance arrival; View Table Location
+expands actual saved directions, and absent tables/directions refer to an
+usher. No automatic seating rules are created without a confirmed table plan.
+No changes to registration/approval, arrival writes, payment APIs or private
+configuration are needed. All new private fields clear on logout/revocation.
+
+All 16 pure tests passed. Disposable reference-pass suite passed own server
+identity/party/RSVP, pre-arrival seating privacy, post-arrival real assignment
+and directions, QR decoding, overflow controls, five widths, long/escaped
+names, published-programme routing and logout clearing. Visually checked the
+labelled disposable preview using a read-only copy of the current saved couple
+photo. Separate camera/check-in, entrance/seating and full approval suites
+passed, including video-stream QR decoding, duplicate/concurrent confirmation,
+camera denial/late grants/Escape/navigation/logout, seating conflicts and
+seven-width native Back/reduced-motion/approval regressions. Headless camera
+screenshots remain unreliable, so optional capture is now gated behind
+`WEDDING_CAMERA_CAPTURE=1`; actual decoding/camera/privacy tests still run.
+
 ## Home camera / personal QR check-in screen — v242
 
 Home's **Enter our wedding to check in** now opens an accessible cream/gold

@@ -73,6 +73,34 @@ No counts, table allocations, sample bookings or reference names are seeded.
 
 ## Guest experience and privacy
 
+### Reference-style personal pass (v243)
+
+The personal pass uses the cream/gold photo-banner, seal, framed QR, guest
+identity, RSVP/party details, table/location section, floral information cards
+and gold action button from the supplied design. It uses the configured couple
+photo and names, not the reference image's guest portrait or invented guest
+facts. Guest initials are shown because no authoritative guest portrait is
+stored. The badge says **Approved Guest**, never an inferred VIP category.
+
+The protected own-guest feed additionally returns saved `attending`,
+`partySize` (registered guest plus `tableGuests` additional people) and
+`connection`. These are display facts, not table assignments, event-access
+permissions or entrance counts. Only the authenticated approved guest receives
+their details. They remain out of public settings, guide history, local storage
+and worker caches, and clear on logout/revocation.
+
+Before arrival, the table panel says it is available after check-in; no saved
+seating/directions are returned early. After arrival, **View Table Location**
+expands only the actual saved admin directions. Missing assignments/directions
+refer to an usher rather than inventing a table/map. The information buttons
+open the published programme and private companion assistance; no reference
+event times or access entitlements are copied. The overflow button keeps
+scanner/manual choices reachable without crowding the pass design.
+
+This is a UI restyle, **not automatic table allocation**. Admin assignments
+remain intact. A real table plan/capacities/group rules must be supplied before
+any automatic RSVP/inviter-based seating can be configured.
+
 After admin entrance confirmation, the guest's Home card automatically shows
 their saved table and location from a private, authenticated 15-second feed.
 Explicit Jossy/Josephine/bride connections choose Jossy; explicit Sam/Samuel/

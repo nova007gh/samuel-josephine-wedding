@@ -1,8 +1,9 @@
 
-const CACHE = 'sj-wedding-v242-checkin-camera';
+const CACHE = 'sj-wedding-v243-reference-guest-pass';
 const ASSETS = [
   './guest-arrival.js',
   './guest-arrival.css',
+  './guest-pass.css',
   './assets/vendor/qrcode-generator-1.4.4.js',
   './assets/vendor/jsqr-1.4.0.js',
   './guest-access.js',
