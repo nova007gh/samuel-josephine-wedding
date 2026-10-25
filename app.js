@@ -986,6 +986,7 @@ function updateGuestUI(){
 }
 
 $('#enterFromHome')?.addEventListener('click', async () => {
+  if(window.WeddingArrival?.openCheckIn){WeddingArrival.openCheckIn();return;}
   if(window.WeddingAccess?.isCheckedIn())return;
   requireCheckIn();
   showGate(guestLoginScreen);

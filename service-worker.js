@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v241-manual-cash-gifts';
+const CACHE = 'sj-wedding-v242-checkin-camera';
 const ASSETS = [
   './guest-arrival.js',
   './guest-arrival.css',

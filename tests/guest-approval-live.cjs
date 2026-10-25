@@ -13,11 +13,15 @@ module.exports=async({call,evaluate,errors,out})=>{
   await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
   assert.equal(await evaluate(`(()=>{const css=getComputedStyle(document.querySelector('.tab-seal'));return css.animationName==='none'&&css.filter.includes('255, 184, 41');})()`),true,'Reduced motion retains static golden glow');
   await call('Emulation.setEmulatedMedia',{features:[]});
+  await evaluate(`document.getElementById('enterFromHome').click();document.getElementById('arrivalCheckinPass').click()`);
+  assert.equal(await evaluate(`document.getElementById('arrivalCheckinDialog').open&&document.getElementById('arrivalCheckinStatus').textContent.includes('Sign in or register first')&&document.getElementById('arrivalCheckinPassHost').hidden&&document.getElementById('arrivalCheckinScannerHost').hidden&&document.getElementById('arrivalVideo').srcObject===null`),true,'Public check-in choices do not open camera or expose QR/admin data');
   for(const width of [320,375,390,430,768,1024]){
     await call('Emulation.setDeviceMetricsOverride',{width,height:900,deviceScaleFactor:1,mobile:width<900});
     assert.equal(await evaluate(`document.documentElement.scrollWidth===innerWidth`),true,'Welcome gate fits '+width);
+    assert.equal(await evaluate(`(()=>{const d=document.getElementById('arrivalCheckinDialog'),r=d.getBoundingClientRect();return d.scrollWidth<=d.clientWidth+1&&r.left>=0&&r.right<=innerWidth+1&&r.height<=innerHeight;})()`),true,'Check-in choices fit '+width);
     assert.equal(await evaluate(`(()=>{const seal=document.querySelector('.tab--center .tab-seal'),button=seal.closest('button'),css=getComputedStyle(seal);return parseFloat(css.width)>=60&&parseFloat(css.width)<=72&&getComputedStyle(button).borderWidth==='0px'&&getComputedStyle(button).backgroundColor==='rgba(0, 0, 0, 0)'&&css.animationName==='gallerySealPulse';})()`),true,'Large unboxed pulsing seal');
   }
+  await evaluate(`document.getElementById('arrivalCheckinClose').click()`);
   await evaluate(`document.querySelector('#guestApproval [data-goto="adminlogin"]').click()`);assert.equal(await evaluate('currentView'),'adminlogin','Admin sign-in remains reachable');await evaluate(`document.querySelector('.app-brand').click()`);assert.equal(await evaluate('currentView'),'home');
   assert.equal(await evaluate(`performance.getEntriesByType('resource').some(r=>r.name.includes('/otp/send'))`),false,'No OTP requests');
   await evaluate(`new Promise(resolve=>setTimeout(resolve,800))`);

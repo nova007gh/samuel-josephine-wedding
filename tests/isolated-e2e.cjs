@@ -38,7 +38,7 @@ const ready=new Promise((resolve,reject)=>{
     });
     await new Promise(r=>server.listen(0,'127.0.0.1',r));
     child=spawn(process.execPath,[path.join(__dirname,'gifts-design.cjs'),process.argv[2],'--e2e'],{stdio:'inherit',env:{...process.env,WEDDING_TEST_URL:'http://127.0.0.1:'+server.address().port+'/'}});
-    const code=await new Promise(r=>child.once('exit',r));process.exitCode=code||0;
+    const code=await new Promise(r=>child.once('exit',r));process.exitCode=code===0?0:code||1;
   }finally{
     server?.closeAllConnections();server?.close();
     tunnel.stdin.end();

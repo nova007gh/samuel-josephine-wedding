@@ -14,6 +14,34 @@
 
 ## Admin workflow
 
+### Home check-in screen (v242)
+
+Home → **Enter our wedding to check in** opens the Guest Check-In dialog. The
+button stays clickable after sign-in (its existing thank-you wording remains),
+so returning guests do not register a second time just to open their pass.
+
+- Signed-in entrance admins open the camera scanner immediately from that
+  deliberate tap; the browser may ask for camera permission. Select **Scan
+  Guest QR Code** to retry/start it. Nothing starts on ordinary page load.
+- **Manual Check-In** stops the camera and opens protected guest search and
+  seating controls. **Scan QR image** is available in scanner mode. Flashlight
+  appears only if the camera reports torch support.
+- **Show My Check-In QR Code** opens the signed-in approved guest's own stable
+  QR, including after arrival. An admin login alone cannot choose another
+  guest's personal pass. Guests never obtain guest search, counts or arrival
+  confirmation permissions by opening the screen.
+- Unverified/pending guests see sign-in/approval guidance, not a pass or guest
+  list. Guest sign-in and entrance-admin sign-in remain distinct actions; no
+  OTP is sent just by opening the screen.
+- Closing, switching modes, navigating away, signing out or backgrounding
+  stops camera tracks. Late permission grants are stopped; late pass responses
+  from a closed/switched dialog are discarded. Dashboard and Home controls
+  are restored to their original positions on close, without duplicate IDs or
+  separate copies of private data. Unsaved seating drafts remain protected.
+- Counts remain actual approved registered guest records, not the numbers in
+  the design reference. The frame shows the actual camera feed; no reference
+  venue photograph, mock guest or invented invitation total is published.
+
 Open **Admin Dashboard → Entrance & Tables**. Search a registered guest by
 name or phone. Save their confirmed **Table number/name** and **Location /
 directions**. Party size remains separate. Assignments use their own revision
@@ -36,7 +64,8 @@ At the entrance:
   confirmations all reuse one `guest_arrivals` primary-key record and timestamp.
 - The camera is opt-in and stops on navigation, admin-tab changes, backgrounding,
   sign-out and page exit. Late permission grants are stopped too. Flashlight
-  appears only on devices reporting torch support. No automatic camera start.
+  appears only on devices reporting torch support. A deliberate tap on Home's
+  check-in screen (admin) or Start QR scanner is required before camera access.
 
 Counts are actual approved registered guest records: Checked In, Not Yet Arrived,
 Approved Guests. They are **not** total invitations or unregistered plus-ones.

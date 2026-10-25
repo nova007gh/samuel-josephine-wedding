@@ -1,5 +1,64 @@
 # snybena.com live audit — 11 October 2026
 
+## Home camera / personal QR check-in screen — v242
+
+Home's **Enter our wedding to check in** now opens an accessible cream/gold
+Guest Check-In dialog. The button remains usable after sign-in without
+registering again; its approved thank-you wording remains. Signed-in entrance
+admins deliberately opening it start the rear-camera scanner; ordinary guests
+never receive scanner/admin permissions and approved guests see their own
+stable personal QR. Choices include **Scan Guest QR Code**, **Manual Check-In**
+and **Show My Check-In QR Code**. Unverified/pending guests receive sign-in or
+approval guidance, not private data. Opening this screen never sends an OTP.
+
+The dialog reuses existing entrance controls, local QR libraries, protected
+server endpoints, actual registered/approved counts and duplicate-safe atomic
+arrival confirmations. A real video frame or locally selected image previews
+the guest; the admin still explicitly confirms entrance arrival. No example
+counts or reference venue photograph were published. Camera frame is presented
+before the mode choices so it is immediately visible on a phone. Manual mode
+focuses protected guest search and stops camera access; pass mode stops the
+camera and displays only this approved signed-in guest's pass, even after
+arrival. Guest and admin sign-ins remain separate. Individual QR screenshots
+are not login credentials and do not grant arrival-write permission.
+
+Close/Escape, navigation, mode changes, backgrounding and sign-out stop camera
+tracks, including late permission grants. Late QR responses are invalidated
+on close/mode changes; quick repeated clicks coalesce, and switching back
+while a request is pending retries the current view safely. Home pass/card and
+admin controls return to their original locations on close, without copied
+private state, duplicate IDs or loss of unsaved seating drafts. Approval/privacy
+and manual-only cash gifts are unchanged; this release requires no API or
+configuration changes. Actual entrance-phone/torch rehearsal remains pending.
+
+Private pre-change frontend/environment snapshot and online SQLite backup:
+`/root/wedding-pre-v242`; integrity `ok`. Existing API runtime and private
+configuration remain unchanged. Disposable tests continue using the unchanged
+v241 API candidate; no new production registrations, QR-pass fixtures, seating
+assignments, arrivals, OTP sends or gift reports are required for verification.
+
+Disposable entrance/seating regression passed the existing QR/image, privacy,
+duplicate/concurrent confirmation, assignment conflict, failed-draft, camera
+cleanup and logout cases. GET-only public-candidate checks passed Home
+lockdown plus the new six-width check-in choices with no camera, private data,
+submissions or OTP sends before sign-in. All 16 pure test files passed. A stale
+test Chrome instance required recovery; the harness now bounds debugger HTTP
+and command waits and treats a signalled child as failure rather than success.
+
+Final dedicated check-in suite passed actual own-pass QR decoding, admin-only
+camera auto-start, rapid/delayed pass mode switching, image upload and **actual
+QR decoding from a local video stream**, preview-versus-confirm separation,
+repeat-safe arrival, stable pass after arrival, five responsive widths, camera
+denial/retry, late permission cleanup, Escape, visibility/navigation cleanup
+and admin sign-out. Full approval regression passed unverified and pending
+check-in choices without private data, approval/unlock/revocation and late
+logout responses, Chat/photo/RSVP/manual gifts, seven-width navigation/native
+Back and reduced motion. Camera compositor screenshot capture is unreliable
+in this headless Chrome: the final test pauses the stream for capture, then
+restarts it and verifies real tracks stop on Escape. Personal-QR preview was
+visually checked and explicitly labelled disposable/not a live pass; no
+synthetic camera image or fixture count is published into the app.
+
 ## Manual cash gifts only and launch-checklist review — v241
 
 At the couple’s request, removed the Speso provider module, browser integration,

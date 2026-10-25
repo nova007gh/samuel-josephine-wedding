@@ -9,8 +9,8 @@
   function render(){
     const checkin=document.getElementById('enterFromHome'),label=document.getElementById('homeCheckinLabel'),arrow=document.getElementById('homeCheckinArrow');
     const checkinCopy=checkedIn?'Thanks for coming. You are checked in':'Enter our wedding to check in';if(label&&label.textContent!==checkinCopy)label.textContent=checkinCopy;
-    if(checkin)checkin.disabled=checkedIn;
-    if(arrow)arrow.hidden=checkedIn;
+    if(checkin)checkin.disabled=false;
+    if(arrow)arrow.hidden=false;
     const locked=!canUse(),adminUI=typeof isAdmin==='function'&&isAdmin();document.body.classList.toggle('access-limited',locked);
     const panel=document.getElementById('guestApproval');if(!panel)return;panel.hidden=!locked;
     const copy={checking:['Checking your approval…','Your welcome page is ready. We’re securely checking your guest sign-in.'],pending:['Waiting for admin approval','Thank you for registering! Enjoy the welcome page while Sam & Jossy review your registration. All other features will unlock here automatically after approval.'],unverified:['Verify your sign-in','Your saved profile alone cannot unlock the app. Verify your sign-in so we can securely check your admin approval.'],offline:['Approval check unavailable','We couldn’t confirm your access. The welcome page remains available; reconnect and check again to unlock approved features.']};
@@ -19,7 +19,7 @@
     document.querySelectorAll('.tabbar .tab').forEach(button=>{if(locked)button.setAttribute('aria-disabled','true');else button.removeAttribute('aria-disabled');});
     if(locked){
       document.querySelectorAll('audio,video').forEach(media=>media.pause());
-      document.querySelectorAll('dialog[open]').forEach(dialog=>dialog.close());
+      document.querySelectorAll('dialog[open]:not(#arrivalCheckinDialog)').forEach(dialog=>dialog.close());
       document.querySelectorAll('.activity-toast,.competition-toast,.sj-guide-alert').forEach(el=>el.remove());
       if(!adminUI&&typeof currentView!=='undefined'&&!['home','adminlogin'].includes(currentView))switchView('home');
     }

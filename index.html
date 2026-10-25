@@ -40,7 +40,7 @@
   <link rel="stylesheet" href="guest-access.css?v=230" />
   <link rel="stylesheet" href="wedding-community.css?v=216" />
   <link rel="stylesheet" href="vendors.css?v=233" />
-  <link rel="stylesheet" href="guest-arrival.css?v=238" />
+  <link rel="stylesheet" href="guest-arrival.css?v=242" />
   <link rel="stylesheet" href="community-reference.css?v=218" />
   <link rel="stylesheet" href="wedding-guide.css?v=228" />
   <link rel="stylesheet" href="guest-checkin.css?v=202" />
@@ -350,7 +350,7 @@
 
     <p id="homePhotoStatus" class="upload-status hidden" role="status" aria-live="polite"><span id="homePhotoMessage">Loading photo…</span> <button id="retryHomePhoto" class="mem-del" type="button">Retry photo</button></p>
 
-    <button id="enterFromHome" class="enter-wide" type="button">
+    <button id="enterFromHome" class="enter-wide" type="button" aria-haspopup="dialog" aria-controls="arrivalCheckinDialog">
       <span id="homeCheckinLabel" aria-live="polite">Enter our wedding to check in</span><span id="homeCheckinArrow" aria-hidden="true">&#10095;</span>
     </button>
     <button class="menu-item menu-item--wide" data-goto="competitions" type="button">
@@ -1823,8 +1823,20 @@ try{
   </div>
 </div>
 <script src="api-data.js?v=230"></script>
-<script src="guest-access.js?v=238"></script>
-<script src="app.js?v=236"></script>
+<dialog id="arrivalCheckinDialog" class="checkin-dialog" aria-labelledby="arrivalCheckinTitle" aria-describedby="arrivalCheckinSubtitle">
+  <header class="checkin-header"><button id="arrivalCheckinClose" type="button" aria-label="Back to wedding">&#10094;</button><span aria-hidden="true"><svg width="38" height="38" viewBox="0 0 40 40" fill="#b78a3d"><circle cx="20" cy="10" r="6"/><circle cx="7" cy="15" r="4"/><circle cx="33" cy="15" r="4"/><path d="M10 35v-9a10 10 0 0 1 20 0v9Zm-8-3v-9a5 5 0 0 1 7-4 14 14 0 0 0-3 9v4Zm36 0h-4v-4a14 14 0 0 0-3-9 5 5 0 0 1 7 4Z"/></svg></span><h2 id="arrivalCheckinTitle">Guest Check-In</h2><p id="arrivalCheckinSubtitle">Scan an entrance pass or show your personal QR code.</p></header>
+  <div class="checkin-choices" role="group" aria-label="Check-in options">
+    <button id="arrivalCheckinScan" type="button" aria-pressed="false"><strong>Scan Guest QR Code</strong><span>Entrance admins · use the phone camera</span></button>
+    <button id="arrivalCheckinManual" type="button"><strong>Manual Check-In</strong><span>Entrance admins · search by name or phone</span></button>
+    <button id="arrivalCheckinPass" type="button" aria-pressed="false"><strong>Show My Check-In QR Code</strong><span>View your personal entrance pass</span></button>
+  </div>
+  <p id="arrivalCheckinStatus" class="checkin-status" role="status" aria-live="polite"></p>
+  <div id="arrivalCheckinAccess" class="checkin-access"><button id="arrivalCheckinSignin" type="button">Guest sign-in / registration</button><button id="arrivalCheckinAdmin" type="button">Entrance admin sign-in</button></div>
+  <div id="arrivalCheckinScannerHost"></div><div id="arrivalCheckinPassHost"></div>
+  <p class="checkin-footnote">Your personal pass does not sign you in. Only an entrance admin can confirm an arrival. Repeat check-ins count once.</p>
+</dialog>
+<script src="guest-access.js?v=242"></script>
+<script src="app.js?v=242"></script>
 <script src="app-data.js?v=194"></script>
 <script src="app-social.js?v=241"></script>
 <script src="admin-dashboard.js?v=187"></script>
@@ -1861,6 +1873,6 @@ try{
 <script src="competition-notices.js?v=230"></script>
 <script src="assets/vendor/qrcode-generator-1.4.4.js"></script>
 <script src="assets/vendor/jsqr-1.4.0.js"></script>
-<script src="guest-arrival.js?v=238"></script>
+<script src="guest-arrival.js?v=242"></script>
 </body>
 </html>

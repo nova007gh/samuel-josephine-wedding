@@ -30,7 +30,7 @@ const delay = ms => new Promise(resolve=>setTimeout(resolve,ms));
     await delay(100);
   }
   if(!port)throw new Error('Test Chrome debugging port did not become ready within 30 seconds');
-  const tabs = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json();
+  const tabs = await (await fetch(`http://127.0.0.1:${port}/json/list`,{signal:AbortSignal.timeout(10000)})).json();
   const tab = tabs.find(t=>t.type==='page');
   socket = new WebSocket(tab.webSocketDebuggerUrl);
   await new Promise(resolve=>socket.addEventListener('open',resolve,{once:true}));
@@ -41,14 +41,14 @@ const delay = ms => new Promise(resolve=>setTimeout(resolve,ms));
     const data = JSON.parse(e.data);
     if (data.id){
       const p = pending.get(data.id); if(!p) return;
-      pending.delete(data.id); data.error ? p.reject(new Error(data.error.message)) : p.resolve(data.result);
+      pending.delete(data.id);clearTimeout(p.timer);data.error ? p.reject(new Error(data.error.message)) : p.resolve(data.result);
     } else {
       if(data.method==='Runtime.exceptionThrown') errors.push(data.params.exceptionDetails.text);
       events.get(data.method)?.(data.params);
     }
   });
   const call = (method,params={})=>new Promise((resolve,reject)=>{
-    const id=++next; pending.set(id,{resolve,reject}); socket.send(JSON.stringify({id,method,params}));
+    const id=++next,timer=setTimeout(()=>{pending.delete(id);reject(new Error('Test browser command timed out: '+method));},45000);pending.set(id,{resolve,reject,timer});socket.send(JSON.stringify({id,method,params}));
   });
   const evaluate = async expression => {
     const r = await call('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true});
