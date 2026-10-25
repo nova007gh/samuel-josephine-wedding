@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v243-reference-guest-pass';
+const CACHE = 'sj-wedding-v244-pass-polish-verification';
 const ASSETS = [
   './guest-arrival.js',
   './guest-arrival.css',
