@@ -1,6 +1,6 @@
 # snybena.com live audit — 11 October 2026
 
-## v246 — unboxed menu icons, entrance seal and phone lookup (candidate)
+## v246 — unboxed menu icons, entrance seal and phone lookup (live)
 
 Rechecked the requested v245 changes: Home excludes the entrance-pass card,
 the check-in button keeps **Enter Our Wedding to Check In**, and approved
@@ -52,6 +52,23 @@ successful test. This does not prove every international destination or sender.
 Returning-login lookup still correctly requires first-time registration first.
 The test creates only the normal temporary OTP record; codes/keys were not
 printed or committed. Deployment and final live checks follow.
+
+Deployed frontend-only feature `2bd8a02` by fast-forwarding the clean live
+checkout; no API/service restart or private-configuration change. Public bytes
+for index.html, app.js, app-polish.css and service-worker.js match the tested
+source; worker cache `sj-wedding-v246-unboxed-menu`. The live 71-asset GET-only
+audit and six-width approval/check-in/profile-entry/menu/seal browser audit
+passed. Live menu assertions cover zero border/radius/background/shadow and no
+pseudo-element frame for **every** menu icon, while the central seal still
+pulses at the approved size. No additional OTP requests were made by those
+audits. Menu preview opened in Review.
+
+Post-deploy DB audit against `/root/wedding-pre-v246/baseline.db`: all **149
+rows across 18 wedding/chat/payment/arrival tables** unchanged, integrity `ok`,
+private configuration hash unchanged, zero ownership assignments created.
+The authorized test left only its normal temporary OTP record; no registration
+was created for the supplied phone. Actual SMS receipt is now confirmed for
+this handset, not merely inferred from provider acceptance or credit balance.
 
 ## v245 — vendor / bridesmaid / groomsman self-service (live)
 
