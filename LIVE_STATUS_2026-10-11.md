@@ -1,5 +1,58 @@
 # snybena.com live audit — 11 October 2026
 
+## v246 — unboxed menu icons, entrance seal and phone lookup (candidate)
+
+Rechecked the requested v245 changes: Home excludes the entrance-pass card,
+the check-in button keeps **Enter Our Wedding to Check In**, and approved
+accounts can edit only explicit admin-assigned vendor/bridal profiles. Existing
+admin editors retain profile CRUD. No ownership inferred from names, vendor
+contact numbers, photos or a selected role.
+
+All five menu buttons now have transparent backgrounds, zero border/radius,
+no box shadow and no animated pseudo-element frame, including active states.
+Current destination stays indicated by gold text/weight and aria-current;
+touch sizes, labels, compact layout, keyboard focus and routing stay intact.
+The central S&J seal keeps its 60–72px golden double-beat heartbeat and static
+reduced-motion glow. Opening-seal artwork and one-shot invitation action are
+unchanged.
+
+Read-only live diagnosis for the supplied phone ending 7510 found no matching
+guest registration and no active OTP. Returning-login lookup therefore correctly
+stops before an SMS request; it is not evidence that an OTP to that number failed
+delivery. Clarified this message and the next-step registration guidance; the
+Register handoff preserves the typed phone but never silently creates an account
+or bypasses verification. Typing another number clears the stale error.
+
+Read-only provider balance queries to documented official endpoints succeeded:
+mNotify HTTP 200 / success / available credit, Twilio HTTP 200 / positive balance.
+Credentials never left the server except in their intended authenticated provider
+requests and were not printed. Existing recent logs still include mNotify send
+HTTP 500 and Twilio 21612. Twilio's documentation describes 21612 as an unsupported
+To/From combination, potentially due to sender/network restrictions. Balance
+success does not prove sender approval or delivery. No SMS, voice, email, OTP
+send, provider switch or sender change was performed during this diagnosis.
+
+Pre-deploy frontend/config-hash/online DB backup: `/root/wedding-pre-v246/`.
+All 17 pure suites passed. Dedicated entry/seal suite passed real artwork
+decoding, one-shot opening, unknown-number lookup with zero automatic OTP sends,
+phone-preserving registration handoff, no phantom guest creation, persistent
+Home button copy and private QR gating. Profile, camera check-in and full
+approval suites passed again; navigation asserts every active/inactive icon is
+unboxed across seven widths and Home/Bridal/Live views, along with routing,
+touch targets, native Back and reduced motion. Visually checked 375px menu crop.
+
+After explicit user approval for **one** real OTP request, POSTed the existing
+`/api/otp/send` endpoint with purpose=register, channel=sms for the supplied
+number ending 7510. Response: HTTP 200, ok=true, delivered=sms. No retry,
+sender/provider change, login/registration submission or account creation.
+Asked for receipt confirmation only, not the code; user explicitly confirmed
+**Yes, it arrived**. Thus delivery is verified for this Ghana handset through
+the existing configuration; historical provider errors do not describe this
+successful test. This does not prove every international destination or sender.
+Returning-login lookup still correctly requires first-time registration first.
+The test creates only the normal temporary OTP record; codes/keys were not
+printed or committed. Deployment and final live checks follow.
+
 ## v245 — vendor / bridesmaid / groomsman self-service (live)
 
 Requested: team-role sign-in with own-profile editing, admin control of every

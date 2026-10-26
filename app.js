@@ -821,10 +821,11 @@ $('#returnGuestLink')?.addEventListener('click', async () => {
   $('#returnPhone')?.focus();
 });
 const returnNotFound = () => {
-  $('#returnError').textContent = 'No check-in found for that number.';
+  $('#returnError').textContent = 'No saved registration found for this number. If this is your first visit, choose “Not checked in yet? Register” below. Otherwise, use the number you originally registered with. No sign-in code has been sent.';
   $('#returnRegister')?.classList.remove('hidden');
 };
-$('#returnPhone')?.addEventListener('input', () => $('#returnRegister')?.classList.add('hidden'));
+$('#returnPhone')?.addEventListener('input', () => {$('#returnRegister')?.classList.add('hidden');$('#returnError').textContent='';});
+$('#returnRegister')?.addEventListener('click',()=>{$('#guestPhone').value=$('#returnPhone').value.trim();$('#guestName')?.focus();});
 $('#returnSendBtn')?.addEventListener('click', async e => {
   const btn = e.currentTarget;
   const err = $('#returnError');

@@ -1,0 +1,20 @@
+const assert=require('node:assert/strict');
+module.exports=async({call,evaluate,wait,request,errors})=>{
+  const origin=await evaluate('location.origin');
+  await evaluate(`(async()=>{await api('/guests/logout',{method:'POST'});clearGuest();window.__oldEntryDocument=true;})()`);
+  await call('Page.navigate',{url:origin+'/'});await wait(`window.__oldEntryDocument!==true&&typeof window.WeddingArrival==='object'&&typeof document.getElementById('roleProfilesOpen')?.onclick==='function'`);
+  assert.equal(await evaluate(`!document.getElementById('opening').classList.contains('hidden')`),true,'Fresh visit shows invitation');
+  for(const selector of ['.landing-seal','.tab-seal'])assert.equal(await evaluate(`document.querySelector(${JSON.stringify(selector)}).decode().then(()=>true)`),true,'Real S&J seal image decodes');
+  await evaluate(`document.getElementById('sealButton').click();document.getElementById('sealButton').click()`);assert.equal(await evaluate(`document.getElementById('sealButton').disabled&&document.getElementById('opening').classList.contains('breaking')`),true,'Seal opens once');
+  await wait(`!document.getElementById('attendScreen').classList.contains('hidden')`);
+  await evaluate(`document.getElementById('attendYes').click()`);await wait(`!document.getElementById('guestLoginScreen').classList.contains('hidden')`);
+  await evaluate(`document.getElementById('returnGuestLink').click();document.getElementById('returnPhone').value='+233240000099';document.getElementById('returnSendBtn').click()`);
+  await wait(`document.getElementById('returnError').textContent.includes('No saved registration')&&!document.getElementById('returnSendBtn').disabled`);
+  assert.equal(await evaluate(`document.getElementById('returnError').textContent.includes('No sign-in code has been sent')&&!document.getElementById('returnRegister').classList.contains('hidden')`),true,'Unregistered number explains next step');
+  assert.equal(await evaluate(`performance.getEntriesByType('resource').some(r=>r.name.includes('/otp/send'))`),false,'Unknown number lookup never spends an OTP send');
+  await evaluate(`document.getElementById('returnRegister').click()`);assert.equal(await evaluate(`!document.getElementById('guestLoginForm').classList.contains('hidden')&&document.getElementById('guestPhone').value==='+233240000099'`),true,'Registration handoff keeps number without submitting');
+  assert.equal((await request('/admin/guests',{admin:true})).data.length,3,'Guidance never creates a guest');
+  await evaluate(`enterApp();document.getElementById('enterFromHome').click();document.getElementById('arrivalCheckinPass').click()`);assert.equal(await evaluate(`document.getElementById('arrivalCheckinPassHost').hidden`),true,'Unregistered number never unlocks QR');await evaluate(`document.getElementById('arrivalCheckinClose').click()`);
+  assert.equal(await evaluate(`document.getElementById('homeCheckinLabel').textContent`),'Enter Our Wedding to Check In');assert.equal(await evaluate(`document.querySelector('[data-view="home"] #guestArrivalCard')===null`),true);
+  assert.deepEqual(errors,[]);console.log('PASS real S&J image decode/one-shot invitation opening, returning-number lookup, no unrequested OTP sends, registration guidance/phone retention, no phantom guest, unchanged Home label and private QR gate');
+};

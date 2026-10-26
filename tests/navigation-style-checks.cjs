@@ -12,12 +12,14 @@ module.exports=async({call,evaluate,errors,out})=>{
         assert.equal(item.visible,true,'Every button is visible without swiping at '+width);
         assert.equal(item.labelFits,true,'No clipped labels at '+width+' index '+index);
         for(const key of index===2?['margin','font']:['radius','padding','margin','border','font','glow'])assert.equal(item[key],styles[0][key],view+' consistent '+key+' at '+width);
-        if(index===2)assert.equal(item.border,'0px','Gallery seal has no surrounding box');
+       assert.equal(item.border,'0px','Every menu icon is unboxed');
+        assert.equal(item.radius,'0px','No menu icon corner boxes');
         if(index!==2)assert.ok(Math.abs(item.iconY-styles[0].iconY)<1,'Neighbouring icon centres align');
         assert.ok(Math.abs(item.labelY-styles[0].labelY)<1,'Labels align, including larger Gallery '+JSON.stringify({index,label:item.labelY,base:styles[0].labelY}));
       }
       assert.equal(await evaluate(`(()=>{const size=parseFloat(getComputedStyle(document.querySelector('.tab--center .tab-seal')).width);return size>=60&&size<=72;})()`),true,'Larger unboxed pulsing seal');
       assert.equal(await evaluate(`getComputedStyle(document.querySelector('.tab--center .tab-seal')).animationName`),'gallerySealPulse');
+      assert.equal(await evaluate(`[...document.querySelectorAll('.tabbar .tab')].every(b=>{const s=getComputedStyle(b),p=getComputedStyle(b,'::before');return s.backgroundColor==='rgba(0, 0, 0, 0)'&&s.backgroundImage==='none'&&s.boxShadow==='none'&&p.display==='none';})`),true,'All active/inactive menu icons have no background, frame or box shadow');
       assert.equal(await evaluate(`document.documentElement.scrollWidth===innerWidth`),true);
       assert.deepEqual(await evaluate(`[...document.querySelectorAll('.tabbar .tab')].map(b=>b.dataset.tab)`),['story','events','gallery','bridaltrain','gifts']);
       assert.equal(await evaluate(`(()=>{const bar=document.querySelector('.tabbar');bar.scrollLeft=999;return bar.scrollWidth<=bar.clientWidth+1&&bar.scrollLeft===0;})()`),true,'All five tabs fit without sideways scrolling');

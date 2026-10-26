@@ -39,7 +39,7 @@ module.exports=async({call,evaluate,errors,out})=>{
     }
     await evaluate(`document.querySelector('.lb-menu').click()`);assert.equal(await evaluate(`currentView`),'more','Dynamic broadcast menu routes');
     await evaluate(`switchView('livebroadcast');document.querySelector('.lb-monogram').click()`);assert.equal(await evaluate(`currentView`),'home');
-    assert.equal(await evaluate(`getComputedStyle(document.querySelector('.tab--showcase'),'::before').animationName`),'showcaseGoldGlow');
+    assert.equal(await evaluate(`getComputedStyle(document.querySelector('.tab--showcase'),'::before').display`),'none','No animated menu box');
     await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
     assert.equal(await evaluate(`getComputedStyle(document.querySelector('.tab--showcase'),'::before').animationName`),'none');
     await call('Emulation.setEmulatedMedia',{features:[]});

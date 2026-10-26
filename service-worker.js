@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v245-role-profiles';
+const CACHE = 'sj-wedding-v246-unboxed-menu';
 const ASSETS = [
   './guest-arrival.js',
   './guest-arrival.css',
