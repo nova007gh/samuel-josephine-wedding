@@ -34,7 +34,7 @@ module.exports=async({call,evaluate,errors,out})=>{
     await request('/admin/logout',{method:'POST',admin:true});return;
   }
   if(process.env.WEDDING_E2E_APPROVED_SUITE){
-    const suites={pass:'guest-pass-e2e.cjs',checkin:'checkin-camera-e2e.cjs',arrivals:'guest-arrival-e2e.cjs',vendors:'vendors-e2e.cjs',broadcast:'live-broadcast-e2e.cjs',bridal:'bridal-train-e2e.cjs',program:'program-e2e-checks.cjs',engagement:'engagement-e2e-checks.cjs',community:'wedding-community-e2e.cjs',voice:'voice-recording-checks.cjs'};
+    const suites={profiles:'role-profiles-e2e.cjs',pass:'guest-pass-e2e.cjs',checkin:'checkin-camera-e2e.cjs',arrivals:'guest-arrival-e2e.cjs',vendors:'vendors-e2e.cjs',broadcast:'live-broadcast-e2e.cjs',bridal:'bridal-train-e2e.cjs',program:'program-e2e-checks.cjs',engagement:'engagement-e2e-checks.cjs',community:'wedding-community-e2e.cjs',voice:'voice-recording-checks.cjs'};
     const suite=suites[process.env.WEDDING_E2E_APPROVED_SUITE];if(!suite)throw new Error('Unknown approved regression suite');
     controllerToken=(await request('/admin/login',{method:'POST',body:{password:'isolated-browser-only'}})).data.token;
     await evaluate(`(async()=>{const r=await api('/guests/login',{method:'POST',body:{phone:'+233240000001',code:'123456'}});setGuest(r.guest);await WeddingAccess.refresh();})()`);await wait('WeddingAccess.canUse()');

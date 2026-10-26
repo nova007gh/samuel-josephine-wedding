@@ -1,0 +1,58 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+module.exports=async({call,evaluate,wait,request,out,errors,token})=>{
+  const origin=await evaluate('location.origin'),cookie=(await call('Network.getCookies',{urls:[origin+'/api/role-profiles']})).cookies.filter(c=>c.name==='sj_guest_session').map(c=>c.name+'='+c.value).join('; ');
+  const own=(p,o={})=>request(p,{...o,admin:false,cookie});
+  await request('/role-profiles',{admin:false,status:403});await request('/admin/role-profiles',{admin:false,status:401});
+  const other=(await request('/guests/login',{method:'POST',admin:false,body:{phone:'+233240000002',code:'123456'}})).cookie;
+  const pending=(await request('/guests/login',{method:'POST',admin:false,body:{phone:'+233240000003',code:'123456'}})).cookie;
+  await request('/role-profiles',{cookie:pending,admin:false,status:403});
+  assert.deepEqual((await own('/role-profiles')).data.profiles,[]);
+  let vendor=(await request('/admin/vendors',{admin:true})).data;
+  const v={id:'owned-vendor',name:'Disposable Vendor',category:vendor.data.categories[0].id,badge:'Vendor',description:'Original description',phone:'',whatsapp:'',photoUrl:'',published:true,featured:false};
+  vendor.data.vendors.push(v,{...v,id:'other-vendor',name:'Other Vendor',published:false});
+  await request('/admin/vendors',{admin:true,method:'PATCH',body:{data:vendor.data,expectedRevision:vendor.revision}});
+  const bridal=(await own('/bridal-train')).data,bride=bridal.data.bridesmaids[0],groom=bridal.data.groomsmen[0];
+  for(const [kind,id]of [['vendor',v.id],['bridesmaid',bride.id],['groomsman',groom.id]])await request('/admin/role-profiles/'+kind+'/'+id,{admin:true,method:'PATCH',body:{guestId:'e2e-approved'}});
+  const profiles=(await own('/role-profiles')).data.profiles;assert.equal(profiles.length,3);
+  assert.deepEqual((await request('/role-profiles',{admin:false,cookie:other})).data.profiles,[]);
+  await request('/admin/role-profiles/vendor/other-vendor',{admin:false,cookie,method:'PATCH',body:{guestId:'e2e-approved'},status:401});
+  await own('/role-profiles/vendor/other-vendor',{method:'PATCH',body:{profile:{name:'Hijacked'},expectedRevision:profiles[0].revision},status:403});
+  await own('/role-profiles/vendor/owned-vendor',{method:'PATCH',body:{profile:{featured:true},expectedRevision:profiles.find(p=>p.kind==='vendor').revision},status:400});
+  await own('/role-profiles/bridesmaid/'+bride.id,{method:'PATCH',body:{profile:{role:'Admin'},expectedRevision:profiles.find(p=>p.kind==='bridesmaid').revision},status:400});
+  const csrf=await fetch(origin+'/api/role-profiles/vendor/owned-vendor',{method:'PATCH',headers:{Cookie:cookie,Origin:'https://untrusted.example','Content-Type':'application/json'},body:'{}'});assert.equal(csrf.status,403);
+  await evaluate(`switchView('home');document.getElementById('roleProfilesOpen').click()`);await wait(`document.querySelector('#roleProfileRows form')!==null`);
+  assert.equal(await evaluate(`document.getElementById('homeCheckinLabel').textContent`),'Enter Our Wedding to Check In');
+  assert.equal(await evaluate(`document.querySelector('[data-view="home"] #guestArrivalCard')===null&&document.getElementById('guestPassStorage').hidden`),true);
+  await evaluate(`(()=>{const f=document.querySelector('#roleProfileRows form');f.elements.namedItem('name').value='Updated Vendor';f.dispatchEvent(new Event('input'));f.requestSubmit();})()`);await wait(`document.getElementById('roleProfileStatus').textContent.includes('Profile saved')`);
+  assert.equal((await own('/vendors')).data.data.vendors.find(p=>p.id===v.id).name,'Updated Vendor');
+  const stale=profiles.find(p=>p.kind==='vendor');await own('/role-profiles/vendor/owned-vendor',{method:'PATCH',body:{profile:{name:'Stale overwrite'},expectedRevision:stale.revision},status:409});
+  for(const kind of ['bridesmaid','groomsman']){
+    await evaluate(`document.getElementById('roleProfileKind').value=${JSON.stringify(kind)};document.getElementById('roleProfileKind').dispatchEvent(new Event('change'))`);await wait(`document.querySelector('#roleProfileRows form')?.textContent.includes(${JSON.stringify(kind==='bridesmaid'?'Bridesmaid':'Groomsman')})`);
+    await evaluate(`(()=>{const f=document.querySelector('#roleProfileRows form');f.elements.namedItem('name').value=${JSON.stringify('Updated '+kind)};f.dispatchEvent(new Event('input'));f.requestSubmit();})()`);await wait(`document.getElementById('roleProfileStatus').textContent.includes('Profile saved')`);
+  }
+  await evaluate(`(async()=>{const c=document.createElement('canvas');c.width=40;c.height=40;const blob=await new Promise(r=>c.toBlob(r,'image/png'));const dt=new DataTransfer();dt.items.add(new File([blob],'portrait.png',{type:'image/png'}));const input=document.querySelector('#roleProfileRows input[type=file]');input.files=dt.files;input.dispatchEvent(new Event('change'));})()`);await wait(`document.getElementById('roleProfileRows').textContent.includes('Photo uploaded to draft')`);
+  await evaluate(`document.querySelector('#roleProfileRows form').requestSubmit()`);await wait(`document.getElementById('roleProfileStatus').textContent.includes('Profile saved')`);
+  const updated=(await own('/bridal-train')).data.data;assert.equal(updated.bridesmaids[0].name,'Updated bridesmaid');assert.equal(updated.groomsmen[0].name,'Updated groomsman');assert.match(updated.groomsmen[0].photoUrl,/^\/uploads\//);
+  await own('/role-profiles/not-a-role/owned-vendor',{method:'PATCH',body:{profile:{}},status:400});
+  await own('/role-profiles/vendor/other-vendor/photo',{method:'POST',body:{},status:403});
+  await evaluate(`(async()=>{const fd=new FormData();fd.append('file',new Blob(['not an image'],{type:'image/png'}),'bad.png');const r=await fetch('/api/role-profiles/groomsman/'+${JSON.stringify(groom.id)}+'/photo',{method:'POST',body:fd});window.__badProfilePhoto=r.status;})()`);assert.equal(await evaluate('window.__badProfilePhoto'),400,'Invalid photo bytes rejected');
+  await evaluate(`window.__profileRealApi=api;api=(p,o)=>p.startsWith('/role-profiles/')&&o?.method==='PATCH'?Promise.reject(Error('Synthetic profile failure')):window.__profileRealApi(p,o);const f=document.querySelector('#roleProfileRows form');f.elements.namedItem('name').value='Keep this profile draft';f.dispatchEvent(new Event('input'));f.requestSubmit()`);await wait(`document.getElementById('roleProfileRows').textContent.includes('Synthetic profile failure')`);assert.equal(await evaluate(`document.querySelector('#roleProfileRows form').elements.namedItem('name').value`),'Keep this profile draft');
+  await evaluate(`api=window.__profileRealApi;window.__profileConfirm=confirm;confirm=()=>true;document.getElementById('roleProfileReload').click()`);await wait(`document.querySelector('#roleProfileRows form')?.elements.namedItem('name').value==='Updated groomsman'`);await evaluate(`confirm=window.__profileConfirm`);
+  await evaluate(`window.__profileRealApi=api;window.__holdProfile=true;window.__profileHeld=new Promise(r=>window.__releaseProfile=r);api=async(p,o)=>{const r=await window.__profileRealApi(p,o);if(p==='/role-profiles'&&window.__holdProfile){window.__holdProfile=false;window.__profileWaiting=true;await window.__profileHeld;}return r;};document.getElementById('roleProfileReload').click()`);await wait('window.__profileWaiting===true');
+  await evaluate(`document.getElementById('roleProfileClose').click();document.getElementById('roleProfilesOpen').click()`);await wait(`document.querySelector('#roleProfileRows form')!==null`);await evaluate(`window.__releaseProfile();api=window.__profileRealApi`);
+  for(const width of [320,375,430,768,1024]){await call('Emulation.setDeviceMetricsOverride',{width,height:900,deviceScaleFactor:1,mobile:width<900});assert.equal(await evaluate(`(()=>{const d=document.getElementById('roleProfileDialog');return d.scrollWidth<=d.clientWidth+1&&d.getBoundingClientRect().right<=innerWidth+1;})()`),true,'Profile editor fits '+width);}
+  const shot=await call('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(out,'role-profile-editor.png'),Buffer.from(shot.data,'base64'));
+  await evaluate(`document.getElementById('roleProfileClose').click();setAdminToken(${JSON.stringify(token)});switchView('admin');document.querySelector('[data-admin-section="profiles"]').click()`);await wait(`document.querySelectorAll('#roleAdminRows form').length>0`);
+  await evaluate(`(()=>{const row=[...document.querySelectorAll('#roleAdminRows form')].find(f=>f.textContent.includes('Updated Vendor'));row.querySelector('select').value='e2e-exploring';row.requestSubmit();})()`);await wait(`document.getElementById('roleAdminStatus').textContent==='Profile access saved.'`);
+  await own('/role-profiles/vendor/owned-vendor',{method:'PATCH',body:{profile:{name:'Revoked edit'},expectedRevision:(await own('/role-profiles')).data.profiles[0].revision},status:403});
+  assert.equal((await request('/role-profiles',{admin:false,cookie:other})).data.profiles[0].profile.name,'Updated Vendor');
+  vendor=(await request('/admin/vendors',{admin:true})).data;vendor.data.vendors=vendor.data.vendors.filter(p=>p.id!==v.id);await request('/admin/vendors',{method:'PATCH',admin:true,body:{data:vendor.data,expectedRevision:vendor.revision}});
+  assert.deepEqual((await request('/role-profiles',{admin:false,cookie:other})).data.profiles,[],'Deletion revokes access');
+  vendor=(await request('/admin/vendors',{admin:true})).data;vendor.data.vendors.push(v);await request('/admin/vendors',{method:'PATCH',admin:true,body:{data:vendor.data,expectedRevision:vendor.revision}});assert.deepEqual((await request('/role-profiles',{admin:false,cookie:other})).data.profiles,[],'Re-added IDs do not regain revoked ownership');
+  await evaluate(`setAdminToken(null);switchView('home');document.getElementById('roleProfileKind').value='vendor';document.getElementById('roleProfilesOpen').click()`);await wait(`document.getElementById('roleProfileStatus').textContent.includes('No profile')`);
+  await evaluate(`document.getElementById('roleProfileKind').value='bridesmaid';document.getElementById('roleProfileKind').dispatchEvent(new Event('change'))`);await wait(`document.querySelector('#roleProfileRows form')!==null`);
+  await request('/admin/role-profiles/groomsman/'+groom.id,{admin:true,method:'PATCH',body:{guestId:'e2e-exploring'}});await request('/admin/guests/e2e-exploring',{admin:true,method:'DELETE'});assert.equal((await request('/admin/role-profiles',{admin:true})).data.profiles.find(p=>p.kind==='groomsman'&&p.id===groom.id).guestId,'','Removing account revokes its profile ownership');
+  await evaluate(`(async()=>{await api('/guests/logout',{method:'POST'});await WeddingAccess.refresh();})()`);assert.equal(await evaluate(`document.getElementById('roleProfileRows').textContent===''`),true,'Logout clears profile drafts');
+  await evaluate(`document.getElementById('roleProfileSignin').click()`);await wait(`!document.getElementById('guestLoginScreen').classList.contains('hidden')`);assert.equal(await evaluate(`performance.getEntriesByType('resource').some(r=>r.name.includes('/otp/send'))`),false,'Role login guidance does not send an OTP automatically');
+  assert.deepEqual(errors,[]);console.log('PASS role profiles: assigned-only own edits for three roles, public readback, photo upload/save, cross-account/role/publication/CSRF guards, revision conflict, admin reassignment, removal and re-add revocation, five widths, Home cleanup/copy and logout privacy');
+};

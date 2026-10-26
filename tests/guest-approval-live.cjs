@@ -2,9 +2,9 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 module.exports=async({call,evaluate,errors,out})=>{
   for(let i=0;i<100;i++){if(await evaluate(`document.getElementById('guestApprovalTitle')?.textContent==='Verify your sign-in'`))break;await new Promise(r=>setTimeout(r,200));}
   assert.equal(await evaluate(`!WeddingAccess.canUse()&&currentView==='home'`),true,'Saved preview profile cannot bypass approval');
-  assert.equal(await evaluate(`document.getElementById('homeCheckinLabel').textContent`),'Enter our wedding to check in','Unverified session shows check-in prompt, not false confirmation');
+  assert.equal(await evaluate(`document.getElementById('homeCheckinLabel').textContent`),'Enter Our Wedding to Check In','Unverified session shows check-in prompt, not false confirmation');
   assert.equal(await evaluate(`document.getElementById('guestArrivalCard').hidden&&document.getElementById('guestArrivalQR').hidden&&document.getElementById('arrivalGuestList').textContent===''`),true,'No private pass, table or entrance guest list before approved sign-in');
-  assert.equal(await evaluate(`document.querySelector('[data-view="home"]').lastElementChild.id`),'guestArrivalCard','Entrance pass is the final Home section');
+  assert.equal(await evaluate(`document.querySelector('[data-view="home"] #guestArrivalCard')===null&&document.getElementById('guestPassStorage').hidden`),true,'Entrance pass is not on Home');
   for(const view of ['story','events','gallery','gifts','chat','vendors','competitions','bridaltrain']){await evaluate(`switchView(${JSON.stringify(view)})`);assert.equal(await evaluate('currentView'),'home');}
   await evaluate(`document.querySelector('.tab[data-tab="gallery"]').click()`);assert.equal(await evaluate('currentView'),'home');
   assert.equal(await evaluate(`getComputedStyle(document.querySelector('.sj-guide-launch')).display`),'none','Guide locked before approval');
@@ -27,5 +27,8 @@ module.exports=async({call,evaluate,errors,out})=>{
   await evaluate(`new Promise(resolve=>setTimeout(resolve,800))`);
   assert.equal(await evaluate(`document.getElementById('couplePhoto').decode().then(()=>true).catch(()=>false)`),true,'Configured Home photo remains available while locked');
   const shot=await call('Page.captureScreenshot',{format:'png'});try{fs.writeFileSync(path.join(out,'approval-home-live.png'),Buffer.from(shot.data,'base64'));}catch(e){if(e.code!=='ENOSPC')throw e;}
-  assert.deepEqual(errors,[]);console.log('PASS live welcome-only gate, blocked deep links/taps, verification guidance, reachable admin sign-in, six widths, large unboxed neon seal and zero OTP sends; no submissions');
+  await evaluate(`document.getElementById('roleProfilesOpen').click()`);assert.equal(await evaluate(`document.getElementById('roleProfileDialog').open&&document.getElementById('roleProfileRows').textContent===''&&!document.getElementById('roleProfileSignin').hidden`),true,'Unverified role entry shows guidance, never private profile data');
+  await evaluate(`document.getElementById('roleProfileKind').value='bridesmaid';document.getElementById('roleProfileKind').dispatchEvent(new Event('change'))`);assert.equal(await evaluate(`document.getElementById('roleProfileRows').textContent===''&&!WeddingAccess.canUse()`),true,'Role selection grants no privileges');
+  await evaluate(`document.getElementById('roleProfileClose').click()`);
+  assert.deepEqual(errors,[]);console.log('PASS live welcome-only gate, blocked deep links/taps, verification guidance, reachable admin sign-in, six widths, role-entry guidance/no self-granted access, large unboxed neon seal and zero OTP sends; no submissions');
 };

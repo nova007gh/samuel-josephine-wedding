@@ -442,6 +442,7 @@ app.post('/api/admin/logout', requireAdmin, (req, res) => {
 const competitionAuth = require('./competitions')({app,db,requireAdmin,publicWrite,multer,storage,uploadsDir:UPLOADS_DIR});
 const onboarding = require('./guest-onboarding')({app,db,publicWrite,normPhone,notifyAll,resolveGuest:guestAccess.resolveGuest});
 require('./guest-arrival')({app,db,requireAdmin,publicWrite,guest:guestAccess.resolveGuest});
+require('./role-profiles')({app,db,requireAdmin,publicWrite,guest:guestAccess.resolveGuest,multer,uploadsDir:UPLOADS_DIR});
 
 /* ---------- guests (check-in) ---------- */
 app.post('/api/guests', publicWrite, (req, res) => {
@@ -1632,7 +1633,7 @@ app.patch('/api/admin/rsvps/:id', requireAdmin, (req, res) => {
 });
 
 app.delete('/api/admin/guests/:id', requireAdmin, (req, res) => {
-  db.prepare(`DELETE FROM guests WHERE id = ?`).run(req.params.id);
+  db.transaction(()=>{db.prepare('DELETE FROM role_profile_owners WHERE guestId=?').run(req.params.id);db.prepare(`DELETE FROM guests WHERE id = ?`).run(req.params.id);})();
   res.json({ ok: true });
 });
 

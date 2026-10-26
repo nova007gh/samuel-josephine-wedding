@@ -34,7 +34,7 @@ module.exports=({app,db,requireAdmin,multer,storage,uploadsDir,previews})=>{
   app.get('/api/bridal-train',(req,res)=>{try{res.json(response());}catch{res.status(500).json({error:'The bridal train could not be loaded. Please try again.'});}});
   const save=db.transaction((data,expected)=>{
     if(expected!==revision(raw()))return false;
-    db.prepare('INSERT INTO settings (key,value) VALUES (?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value').run('bridalTrain',JSON.stringify(data));return true;
+    db.prepare('INSERT INTO settings (key,value) VALUES (?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value').run('bridalTrain',JSON.stringify(data));for(const [kind,key]of [['bridesmaid','bridesmaids'],['groomsman','groomsmen']])require('./role-profiles').prune(db,kind,data[key].map(p=>p.id));return true;
   });
   app.patch('/api/admin/bridal-train',requireAdmin,(req,res)=>{
     let data;try{data=validate(req.body?.data);for(const url of [data.heroPhotoUrl,...data.bridesmaids.map(m=>m.photoUrl),...data.groomsmen.map(m=>m.photoUrl)])if(url&&!fs.existsSync(path.join(uploadsDir,path.basename(url))))throw new Error('A selected photo is missing. Upload it again before saving.');}

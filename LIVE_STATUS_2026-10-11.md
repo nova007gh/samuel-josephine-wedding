@@ -1,5 +1,42 @@
 # snybena.com live audit — 11 October 2026
 
+## v245 — vendor / bridesmaid / groomsman self-service (candidate)
+
+Requested: team-role sign-in with own-profile editing, admin control of every
+profile, removal of the entrance-pass card from Home and the persistent button
+copy **Enter Our Wedding to Check In**. Implementation uses existing verified
+guest sign-in plus explicit admin ownership assignment. No name/phone-based
+auto-claiming, shared passwords, self-assigned privileges or seeded owners.
+See `server/ROLE_PROFILES.md` for operational setup and field permissions.
+
+The new Profile Access admin panel assigns or revokes registered accounts.
+Existing Vendors and Bridal Train editors remain the single source for admin
+CRUD. Owners update only allowed fields on their assigned cards. The original
+settings JSON/revisions are shared with admin editors, so concurrent writes
+conflict instead of overwriting silently. Deleted profiles revoke assignments
+transactionally; reusing an ID does not restore ownership. Profile uploads
+validate image signatures and cap at 8 MB. Approval/ownership are checked on
+every request; uploads are draft-only until a profile save. Public feeds do
+not gain owner identifiers. New additive `role_profile_owners` table starts empty.
+
+Home no longer contains the entrance-pass card. A hidden non-Home storage
+container holds it when the check-in dialog is closed; private table assistance
+now opens that dialog. Existing QR/arrival/seating endpoints are unchanged.
+Home always uses the requested check-in label, including after sign-in.
+
+Pre-deploy snapshots at `/root/wedding-pre-v245/` include original API/frontend
+files, an online `baseline.db` snapshot (integrity ok) and private config hash.
+Live checkout was clean; API baselines matched deployed source before edits.
+All 17 pure test suites passed. Seven disposable browser suites passed: role
+profiles, reference pass, camera check-in, arrivals/seating, vendors, bridal
+train and full approval. The final expanded role suite also passed invalid
+photo-byte rejection, failed-draft retention/reload, rapid close/reopen with a
+held stale response, deleted-account ownership cleanup and login guidance with
+zero automatic OTP sends. Self-write/upload endpoints use the existing public
+write limiter. Admin account choices include phone/status to distinguish names;
+these details never enter the own/public profile feeds. No live accounts or
+ownership assignments were created by testing. Deployment results follow.
+
 ## Reference-style guest QR and table card — v243
 
 Restyled the approved guest's pass to follow the supplied cream/gold design:

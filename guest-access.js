@@ -8,7 +8,7 @@
   function requestAllowed(path,method){return canUse()||!!adminToken||path.startsWith('/admin/')||(['GET','HEAD'].includes(method)?openGet.has(path):method==='POST'&&openPost.has(path));}
   function render(){
     const checkin=document.getElementById('enterFromHome'),label=document.getElementById('homeCheckinLabel'),arrow=document.getElementById('homeCheckinArrow');
-    const checkinCopy=checkedIn?'Thanks for coming. You are checked in':'Enter our wedding to check in';if(label&&label.textContent!==checkinCopy)label.textContent=checkinCopy;
+    const checkinCopy='Enter Our Wedding to Check In';if(label&&label.textContent!==checkinCopy)label.textContent=checkinCopy;
     if(checkin)checkin.disabled=false;
     if(arrow)arrow.hidden=false;
     const locked=!canUse(),adminUI=typeof isAdmin==='function'&&isAdmin();document.body.classList.toggle('access-limited',locked);
@@ -19,7 +19,7 @@
     document.querySelectorAll('.tabbar .tab').forEach(button=>{if(locked)button.setAttribute('aria-disabled','true');else button.removeAttribute('aria-disabled');});
     if(locked){
       document.querySelectorAll('audio,video').forEach(media=>media.pause());
-      document.querySelectorAll('dialog[open]:not(#arrivalCheckinDialog)').forEach(dialog=>dialog.close());
+      document.querySelectorAll('dialog[open]:not(#arrivalCheckinDialog):not(#roleProfileDialog)').forEach(dialog=>dialog.close());
       document.querySelectorAll('.activity-toast,.competition-toast,.sj-guide-alert').forEach(el=>el.remove());
       if(!adminUI&&typeof currentView!=='undefined'&&!['home','adminlogin'].includes(currentView))switchView('home');
     }
@@ -41,7 +41,7 @@
   function blocked(event){
     if(canUse()||!event.target.closest?.('#app'))return;
     const view=event.target.closest('.view');if(typeof isAdmin==='function'&&isAdmin()&&view&&typeof ADMIN_VIEWS!=='undefined'&&ADMIN_VIEWS.has(view.dataset.view))return;
-    if(event.target.closest('[data-view="adminlogin"],#guestApproval,#guestSignOut,#enterFromHome,[data-goto="adminlogin"],.app-brand'))return;
+    if(event.target.closest('[data-view="adminlogin"],#guestApproval,#guestSignOut,#enterFromHome,#roleProfilesOpen,[data-goto="adminlogin"],.app-brand'))return;
     if(!event.target.closest('button,a,input,select,textarea,[role="button"],[data-goto],[data-tab]'))return;
     event.preventDefault();event.stopImmediatePropagation();document.getElementById('guestApproval')?.scrollIntoView({behavior:'smooth',block:'center'});
   }

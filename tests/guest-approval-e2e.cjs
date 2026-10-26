@@ -8,7 +8,7 @@ module.exports=async({call,evaluate,wait,request,out,errors,token})=>{
   const settings=(await request('/settings')).data;for(const key of ['events','storyItems','songs','entertainment','liveBroadcast','bridalTrain','vendors'])assert.equal(Object.hasOwn(settings,key),false,'Only Home settings before approval');
   await evaluate(`setGuest({id:'e2e-approved',name:'Forged approved profile',status:'approved'});enterApp();switchView('gifts');WeddingAccess.refresh()`);await wait(`document.getElementById('guestApprovalTitle').textContent==='Verify your sign-in'`);
   assert.equal(await evaluate(`currentView==='home'&&!WeddingAccess.canUse()`),true,'Locally forged approval cannot unlock routes');
-  assert.equal(await evaluate(`document.getElementById('homeCheckinLabel').textContent`),'Enter our wedding to check in','Saved profile alone cannot claim confirmed check-in');
+  assert.equal(await evaluate(`document.getElementById('homeCheckinLabel').textContent`),'Enter Our Wedding to Check In','Saved profile alone cannot claim confirmed check-in');
   await evaluate(`document.getElementById('enterFromHome').click()`);
   await wait(`document.getElementById('arrivalCheckinDialog').open`);assert.equal(await evaluate(`document.getElementById('arrivalCheckinScannerHost').hidden&&document.getElementById('arrivalCheckinPassHost').hidden`),true,'Unauthenticated check-in offers sign-in, not private scanner data');
   await evaluate(`document.getElementById('arrivalCheckinPass').click()`);assert.equal(await evaluate(`document.getElementById('arrivalCheckinStatus').textContent.includes('Sign in or register first')`),true);await evaluate(`document.getElementById('arrivalCheckinSignin').click()`);
@@ -17,15 +17,15 @@ module.exports=async({call,evaluate,wait,request,out,errors,token})=>{
   await evaluate(`enterApp()`);
   await evaluate(`(async()=>{const verified=await api('/otp/verify',{method:'POST',body:{phone:'+233240000004',code:'123456'}});const saved=await api('/guests',{method:'POST',body:{name:'New approval fixture',phone:'+233240000004',otpToken:verified.otpToken,status:'approved',attending:true}});setGuest({id:saved.id,name:'New approval fixture',status:'approved'});window.__approvalGuest=saved.id;await WeddingAccess.refresh();})()`);
   await wait(`document.getElementById('guestApprovalTitle').textContent==='Waiting for admin approval'`);
-  assert.equal(await evaluate(`document.getElementById('homeCheckinLabel').textContent`),'Thanks for coming. You are checked in');
+  assert.equal(await evaluate(`document.getElementById('homeCheckinLabel').textContent`),'Enter Our Wedding to Check In');
   assert.equal(await evaluate(`!document.getElementById('enterFromHome').disabled&&!document.getElementById('homeCheckinArrow').hidden`),true,'Saved pending registration can reopen the safe check-in choices, not register twice');
   await evaluate(`document.getElementById('enterFromHome').click();document.getElementById('arrivalCheckinPass').click()`);assert.equal(await evaluate(`document.getElementById('arrivalCheckinStatus').textContent.includes('Waiting for admin approval')&&document.getElementById('arrivalCheckinPassHost').hidden&&document.getElementById('guestArrivalQR').hidden`),true,'Pending guests cannot show a pass');await evaluate(`document.getElementById('arrivalCheckinClose').click()`);
   const guestId=await evaluate(`window.__approvalGuest`),cookies=(await call('Network.getCookies',{urls:[origin+'/api/guest-access']})).cookies,cookie=cookies.filter(c=>c.name==='sj_guest_session').map(c=>c.name+'='+c.value).join('; ');assert.ok(cookie);
   if(process.env.WEDDING_E2E_CHECKIN_ONLY==='1'){
     await evaluate(`WeddingAccess.refresh()`);await wait(`WeddingAccess.isCheckedIn()`);
-    assert.equal(await evaluate(`document.getElementById('homeCheckinLabel').textContent`),'Thanks for coming. You are checked in');
+    assert.equal(await evaluate(`document.getElementById('homeCheckinLabel').textContent`),'Enter Our Wedding to Check In');
     await evaluate(`api('/guests/logout',{method:'POST'})`);await evaluate(`WeddingAccess.refresh()`);
-    await wait(`!WeddingAccess.isCheckedIn()&&document.getElementById('homeCheckinLabel').textContent==='Enter our wedding to check in'`);
+    await wait(`!WeddingAccess.isCheckedIn()&&document.getElementById('homeCheckinLabel').textContent==='Enter Our Wedding to Check In'`);
     assert.equal(await evaluate(`document.getElementById('enterFromHome').disabled`),false);
     assert.deepEqual(errors,[]);console.log('PASS check-in prompt/entry, no automatic OTP send, confirmed pending registration thank-you, duplicate check-in disabled, refresh persistence and sign-out reset');return;
   }

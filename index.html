@@ -42,6 +42,7 @@
   <link rel="stylesheet" href="vendors.css?v=233" />
   <link rel="stylesheet" href="guest-arrival.css?v=242" />
   <link rel="stylesheet" href="guest-pass.css?v=244" />
+  <link rel="stylesheet" href="role-profiles.css?v=245" />
   <link rel="stylesheet" href="community-reference.css?v=218" />
   <link rel="stylesheet" href="wedding-guide.css?v=228" />
   <link rel="stylesheet" href="guest-checkin.css?v=202" />
@@ -352,12 +353,15 @@
     <p id="homePhotoStatus" class="upload-status hidden" role="status" aria-live="polite"><span id="homePhotoMessage">Loading photo…</span> <button id="retryHomePhoto" class="mem-del" type="button">Retry photo</button></p>
 
     <button id="enterFromHome" class="enter-wide" type="button" aria-haspopup="dialog" aria-controls="arrivalCheckinDialog">
-      <span id="homeCheckinLabel" aria-live="polite">Enter our wedding to check in</span><span id="homeCheckinArrow" aria-hidden="true">&#10095;</span>
+      <span id="homeCheckinLabel" aria-live="polite">Enter Our Wedding to Check In</span><span id="homeCheckinArrow" aria-hidden="true">&#10095;</span>
     </button>
     <button class="menu-item menu-item--wide" data-goto="competitions" type="button">
       <span class="menu-icon menu-icon--gold">&#127918;</span><span class="menu-text"><strong>Wedding Games &amp; Competitions</strong><small>Join the fun, vote and see live results</small></span><span class="menu-chev">&#10095;</span>
     </button>
     <button class="menu-item menu-item--wide" data-goto="livebroadcast" type="button"><span class="menu-icon menu-icon--gold">&#9673;</span><span class="menu-text"><strong>Our Live Broadcast</strong><small>Watch from wherever you are</small></span><span class="menu-chev">&#10095;</span></button>
+    <button id="roleProfilesOpen" class="menu-item menu-item--wide" type="button">Vendor / Bridesmaid / Groomsman Login &amp; My Profile</button>
+  </section>
+  <div id="guestPassStorage" hidden>
     <section id="guestArrivalCard" class="arrival-card guest-pass" hidden aria-labelledby="guestArrivalTitle">
       <div class="guest-pass-hero"><img class="guest-pass-photo" src="assets/photo-placeholder.svg" data-site-photo="couple" alt="Sam and Jossy" loading="lazy" decoding="async"><div class="guest-pass-seal"><img src="assets/seal-pressed-320.png" alt="S and J wedding seal" width="100" height="100"><span data-wed="hashtag">#AlwaysAndForever</span><span aria-hidden="true">&#9829;</span></div></div>
       <div class="guest-pass-body">
@@ -372,7 +376,7 @@
         <button id="guestArrivalRefresh" type="button">Refresh my arrival &amp; table</button>
       </div>
     </section>
-  </section>
+  </div>
 
   <!-- ---------- SCREEN 4 — Our Story ---------- -->
   <section class="view hidden" data-view="story">
@@ -1026,6 +1030,7 @@
       <button id="admin-tab-broadcast" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-broadcast" data-admin-section="broadcast" type="button"><span aria-hidden="true">&#9673;</span>Live Broadcast</button>
       <button id="admin-tab-entertainment" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-entertainment" data-admin-section="entertainment" type="button"><span aria-hidden="true">&#9835;</span>Entertainment</button>
       <button id="admin-tab-vendors" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-vendors" data-admin-section="vendors" type="button"><span aria-hidden="true">&#9814;</span>Vendors</button>
+      <button id="admin-tab-profiles" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-profiles" data-admin-section="profiles" type="button">Profile Access</button>
       <button id="admin-tab-announcements" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-announcements" data-admin-section="announcements" type="button"><span aria-hidden="true">&#128227;</span>Announcements</button>
       <button id="admin-tab-gifts" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-gifts" data-admin-section="gifts" type="button"><span aria-hidden="true">&#127873;</span>Gifts &amp; MoMo</button>
       <button id="admin-tab-access" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-access" data-admin-section="access" type="button"><span aria-hidden="true">&#128737;</span>Access &amp; Security</button>
@@ -1210,6 +1215,12 @@
       <h3>Categories</h3><p class="vendor-note">Rename, reorder or add up to 12 categories. Move vendors out of a category before removing it.</p><div id="vendorCategoryRows"></div><button type="button" id="vendorAddCategory">Add category</button>
       <h3>Vendor cards</h3><div id="vendorEditRows"></div><div class="aq-actions"><button type="button" id="vendorAdd">ADD VENDOR</button><button type="button" id="vendorReload">RELOAD SAVED</button><button type="submit" class="map-button">SAVE VENDORS</button><button type="button" data-goto="vendors">VIEW PAGE</button></div></form>
       <p id="vendorEditorStatus" class="upload-status" role="status" aria-live="polite"></p>
+    </div>
+    <div id="admin-panel-profiles" class="admin-section-panel hidden" role="tabpanel" aria-labelledby="admin-tab-profiles" tabindex="0">
+      <h2>Vendor &amp; Bridal Train Profile Access</h2>
+      <p>Add, edit or remove profiles in the Vendors and Bridal Train editors. Here, assign each profile to its verified registered account. An account must also be approved before editing. Do not assign ownership by a matching name alone.</p>
+      <button id="roleManageVendors" type="button">Add / edit / remove vendor profiles</button><button id="roleManageBridal" type="button">Add / edit / remove bridal profiles</button><button id="roleAdminRefresh" type="button">Reload profile access</button>
+      <p id="roleAdminStatus" role="status"></p><div id="roleAdminRows"></div>
     </div>
 
     <div id="admin-panel-entertainment" class="admin-section-panel hidden" role="tabpanel" aria-labelledby="admin-tab-entertainment" tabindex="0">
@@ -1837,6 +1848,14 @@ try{
   </div>
 </div>
 <script src="api-data.js?v=230"></script>
+<dialog id="roleProfileDialog" class="checkin-dialog role-profiles" aria-labelledby="roleProfileTitle">
+  <button id="roleProfileClose" type="button" aria-label="Close profile editor">Close</button>
+  <h2 id="roleProfileTitle">Wedding Team Login &amp; My Profile</h2>
+  <label class="field">Login as<select id="roleProfileKind"><option value="vendor">Vendor</option><option value="bridesmaid">Bridesmaid</option><option value="groomsman">Groomsman</option></select></label>
+  <p>Use your own verified wedding sign-in. Admin assigns your role and profile; selecting a role does not grant access. You can edit only profiles assigned to your account.</p>
+  <button id="roleProfileSignin" type="button">Sign in / register my account</button><button id="roleProfileReload" type="button">Reload my saved profiles</button>
+  <p id="roleProfileStatus" role="status" aria-live="polite"></p><div id="roleProfileRows"></div>
+</dialog>
 <dialog id="arrivalCheckinDialog" class="checkin-dialog" aria-labelledby="arrivalCheckinTitle" aria-describedby="arrivalCheckinSubtitle">
   <header class="checkin-header"><button id="arrivalCheckinClose" type="button" aria-label="Back to wedding">&#10094;</button><span aria-hidden="true"><svg width="38" height="38" viewBox="0 0 40 40" fill="#b78a3d"><circle cx="20" cy="10" r="6"/><circle cx="7" cy="15" r="4"/><circle cx="33" cy="15" r="4"/><path d="M10 35v-9a10 10 0 0 1 20 0v9Zm-8-3v-9a5 5 0 0 1 7-4 14 14 0 0 0-3 9v4Zm36 0h-4v-4a14 14 0 0 0-3-9 5 5 0 0 1 7 4Z"/></svg></span><h2 id="arrivalCheckinTitle">Guest Check-In</h2><p id="arrivalCheckinSubtitle">Scan an entrance pass or show your personal QR code.</p><div class="guest-pass-brand"><em>The Wedding of</em><strong><span data-wed="nameA">Samuel</span> &amp; <span data-wed="nameB">Josephine</span></strong></div><button id="guestPassMore" type="button" aria-label="More check-in options" aria-expanded="false">&#8943;</button></header>
   <div class="checkin-choices" role="group" aria-label="Check-in options">
@@ -1849,7 +1868,7 @@ try{
   <div id="arrivalCheckinScannerHost"></div><div id="arrivalCheckinPassHost"></div>
   <p class="checkin-footnote">Your personal pass does not sign you in. Only an entrance admin can confirm an arrival. Repeat check-ins count once.</p>
 </dialog>
-<script src="guest-access.js?v=242"></script>
+<script src="guest-access.js?v=245"></script>
 <script src="app.js?v=242"></script>
 <script src="app-data.js?v=194"></script>
 <script src="app-social.js?v=241"></script>
@@ -1887,6 +1906,7 @@ try{
 <script src="competition-notices.js?v=230"></script>
 <script src="assets/vendor/qrcode-generator-1.4.4.js"></script>
 <script src="assets/vendor/jsqr-1.4.0.js"></script>
-<script src="guest-arrival.js?v=244"></script>
+<script src="guest-arrival.js?v=245"></script>
+<script src="role-profiles.js?v=245"></script>
 </body>
 </html>

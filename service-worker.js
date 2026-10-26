@@ -1,9 +1,11 @@
 
-const CACHE = 'sj-wedding-v244-pass-polish-verification';
+const CACHE = 'sj-wedding-v245-role-profiles';
 const ASSETS = [
   './guest-arrival.js',
   './guest-arrival.css',
   './guest-pass.css',
+  './role-profiles.css',
+  './role-profiles.js',
   './assets/vendor/qrcode-generator-1.4.4.js',
   './assets/vendor/jsqr-1.4.0.js',
   './guest-access.js',
