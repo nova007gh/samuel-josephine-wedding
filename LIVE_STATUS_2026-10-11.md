@@ -1,6 +1,6 @@
 # snybena.com live audit — 11 October 2026
 
-## v245 — vendor / bridesmaid / groomsman self-service (candidate)
+## v245 — vendor / bridesmaid / groomsman self-service (live)
 
 Requested: team-role sign-in with own-profile editing, admin control of every
 profile, removal of the entrance-pass card from Home and the persistent button
@@ -36,6 +36,32 @@ zero automatic OTP sends. Self-write/upload endpoints use the existing public
 write limiter. Admin account choices include phone/status to distinguish names;
 these details never enter the own/public profile feeds. No live accounts or
 ownership assignments were created by testing. Deployment results follow.
+
+Deployed feature `3177748`. Verified hashes for the four tested API modules
+against the candidate, unchanged live baselines, no active API connections or
+media workers, then took fresh online `/root/wedding-pre-v245/deploy.db` and
+atomically replaced the API modules before restarting healthy. Anonymous own
+profile requests return 403; admin profile requests without credentials return
+401. New ownership table exists and contains zero rows. The frontend was then
+fast-forwarded; public bytes for index, access/arrival/profile scripts, profile
+CSS and worker match the tested source exactly.
+
+Live GET-only 71-asset/security/no-store/health audit passed; retired payments
+remain 410. Six-width live approval/navigation/check-in/role-guidance checks
+passed, including no self-granted privileges and zero OTP sends. Hardened the
+live browser harness to wait for the final arrival/profile scripts, not merely
+the earlier app script: its forced entry could previously race slow script
+loading and fall into the old fallback before handlers existed. Also verified
+the approval feed returns to the expected unverified state after navigation.
+
+Post-deploy audit: all **149 baseline rows across 18 wedding/chat/payment/
+arrival tables** are byte-for-byte unchanged against the fresh deployment
+snapshot; private configuration hash unchanged; SQLite integrity `ok`;
+ownerships seeded/claimed by tests: **0**. Existing pictures, names, vendor
+content, votes, gifts, arrivals and tables are untouched. Admin must link real
+accounts in Profile Access; roles are not inferred from the reference image.
+Existing SMS-delivery, physical-phone scanner/torch and other external launch
+prerequisites remain pending; no paid messages or provider changes were made.
 
 ## Reference-style guest QR and table card — v243
 
