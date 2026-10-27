@@ -1,6 +1,6 @@
 # snybena.com live audit — 11 October 2026
 
-## v248 — full-frame photos and companion kiss timing (candidate)
+## v248 — full-frame photos and companion kiss timing (live)
 
 User requested finishing Broadcast/Gallery/profile visuals, full uncropped images,
 and a larger red-neon companion kiss. Asked for the actual broadcast URL/times
@@ -48,6 +48,23 @@ cleanup waits for the browser's media-query event instead of a fixed 100ms race.
 All album cover images decode in the disposable photos test, and the gallery,
 story, broadcast and bridal views fit five widths. Saved-photo/full-frame and
 red-neon-kiss screenshots visually reviewed. No API module changes are needed.
+
+Deployed feature **`29c715d`** by fast-forwarding the clean live frontend checkout;
+no API/service restart or private configuration changes. Worker cache
+`sj-wedding-v248-full-frame-kiss` has **74 precached assets**. Exact deployed
+hashes match all six changed frontend files. Live GET-only asset/security/health
+checks and six-width public approval/navigation/profile-entry/privacy browser
+checks pass, with no OTP sends or live submissions. Private admin/guest APIs
+remain blocked to anonymous access and retired payment endpoints stay 410.
+
+Post-deploy snapshot comparison preserves **157 rows across 20 wedding/chat/
+payment/arrival/ownership tables**, unchanged private configuration, integrity
+`ok`, and no new profile assignments. Baseline was fresh immediately before
+this release; intervening real usage since v247 was retained. Saved settings,
+uploads, gifts, memories, guest records and QR arrivals were not edited. A
+disposable-DOM full-frame Broadcast photo preview is open in Review. Real
+broadcast setup and Groomsman ownership remain pending the user's actual details,
+as explicitly agreed; the release does not claim to complete those assignments.
 
 ## v247 — admin detailed guest list and private scanner totals (live)
 
