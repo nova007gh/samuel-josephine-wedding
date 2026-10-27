@@ -1,6 +1,6 @@
 # snybena.com live audit — 11 October 2026
 
-## v250 — Tables & Food, login role entry and safe automatic seating (candidate)
+## v250 — Tables & Food, login role entry and safe automatic seating (live)
 
 Added GROOMSMAN / BRIDESMAID / VENDOR to the existing Relationship / Invited By
 selector without inferring profile ownership, approval or actual inviter side.
@@ -71,6 +71,28 @@ The combined regression runner hit its outer time limit before approval finished
 approval was rerun independently and passed across seven widths. A subsequent
 legacy arrival-editor UI wait was transient; its standalone rerun and final camera
 suite passed. Candidate screenshots reviewed for menu, admin tables and login.
+
+Deployed feature **`e2a8cc0`** after verifying exact tested flat API source
+(`server.js`, `guest-arrival.js`, `tables-food.js`, shared schema), no active API
+requests or child workers, and a fresh online `deploy.db` backup. Service restart
+was healthy before fast-forwarding the clean frontend checkout. No private
+configuration/sender/provider changes. Cache `sj-wedding-v250-tables-food` has
+**80 precached assets**; exact deployed hashes match all eight changed frontend
+files. Live GET-only health/assets/security and six-width approval/navigation/
+role-entry/privacy browser checks passed, including moved login entry, blocked
+food-menu deep links, empty private table/contact data and admin/no-store APIs.
+Retired payment boundaries remain 410. Zero OTP sends/live submissions.
+
+Post-deploy DB comparison preserves **161 baseline rows across 20 existing
+wedding/chat/payment/arrival/ownership tables** byte-for-byte, SQLite integrity
+`ok`, private configuration hash unchanged. New `guest_table_links` has **zero
+rows**, and no `tablesFood` settings row was created: automatic seating remains
+off until the actual tables/rules are explicitly saved, and the guest menu stays
+unpublished until admin confirms catering. No table assignments, guest relations,
+profile ownership or menu items were altered during deployment. User can inspect
+the disposable admin-tables preview in Review; real editors require their own
+admin sign-in. Originals, baseline and fresh deployment snapshot remain under
+`/root/wedding-pre-v250/`.
 
 ## v249 — admin AI Actions scheduler for Sam & Jossy (live)
 
