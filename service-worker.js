@@ -1,6 +1,9 @@
 
-const CACHE = 'sj-wedding-v248-full-frame-kiss';
+const CACHE = 'sj-wedding-v249-companion-actions';
 const ASSETS = [
+  './companion-actions-schema.js',
+  './companion-actions.js',
+  './companion-actions.css',
   './full-frame.css',
   './guest-details.js',
   './guest-details.css',

@@ -48,6 +48,7 @@
   <link rel="stylesheet" href="wedding-guide.css?v=248" />
   <link rel="stylesheet" href="guest-checkin.css?v=202" />
   <link rel="stylesheet" href="full-frame.css?v=248" />
+  <link rel="stylesheet" href="companion-actions.css?v=249" />
   <script>
   /* a checked-in guest goes straight into the app — flag it before first
      paint so the invitation never flashes on their screen (mirrors
@@ -1023,6 +1024,7 @@
       <button id="admin-tab-overview" role="tab" aria-selected="true" aria-controls="admin-panel-overview" data-admin-section="overview" type="button"><span aria-hidden="true">&#9638;</span>Overview</button>
       <button id="admin-tab-guests" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-guests" data-admin-section="guests" type="button"><span aria-hidden="true">&#128101;</span>Guests &amp; RSVPs</button>
       <button id="admin-tab-guestdetails" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-guestdetails" data-admin-section="guestdetails" type="button">Detailed Guest List</button>
+      <button id="admin-tab-aiactions" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-aiactions" data-admin-section="aiactions" type="button">✨ AI Actions · Sam &amp; Jossy</button>
       <button id="admin-tab-arrivals" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-arrivals" data-admin-section="arrivals" type="button"><span aria-hidden="true">&#128205;</span>Entrance &amp; Tables</button>
       <button id="admin-tab-content" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-content" data-admin-section="content" type="button"><span aria-hidden="true">&#128247;</span>Guest Content</button>
       <button id="admin-tab-photos" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-photos" data-admin-section="photos" type="button"><span aria-hidden="true">&#9835;</span>Photos &amp; Music</button>
@@ -1047,6 +1049,13 @@
       <div class="arrival-actions"><button id="arrivalCameraStart" type="button">Start QR scanner</button><button id="arrivalCameraStop" type="button" hidden>Stop camera</button><button id="arrivalTorch" type="button" hidden>Flashlight</button><label class="arrival-file">Scan QR image<input id="arrivalImage" type="file" accept="image/jpeg,image/png,image/webp"></label></div><p id="arrivalAdminStatus" role="status" aria-live="polite"></p><div id="arrivalScanReview" hidden><h3 id="arrivalScanName"></h3><p id="arrivalScanDetails"></p><button id="arrivalConfirmQR" type="button">Confirm entrance check-in</button><button id="arrivalScanCancel" type="button">Cancel scan</button></div>
       <h3>Manual check-in &amp; table assignment</h3><label class="field">Find a registered guest by name or phone<input id="arrivalSearch" type="search" autocomplete="off"></label><button id="arrivalAdminRefresh" type="button">Refresh guest list</button><div id="arrivalGuestList" class="arrival-guest-list"></div>
       <form id="arrivalSeatingForm" hidden><h3 id="arrivalSelectedName"></h3><p id="arrivalSelectedStatus"></p><label class="field">Table number or name<input id="arrivalTableNumber" maxlength="60" autocomplete="off"></label><label class="field">Table location / directions<textarea id="arrivalTableLocation" maxlength="400" rows="3" placeholder="Enter confirmed directions, e.g. room, section or landmark"></textarea></label><p>Party size is separate from the assigned table. No table is invented if these fields are blank.</p><div class="arrival-actions"><button id="arrivalSaveSeat" type="submit">Save table assignment</button><button id="arrivalReloadSeat" type="button">Reload saved assignment</button><button id="arrivalConfirmManual" type="button">Confirm manual entrance check-in</button></div><p id="arrivalSeatStatus" role="status"></p></form></section>
+    </div>
+    <div id="admin-panel-aiactions" class="admin-section-panel hidden" role="tabpanel" aria-labelledby="admin-tab-aiactions" tabindex="0">
+      <section class="companion-actions"><h2>AI Actions · Sam &amp; Jossy</h2><p>Plan a warm welcome, a helpful reminder or a little celebration. Choose what happens, who presents it and when.</p><p class="ai-action-note">These are scheduled in-app companion actions, not unrestricted AI commands. Your message is shown exactly as written. No SMS, payments, approvals, table changes or automatic page navigation. Guests must have the app open; delivery is not guaranteed.</p><p id="aiActionsStatus" role="status" aria-live="polite"></p><button id="aiActionsReload" type="button">Reload saved actions</button>
+      <form id="aiActionsPolicy"><h3>Everyday companion behaviour</h3><label><input name="enabled" type="checkbox">Enable companion actions · switch off to pause all</label><label><input name="kissEnabled" type="checkbox">Automatic five-second neon kisses</label><div class="ai-action-fields"><label class="field">First kiss after (seconds)<input name="kissDelaySeconds" type="number" min="5" max="300" required></label><label class="field">Kiss every (minutes)<input name="kissIntervalMinutes" type="number" min="1" max="60" required></label><label class="field">Maximum kisses per visit<input name="kissLimit" type="number" min="1" max="30" required></label></div><label><input name="wavesEnabled" type="checkbox">Automatic waves · includes first two welcome waves</label><label class="field">Wave interval (minutes)<input name="waveIntervalMinutes" type="number" min="1" max="60" required></label><label><input name="suggestionsEnabled" type="checkbox">Occasional published-activity suggestions</label><button type="submit">Save companion settings</button></form>
+      <h3>Schedule an action</h3><p>Quick starts — customise the message and choose the time:</p><div id="aiActionsPresets" class="ai-action-buttons"></div>
+      <form id="aiActionsEditor"><input name="id" type="hidden"><label class="field">Action title<input name="title" maxlength="100" required placeholder="e.g. Please find your seats"></label><div class="ai-action-fields"><label class="field">Who presents it?<select name="side"><option value="jossy">Jossy</option><option value="sam">Sam</option><option value="both">Sam &amp; Jossy</option></select></label><label class="field">Action<select name="type"><option value="message">Say my message</option><option value="reminder">Show a reminder</option><option value="suggest">Suggest a wedding page</option><option value="wave">Wave hello</option><option value="kiss">Five-second neon kiss · both</option></select></label></div><label class="field">Message to guests<textarea name="message" rows="3" maxlength="600" placeholder="Type the exact words guests should see. No commands are executed."></textarea></label><label class="field">Optional page button<select name="page"></select></label><label class="field">When? (your device’s local time)<input name="startsAt" type="datetime-local" required></label><p id="aiActionsTimezone" class="ai-action-note"></p><div class="ai-action-fields"><label class="field">Repeat every (minutes; 0 = once)<input name="repeatMinutes" type="number" min="0" max="1440" value="0" required></label><label class="field">Appearances per guest device<input name="repeatCount" type="number" min="1" max="50" value="1" required></label><label class="field">Message on screen (seconds)<input name="durationSeconds" type="number" min="5" max="20" value="10" required></label></div><p class="ai-action-note">Waves last about 2.4 seconds; kisses always last 5 seconds. A due action waits briefly for a safe moment, then expires after 2 minutes. Missed repeats are not replayed in a flood. Do not put private guest details in public messages.</p><label><input name="enabled" type="checkbox" checked>Enabled when saved</label><div class="ai-action-buttons"><button type="button" id="aiActionsPreview">Preview · only on this device</button><button type="submit">Save scheduled action</button><button type="button" id="aiActionsNew">Clear / new action</button></div></form>
+      <h3>Saved action plan</h3><p id="aiActionsSummary"></p><div id="aiActionsRows"></div><div id="aiActionsPreviewHost" hidden aria-label="Local action preview"></div></section>
     </div>
     <div id="admin-panel-guestdetails" class="admin-section-panel hidden" role="tabpanel" aria-labelledby="admin-tab-guestdetails" tabindex="0">
       <section class="guest-details"><h2>Detailed Guest List</h2><p>Admin only · Registration, approval and entrance arrival are separate. Arrival totals are on Entrance &amp; Tables / QR Scanner only.</p><p id="guestDetailsCounts"></p>
@@ -1909,7 +1918,7 @@ try{
   </div>
 </dialog>
 <script src="wedding-guide-knowledge.js?v=241"></script>
-<script src="wedding-guide.js?v=248"></script>
+<script src="wedding-guide.js?v=249"></script>
 <script src="admin-companion-alerts.js?v=228"></script>
 <script src="wedding-community.js?v=218"></script>
 <script src="vendor-schema.js?v=229"></script>
@@ -1920,5 +1929,7 @@ try{
 <script src="assets/vendor/jsqr-1.4.0.js"></script>
 <script src="guest-arrival.js?v=247"></script>
 <script src="role-profiles.js?v=248"></script>
+<script src="companion-actions-schema.js?v=249"></script>
+<script src="companion-actions.js?v=249"></script>
 </body>
 </html>

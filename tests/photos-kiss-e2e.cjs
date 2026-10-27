@@ -1,7 +1,8 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 module.exports=async({call,evaluate,wait,request,out,errors,token})=>{
   assert.equal(await evaluate('window.__kissTickMs'),250);
-  const advance=ms=>evaluate(`window.__kissOffset+=${ms};window.__kissTick();new Promise(r=>setTimeout(r,80))`);
+  await wait(`window.WeddingCompanionActions?.ready()`);
+  const advance=ms=>evaluate(`(async()=>{window.__kissOffset+=${ms};await window.WeddingCompanionActions?.refresh();window.__kissTick();await new Promise(r=>setTimeout(r,80));})()`);
   const count=()=>evaluate(`document.querySelectorAll('.sj-guide-meeting').length`);
   await evaluate(`switchView('home');document.getElementById('sjGuideSuggestionsEnabled').checked=false;document.activeElement?.blur();document.querySelectorAll('.activity-toast,.competition-toast').forEach(n=>n.remove());`);
   await advance(5000);assert.equal(await count(),2,'First meeting due five seconds after app load');

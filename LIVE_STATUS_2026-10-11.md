@@ -1,5 +1,59 @@
 # snybena.com live audit — 11 October 2026
 
+## v249 — admin AI Actions scheduler for Sam & Jossy (candidate)
+
+Added **✨ AI Actions · Sam & Jossy** to dashboard section buttons. Admin can
+choose Welcome/Share photos/Programme/Watch live/RSVP/Wave/Kiss quick starts,
+Sam/Jossy/both, a bounded action type, exact guest-facing text, optional wedding
+page button, device-local date/time, repeat interval/count and text duration.
+In 1/5/15 minute shortcuts, local-only labelled preview, edit/pause/resume/remove,
+master pause and existing automatic kiss/wave/suggestion settings are included.
+Guide questions remain interactive. No unrestricted natural-language command,
+code execution, autonomous approvals, table edits, SMS, email, provider payment,
+external URL or background-delivery permission is inferred.
+
+Shared declarative schema: 40 actions maximum, bounded time/repeats/durations,
+fixed types/sides/page allowlists. Admin GET/PATCH `/api/admin/companion-actions`
+uses the existing admin session, origin checks, no-store and transactional shared
+revision checks. Plan is stored in `companionActions`, explicitly excluded from
+general settings (even approved guests) and guide knowledge. Guest
+`/api/companion-actions` is approval-gated and returns only current due enabled
+occurrences plus behaviour policy/server time, not future/paused/expired text.
+Default reads do not create a settings row or schedule anything live.
+
+Guest polling occurs while the app is open/visible every 15 seconds. Due windows
+expire after 2 minutes; missed repeats never become a flood. Per-tab sessionStorage
+occurrence IDs prevent retry/reload replay without storing message text/PII.
+Display avoids forms/dialogs/uploads/media playback/Chat/Gifts/Live/admin/gates.
+Visibility/navigation/logout/session loss clears notices; failed/stale feeds
+pause automated actions. Reduced motion skips waves/kisses, not plain messages.
+TTL/cooldown clocks use monotonic performance time so wall-clock changes cannot
+prematurely age the feed. Schedule status never claims receipt, read or delivery.
+Default automatic kisses remain five-second/one-second neon pulse, first after
+5 seconds then every 5 minutes, 15 per visit until admin explicitly changes policy.
+
+Initial disposable end-to-end actions suite and all 18 pure suites passed.
+Private settings regression was strengthened after saving a real disposable plan,
+not just reading empty defaults. Schedule tests cover admin/guest boundaries,
+origin/schema/revision, due-only/no-store, exact safe text, dedup, preview with
+zero writes, failure draft retention, five widths, master pause, safe deferral,
+background cleanup and logout privacy. Full regressions are in progress.
+
+Read-only pre-release backup `/root/wedding-pre-v249/` contains original API/
+frontend, online `baseline.db` and private config hash. No live action plan
+exists, and no live schedule/message/OTP or provider request was created in testing.
+See `server/COMPANION_ACTIONS.md` for the operator guide and timing/security limits.
+
+All **18 pure suites** and **seven disposable browser suites** passed: actions,
+photos/kiss, full guide/lifecycle, check-in camera, detailed guests, profiles,
+approval/navigation. The final expanded actions suite also executes a scheduled
+neon kiss while automatic kisses are disabled, pauses it through a saved revision,
+and runs a Sam-only scheduled wave with automatic waves disabled. Controls remain
+disabled during initial load/save, previews never publish, failures preserve drafts,
+and reload/session loss cannot revive stale private responses. The actions test
+allows the documented anti-flood cooldown before expecting the next notice;
+wall-clock-driven guide tests refresh their policy independently of virtual time.
+
 ## v248 — full-frame photos and companion kiss timing (live)
 
 User requested finishing Broadcast/Gallery/profile visuals, full uncropped images,

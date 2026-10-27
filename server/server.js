@@ -918,6 +918,7 @@ require('./live-broadcast')({app,db,requireAdmin,multer,storage,uploadsDir:UPLOA
 require('./wedding-community')({app,db,requireAdmin,publicWrite,multer,uploadsDir:UPLOADS_DIR,guest:competitionAuth.guest});
 require('./wedding-guide')({app,db});
 require('./admin-companion-alerts')({app,db,requireAdmin});
+require('./companion-actions')({app,db,requireAdmin});
 require('./vendors')({app,db,requireAdmin,multer,uploadsDir:UPLOADS_DIR});
 app.get('/api/memories', (req, res) => {
   const rows = db.prepare(storyGalleryOrder.select+` WHERE m.status = 'approved' ORDER BY m.createdAt DESC`).all();
@@ -1064,7 +1065,7 @@ app.delete('/api/admin/memories/:id', requireAdmin, (req, res) => {
 
 /* ---------- site settings (couple photo, wedding song) ---------- */
 /* keys that must never reach the public settings dump */
-const PRIVATE_SETTINGS = new Set(['adminEmails', 'eventPushSent', 'vendors']);
+const PRIVATE_SETTINGS = new Set(['adminEmails', 'eventPushSent', 'vendors', 'companionActions']);
 app.get('/api/settings', (req, res) => {
   const out = {};
   for (const row of db.prepare('SELECT key, value FROM settings').all())
