@@ -1,0 +1,18 @@
+/* Real photos stay wholly visible. Cream letterboxing is intentional. */
+#app :is(.couple-photo,.tl-photo,.sj-thumb,.cat-thumb,.mem-card,.gb-selfie,.vendor-card-photo,.entertainment-photo,.aq-card,.ann-preview) :is(img,video){object-fit:contain;object-position:center;transform:none;background-color:#f5ead9;}
+#app .view img:not(.tab-seal){object-fit:contain;object-position:center;}
+#app .cat-thumb img,#app .sj-thumb img,#app .sj-thumb video{display:block;background:#f5ead9;}
+#liveBroadcastContent .showcase-hero{display:grid;grid-template-columns:minmax(0,1fr);padding-top:48px;}
+#liveBroadcastContent .showcase-hero-photo{position:relative;inset:auto;width:100%;height:auto;min-height:0;max-height:60dvh;object-fit:contain;object-position:center;display:block;background:#f5ead9;}
+#liveBroadcastContent .showcase-hero::before{display:none;}
+#liveBroadcastContent .lb-hero-copy{margin-left:0;padding:14px 20px 18px;}
+#liveBroadcastContent .showcase-hero h1{font-size:clamp(38px,11cqw,62px);}
+#liveBroadcastContent .lb-poster,#liveBroadcastContent .lb-replay img{object-fit:contain;object-position:center;background:#f5ead9;}
+#liveBroadcastContent .lb-player::after{display:none;}
+#liveBroadcastContent .lb-player-caption{position:relative;left:auto;right:auto;bottom:auto;background:#fff6e7;color:#65451e;padding:10px;text-shadow:none;}
+#liveBroadcastContent .lb-player{aspect-ratio:auto;}
+#liveBroadcastContent .lb-poster{height:auto;max-height:60dvh;min-height:180px;}
+#bridalTrainContent .bt-hero-photo{object-fit:contain;object-position:center;}
+.guest-pass-photo{object-fit:contain;object-position:center;background:#f5ead9;}
+#roleProfileDialog img,.lb-photo-settings img,.lb-edit-preview img{object-fit:contain;background:#f5ead9;}
+@media(prefers-reduced-motion:reduce){.sj-companion-love{display:none!important;}}

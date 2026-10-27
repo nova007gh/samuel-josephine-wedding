@@ -1,5 +1,54 @@
 # snybena.com live audit — 11 October 2026
 
+## v248 — full-frame photos and companion kiss timing (candidate)
+
+User requested finishing Broadcast/Gallery/profile visuals, full uncropped images,
+and a larger red-neon companion kiss. Asked for the actual broadcast URL/times
+and correct account/profile assignment; user explicitly selected **Finish visuals;
+keep pending**. No broadcast times/links/replays or profile ownership invented.
+The no-profile dialog now explains that sign-in worked and gives the exact
+Admin → Profile Access → correct profile → account → Save access → Reload flow.
+
+The timing clarification was unanswered. Explicitly stated the conservative
+interpretation before implementing: first kiss five seconds after the app becomes
+visible, then one appearance every five minutes, at most 15 appearances per page
+visit. Each appearance lasts five seconds total, with fifteen larger heart
+particles and a flaming-red neon pulse once per second. Pending effects defer
+while unsafe; no catch-up burst or queue of missed effects. Gate toggles and
+navigation do not reset the visit cap. Reduced motion suppresses the effect.
+Dialogs, typing, scrolling/clicks, uploads, playing media, live-stream/Chat/Gifts
+views, hidden pages, page exit and resize cancel/prevent choreography. No audio,
+provider calls or generated-media service is added; this is the existing local
+illustrated companion effect, not a new AI-generation claim.
+
+New last-loaded `full-frame.css` keeps actual view photos in contain/center
+fitting instead of cover/zoom cropping, including Gallery covers/thumbnails,
+Story, team/vendor photos, Broadcast poster/replays and profile previews.
+Broadcast hero is in normal document flow, with its heading below instead of
+over faces; poster caption is below the picture without the dark image veil.
+Cream letterboxing is intentional. Existing media originals, lazy loading,
+counts, moderation, categories and fullscreen interactions remain authoritative.
+Read-only live disk check: all **86 referenced uploads** present and non-empty.
+
+Pre-release online SQLite/frontend/config-hash backup: `/root/wedding-pre-v248/`.
+New disposable photos/kiss tests passed first/repeat timing, duration, pulse,
+15-appearance cap across gate toggles, scroll/dialog/upload/reduced-motion cleanup,
+five-width full-frame layouts and no automatic profile assignment. Broadcast
+preview uses a local real couple image in disposable DOM only, not live settings.
+Final regression/deployment results follow.
+
+All 17 pure suites and seven disposable browser suites passed: photos/kiss,
+Broadcast, profiles, entrance pass, Bridal Train, full guide plus in-flight
+lifecycle, and approval/navigation. The Bridal hero test now expects contain,
+not the superseded cover/crop requirement. Guide timing fixtures were updated
+for the new schedule and deterministic clock ticks; the isolated guide fixture
+uploads the existing local photo to its disposable API rather than pointing at
+a live upload path that does not exist in disposable storage. Reduced-motion
+cleanup waits for the browser's media-query event instead of a fixed 100ms race.
+All album cover images decode in the disposable photos test, and the gallery,
+story, broadcast and bridal views fit five widths. Saved-photo/full-frame and
+red-neon-kiss screenshots visually reviewed. No API module changes are needed.
+
 ## v247 — admin detailed guest list and private scanner totals (live)
 
 Added **Detailed Guest List** to the existing admin-dashboard section buttons.

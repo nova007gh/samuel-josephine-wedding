@@ -6,7 +6,7 @@
   const $=id=>document.getElementById(id),allowed=new Set(['home','story','events','rsvp','gallery','voicemsg','videomsg','chat','gifts','competitions','guestbook','bridaltrain','program','engagementprogram','livebroadcast','entertainment']);
   let data=null,busy=null,lastFetch=0,alert=null,expiry=null,returnFocus=null,sending=false,fingerprint='',turns=[],generation=0;
   const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)'),wavePeriod=10*60000,suggestionPeriod=8*60000,waveTimers=new Map();
-  let waveEpoch=Date.now(),introWave=0,sessionVisible=false,nextMeetingAt=Date.now()+3*60000,meetingCount=0,meeting=null;
+  let waveEpoch=Date.now(),introWave=0,sessionVisible=false,nextMeetingAt=Date.now()+5000,meetingCount=0,meeting=null,meetingScheduled=false;
   let lastWaveSlot=0,lastInteraction=Date.now(),nextSuggestionAt=Date.now()+suggestionPeriod,suggestionCount=0,suggestion=null,suggestionExpiry=null,burst=null,burstExpiry=null;
   function element(tag,className,text){const el=document.createElement(tag);if(className)el.className=className;if(text!==undefined)el.textContent=text;return el;}
   const safeView=v=>allowed.has(v)?v:'home';
@@ -136,25 +136,25 @@
   function meetingAllowed(){return !reducedMotion.matches&&guestsIdle()&&!suggestion&&!alert&&!document.querySelector('[data-view="chat"]:not(.hidden),[data-view="gifts"]:not(.hidden),[data-view="livebroadcast"]:not(.hidden)');}
   function startMeeting(){
     if(meeting||!meetingAllowed()||typeof button.animate!=='function')return;
-    clearWaves();meetingCount++;nextMeetingAt=Date.now()+8*60000;
+    clearWaves();meetingCount++;nextMeetingAt=Date.now()+5*60000;
     const app=$('app').getBoundingClientRect(),bar=document.querySelector('.tabbar').getBoundingClientRect(),center=(app.left+app.right)/2;
     const y=Math.max(90,Math.min(innerHeight*.46,bar.top-130));
     const current={animations:[],timers:[],guard:null,hearts:null};meeting=current;
     for(const [id,side] of [['sjGuideLaunchJossy',-1],['sjGuideLaunch',1]]){
       const launcher=$(id),from=getComputedStyle(launcher).transform;launcher.classList.add('sj-guide-meeting');const r=launcher.getBoundingClientRect(),dx=center+side*21-(r.left+r.width/2),dy=y-(r.top+r.height/2);
       const together=`translate(${dx}px,${dy}px)`,kiss=`${together} rotate(${-side*11}deg)`;
-      current.animations.push(launcher.animate([{transform:from,offset:0},{transform:together,offset:.32},{transform:kiss,offset:.43},{transform:kiss,offset:.57},{transform:together,offset:.68},{transform:'translate(0,0)',offset:1}],{duration:7200,easing:'ease-in-out'}));
+      current.animations.push(launcher.animate([{transform:from,offset:0},{transform:together,offset:.12},{transform:kiss,offset:.18},{transform:kiss,offset:.82},{transform:together,offset:.88},{transform:'translate(0,0)',offset:1}],{duration:5000,easing:'ease-in-out'}));
     }
     current.timers.push(setTimeout(()=>{
       if(meeting!==current||!meetingAllowed()){stopMeeting();return;}
       const hearts=element('div','sj-companion-love');hearts.setAttribute('aria-hidden','true');hearts.style.left=app.left+'px';hearts.style.width=app.width+'px';
-      for(let i=0;i<14;i++){
-        const heart=element('span','sj-guide-heart','♥'),angle=(i/14)*Math.PI*2;
-        heart.style.setProperty('--heart-x',(center-app.left)+'px');heart.style.setProperty('--heart-y',(y-22)+'px');heart.style.setProperty('--heart-dx',(Math.cos(angle)*(38+i%3*15))+'px');heart.style.setProperty('--heart-dy',(-45+Math.sin(angle)*55)+'px');heart.style.setProperty('--heart-delay',(i%4*70)+'ms');heart.style.setProperty('--heart-turn',((i-7)*8)+'deg');hearts.append(heart);
+      for(let i=0;i<15;i++){
+        const heart=element('span','sj-guide-heart','♥'),angle=(i/15)*Math.PI*2;
+        heart.style.setProperty('--heart-x',(center-app.left)+'px');heart.style.setProperty('--heart-y',(y-22)+'px');heart.style.setProperty('--heart-dx',(Math.cos(angle)*(55+i%3*18))+'px');heart.style.setProperty('--heart-dy',(-30+Math.sin(angle)*85)+'px');heart.style.setProperty('--heart-delay','0ms');heart.style.setProperty('--heart-turn',((i-7)*8)+'deg');hearts.append(heart);
       }
       current.hearts=hearts;document.body.append(hearts);
-    },3100));
-    current.timers.push(setTimeout(stopMeeting,7350));
+    },0));
+    current.timers.push(setTimeout(stopMeeting,5000));
     current.guard=setInterval(()=>{if(!meetingAllowed())stopMeeting();},250);
   }
   function tickCompanions(){
@@ -163,12 +163,12 @@
     const intro=Math.min(2,Math.floor(elapsed/60000));
     if(intro>introWave){introWave=intro;wave($(intro===1?'sjGuideLaunchJossy':'sjGuideLaunch'));}
     else if(slot>lastWaveSlot){lastWaveSlot=slot;wave($(slot%2?'sjGuideLaunchJossy':'sjGuideLaunch'));}
-    if(now>=nextMeetingAt&&meetingCount<3&&now-lastInteraction>=15000&&meetingAllowed())startMeeting();
+    if(now>=nextMeetingAt&&meetingCount<15&&now-lastInteraction>=1000&&meetingAllowed())startMeeting();
     if(!document.hidden)maybeSuggest(now);
   }
   function syncSession(){
     const visible=!document.body.classList.contains('locked')&&!$('app')?.classList.contains('hidden');
-    if(visible&&!sessionVisible){waveEpoch=Date.now();introWave=0;lastWaveSlot=0;nextMeetingAt=Date.now()+3*60000;meetingCount=0;}
+    if(visible&&!sessionVisible){waveEpoch=Date.now();introWave=0;lastWaveSlot=0;if(!meetingScheduled){nextMeetingAt=Date.now()+5000;meetingScheduled=true;}}
     sessionVisible=visible;document.body.classList.toggle('sj-companions-floating',visible);
     if(!visible){stopMeeting();clearWaves();dismissSuggestion();}
   }
@@ -190,7 +190,8 @@
   window.addEventListener('resize',stopMeeting);window.addEventListener('orientationchange',stopMeeting);
   const sessionObserver=new MutationObserver(syncSession);sessionObserver.observe(document.body,{attributes:true,attributeFilter:['class']});sessionObserver.observe($('app'),{attributes:true,attributeFilter:['class']});syncSession();
   window.addEventListener('wedding:view',()=>{interact();if(!guestsIdle())dismissSuggestion();});
-  reducedMotion.addEventListener('change',syncMotion);syncMotion();setInterval(tickCompanions,15000);
+  reducedMotion.addEventListener('change',syncMotion);syncMotion();setInterval(tickCompanions,250);
+  window.addEventListener('pagehide',()=>{stopMeeting();clearBurst();clearWaves();dismissSuggestion();});
   function checkAlert(){
     if(!data||!$('sjGuideAlerts').checked||document.hidden||dialog.open||alert||suggestion||meeting||Date.now()-lastFetch>120000||window.WeddingAccess&&!WeddingAccess.canUse())return;
     if(typeof gateShowing==='function'&&gateShowing())return;

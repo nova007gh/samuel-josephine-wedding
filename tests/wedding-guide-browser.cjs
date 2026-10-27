@@ -1,9 +1,16 @@
 /* Disposable fixtures only. All production API access is GET-only through preview. */
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{build}=require('../wedding-guide-knowledge');
 exports.setup=async({call})=>{
-  await call('Page.addScriptToEvaluateOnNewDocument',{source:`window.__guideIntervals=[];const realInterval=window.setInterval;window.setInterval=function(fn,ms,...args){if(fn.name==='tickCompanions')window.__guideIntervals.push(fn);return realInterval(fn,ms,...args);};`});
+  await call('Page.addScriptToEvaluateOnNewDocument',{source:`window.__guideIntervals=[];const realInterval=window.setInterval;window.setInterval=function(fn,ms,...args){if(fn.name==='tickCompanions'){window.__guideIntervals.push(fn);return 0;}return realInterval(fn,ms,...args);};`});
   const settings=await(await fetch('https://snybena.com/api/settings')).json();
-  const image=require('../wedding-guide-knowledge').photo(settings.couplePhotoUrl);assert.ok(image,'Use a real published wedding photo');
+  let image=require('../wedding-guide-knowledge').photo(settings.couplePhotoUrl);assert.ok(image,'Use a real published wedding photo');
+  if(process.env.WEDDING_E2E_APPROVED_SUITE==='guide'){
+    const origin=process.env.WEDDING_TEST_URL;assert.match(origin,/^http:\/\/127\.0\.0\.1:\d+\/$/);
+    const login=await fetch(origin+'api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:'isolated-browser-only'})}),token=(await login.json()).token;
+    const form=new FormData();form.append('file',new Blob([fs.readFileSync(path.join(__dirname,'../assets/couple-home.jpg'))],{type:'image/jpeg'}),'guide-fixture.jpg');form.append('caption','Disposable guide photo fixture');
+    const upload=await fetch(origin+'api/admin/gallery',{method:'POST',headers:{Authorization:'Bearer '+token},body:form});assert.equal(upload.status,200);image=(await upload.json()).mediaUrl;
+    await fetch(origin+'api/admin/logout',{method:'POST',headers:{Authorization:'Bearer '+token}});
+  }
   const fixture=build({weddingFormal:'SAMUEL & JOSEPHINE',weddingDateISO:'2030-01-09T07:00',weddingVenue:'Guide test venue',couplePhotoUrl:image,storyText:'<img src=x onerror="window.__guideXss=1">',events:'[{"name":"Traditional Wedding","time":"07:00 AM - 11:00 AM"},{"name":"Reception","time":"2:00 PM – 08:15 PM"}]',receptionProgram:JSON.stringify({title:'Reception programme',dateLabel:'JANUARY 9, 2030',items:[{time:'5:45 PM',title:'Dinner is served',details:'Fixture dinner'},{time:'7:45 PM',title:'Cake cutting and first dance',details:'Fixture dance'}]}),entertainment:'{"acts":[]}' });
   await call('Page.addScriptToEvaluateOnNewDocument',{source:`window.__guideImage=${JSON.stringify(image)};window.__guideFetches=[];window.__guideFail=false;const nativeFetch=window.fetch;window.fetch=function(url,options){if(String(url)==='/api/guide'){window.__guideFetches.push({url:String(url),options});return window.__guideFail?Promise.reject(new Error('offline')):Promise.resolve(new Response(JSON.stringify(window.__guideFixture||${JSON.stringify(fixture)}),{status:200,headers:{'Content-Type':'application/json'}}));}return nativeFetch.apply(this,arguments);};`});
 };
@@ -92,15 +99,17 @@ exports.check=async({call,evaluate,errors,out})=>{
   await evaluate(`document.body.classList.remove('locked');new Promise(r=>setTimeout(r,350))`);
   assert.deepEqual(await evaluate(`[...document.querySelectorAll('.sj-guide-launch>span')].map(el=>el.textContent)`),['Sam','Jossy']);
   assert.match(await evaluate(`getComputedStyle(document.getElementById('sjGuideLaunch')).animationName`),/sjEdgeFloat/,'Edge floating starts immediately');
-  await evaluate(`document.getElementById('sjGuideSuggestionsEnabled').checked=false;document.getElementById('sjGuideSuggestionsEnabled').dispatchEvent(new Event('change'));window.__clockOffset=60000;window.__guideIntervals[0]()`);
+  await evaluate(`document.getElementById('sjGuideSuggestionsEnabled').checked=false;document.getElementById('sjGuideSuggestionsEnabled').dispatchEvent(new Event('change'));window.__clockOffset=5000;window.__guideIntervals[0]();new Promise(r=>setTimeout(r,50))`);
+  assert.equal(await evaluate(`document.querySelectorAll('.sj-guide-meeting').length`),2,'First kiss is due after five seconds');
+  await evaluate(`document.dispatchEvent(new Event('pointerdown',{bubbles:true}));window.__clockOffset=60000;window.__guideIntervals[0]()`);
   assert.equal(await evaluate(`document.querySelector('.sj-guide-waving')?.id`),'sjGuideLaunchJossy','Jossy waves one minute after entry');
   await evaluate(`new Promise(r=>setTimeout(r,2500))`);
   await evaluate(`window.__clockOffset=120000;window.__guideIntervals[0]()`);
   assert.equal(await evaluate(`document.querySelector('.sj-guide-waving')?.id`),'sjGuideLaunch','Sam follows at two minutes');
   await evaluate(`new Promise(r=>setTimeout(r,2500))`);
-  await evaluate(`window.__clockOffset=180000;window.__guideIntervals[0]();new Promise(r=>setTimeout(r,3400))`);
-  assert.equal(await evaluate(`document.querySelectorAll('.sj-guide-meeting').length`),2,'Both companions meet after three idle minutes');
-  assert.equal(await evaluate(`document.querySelectorAll('.sj-companion-love .sj-guide-heart').length`),14,'Smooth red-heart burst accompanies centre kiss');
+  await evaluate(`window.__clockOffset=305000;window.__guideIntervals[0]();new Promise(r=>setTimeout(r,2500))`);
+  assert.equal(await evaluate(`document.querySelectorAll('.sj-guide-meeting').length`),2,'Both companions meet again after five minutes');
+  assert.equal(await evaluate(`document.querySelectorAll('.sj-companion-love .sj-guide-heart').length`),15,'Neon red-heart burst accompanies centre kiss');
   assert.equal(await evaluate(`(()=>{const a=document.getElementById('sjGuideLaunch').getBoundingClientRect(),b=document.getElementById('sjGuideLaunchJossy').getBoundingClientRect(),app=document.getElementById('app').getBoundingClientRect();return Math.abs((a.left+a.right+b.left+b.right)/4-(app.left+app.right)/2)<8&&Math.abs(a.left-b.left)<90;})()`),true,'Both illustrations meet at app centre');
   {const shot=await call('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(out,'companions-centre-kiss.png'),Buffer.from(shot.data,'base64'));}
   await evaluate(`document.dispatchEvent(new Event('pointerdown',{bubbles:true}))`);
@@ -141,9 +150,9 @@ exports.check=async({call,evaluate,errors,out})=>{
     assert.equal(await evaluate(`document.body.classList.contains('sj-companions-floating')`),false,'Floating stops at sign-in gate');
     await evaluate(`document.body.classList.remove('locked');new Promise(r=>setTimeout(r,50))`);
     assert.equal(await evaluate(`document.body.classList.contains('sj-companions-floating')`),true,'Floating starts immediately on returning from sign-in');
-    await evaluate(`window.__clockOffset+=60000;window.__guideIntervals[0]()`);
+    await evaluate(`switchView('chat');window.__clockOffset+=60000;window.__guideIntervals[0]()`);
     assert.equal(await evaluate(`document.querySelector('.sj-guide-waving')?.id`),'sjGuideLaunchJossy','One-minute wave resets after login');
-    await evaluate(`window.__clockOffset+=120000;window.__guideIntervals[0]();new Promise(r=>setTimeout(r,3400))`);
+    await evaluate(`switchView('home');window.__clockOffset+=300000;window.__guideIntervals[0]();new Promise(r=>setTimeout(r,2500))`);
     assert.equal(await evaluate(`document.querySelectorAll('.sj-guide-meeting').length`),2,'Responsive meeting starts');
     assert.equal(await evaluate(`[...document.querySelectorAll('.sj-guide-meeting')].every(el=>{const r=el.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth&&r.top>=0&&r.bottom<document.querySelector('.tabbar').getBoundingClientRect().top;})`),true,'Centre kiss stays inside small-phone/landscape viewport');
     if(width===320){const shot=await call('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(out,'companions-centre-kiss-320.png'),Buffer.from(shot.data,'base64'));}

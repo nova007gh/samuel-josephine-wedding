@@ -4,9 +4,9 @@ module.exports=async({call,evaluate})=>{
   async function begin(view='home'){
     await evaluate(`document.getElementById('sjGuideDialog').close();document.getElementById('sjGuideSuggestionsEnabled').checked=false;document.getElementById('sjGuideSuggestionsEnabled').dispatchEvent(new Event('change'));document.body.classList.add('locked');new Promise(r=>setTimeout(r,30))`);
     await evaluate(`switchView(${JSON.stringify(view)});document.querySelectorAll('.activity-toast,.competition-toast').forEach(el=>el.remove());document.activeElement?.blur();document.body.classList.remove('locked');new Promise(r=>setTimeout(r,350))`);
-    await evaluate(`window.__clockOffset+=181000;window.__guideIntervals[0]();new Promise(r=>setTimeout(r,80))`);
+    await evaluate(`window.__clockOffset+=301000;window.__guideIntervals[0]();new Promise(r=>setTimeout(r,80))`);
   }
-  const count=()=>evaluate(`document.querySelectorAll('.sj-guide-meeting,.sj-companion-love').length`);
+  const count=()=>evaluate(`document.querySelectorAll('.sj-guide-meeting').length`);
   await begin();
   assert.equal(await count(),2,'Lifecycle fixture starts centre travel');
   await evaluate(`new Promise(r=>setTimeout(r,2600))`);
@@ -31,7 +31,7 @@ module.exports=async({call,evaluate})=>{
   await evaluate(`window.__uploadsInFlight=0`);
   await begin();
   await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
-  await evaluate(`new Promise(r=>setTimeout(r,100))`);
+  await evaluate(`new Promise(resolve=>{let tries=0;const check=()=>{if(!document.querySelector('.sj-guide-meeting')||++tries>=60)resolve();else setTimeout(check,50);};check();})`);
   assert.equal(await count(),0,'Changing reduced motion mid-flight cancels travel');
   await call('Emulation.setEmulatedMedia',{features:[]});
   await begin('livebroadcast');

@@ -12,7 +12,7 @@
     ownership=JSON.stringify(profiles.map(r=>r.kind+':'+r.profile.id).sort());
     $('roleProfileRows').replaceChildren();dirty=false;
     const rows=profiles.filter(r=>r.kind===$('roleProfileKind').value);
-    $('roleProfileStatus').textContent=rows.length?'Edit your profile below, then save. Photos and contact details on published cards are visible to approved guests.':'No profile of this role is assigned to your account. Ask admin to assign your registered account under Profile Access.';
+    $('roleProfileStatus').textContent=rows.length?'Edit your profile below, then save. Photos and contact details on published cards are visible to approved guests.':'No profile of this role is assigned to your account. Your sign-in is working; an admin must finish the profile link. Admin: open Profile Access, find the correct '+title[$('roleProfileKind').value]+' profile, select this guest’s registered account and Save access. Then choose Reload my saved profiles here. Selecting a role alone never grants access.';
     for(const r of rows){
       const f=node('form');f.className='aq-card';f.dataset.profileId=r.profile.id;f.append(node('h3',title[r.kind]+' · '+r.profile.name));
       const fields=r.kind==='vendor'?[['name','Name',120],['badge','Business / card label',60],['description','Description',600],['phone','Public phone (+country code)',20],['whatsapp','Public WhatsApp (+country code)',20]]:[['name','Name',100]];

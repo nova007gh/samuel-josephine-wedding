@@ -1,6 +1,7 @@
 
-const CACHE = 'sj-wedding-v247-admin-guest-details';
+const CACHE = 'sj-wedding-v248-full-frame-kiss';
 const ASSETS = [
+  './full-frame.css',
   './guest-details.js',
   './guest-details.css',
   './guest-arrival.js',

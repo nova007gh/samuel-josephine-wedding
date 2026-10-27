@@ -36,11 +36,14 @@ module.exports=async({call,evaluate,errors,out})=>{
   if(process.env.WEDDING_E2E_APPROVED_SUITE){
     const suites={entry:'entry-seal-e2e.cjs',profiles:'role-profiles-e2e.cjs',pass:'guest-pass-e2e.cjs',checkin:'checkin-camera-e2e.cjs',arrivals:'guest-arrival-e2e.cjs',vendors:'vendors-e2e.cjs',broadcast:'live-broadcast-e2e.cjs',bridal:'bridal-train-e2e.cjs',program:'program-e2e-checks.cjs',engagement:'engagement-e2e-checks.cjs',community:'wedding-community-e2e.cjs',voice:'voice-recording-checks.cjs'};
     suites.guestdetails='guest-details-e2e.cjs';
+    suites.photoskiss='photos-kiss-e2e.cjs';
+    suites.guide='wedding-guide-browser.cjs';
     const suite=suites[process.env.WEDDING_E2E_APPROVED_SUITE];if(!suite)throw new Error('Unknown approved regression suite');
     controllerToken=(await request('/admin/login',{method:'POST',body:{password:'isolated-browser-only'}})).data.token;
     await evaluate(`(async()=>{const r=await api('/guests/login',{method:'POST',body:{phone:'+233240000001',code:'123456'}});setGuest(r.guest);await WeddingAccess.refresh();})()`);await wait('WeddingAccess.canUse()');
     const authenticatedRequest=(p,o={})=>request(p,{...o,admin:o.admin??(!p.startsWith('/admin/')&&!o.cookie&&![401,403].includes(o.status))});
-    await require('./'+suite)({call,evaluate,wait,request:authenticatedRequest,out,errors,token:controllerToken});
+    const check=require('./'+suite);
+    await (typeof check==='function'?check:check.check)({call,evaluate,wait,request:authenticatedRequest,out,errors,token:controllerToken});
     await request('/admin/logout',{method:'POST',admin:true});return;
   }
   if(process.env.WEDDING_E2E_ADMIN_COMPANIONS_ONLY==='1'){
