@@ -66,6 +66,16 @@ the wedding seal, header/back/menu controls and All / Local Chops / Main Dishes 
 Drinks / Desserts category filters. Saved photos display fully, not cropped.
 Existing compact five-tab navigation and Gallery remain unchanged.
 
+The v251 reference composition shows five photo cards per category overview row,
+including on narrow phones. View All exposes every item in a larger three-column
+category view; Back to All returns to the overview. Category tabs fit without
+horizontal scrolling and use SVG line icons. Photos open the existing full-frame
+viewer; descriptions and dietary notes remain accessible under Details. The
+curved brand header, seal, two-line title and ornament match the reference's
+hierarchy. With no supplied header photograph, a local hand-authored decorative
+banquet illustration is used, not an invented photograph of the actual event.
+Admin-uploaded header photos remain uncropped with their text placed beneath.
+
 Admin can add dishes/drinks, descriptions, dietary/allergen notes, photos and an
 optional header photograph. Photo uploads require JPEG/PNG/WebP byte signatures,
 maximum 8 MB, and stay in the draft until Save. Original uploads are never removed

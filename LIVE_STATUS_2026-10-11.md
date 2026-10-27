@@ -1,5 +1,49 @@
 # snybena.com live audit — 11 October 2026
 
+## v251 — reference-matched Food & Drinks UI (candidate)
+
+Refined the guest menu to match the supplied reference composition: curved cream
+wedding-name header, round back/menu controls, gold seal, two-line Food & Drinks /
+Menu heading and ornamental divider, warm banquet-style hero, five fitted category
+tabs with actual SVG cloche/cutlery/glass/cake line icons (not emoji), compact cream
+sections with round category emblems, serif headings/subtitles, pill View All
+controls, and five-photo overview rows even on small phones. All overview shows
+up to five dishes per category; View All exposes every item in a larger three-card
+category grid, with Back to All. Existing five-tab/unboxed navigation is preserved
+rather than copying the reference's superseded seven boxed tabs.
+
+Photos remain fully contained, not zoom-cropped; each supplied dish photo opens
+the existing full-screen viewer with Escape/focus restoration. Descriptions and
+dietary notes remain available under Details without bloating the reference rows.
+Published-menu advisory text is a footer note rather than interrupting the first
+category. Uploaded header photographs stay full-frame with heading beneath, so
+faces/content are not covered. With no uploaded hero, new hand-authored local
+`assets/menu-celebration.svg` provides decorative candle/floral/glass artwork.
+It is explicitly decorative illustration, not a claim of real banquet photography.
+No sample dish photography, actual catering, tables or publication state is invented.
+The supplied reference's photographic assets still require admin-supplied uploads.
+
+This is frontend-only: no API/schema/automatic-seating/role/private-data changes.
+New menu browser regression uses disposable generated illustration fixtures,
+checks five fitted 44px+ category tabs and five-card overview rows at six widths,
+all four category sections, View All beyond five items, full-photo viewer/keyboard
+focus, safe literal details, decorative hero and unchanged compact navigation.
+Default browser startup initially failed on this Mac with only ~160 MB disk free
+and heavy memory pressure. Removed only an agent-created, timed-out disposable
+Chrome profile (screenshots retained), and added an opt-in low-memory test launch
+mode with one renderer, no GPU/extensions, small caches and a longer discovery
+deadline. The actual browser menu regression then passed; no unrelated user files,
+browser profiles or other projects were cleared. Final regressions are running.
+
+Original frontend, online DB and private config hash: `/root/wedding-pre-v251/`.
+
+All **19 pure suites** and three disposable browser suites passed: menu reference,
+full Tables/Food and approval/navigation. The final reference test confirms five
+overview items per section, all sixth-and-later dishes reachable through View All,
+six widths, 44px+ fitted category tabs, full-image viewer/Escape/focus return and
+safe collapsed descriptions/dietary notes. Candidate full-page screenshot visually
+reviewed. Existing menu content, publication and table APIs are unchanged.
+
 ## v250 — Tables & Food, login role entry and safe automatic seating (live)
 
 Added GROOMSMAN / BRIDESMAID / VENDOR to the existing Relationship / Invited By

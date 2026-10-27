@@ -1,6 +1,8 @@
 
-const CACHE = 'sj-wedding-v250-tables-food';
+const CACHE = 'sj-wedding-v251-menu-reference';
 const ASSETS = [
+  './food-menu-reference.css',
+  './assets/menu-celebration.svg',
   './tables-food-schema.js',
   './tables-food.js',
   './tables-food.css',

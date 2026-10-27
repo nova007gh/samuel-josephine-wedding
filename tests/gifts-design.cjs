@@ -13,6 +13,7 @@ const chrome = spawn('/Applications/Google Chrome.app/Contents/MacOS/Google Chro
   '--headless=new', '--no-first-run', '--no-default-browser-check',
   '--remote-debugging-port=0', '--remote-debugging-address=127.0.0.1',
   '--user-data-dir='+profile,
+  ...(process.env.WEDDING_E2E_LOW_MEMORY==='1'?['--disable-gpu','--renderer-process-limit=1','--disable-extensions','--disk-cache-size=1048576','--media-cache-size=1048576']:[]),
   ...(process.argv.includes('--e2e')?['--use-fake-ui-for-media-stream','--use-fake-device-for-media-stream']:[]),
   'about:blank'
 ]);
@@ -30,7 +31,7 @@ const delay = ms => new Promise(resolve=>setTimeout(resolve,ms));
     await delay(100);
   }
   if(!port)throw new Error('Test Chrome debugging port did not become ready within 30 seconds');
-  const tabs = await (await fetch(`http://127.0.0.1:${port}/json/list`,{signal:AbortSignal.timeout(10000)})).json();
+  const tabs = await (await fetch(`http://127.0.0.1:${port}/json/list`,{signal:AbortSignal.timeout(process.env.WEDDING_E2E_LOW_MEMORY==='1'?30000:10000)})).json();
   const tab = tabs.find(t=>t.type==='page');
   socket = new WebSocket(tab.webSocketDebuggerUrl);
   await new Promise(resolve=>socket.addEventListener('open',resolve,{once:true}));
