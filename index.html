@@ -36,7 +36,8 @@
   <link rel="stylesheet" href="bridal-train-reference.css?v=240" />
   <link rel="stylesheet" href="live-broadcast.css?v=197" />
   <link rel="stylesheet" href="live-broadcast-reference.css?v=199" />
-  <link rel="stylesheet" href="app-polish.css?v=246" />
+  <link rel="stylesheet" href="app-polish.css?v=247" />
+  <link rel="stylesheet" href="guest-details.css?v=247" />
   <link rel="stylesheet" href="guest-access.css?v=230" />
   <link rel="stylesheet" href="wedding-community.css?v=216" />
   <link rel="stylesheet" href="vendors.css?v=233" />
@@ -296,7 +297,7 @@
       </button>
       <button id="homeHeart" class="admin-heart" type="button" aria-label="Send love to Sam and Jossy">
         <img src="assets/photo-placeholder.svg" data-site-photo="admin-heart" alt="Sam and Jossy" draggable="false" />
-        <span class="heart-badge" id="homeLikeCount">0</span>
+        <span class="heart-badge" id="homeLikeCount" hidden aria-hidden="true">0</span>
       </button>
     </div>
   </header>
@@ -359,7 +360,7 @@
       <span class="menu-icon menu-icon--gold">&#127918;</span><span class="menu-text"><strong>Wedding Games &amp; Competitions</strong><small>Join the fun, vote and see live results</small></span><span class="menu-chev">&#10095;</span>
     </button>
     <button class="menu-item menu-item--wide" data-goto="livebroadcast" type="button"><span class="menu-icon menu-icon--gold">&#9673;</span><span class="menu-text"><strong>Our Live Broadcast</strong><small>Watch from wherever you are</small></span><span class="menu-chev">&#10095;</span></button>
-    <button id="roleProfilesOpen" class="menu-item menu-item--wide" type="button">Vendor / Bridesmaid / Groomsman Login &amp; My Profile</button>
+    <button id="roleProfilesOpen" class="menu-item menu-item--wide" type="button"><span class="menu-icon menu-icon--gold" aria-hidden="true">&#128100;</span><span class="menu-text"><strong>Wedding Team Login &amp; My Profile</strong><small>Vendors · Bridesmaids · Groomsmen</small></span><span class="menu-chev" aria-hidden="true">&#10095;</span></button>
   </section>
   <div id="guestPassStorage" hidden>
     <section id="guestArrivalCard" class="arrival-card guest-pass" hidden aria-labelledby="guestArrivalTitle">
@@ -1020,6 +1021,7 @@
     <div class="admin-section-tabs" role="tablist" aria-label="Dashboard sections">
       <button id="admin-tab-overview" role="tab" aria-selected="true" aria-controls="admin-panel-overview" data-admin-section="overview" type="button"><span aria-hidden="true">&#9638;</span>Overview</button>
       <button id="admin-tab-guests" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-guests" data-admin-section="guests" type="button"><span aria-hidden="true">&#128101;</span>Guests &amp; RSVPs</button>
+      <button id="admin-tab-guestdetails" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-guestdetails" data-admin-section="guestdetails" type="button">Detailed Guest List</button>
       <button id="admin-tab-arrivals" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-arrivals" data-admin-section="arrivals" type="button"><span aria-hidden="true">&#128205;</span>Entrance &amp; Tables</button>
       <button id="admin-tab-content" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-content" data-admin-section="content" type="button"><span aria-hidden="true">&#128247;</span>Guest Content</button>
       <button id="admin-tab-photos" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-photos" data-admin-section="photos" type="button"><span aria-hidden="true">&#9835;</span>Photos &amp; Music</button>
@@ -1038,20 +1040,28 @@
     </div>
 
     <div id="admin-panel-arrivals" class="admin-section-panel hidden" role="tabpanel" aria-labelledby="admin-tab-arrivals" tabindex="0">
-      <section class="arrival-admin"><h2>Guest Check-In</h2><p>Scan a guest’s private QR pass, verify their name, then confirm arrival. Repeated scans never count twice.</p><div id="arrivalStats" class="arrival-stats" aria-live="polite"></div><p class="page-sub">Counts are approved registered guests, not invitations or unregistered plus-ones.</p>
+      <section id="arrivalAdminCounts" hidden aria-label="Admin-only entrance totals"><h2>QR Scanner · Entrance Totals</h2><div id="arrivalStats" class="arrival-stats" aria-live="polite"></div><p class="page-sub">Admin only. Counts are approved registered guests, not invitations or unregistered plus-ones. Registration alone is not an entrance check-in.</p></section>
+      <section class="arrival-admin"><h2>Guest Check-In</h2><p>Scan a guest’s private QR pass, verify their name, then confirm arrival. Repeated scans never count twice.</p>
       <div class="arrival-camera"><video id="arrivalVideo" muted playsinline hidden></video><div id="arrivalScanHint">Position the guest’s QR code inside the camera view.</div></div>
       <div class="arrival-actions"><button id="arrivalCameraStart" type="button">Start QR scanner</button><button id="arrivalCameraStop" type="button" hidden>Stop camera</button><button id="arrivalTorch" type="button" hidden>Flashlight</button><label class="arrival-file">Scan QR image<input id="arrivalImage" type="file" accept="image/jpeg,image/png,image/webp"></label></div><p id="arrivalAdminStatus" role="status" aria-live="polite"></p><div id="arrivalScanReview" hidden><h3 id="arrivalScanName"></h3><p id="arrivalScanDetails"></p><button id="arrivalConfirmQR" type="button">Confirm entrance check-in</button><button id="arrivalScanCancel" type="button">Cancel scan</button></div>
       <h3>Manual check-in &amp; table assignment</h3><label class="field">Find a registered guest by name or phone<input id="arrivalSearch" type="search" autocomplete="off"></label><button id="arrivalAdminRefresh" type="button">Refresh guest list</button><div id="arrivalGuestList" class="arrival-guest-list"></div>
       <form id="arrivalSeatingForm" hidden><h3 id="arrivalSelectedName"></h3><p id="arrivalSelectedStatus"></p><label class="field">Table number or name<input id="arrivalTableNumber" maxlength="60" autocomplete="off"></label><label class="field">Table location / directions<textarea id="arrivalTableLocation" maxlength="400" rows="3" placeholder="Enter confirmed directions, e.g. room, section or landmark"></textarea></label><p>Party size is separate from the assigned table. No table is invented if these fields are blank.</p><div class="arrival-actions"><button id="arrivalSaveSeat" type="submit">Save table assignment</button><button id="arrivalReloadSeat" type="button">Reload saved assignment</button><button id="arrivalConfirmManual" type="button">Confirm manual entrance check-in</button></div><p id="arrivalSeatStatus" role="status"></p></form></section>
+    </div>
+    <div id="admin-panel-guestdetails" class="admin-section-panel hidden" role="tabpanel" aria-labelledby="admin-tab-guestdetails" tabindex="0">
+      <section class="guest-details"><h2>Detailed Guest List</h2><p>Admin only · Registration, approval and entrance arrival are separate. Arrival totals are on Entrance &amp; Tables / QR Scanner only.</p><p id="guestDetailsCounts"></p>
+        <form id="guestDetailsFilters"><label class="field">Search name, phone, email or connection<input id="guestDetailsSearch" type="search" maxlength="200" autocomplete="off"></label><label class="field">Registration status<select id="guestDetailsFilter"><option value="">All registered guests</option><option value="approved">Approved</option><option value="pending">Pending approval</option></select></label><button type="submit">Search / Refresh</button></form>
+        <p id="guestDetailsStatus" role="status" aria-live="polite"></p><div id="guestDetailsList"></div><button id="guestDetailsMore" type="button" hidden>Load more guests</button>
+        <section id="guestDetailsDossier" hidden aria-label="Selected guest details"><button id="guestDetailsClose" type="button">Close guest details</button><div id="guestDetailsIdentity"></div><p>Verified activity uses the signed-in account, even if a different display name was entered. Older records without ownership are shown separately as possible matches. Unmatched records remain in the existing content / RSVP / gift editors.</p><p>Gift reports are not proof of payment. Messages are saved in-app messages, not the guest’s external SMS inbox.</p><div class="guest-details-actions"><button id="guestDetailsLinked" type="button" aria-pressed="true">Verified account activity</button><button id="guestDetailsPossible" type="button" aria-pressed="false">Possible legacy matches · unverified</button></div><p id="guestDetailsActivityStatus" role="status" aria-live="polite"></p><div id="guestDetailsActivities"></div><button id="guestDetailsActivityMore" type="button" hidden>Load more activity</button></section>
+      </section>
     </div>
     <div id="admin-panel-overview" class="admin-section-panel" role="tabpanel" aria-labelledby="admin-tab-overview" tabindex="0">
 
     <h3 class="stats-group-label">&#128101; Guests &amp; RSVPs</h3>
     <div class="admin-stats" id="adminStats">
       <div class="admin-stat">
-        <span class="admin-stat-label">Total Invited</span>
+        <span class="admin-stat-label">Registered Guests</span>
         <strong id="statGuests" class="admin-stat-num">0</strong>
-        <small class="admin-stat-note">checked in</small>
+        <small class="admin-stat-note">registered accounts, not entrance arrivals</small>
       </div>
       <div class="admin-stat">
         <span class="admin-stat-label">Total RSVPs</span>
@@ -1873,6 +1883,7 @@ try{
 <script src="app-data.js?v=194"></script>
 <script src="app-social.js?v=241"></script>
 <script src="admin-dashboard.js?v=187"></script>
+<script src="guest-details.js?v=247"></script>
 <script src="reception-program.js?v=190"></script>
 <script src="bridal-train.js?v=200"></script>
 <script src="broadcast-calendar.js?v=196"></script>
@@ -1906,7 +1917,7 @@ try{
 <script src="competition-notices.js?v=230"></script>
 <script src="assets/vendor/qrcode-generator-1.4.4.js"></script>
 <script src="assets/vendor/jsqr-1.4.0.js"></script>
-<script src="guest-arrival.js?v=245"></script>
+<script src="guest-arrival.js?v=247"></script>
 <script src="role-profiles.js?v=245"></script>
 </body>
 </html>

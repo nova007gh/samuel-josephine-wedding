@@ -1,5 +1,6 @@
 /* Shared finishing touches; decorations never participate in page sizing. */
 :root{--tabbar-h:76px;}
+#homeLikeCount{display:none!important;}
 html{scroll-padding-bottom:calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 16px);}
 .app{isolation:isolate;}
 .app>.floral-bg{overflow:clip;background:url('assets/gift-floral.svg') left top/76px auto no-repeat,url('assets/gift-floral.svg') right bottom/90px auto no-repeat;opacity:.28;}

@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
-const names = ['overview','guests','content','photos','wedding','program','story','bridal','broadcast','announcements','gifts','access','competitions','entertainment','vendors','arrivals','profiles'];
+const names = ['overview','guests','content','photos','wedding','program','story','bridal','broadcast','announcements','gifts','access','competitions','entertainment','vendors','arrivals','profiles','guestdetails'];
 let admin = true;
 const saved = new Map();
 const handlers = {};

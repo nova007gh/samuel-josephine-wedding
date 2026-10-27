@@ -1,5 +1,52 @@
 # snybena.com live audit — 11 October 2026
 
+## v247 — admin detailed guest list and private scanner totals (candidate)
+
+Added **Detailed Guest List** to the existing admin-dashboard section buttons.
+Search/filter registered/approved/pending guests, open contact details, registration
+RSVP/party size, saved table/directions, confirmed entrance status and assigned
+team profiles. Paginated saved activity includes RSVPs, guestbook posts/replies,
+photo/video/voice/music memories, manual gift reports, Wedding Chat texts/uploads/
+reactions, competition votes/comments. No external SMS/email inbox is accessed.
+Registration, approval and entrance confirmation stay distinct.
+
+`GET /api/admin/guest-details` and `GET /api/admin/guest-details/:id` are admin-only,
+no-store, with separate 30-record guest/activity pagination. Existing authenticated
+actor IDs and manual gift receipts are reused; new posts/RSVPs/uploads/replies/gifts
+save account ownership transactionally in `guest_activity_owners`. No supplied
+name/contact/guestId grants ownership, no mass historical backfill. Unowned legacy
+records are a separate, explicitly unverified view; ambiguous names and known
+different owners are excluded. Original unmatched records remain in current editors.
+The dossier never selects account secrets, OTPs, session tokens or QR codes.
+Frontend uses safe text/local-media links, stays in page memory only and clears
+on navigation/auth loss/page exit, rejecting late private responses.
+
+Moved arrival totals out of the Home check-in popup to the existing **Admin →
+Entrance & Tables** scanner dashboard only. Removed the public photo-like count
+badge without deleting its saved likes; that badge was not an entrance count.
+Registration overview wording now correctly says registered guests, not checked-in
+or total invited. The Home team-profile card now has the same icon/text/chevron
+grid as neighbouring cards, fixing the narrow stacked text shown in the screenshot.
+QR confirmation, duplicate protection, camera lifecycle, own-guest seat privacy,
+Home label, profile permissions, compact/unboxed menu, heartbeat seal, photos and
+manual-only gifts remain unchanged. No SMS/OTP/provider test or live account edit
+was authorized or performed for v247.
+
+Pre-release online DB/frontend/API/config-hash backup: `/root/wedding-pre-v247/`.
+See `server/GUEST_DETAILS.md` for attribution limits, setup and API details.
+Final candidate regression/deployment/audit results follow.
+
+All 17 pure suites and eight disposable browser suites passed: detailed guests,
+profiles, check-in camera, arrivals/seating, manual gifts, approval/navigation,
+Chat/community and invitation entry/seal. Expanded dossier checks cover real
+memory uploads, reply authorship on another guest's post, votes/comments/reactions,
+spoofed names/IDs, different-owner exclusion, ambiguous legacy names, filters,
+both pagers, safe rendering, five widths, private totals and late-response/logout
+cleanup. Manual gift regression reran after preserving the original retry-key
+namespace and adding an internal admin attribution marker: admin+guest-cookie
+requests cannot accidentally associate the admin's report to that guest, including
+through the historical receipt fallback. No old gift/payment rows were rewritten.
+
 ## v246 — unboxed menu icons, entrance seal and phone lookup (live)
 
 Rechecked the requested v245 changes: Home excludes the entrance-pass card,

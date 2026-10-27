@@ -1,6 +1,8 @@
 
-const CACHE = 'sj-wedding-v246-unboxed-menu';
+const CACHE = 'sj-wedding-v247-admin-guest-details';
 const ASSETS = [
+  './guest-details.js',
+  './guest-details.css',
   './guest-arrival.js',
   './guest-arrival.css',
   './guest-pass.css',

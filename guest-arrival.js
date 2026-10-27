@@ -80,6 +80,7 @@
     if(!matches.length)list.append(el('p','No registered guests match.'));if(matches.length>100)list.append(el('p','Showing the first 100 matches. Refine your search.'));
   }
   async function refreshAdmin(){
+    $('arrivalAdminCounts').hidden=!isAdmin();
     if(!adminVisible()||adminBusy||saving||window.__uploadsInFlight)return;adminBusy=true;const run=epoch,version=adminVersion;
     try{const d=await api('/admin/arrivals',{admin:true});if(run!==epoch||version!==adminVersion||!isAdmin())return;rows=d.guests;const reconciled=uncertainGuest&&rows.find(g=>g.id===uncertainGuest&&g.arrival);if(reconciled){say('arrivalAdminStatus','Arrival verified — already checked in, no duplicate: '+reconciled.name);uncertainGuest=null;}const stats=$('arrivalStats');stats.replaceChildren();for(const [key,title]of [['checkedIn','Checked In'],['notYetArrived','Not Yet Arrived'],['totalApproved','Approved Guests']]){const p=el('p');p.append(el('strong',String(d.stats[key])),el('span',title));stats.append(p);}renderList();if(!dirty&&!saving)fillSeat();}
     catch(error){if(run===epoch)say('arrivalAdminStatus',error.message||'Unable to refresh registered guests.');}finally{adminBusy=false;}
@@ -123,7 +124,7 @@
   $('arrivalConfirmQR').onclick=()=>{if(review)confirmArrival({code:review.code},$('arrivalConfirmQR'));};
   $('arrivalConfirmManual').onclick=()=>{const g=selectedRow();if(g&&g.status==='approved'&&confirm('Confirm '+g.name+' has arrived at the entrance?'))confirmArrival({guestId:g.id},$('arrivalConfirmManual'));};
   $('arrivalScanCancel').onclick=()=>{stopCamera();review=null;$('arrivalScanReview').hidden=true;say('arrivalAdminStatus','Scan cancelled; no arrival recorded.');};
-  function reset(){epoch++;closeCheckIn();guestReset();stopCamera();review=null;uncertainGuest=null;rows=[];selected=null;dirty=false;$('arrivalSeatingForm').hidden=true;$('arrivalSeatingForm').reset();$('arrivalGuestList').replaceChildren();$('arrivalStats').replaceChildren();$('arrivalScanReview').hidden=true;$('arrivalSearch').value='';say('arrivalAdminStatus','');say('arrivalScanName','');say('arrivalScanDetails','');say('arrivalSelectedName','');say('arrivalSelectedStatus','');say('arrivalSeatStatus','');}
+  function reset(){epoch++;closeCheckIn();guestReset();stopCamera();review=null;uncertainGuest=null;rows=[];selected=null;dirty=false;$('arrivalAdminCounts').hidden=true;$('arrivalSeatingForm').hidden=true;$('arrivalSeatingForm').reset();$('arrivalGuestList').replaceChildren();$('arrivalStats').replaceChildren();$('arrivalScanReview').hidden=true;$('arrivalSearch').value='';say('arrivalAdminStatus','');say('arrivalScanName','');say('arrivalScanDetails','');say('arrivalSelectedName','');say('arrivalSelectedStatus','');say('arrivalSeatStatus','');}
   window.addEventListener('wedding:guest-session',()=>{reset();refreshGuest();});
   window.addEventListener('wedding:session-state',()=>{epoch++;if(!guestReady())guestReset();else refreshGuest();if(checkin.open&&(!WeddingAccess.canUse()||checkinMode==='scan'&&!isAdmin())){closeCheckIn();}});
   window.addEventListener('wedding:view',()=>{if(checkin.open)closeCheckIn();if(!adminVisible())stopCamera();refreshGuest();refreshAdmin();showNotice();});

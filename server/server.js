@@ -443,6 +443,7 @@ const competitionAuth = require('./competitions')({app,db,requireAdmin,publicWri
 const onboarding = require('./guest-onboarding')({app,db,publicWrite,normPhone,notifyAll,resolveGuest:guestAccess.resolveGuest});
 require('./guest-arrival')({app,db,requireAdmin,publicWrite,guest:guestAccess.resolveGuest});
 require('./role-profiles')({app,db,requireAdmin,publicWrite,guest:guestAccess.resolveGuest,multer,uploadsDir:UPLOADS_DIR});
+const guestDetails=require('./guest-details')({app,db,requireAdmin,guest:guestAccess.resolveGuest});
 
 /* ---------- guests (check-in) ---------- */
 app.post('/api/guests', publicWrite, (req, res) => {
@@ -853,12 +854,12 @@ app.post('/api/rsvps', publicWrite, (req, res) => {
   const name = str(r.name, 120);
   if (!name) return res.status(400).json({ error: 'Name is required.' });
   const id = uid();
-  db.prepare(`INSERT INTO rsvps (id, name, email, phone, attending, plusOne, guestCount, song, message, submittedAt)
+  guestDetails.save(req,'rsvp',id,()=>db.prepare(`INSERT INTO rsvps (id, name, email, phone, attending, plusOne, guestCount, song, message, submittedAt)
               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
     .run(id, name, str(r.email, 200), str(r.phone, 60), str(r.attending, 60),
          Math.min(Math.max(parseInt(r.plusOne, 10) || 0, 0), 20),
          Math.min(Math.max(parseInt(r.guestCount, 10) || 1, 1), 20),
-         str(r.song, 200), str(r.message, 2000), now());
+         str(r.song, 200), str(r.message, 2000), now()));
   res.json({ ok: true, id });
   const att = (r.attending || '').toString();
   const attLabel = /decline|no|can't/i.test(att) ? "can't make it" : 'is attending';
@@ -877,9 +878,9 @@ app.post('/api/guestbook', publicWrite, upload.single('selfie'), (req, res) => {
   if (!name || !message) return res.status(400).json({ error: 'Name and message are required.' });
   const id = uid();
   const selfieUrl = req.file ? `/uploads/${req.file.filename}` : null;
-  db.prepare(`INSERT INTO guestbook (id, name, message, status, likes, replies, selfieUrl, createdAt)
+  guestDetails.save(req,'guestbook',id,()=>db.prepare(`INSERT INTO guestbook (id, name, message, status, likes, replies, selfieUrl, createdAt)
               VALUES (?, ?, ?, 'pending', 0, '[]', ?, ?)`)
-    .run(id, name, message, selfieUrl, now());
+    .run(id, name, message, selfieUrl, now()));
   res.json({ id, name, message, status: 'pending', likes: 0, replies: [], selfieUrl, createdAt: now() });
   notifyAll('New guest book message', `${name} left a message — pending your approval`);
 });
@@ -904,8 +905,9 @@ app.post('/api/guestbook/:id/reply', publicWrite, (req, res) => {
   let replies = [];
   try { replies = JSON.parse(row.replies || '[]'); } catch {}
   if (replies.length >= 200) return res.status(400).json({ error: 'Reply limit reached.' });
-  replies.push({ name, text, at: now() });
-  db.prepare(`UPDATE guestbook SET replies = ? WHERE id = ?`).run(JSON.stringify(replies), req.params.id);
+  const replyId=uid();
+  replies.push({ id:replyId, name, text, at: now() });
+  guestDetails.save(req,'guestbook-reply',replyId,()=>db.prepare(`UPDATE guestbook SET replies = ? WHERE id = ?`).run(JSON.stringify(replies), req.params.id));
   res.json({ ok: true });
 });
 
@@ -941,9 +943,9 @@ app.post('/api/memories', publicWrite, upload.single('file'), (req, res) => {
   /* the couple's album is published by admin only — a guest upload can
      never land in it */
   if (record.category === 'sj-gallery') record.category = 'wedding-photos';
-  db.prepare(`INSERT INTO memories (id, category, caption, guestName, kind, status, type, name, size, mediaUrl, createdAt)
+  guestDetails.save(req,'memory',id,()=>db.prepare(`INSERT INTO memories (id, category, caption, guestName, kind, status, type, name, size, mediaUrl, createdAt)
               VALUES (@id, @category, @caption, @guestName, @kind, @status, @type, @name, @size, @mediaUrl, @createdAt)`)
-    .run(record);
+    .run(record));
   res.json(record);
   queueTranscode(record.id);
   mediaThumbnails.enqueue(record);
@@ -1270,7 +1272,7 @@ app.patch('/api/admin/momo-settings', requireAdmin, (req, res) => {
 });
 
 /* ---------- gifts (Mobile Money) ---------- */
-require('./manual-gifts')({app,db,publicWrite,notifyAll,guest:guestAccess.resolveGuest});
+require('./manual-gifts')({app,db,publicWrite,notifyAll,guest:guestAccess.resolveGuest,recordActivity:guestDetails.track});
 
 app.get('/api/admin/gifts', requireAdmin, (req, res) => {
   res.json(db.prepare('SELECT * FROM gifts ORDER BY createdAt DESC').all());
