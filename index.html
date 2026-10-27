@@ -49,6 +49,7 @@
   <link rel="stylesheet" href="guest-checkin.css?v=202" />
   <link rel="stylesheet" href="full-frame.css?v=248" />
   <link rel="stylesheet" href="companion-actions.css?v=249" />
+  <link rel="stylesheet" href="tables-food.css?v=250" />
   <script>
   /* a checked-in guest goes straight into the app — flag it before first
      paint so the invitation never flashes on their screen (mirrors
@@ -223,6 +224,9 @@
           <option value="JOSSY'S FAMILY">JOSSY'S FAMILY</option>
           <option value="SAM'S FRIEND">SAM'S FRIEND</option>
           <option value="JOSSY'S FRIEND">JOSSY'S FRIEND</option>
+          <option value="GROOMSMAN">GROOMSMAN</option>
+          <option value="BRIDESMAID">BRIDESMAID</option>
+          <option value="VENDOR">VENDOR</option>
           <option value="GROOM'S JSS MATE">GROOM'S JSS MATE</option>
           <option value="BRIDE'S JSS MATE">BRIDE'S JSS MATE</option>
           <option value="OPASS">OPASS</option>
@@ -269,6 +273,7 @@
       <button type="button" id="otpCallBtn" class="gate-link hidden">&#128222; Call me with the code</button>
       <button type="button" class="gate-link" data-pane="back">&#10094; Wrong number? Go back</button>
     </div>
+    <button id="roleProfilesOpen" class="gate-link team-login-entry" type="button">Wedding Team Login &amp; My Profile<br><small>Groomsmen · Bridesmaids · Vendors</small></button>
   </div>
 </div>
 
@@ -362,7 +367,6 @@
       <span class="menu-icon menu-icon--gold">&#127918;</span><span class="menu-text"><strong>Wedding Games &amp; Competitions</strong><small>Join the fun, vote and see live results</small></span><span class="menu-chev">&#10095;</span>
     </button>
     <button class="menu-item menu-item--wide" data-goto="livebroadcast" type="button"><span class="menu-icon menu-icon--gold">&#9673;</span><span class="menu-text"><strong>Our Live Broadcast</strong><small>Watch from wherever you are</small></span><span class="menu-chev">&#10095;</span></button>
-    <button id="roleProfilesOpen" class="menu-item menu-item--wide" type="button"><span class="menu-icon menu-icon--gold" aria-hidden="true">&#128100;</span><span class="menu-text"><strong>Wedding Team Login &amp; My Profile</strong><small>Vendors · Bridesmaids · Groomsmen</small></span><span class="menu-chev" aria-hidden="true">&#10095;</span></button>
   </section>
   <div id="guestPassStorage" hidden>
     <section id="guestArrivalCard" class="arrival-card guest-pass" hidden aria-labelledby="guestArrivalTitle">
@@ -642,6 +646,7 @@
     <button class="menu-item menu-item--wide" data-goto="livebroadcast" type="button"><span class="menu-icon menu-icon--gold">&#9673;</span><span class="menu-text"><strong>Our Live Broadcast</strong><small>Broadcast details, schedule and replays</small></span><span class="menu-chev">&#10095;</span></button>
     <button class="menu-item menu-item--wide" data-goto="entertainment" type="button"><span class="menu-icon menu-icon--gold">&#9835;</span><span class="menu-text"><strong>Entertainment</strong><small>Explore the performances, schedule and Wedding Chat</small></span><span class="menu-chev">&#10095;</span></button>
     <button class="menu-item menu-item--wide" data-goto="vendors" type="button"><span class="menu-icon menu-icon--gold">&#9814;</span><span class="menu-text"><strong>Our Vendors</strong><small>Discover our wedding partners</small></span><span class="menu-chev">&#10095;</span></button>
+    <button class="menu-item menu-item--wide" data-goto="foodmenu" type="button"><span class="menu-icon menu-icon--gold" aria-hidden="true">&#127869;</span><span class="menu-text"><strong>Food &amp; Drinks Menu</strong><small>Explore the couple’s published menu</small></span><span class="menu-chev" aria-hidden="true">&#10095;</span></button>
     <button class="menu-item menu-item--wide" data-goto="engagementprogram" type="button"><span class="menu-icon menu-icon--gold">&#128141;</span><span class="menu-text"><strong>Engagement / Traditional Program</strong><small>View the traditional wedding ceremony lineup</small></span><span class="menu-chev">&#10095;</span></button>
     <button class="menu-item menu-item--wide" data-goto="program" type="button"><span class="menu-icon menu-icon--gold">&#128220;</span><span class="menu-text"><strong>Reception Program</strong><small>View the complete celebration lineup</small></span><span class="menu-chev">&#10095;</span></button>
 
@@ -721,7 +726,9 @@
     <section class="entertainment-schedule"><div class="entertainment-schedule-heading"><h2><span data-community-icon="calendar"></span>Performance Schedule</h2><button class="back-link" data-goto="program" type="button">View full timeline &#10095;</button></div><div id="entertainmentSchedule"></div><p class="community-note entertainment-timezone">Times are displayed in your device’s local time zone.</p></section>
   </section>
 
+  <section class="view hidden" data-view="foodmenu"><div id="foodMenuContent" class="food-menu-page"><header class="food-menu-brand"><button type="button" data-goto="events" aria-label="Back to Events">❮</button><div><em>The Wedding of</em><strong>Sam &amp; Jossy</strong></div><button type="button" data-goto="more" aria-label="Wedding menu">•••</button></header><div class="food-menu-hero"><img id="foodMenuHero" hidden alt="Couple’s saved menu photograph"><img class="food-menu-seal" src="assets/seal-logo.png" alt="S &amp; J"><h1 id="foodMenuTitle">Food &amp; Drinks<br>Menu</h1><p id="foodMenuSubtitle">Eat · Drink · Celebrate</p><small>#AlwaysAndForever</small></div><nav id="foodMenuFilters" class="food-menu-filters" aria-label="Menu categories"></nav><p id="foodMenuStatus" role="status" aria-live="polite"></p><div id="foodMenuSections"></div><button id="foodMenuRefresh" type="button">Refresh menu ↻</button><button type="button" data-goto="events">❮ Event Details</button></div></section>
   <section class="view hidden" data-view="more">
+    <button id="roleProfilesMore" class="menu-item" type="button"><span class="menu-icon menu-icon--gold" aria-hidden="true">&#128100;</span><span class="menu-text"><strong>My Team Profile</strong><small>Existing assigned vendors, bridesmaids &amp; groomsmen</small></span><span class="menu-chev" aria-hidden="true">&#10095;</span></button>
     <button class="back-link" data-goto="gallery" type="button">&#10094; Gallery</button>
     <h1 class="page-title">Share Moments</h1>
     <div class="divider"><span></span><i>&#10084;</i><span></span></div>
@@ -1025,6 +1032,7 @@
       <button id="admin-tab-guests" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-guests" data-admin-section="guests" type="button"><span aria-hidden="true">&#128101;</span>Guests &amp; RSVPs</button>
       <button id="admin-tab-guestdetails" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-guestdetails" data-admin-section="guestdetails" type="button">Detailed Guest List</button>
       <button id="admin-tab-aiactions" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-aiactions" data-admin-section="aiactions" type="button">✨ AI Actions · Sam &amp; Jossy</button>
+      <button id="admin-tab-tablesfood" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-tablesfood" data-admin-section="tablesfood" type="button">Tables &amp; Food</button>
       <button id="admin-tab-arrivals" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-arrivals" data-admin-section="arrivals" type="button"><span aria-hidden="true">&#128205;</span>Entrance &amp; Tables</button>
       <button id="admin-tab-content" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-content" data-admin-section="content" type="button"><span aria-hidden="true">&#128247;</span>Guest Content</button>
       <button id="admin-tab-photos" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-photos" data-admin-section="photos" type="button"><span aria-hidden="true">&#9835;</span>Photos &amp; Music</button>
@@ -1049,6 +1057,14 @@
       <div class="arrival-actions"><button id="arrivalCameraStart" type="button">Start QR scanner</button><button id="arrivalCameraStop" type="button" hidden>Stop camera</button><button id="arrivalTorch" type="button" hidden>Flashlight</button><label class="arrival-file">Scan QR image<input id="arrivalImage" type="file" accept="image/jpeg,image/png,image/webp"></label></div><p id="arrivalAdminStatus" role="status" aria-live="polite"></p><div id="arrivalScanReview" hidden><h3 id="arrivalScanName"></h3><p id="arrivalScanDetails"></p><button id="arrivalConfirmQR" type="button">Confirm entrance check-in</button><button id="arrivalScanCancel" type="button">Cancel scan</button></div>
       <h3>Manual check-in &amp; table assignment</h3><label class="field">Find a registered guest by name or phone<input id="arrivalSearch" type="search" autocomplete="off"></label><button id="arrivalAdminRefresh" type="button">Refresh guest list</button><div id="arrivalGuestList" class="arrival-guest-list"></div>
       <form id="arrivalSeatingForm" hidden><h3 id="arrivalSelectedName"></h3><p id="arrivalSelectedStatus"></p><label class="field">Table number or name<input id="arrivalTableNumber" maxlength="60" autocomplete="off"></label><label class="field">Table location / directions<textarea id="arrivalTableLocation" maxlength="400" rows="3" placeholder="Enter confirmed directions, e.g. room, section or landmark"></textarea></label><p>Party size is separate from the assigned table. No table is invented if these fields are blank.</p><div class="arrival-actions"><button id="arrivalSaveSeat" type="submit">Save table assignment</button><button id="arrivalReloadSeat" type="button">Reload saved assignment</button><button id="arrivalConfirmManual" type="button">Confirm manual entrance check-in</button></div><p id="arrivalSeatStatus" role="status"></p></form></section>
+    </div>
+    <div id="admin-panel-tablesfood" class="admin-section-panel hidden" role="tabpanel" aria-labelledby="admin-tab-tablesfood" tabindex="0">
+      <section class="tables-food-admin"><h2>Tables &amp; Food</h2><p>Name your real tables, reserve whole RSVP parties and publish the confirmed catering menu.</p><p id="tablesFoodStatus" role="status" aria-live="polite"></p><button id="tablesFoodReload" type="button">Reload saved plan</button>
+      <form id="tablesFoodForm"><h3>1 · Tables &amp; capacities</h3><p>Seats below are reservations, not entrance counts. Capacity includes each guest’s whole verified RSVP party, or their registration party size when no account-linked RSVP exists.</p><div id="tablesFoodTables"></div><button id="tablesFoodAddTable" type="button">Add table</button>
+      <h3>2 · Automatic seating rules</h3><label class="tf-check"><input id="tablesFoodAuto" type="checkbox">Automatically assign unseated parties after confirmed entrance arrival</label><p>Use an exact saved relation (e.g. GROOMSMAN, BRIDESMAID, VENDOR, SAM’S FAMILY) or an unambiguous Sam / Jossy inviter side. Exact relation takes priority. Tables are tried in the order shown; the whole party must fit. No matching rule or available capacity means unassigned. Existing manual assignments are never moved automatically.</p><div id="tablesFoodRules"></div><button id="tablesFoodAddRule" type="button">Add seating rule</button>
+      <h3>3 · Food &amp; drinks menu</h3><label class="tf-check"><input id="tablesFoodPublish" type="checkbox">Publish this menu to approved guests</label><label class="field">Menu title<input id="tablesFoodTitle" maxlength="100" required></label><label class="field">Subtitle<input id="tablesFoodSubtitle" maxlength="200"></label><div id="tablesFoodHero"></div><p>Publish only confirmed dishes. Reference dish names are optional draft suggestions, not a claim about your catering. Keep allergen notes accurate; guests should ask the caterer if unsure.</p><div id="tablesFoodItems"></div><div class="tf-actions"><button id="tablesFoodAddDish" type="button">Add dish / drink</button><button id="tablesFoodReference" type="button">Reference dish names → unpublished draft</button><button id="tablesFoodPreviewMenu" type="button">Preview menu on this device</button></div><div class="tf-actions"><button type="submit">Save Tables &amp; Food</button><button type="button" data-goto="foodmenu">View published menu</button></div></form>
+      <h3>Assign / edit a guest’s table</h3><p>Admin can assign any registered attendee. Guests see only their own table, after entrance confirmation.</p><label class="field">Search name or phone<input id="tablesFoodGuestSearch" type="search" autocomplete="off"></label><form id="tablesFoodAssign"><label class="field">Registered attendee<select id="tablesFoodGuest"></select></label><p id="tablesFoodGuestInfo"></p><label class="field">Assigned table<select id="tablesFoodGuestTable"></select></label><button type="submit">Save guest table</button></form>
+      <h3>Seat already-arrived, unassigned guests</h3><p>Save rules first. Preview is read-only; Apply rechecks the saved rules, guest parties, capacity and existing assignments atomically.</p><button id="tablesFoodPreviewAllocation" type="button">Preview automatic seating</button><div id="tablesFoodAllocation"></div><button id="tablesFoodApplyAllocation" type="button" hidden>Apply previewed assignments</button><div id="tablesFoodMenuPreview" hidden aria-label="Local draft menu preview"></div></section>
     </div>
     <div id="admin-panel-aiactions" class="admin-section-panel hidden" role="tabpanel" aria-labelledby="admin-tab-aiactions" tabindex="0">
       <section class="companion-actions"><h2>AI Actions · Sam &amp; Jossy</h2><p>Plan a warm welcome, a helpful reminder or a little celebration. Choose what happens, who presents it and when.</p><p class="ai-action-note">These are scheduled in-app companion actions, not unrestricted AI commands. Your message is shown exactly as written. No SMS, payments, approvals, table changes or automatic page navigation. Guests must have the app open; delivery is not guaranteed.</p><p id="aiActionsStatus" role="status" aria-live="polite"></p><button id="aiActionsReload" type="button">Reload saved actions</button>
@@ -1889,7 +1905,7 @@ try{
   <p class="checkin-footnote">Your personal pass does not sign you in. Only an entrance admin can confirm an arrival. Repeat check-ins count once.</p>
 </dialog>
 <script src="guest-access.js?v=245"></script>
-<script src="app.js?v=246"></script>
+<script src="app.js?v=250"></script>
 <script src="app-data.js?v=194"></script>
 <script src="app-social.js?v=241"></script>
 <script src="admin-dashboard.js?v=187"></script>
@@ -1927,9 +1943,11 @@ try{
 <script src="competition-notices.js?v=230"></script>
 <script src="assets/vendor/qrcode-generator-1.4.4.js"></script>
 <script src="assets/vendor/jsqr-1.4.0.js"></script>
-<script src="guest-arrival.js?v=247"></script>
-<script src="role-profiles.js?v=248"></script>
+<script src="guest-arrival.js?v=250"></script>
+<script src="role-profiles.js?v=250"></script>
 <script src="companion-actions-schema.js?v=249"></script>
 <script src="companion-actions.js?v=249"></script>
+<script src="tables-food-schema.js?v=250"></script>
+<script src="tables-food.js?v=250"></script>
 </body>
 </html>

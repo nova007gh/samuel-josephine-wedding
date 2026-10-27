@@ -1,0 +1,7 @@
+const assert=require('node:assert/strict'),S=require('../tables-food-schema');
+const table=(id,name,capacity=5)=>({id,name,capacity,location:'Actual saved directions',enabled:true});
+const data=S.validate({...S.defaults(),autoEnabled:true,tables:[table('sam','Garden'),table('team','Team')],rules:[{id:'side',match:'sam',value:'',enabled:true,tableIds:['sam']},{id:'role',match:'relation',value:'GROOMSMAN',enabled:true,tableIds:['team']}]});
+assert.equal(S.chooseRule(data,'GROOMSMAN','sam').id,'role');assert.equal(S.chooseRule(data,"Sam’s family",'sam').id,'side');assert.equal(S.chooseRule(data,'Unknown',null),null);assert.equal(S.normal(" SAM’S   FAMILY "),"sam's family");
+for(const tables of [[table('x','Garden'),table('y',' garden ')],[table('x','A',0)],[table('x','A',101)]])assert.throws(()=>S.validate({...S.defaults(),tables}));
+assert.throws(()=>S.validate({...data,rules:[...data.rules,{...data.rules[0],id:'duplicate'}]}));assert.throws(()=>S.validate({...data,rules:[{...data.rules[0],tableIds:['missing']}]}));assert.throws(()=>S.validate({...data,menu:{...data.menu,heroPhotoUrl:'https://evil.test/photo.jpg'}}));assert.equal(S.defaults().menu.items.length,0);assert.equal(S.defaults().autoEnabled,false);assert.equal(S.defaults().menu.published,false);
+console.log('PASS saved-table capacity/name/rule/photo validation, explicit exact-relation priority, unknown exclusions and honest unpublished/automatic-off defaults');

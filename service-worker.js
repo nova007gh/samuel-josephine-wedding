@@ -1,6 +1,9 @@
 
-const CACHE = 'sj-wedding-v249-companion-actions';
+const CACHE = 'sj-wedding-v250-tables-food';
 const ASSETS = [
+  './tables-food-schema.js',
+  './tables-food.js',
+  './tables-food.css',
   './companion-actions-schema.js',
   './companion-actions.js',
   './companion-actions.css',

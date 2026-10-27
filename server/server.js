@@ -441,7 +441,8 @@ app.post('/api/admin/logout', requireAdmin, (req, res) => {
 
 const competitionAuth = require('./competitions')({app,db,requireAdmin,publicWrite,multer,storage,uploadsDir:UPLOADS_DIR});
 const onboarding = require('./guest-onboarding')({app,db,publicWrite,normPhone,notifyAll,resolveGuest:guestAccess.resolveGuest});
-require('./guest-arrival')({app,db,requireAdmin,publicWrite,guest:guestAccess.resolveGuest});
+const tablesFood=require('./tables-food')({app,db,requireAdmin,publicWrite,multer,uploadsDir:UPLOADS_DIR});
+require('./guest-arrival')({app,db,requireAdmin,publicWrite,guest:guestAccess.resolveGuest,tablesFood});
 require('./role-profiles')({app,db,requireAdmin,publicWrite,guest:guestAccess.resolveGuest,multer,uploadsDir:UPLOADS_DIR});
 const guestDetails=require('./guest-details')({app,db,requireAdmin,guest:guestAccess.resolveGuest});
 
@@ -1065,7 +1066,7 @@ app.delete('/api/admin/memories/:id', requireAdmin, (req, res) => {
 
 /* ---------- site settings (couple photo, wedding song) ---------- */
 /* keys that must never reach the public settings dump */
-const PRIVATE_SETTINGS = new Set(['adminEmails', 'eventPushSent', 'vendors', 'companionActions']);
+const PRIVATE_SETTINGS = new Set(['adminEmails', 'eventPushSent', 'vendors', 'companionActions', 'tablesFood']);
 app.get('/api/settings', (req, res) => {
   const out = {};
   for (const row of db.prepare('SELECT key, value FROM settings').all())
@@ -1636,7 +1637,7 @@ app.patch('/api/admin/rsvps/:id', requireAdmin, (req, res) => {
 });
 
 app.delete('/api/admin/guests/:id', requireAdmin, (req, res) => {
-  db.transaction(()=>{db.prepare('DELETE FROM role_profile_owners WHERE guestId=?').run(req.params.id);db.prepare(`DELETE FROM guests WHERE id = ?`).run(req.params.id);})();
+  db.transaction(()=>{db.prepare('DELETE FROM role_profile_owners WHERE guestId=?').run(req.params.id);db.prepare('DELETE FROM guest_table_links WHERE guestId=?').run(req.params.id);db.prepare(`DELETE FROM guests WHERE id = ?`).run(req.params.id);})();
   res.json({ ok: true });
 });
 

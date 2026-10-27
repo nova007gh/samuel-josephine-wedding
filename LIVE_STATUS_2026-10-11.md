@@ -1,5 +1,77 @@
 # snybena.com live audit — 11 October 2026
 
+## v250 — Tables & Food, login role entry and safe automatic seating (candidate)
+
+Added GROOMSMAN / BRIDESMAID / VENDOR to the existing Relationship / Invited By
+selector without inferring profile ownership, approval or actual inviter side.
+Moved Wedding Team Login & My Profile off Home onto the guest login screen;
+approved members also have More → My Team Profile for returning self-service.
+Existing explicit admin Profile Access and cookie-based account checks remain.
+
+New **Admin → Tables & Food** manages actual named tables, capacities/directions,
+whole-party reservations for all registered attendees, exact-relation/inviter-side
+rules, and a publish-controlled food menu. New schema defaults are empty tables,
+empty rules, automatic seating off, unpublished empty menu. No capacities, tables,
+locations or catering claims are fabricated from the reference image.
+
+Automatic seating runs only after explicit entrance confirmation, in the existing
+SQLite transaction. Account-linked latest RSVP party size is used when available,
+otherwise registration party size. Exact saved relation rules take priority over
+unambiguous Sam/Jossy side rules. Unknown/mixed connections remain unassigned.
+Only configured enabled tables with room for the entire party are eligible;
+existing/manual assignments are never silently moved. Repeats/concurrent checks
+do not overbook. Already-arrived unassigned guests have read-only preview and
+explicit atomic Apply with a snapshot token that detects changed rules/parties/
+seats/arrivals. No arrival counts are invented from party reservations.
+
+`guest_seating` remains authoritative for scanner/pass/detailed guest list.
+`guest_table_links` adds stable table IDs/source, initially empty. Admin can
+reserve/reassign/clear tables for pending, approved and not-yet-arrived attendees;
+guest visibility still waits for confirmed arrival and exposes only their own
+seat. Occupied tables cannot be removed, capacity reductions below reservations
+are rejected, renames update existing seat records/revisions. The old scanner
+editor cannot bypass configured capacity with a new free-text table name; prior
+manual functionality remains before any plan exists. Seating exceptions do not
+erase confirmed arrivals and are reported for admin follow-up.
+
+Guest **Events → Food & Drinks Menu** uses the reference's cream/gold brand,
+seal, full-photo cards and All / Local Chops / Main Dishes / Drinks / Desserts
+filters, without replacing compact navigation or Gallery access. Admin supplies
+real dish/drink names, descriptions, allergen notes and byte-validated JPEG/PNG/
+WebP photos (8 MB). Uploads stay draft until Save; preview is local. Overall menu
+and per-dish publication are separate explicit switches. The reference's dish
+names are available only via an explicit unpublished-draft shortcut; no sample
+food photos are published or claimed as actual catering. Honest empty states
+remain until the couple confirms/publishes their menu.
+
+`tablesFood` is private in general settings/guide knowledge. New admin settings,
+assignment, preview/apply and photo endpoints require real admin authorization,
+origin checks on writes, no-store and revision/capacity validation. Guest
+`/api/food-menu` is approval-gated and returns only published menu fields, never
+table plans, contacts, draft dishes or unpublished header text. Live setup is
+deliberately untouched pending the real table plan/catering confirmation.
+
+Initial schema/unit and disposable browser suite passed auth/CSRF/revisions,
+private drafts, account-linked RSVP parties, real QR preview vs confirmation,
+duplicate/concurrent capacity safety, manual pending-guest reservations, scanner
+capacity guard, table rename/removal checks, stale-preview rejection, atomic
+allocation, unknown/mixed relation exclusions, image draft/save, safe published
+menu, five widths, login-role move/no ownership and logout privacy. Full existing
+regressions are running. Pre-release originals, online baseline and private config
+hash are under `/root/wedding-pre-v250/`; `server/TABLES_FOOD.md` documents setup.
+
+All **19 pure suites** and **eight disposable browser suites** passed: Tables/Food,
+arrivals, check-in camera, detailed guests, profiles, invitation entry/seal,
+photos/kiss and approval/navigation. Moving team entry exposed a delayed-dialog
+close/reopen race: close now invalidates pending profile work synchronously and
+ignores a stale close event after reopening; the full profile stale-response suite
+passes again. The expanded Tables/Food suite physically clicks the visible login
+button and confirms safe sign-in guidance/no OTP send/no ownership grants.
+The combined regression runner hit its outer time limit before approval finished;
+approval was rerun independently and passed across seven widths. A subsequent
+legacy arrival-editor UI wait was transient; its standalone rerun and final camera
+suite passed. Candidate screenshots reviewed for menu, admin tables and login.
+
 ## v249 — admin AI Actions scheduler for Sam & Jossy (live)
 
 Added **✨ AI Actions · Sam & Jossy** to dashboard section buttons. Admin can

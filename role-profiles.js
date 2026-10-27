@@ -36,8 +36,9 @@
     try{const result=await api('/role-profiles');if(run===generation&&ready()&&dialog.open){if(!Array.isArray(result?.profiles))throw Error('Profiles could not load.');render(result.profiles);}}catch(e){if(run===generation)$('roleProfileStatus').textContent=e.message;}finally{if(run===generation)loading=false;}
   }
   $('roleProfilesOpen').onclick=()=>{returnTo=document.activeElement;document.querySelectorAll('dialog[open]').forEach(d=>d.close());dialog.showModal();load();};
-  $('roleProfileClose').onclick=()=>{if((dirty||busy)&&!confirm('Close and discard this profile draft?'))return;dialog.close();};
-  dialog.addEventListener('cancel',e=>{e.preventDefault();$('roleProfileClose').click();});dialog.addEventListener('close',()=>{reset();returnTo?.focus({preventScroll:true});});
+  $('roleProfilesMore').onclick=()=>$('roleProfilesOpen').click();
+  $('roleProfileClose').onclick=()=>{if((dirty||busy)&&!confirm('Close and discard this profile draft?'))return;reset();dialog.close();};
+  dialog.addEventListener('cancel',e=>{e.preventDefault();$('roleProfileClose').click();});dialog.addEventListener('close',()=>{if(dialog.open)return;reset();returnTo?.focus({preventScroll:true});});
   $('roleProfileReload').onclick=()=>{if(busy||dirty&&!confirm('Discard your unsaved profile edits?'))return;reset();load();};
   $('roleProfileKind').onchange=()=>{if(dirty&&!confirm('Discard your unsaved profile edits?')){$('roleProfileKind').value=selectedKind;return;}selectedKind=$('roleProfileKind').value;reset();load();};
   $('roleProfileSignin').onclick=async()=>{resumeLogin=true;dialog.close();requireCheckIn();showGate(guestLoginScreen);try{const c=await loadOnboarding();showPane(c.otpRequired?'return':'form');}catch{showPane('return');}};

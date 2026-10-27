@@ -11,7 +11,10 @@ module.exports=async({call,evaluate,errors,out})=>{
   assert.equal(await evaluate(`fetch('/api/admin/companion-actions').then(r=>r.status===401&&r.headers.get('cache-control').includes('no-store'))`),true,'AI Actions plan is admin-only/no-store');
   assert.equal(await evaluate(`fetch('/api/companion-actions').then(r=>r.status===403&&r.headers.get('cache-control').includes('no-store'))`),true,'Unverified guests cannot read scheduled announcements');
   assert.equal(await evaluate(`document.getElementById('aiActionsRows').textContent===''&&document.getElementById('aiActionsPreviewHost').textContent===''&&document.querySelector('.companion-action-toast')===null`),true,'No private plan/preview or scheduled notice before approval');
-  for(const view of ['story','events','gallery','gifts','chat','vendors','competitions','bridaltrain']){await evaluate(`switchView(${JSON.stringify(view)})`);assert.equal(await evaluate('currentView'),'home');}
+  assert.equal(await evaluate(`document.querySelector('[data-view="home"] #roleProfilesOpen')===null&&document.getElementById('roleProfilesOpen').closest('#guestLoginScreen')!==null`),true,'Team login is on the login screen, not Home');
+  for(const [p,status]of [['/api/admin/tables-food',401],['/api/food-menu',403]])assert.equal(await evaluate(`fetch(${JSON.stringify(p)}).then(r=>r.status===${status}&&r.headers.get('cache-control').includes('no-store'))`),true,'Tables/Food privacy guard '+p);
+  assert.equal(await evaluate(`document.getElementById('tablesFoodTables').textContent===''&&document.getElementById('tablesFoodGuest').textContent===''&&document.getElementById('foodMenuSections').textContent===''`),true,'No private table/contact list or unpublished menu before approval');
+  for(const view of ['story','events','gallery','gifts','chat','vendors','competitions','bridaltrain','foodmenu']){await evaluate(`switchView(${JSON.stringify(view)})`);assert.equal(await evaluate('currentView'),'home');}
   await evaluate(`document.querySelector('.tab[data-tab="gallery"]').click()`);assert.equal(await evaluate('currentView'),'home');
   assert.equal(await evaluate(`getComputedStyle(document.querySelector('.sj-guide-launch')).display`),'none','Guide locked before approval');
   assert.equal(await evaluate(`document.querySelector('[data-view="gallery"]').inert`),true);

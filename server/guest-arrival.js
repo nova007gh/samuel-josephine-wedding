@@ -2,7 +2,7 @@
 const crypto=require('node:crypto');
 const {connection}=require('./admin-companion-alerts');
 const sideFor=g=>connection(g.relation)||(crypto.createHash('sha256').update(g.id).digest()[0]%2?'sam':'jossy');
-module.exports=({app,db,requireAdmin,publicWrite,guest})=>{
+module.exports=({app,db,requireAdmin,publicWrite,guest,tablesFood})=>{
   db.exec(`CREATE TABLE IF NOT EXISTS guest_seating (guestId TEXT PRIMARY KEY,tableNumber TEXT NOT NULL,location TEXT NOT NULL,revision INTEGER NOT NULL);
     CREATE TABLE IF NOT EXISTS guest_arrivals (guestId TEXT PRIMARY KEY,arrivedAt INTEGER NOT NULL,method TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS guest_arrival_passes (guestId TEXT PRIMARY KEY,code TEXT NOT NULL UNIQUE);`);
@@ -31,6 +31,7 @@ module.exports=({app,db,requireAdmin,publicWrite,guest})=>{
     const old=seat(id);if(body.expectedRevision!==old.revision)throw Object.assign(Error('This table assignment changed. Reload before saving.'),{status:409});
     for(const [key,max]of [['tableNumber',60],['location',400]])if(typeof body[key]!=='string'||body[key].trim().length>max)throw Object.assign(Error('Enter a valid table number/name and location.'),{status:400});
     const tableNumber=body.tableNumber.trim(),location=body.location.trim();if(!tableNumber&&location)throw Object.assign(Error('Add a table number/name before directions.'),{status:400});
+    if(tablesFood)return tablesFood.setLegacySeat(id,{...body,tableNumber,location});
     db.prepare('INSERT INTO guest_seating VALUES (?,?,?,?) ON CONFLICT(guestId) DO UPDATE SET tableNumber=excluded.tableNumber,location=excluded.location,revision=excluded.revision').run(id,tableNumber,location,old.revision+1);return seat(id);
   });
   app.patch('/api/admin/arrivals/:id/seating',requireAdmin,sameOrigin,(req,res)=>{
@@ -47,7 +48,8 @@ module.exports=({app,db,requireAdmin,publicWrite,guest})=>{
     if(!g)throw Object.assign(Error('Guest or entrance pass not found.'),{status:404});
     if(g.status!=='approved')throw Object.assign(Error('Admin approval is required before entrance check-in.'),{status:403});
     const old=arrival(g.id);if(!old)db.prepare('INSERT INTO guest_arrivals VALUES (?,?,?)').run(g.id,Date.now(),qr?'qr':'manual');
-    return {guest:summary(g),alreadyCheckedIn:!!old};
+    let seatingNotice='';try{const allocation=tablesFood?.autoAssign(g.id);if(allocation?.status==='unassigned'&&allocation.reason!=='Automatic seating is off')seatingNotice='Table not assigned: '+allocation.reason+'. Please review Tables & Food.';}catch{seatingNotice='Arrival confirmed; automatic seating is unavailable. Ask admin to assign a table.';}
+    return {guest:summary(g),alreadyCheckedIn:!!old,...(seatingNotice?{seatingNotice}:{})};
   });
   app.post('/api/admin/arrivals/confirm',requireAdmin,sameOrigin,publicWrite,(req,res)=>{try{res.json(confirm(req.body||{}));}catch(error){res.status(error.status||500).json({error:error.status?error.message:'Arrival could not be confirmed. Retry safely.'});}});
 };
