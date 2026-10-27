@@ -1,6 +1,6 @@
 # snybena.com live audit — 11 October 2026
 
-## v251 — reference-matched Food & Drinks UI (candidate)
+## v251 — reference-matched Food & Drinks UI (live)
 
 Refined the guest menu to match the supplied reference composition: curved cream
 wedding-name header, round back/menu controls, gold seal, two-line Food & Drinks /
@@ -43,6 +43,23 @@ overview items per section, all sixth-and-later dishes reachable through View Al
 six widths, 44px+ fitted category tabs, full-image viewer/Escape/focus return and
 safe collapsed descriptions/dietary notes. Candidate full-page screenshot visually
 reviewed. Existing menu content, publication and table APIs are unchanged.
+
+Deployed frontend-only feature **`35c4b0c`** by fast-forwarding the clean live
+checkout; no API/service restart. Cache `sj-wedding-v251-menu-reference` has
+**82 precached assets**. Exact deployed hashes match the five changed frontend
+files/assets. Live GET-only asset/security/health and six-width approval/privacy/
+login-role/navigation checks pass in low-memory browser mode, with zero OTP sends
+or live submissions. Table/menu API authorization/no-store and retired payment
+410 boundaries remain intact. A disposable-illustration layout preview is open
+in Review and explicitly identified as test imagery, not actual catering photos.
+
+Fresh post-deploy DB comparison preserves **161 rows across 21 wedding/chat/
+payment/arrival/ownership/table-link tables**, including settings/menu publication,
+with SQLite integrity `ok` and byte-identical private configuration. No tables,
+menu dishes/photos, roles, assignments or live guest data were changed. Reference
+banquet/food photography is not substituted with unrelated imagery: admin can
+supply the actual images through Tables & Food. Original frontend, online baseline
+and config hash remain under `/root/wedding-pre-v251/`.
 
 ## v250 — Tables & Food, login role entry and safe automatic seating (live)
 
