@@ -1,6 +1,6 @@
 # snybena.com live audit — 11 October 2026
 
-## v249 — admin AI Actions scheduler for Sam & Jossy (candidate)
+## v249 — admin AI Actions scheduler for Sam & Jossy (live)
 
 Added **✨ AI Actions · Sam & Jossy** to dashboard section buttons. Admin can
 choose Welcome/Share photos/Programme/Watch live/RSVP/Wave/Kiss quick starts,
@@ -53,6 +53,31 @@ disabled during initial load/save, previews never publish, failures preserve dra
 and reload/session loss cannot revive stale private responses. The actions test
 allows the documented anti-flood cooldown before expecting the next notice;
 wall-clock-driven guide tests refresh their policy independently of virtual time.
+
+Feature **`10a272b`** committed/pushed and deployed: exact tested flat API
+`server.js`, `companion-actions.js`, shared schema, healthy service restart after
+idle-connection/worker checks, then fast-forwarded the clean frontend checkout.
+No credentials/private config changes. Worker `sj-wedding-v249-companion-actions`
+has **77 precached assets**. Exact frontend hashes match source; live GET-only
+asset/security/health and six-width approval/privacy/role-entry/browser checks
+pass, including private/no-store admin schedule and approval-gated guest schedule
+feeds, empty unverified plan/preview, unchanged seal/navigation, and payment 410.
+No OTP sends, live schedules/messages, guest/profile edits or provider tests were
+performed. Disposable editor screenshot opened in Review. User must sign in as
+admin to use the real panel; no actions were scheduled on the user's behalf.
+
+The first strict post-deploy snapshot comparison flagged two guest status changes.
+Investigated without printing names/contacts or overwriting them: both are
+**pending → approved**, backed by successful authenticated admin guest PATCHes at
+12:41:06 and 12:41:07 UTC, before the API restart at 12:41:39 UTC. These are
+legitimate concurrent admin approvals, not test writes, and were retained.
+Expanded audit preserves **159 baseline rows across 20 tables**, with no guest
+adds/deletes, no other guest-field changes, and all other wedding/chat/payment/
+arrival/ownership/settings rows unchanged. SQLite integrity `ok`, private config
+hash unchanged, no `companionActions` settings row created. Original baseline,
+fresh `deploy.db`, and accepted post-audit online snapshot are under
+`/root/wedding-pre-v249/`. This records the approvals rather than falsely claiming
+byte-for-byte unchanged guest statuses or reverting real admin work.
 
 ## v248 — full-frame photos and companion kiss timing (live)
 
