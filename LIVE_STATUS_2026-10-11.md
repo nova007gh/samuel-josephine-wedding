@@ -1,6 +1,6 @@
 # snybena.com live audit — 11 October 2026
 
-## v247 — admin detailed guest list and private scanner totals (candidate)
+## v247 — admin detailed guest list and private scanner totals (live)
 
 Added **Detailed Guest List** to the existing admin-dashboard section buttons.
 Search/filter registered/approved/pending guests, open contact details, registration
@@ -46,6 +46,32 @@ cleanup. Manual gift regression reran after preserving the original retry-key
 namespace and adding an internal admin attribution marker: admin+guest-cookie
 requests cannot accidentally associate the admin's report to that guest, including
 through the historical receipt fallback. No old gift/payment rows were rewritten.
+
+Feature **`430fbaa`** committed/pushed; deployed exact tested flat API modules
+(`server.js`, `guest-details.js`, `manual-gifts.js`) after checking no active API
+connections or child workers, then fast-forwarded the clean frontend checkout.
+Healthy service restart verified before publishing frontend. Original files and
+online `baseline.db` / fresh `deploy.db` are under `/root/wedding-pre-v247/`.
+Private configuration stayed byte-identical. Cache is
+`sj-wedding-v247-admin-guest-details` with **73 precached assets**.
+
+Final live GET-only asset/security/health audit passed. All six changed frontend
+files match local source hashes. Unauthenticated detailed-list/detail/arrival APIs
+reject requests; dossier responses are no-store and retired payment boundaries
+remain 410. Six-width live browser approval audit passed strengthened public
+count-removal, empty-private-dossier, admin endpoint rejection/no-store checks,
+role-entry/privacy and unchanged unboxed golden heartbeat seal. Zero OTP sends,
+profile/guest edits, live submissions or ownership backfills in these checks.
+The earlier pre-deploy live asset check correctly saw new candidate CSS as 404;
+the full post-deploy asset check passes with all 73 assets available.
+
+Post-deploy comparison against fresh online `deploy.db` preserves **150 existing
+rows across 18 wedding/chat/payment/arrival tables**, SQLite integrity `ok`,
+zero activity ownership rows and zero profile assignments created. (An additional
+guest record already present before this release accounts for the baseline's
+increase from v246; it was preserved, not created by tests.) All live private
+editors require the user's real admin sign-in; a disposable-data dossier preview
+was opened in Review without exposing live guest contacts/messages.
 
 ## v246 — unboxed menu icons, entrance seal and phone lookup (live)
 
