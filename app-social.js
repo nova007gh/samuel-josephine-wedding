@@ -1,4 +1,5 @@
 'use strict';
+const socialStore=window.WeddingStorage?.local||localStorage;
 
 /* =========================================================
    Navigation for menu items / back links
@@ -65,10 +66,10 @@ function gbInitials(name){
 /* likes are remembered per device so a guest can't like twice */
 const LIKED_KEY = 'sj_gb_liked';
 function likedSet(){
-  try { return new Set(JSON.parse(localStorage.getItem(LIKED_KEY) || '[]')); }
+  try { return new Set(JSON.parse(socialStore.getItem(LIKED_KEY) || '[]')); }
   catch { return new Set(); }
 }
-function saveLiked(set){ localStorage.setItem(LIKED_KEY, JSON.stringify([...set])); }
+function saveLiked(set){ socialStore.setItem(LIKED_KEY, JSON.stringify([...set])); }
 
 function renderGuestBook(all){
   if (Array.isArray(all)) latestGuestbook = all;
@@ -1655,10 +1656,10 @@ async function checkAnnouncement(){
     try { ann = JSON.parse(s.announcement || 'null'); } catch {}
     clearInterval(announceRepeatTimer); announceRepeatTimer = null;
     if (!ann?.text) return;
-    const seen = Number(localStorage.getItem('sj_announce_seen') || 0);
+    const seen = Number(socialStore.getItem('sj_announce_seen') || 0);
     if (ann.at > announceSeenAt && ann.at > seen){
       announceSeenAt = ann.at;
-      localStorage.setItem('sj_announce_seen', String(ann.at));
+      socialStore.setItem('sj_announce_seen', String(ann.at));
       showAnnouncement(ann);
     }
     if (ann.everyMin > 0)
@@ -1694,8 +1695,8 @@ function checkEventAnnouncements(now = Date.now()){
   for (const ev of eventStartTimes()){
     if (now < ev.at || now - ev.at > EVENT_WINDOW_MS) continue;
     const key = `sj_event_ann_${ev.at}_${ev.i}`;
-    if (localStorage.getItem(key)) continue;
-    localStorage.setItem(key, '1');
+    if (socialStore.getItem(key)) continue;
+    socialStore.setItem(key, '1');
     showAnnouncement({ text: `${ev.icon} It's time! ${ev.name} begins now — ${ev.time}` });
   }
 }

@@ -13,12 +13,13 @@ const guestLoginScreen = $('#guestLoginScreen');
 const app = $('#app');
 
 /* ---- Guest session helpers ---- */
+const appStore=window.WeddingStorage?.local||localStorage,appSessionStore=window.WeddingStorage?.session||sessionStorage;
 function getGuest(){
-  try { return JSON.parse(localStorage.getItem('sj_guest') || 'null'); }
+  try { const g=JSON.parse(appStore.getItem('sj_guest') || 'null');return g&&typeof g==='object'&&!Array.isArray(g)&&typeof g.name==='string'?g:null; }
   catch { return null; }
 }
-function setGuest(g){ try { localStorage.setItem('sj_guest', JSON.stringify(g)); } catch {} }
-function clearGuest(){ localStorage.removeItem('sj_guest'); localStorage.removeItem('sj_entered'); }
+function setGuest(g){ try { appStore.setItem('sj_guest', JSON.stringify(g)); } catch {} }
+function clearGuest(){ appStore.removeItem('sj_guest'); appStore.removeItem('sj_entered'); }
 
 /* a check-in whose save failed (offline) is retried quietly on the next visit */
 window.addEventListener('load', () => {
@@ -35,7 +36,7 @@ function isAdmin(){ return adminSignedIn; }
 function showGate(screen){
   [welcomeScreen, welcome2Screen, attendScreen, guestLoginScreen].forEach(s => s?.classList.add('hidden'));
   screen.classList.remove('hidden', 'exit');
-  if (screen === guestLoginScreen) showPane('form');
+  if (screen === guestLoginScreen) showPane(getGuest()?.name?'return':'form');
   void screen.offsetWidth;
 }
 function hideGate(screen){
@@ -56,7 +57,7 @@ function enterApp(){
   /* mark the session BEFORE any UI work — a rendering error must never
      leave a checked-in guest looking logged-out on their next visit */
   try {
-    localStorage.setItem('sj_entered', '1');
+    appStore.setItem('sj_entered', '1');
     /* baseline history entry, so the very first Back press lands on Home
        inside the app rather than unloading the page */
     if (!history.state) history.replaceState({ view:'home' }, '', '#home');
@@ -71,8 +72,8 @@ function enterApp(){
 function hasEntered(){
   /* only a guest who actually checked in (gave their details) skips the gates */
   try {
-    return localStorage.getItem('sj_entered') === '1' &&
-      (!!getGuest()?.name || !!localStorage.getItem('sj_admin_token'));
+    return appStore.getItem('sj_entered') === '1' &&
+      (!!getGuest()?.name || !!appStore.getItem('sj_admin_token'));
   } catch { return false; }
 }
 
@@ -655,13 +656,14 @@ loadOnboarding().catch(()=>checkinNotice('Check-in options could not load. Tap E
 $('#guestLoginForm')?.addEventListener('input',()=>{if(!guestEntryBusy)checkinError();});
 function entryKey(){
   if(quickEntryKey)return quickEntryKey;
-  try{quickEntryKey=sessionStorage.getItem('sj_pending_entry_key')||'';}catch{}
-  if(!/^[a-f0-9]{64}$/.test(quickEntryKey)){quickEntryKey=Array.from(crypto.getRandomValues(new Uint8Array(32)),b=>b.toString(16).padStart(2,'0')).join('');try{sessionStorage.setItem('sj_pending_entry_key',quickEntryKey);}catch{}}
+  try{quickEntryKey=appSessionStore.getItem('sj_pending_entry_key')||'';}catch{}
+  if(!/^[a-f0-9]{64}$/.test(quickEntryKey)){quickEntryKey=Array.from(crypto.getRandomValues(new Uint8Array(32)),b=>b.toString(16).padStart(2,'0')).join('');try{appSessionStore.setItem('sj_pending_entry_key',quickEntryKey);}catch{}}
   return quickEntryKey;
 }
 let pendingGuest = null;
 
 function showPane(which){
+  const title=$('#guestLoginTitle');if(title)title.textContent=which==='return'?'Welcome back':which==='otp'?'Verify your sign-in':'Tell us about you';
   $('#guestLoginForm')?.classList.toggle('hidden', which !== 'form');
   $('#returnPane')?.classList.toggle('hidden', which !== 'return');
   $('#otpPane')?.classList.toggle('hidden', which !== 'otp');
@@ -792,7 +794,7 @@ $('#guestLoginForm')?.addEventListener('submit', async e => {
     if(!otpRequired){
       const response=await boundedCheckin(api('/guest-entry',{method:'POST',body:{...pendingGuest,entryKey:entryKey()}}));
       if(!response.guest?.id)throw new Error('Your check-in could not be confirmed. Please try again.');
-      setGuest(response.guest);pendingGuest=null;quickEntryKey='';try{sessionStorage.removeItem('sj_pending_entry_key');}catch{}
+      setGuest(response.guest);pendingGuest=null;quickEntryKey='';try{appSessionStore.removeItem('sj_pending_entry_key');}catch{}
       err.textContent='';enterApp();return;
     }
     const intl = !isGhanaPhone(phone);
@@ -800,7 +802,7 @@ $('#guestLoginForm')?.addEventListener('submit', async e => {
     showOtpPane(phone, 'register', r.delivered, r);
     if (err) err.textContent = '';
   } catch(x){
-    if(x.code==='ENTRY_EXPIRED'){quickEntryKey='';try{sessionStorage.removeItem('sj_pending_entry_key');}catch{}}
+    if(x.code==='ENTRY_EXPIRED'){quickEntryKey='';try{appSessionStore.removeItem('sj_pending_entry_key');}catch{}}
     checkinError(x.message || (otpRequired?'Could not send the code — try again.':'Check-in could not save. Please retry; your details are kept.'));
     pendingGuest = null;
   } finally {
@@ -813,7 +815,7 @@ $('#guestLoginForm')?.addEventListener('submit', async e => {
 /* returning guest — phone + code brings their check-in back */
 $('#returnGuestLink')?.addEventListener('click', async () => {
   if(guestEntryBusy)return;
-  try{const config=await loadOnboarding();if(!config.otpRequired){if(getGuest()?.name){enterApp();return;}showPane('form');checkinError();checkinNotice('On another device? Fill in your name and phone here to continue. No code needed.');$('#guestName').focus();return;}}catch(x){checkinError(x.message);return;}
+  try{const config=await loadOnboarding();if(!config.otpRequired){if(getGuest()?.name&&window.WeddingAccess?.isCheckedIn()){enterApp();return;}showPane('form');checkinError();checkinNotice('On another device? Fill in your name and phone here to continue. No code needed.');$('#guestName').focus();return;}}catch(x){checkinError(x.message);return;}
   $('#guestLoginError').textContent = '';
   $('#returnError').textContent = '';
   $('#returnRegister')?.classList.add('hidden');
@@ -838,8 +840,8 @@ $('#returnSendBtn')?.addEventListener('click', async e => {
      themselves once, let them straight back in without another code */
   const tailOf = v => (String(v || '').match(/\d/g) || []).join('').slice(-9);
   const saved = getGuest();
-  if (saved?.name && tailOf(phone).length === 9 && tailOf(saved.phone) === tailOf(phone)){
-    try { localStorage.setItem('sj_entered', '1'); } catch {}
+  if (window.WeddingAccess?.isCheckedIn() && saved?.name && tailOf(phone).length === 9 && tailOf(saved.phone) === tailOf(phone)){
+    try { appStore.setItem('sj_entered', '1'); } catch {}
     hideGate(guestLoginScreen);
     setTimeout(enterApp, 650);
     return;
@@ -1029,7 +1031,7 @@ function switchView(name, fromHistory = false){
   if(!$$('.view').some(v=>v.dataset.view===name))return;
   if(window.WeddingAccess&&!window.WeddingAccess.canUse()&&!isAdmin()&&!['home','adminlogin'].includes(name))name='home';
   /* guest pages need a check-in; only the admin sign-in page is open to all */
-  if (name !== 'adminlogin' && !ADMIN_VIEWS.has(name) && !isAdmin() && !getGuest()?.name && !gateShowing()){
+  if (name !== 'adminlogin' && !ADMIN_VIEWS.has(name) && !isAdmin() && !getGuest()?.name && !window.WeddingAccess?.isCheckedIn() && !gateShowing()){
     requireCheckIn();
     return;
   }
@@ -1133,7 +1135,7 @@ $$('.segmented button').forEach(btn => {
 const HOW_WE_MET = `What began with a simple Instagram connection became something neither of us could ignore. Samuel saw Josephine's beautiful picture, left the comment "very pretty," and she responded. That small moment opened the door to conversations that quickly became something much deeper. Just three days later, during a FaceTime call, Samuel asked Josephine to be his wife. Four months later, Samuel traveled from Atlanta to Accra to finally meet her in person. The next day, on Josephine's birthday, he surprised her with a proposal and a beautiful diamond ring — and she said YES.`;
 
 const storyTextEl = $('#storyText');
-if (storyTextEl) storyTextEl.textContent = localStorage.getItem('sj_love_story') || HOW_WE_MET;
+if (storyTextEl) storyTextEl.textContent = appStore.getItem('sj_love_story') || HOW_WE_MET;
 
 /* ---------------------------------------------------------
    Countdown to the wedding

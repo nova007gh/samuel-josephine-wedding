@@ -8,7 +8,7 @@
   const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)'),suggestionPeriod=8*60000,waveTimers=new Map();
   let waveEpoch=Date.now(),introWave=0,sessionVisible=false,nextMeetingAt=Date.now()+5000,meetingCount=0,meeting=null,meetingScheduled=false;
   let lastWaveSlot=0,lastInteraction=Date.now(),nextSuggestionAt=Date.now()+suggestionPeriod,suggestionCount=0,suggestion=null,suggestionExpiry=null,burst=null,burstExpiry=null;
-  let actionPolicy={enabled:true,kissEnabled:true,kissDelaySeconds:5,kissIntervalMinutes:5,kissLimit:15,wavesEnabled:true,waveIntervalMinutes:10,suggestionsEnabled:true};
+  const policyDefaults={enabled:true,kissEnabled:true,kissDelaySeconds:5,kissIntervalMinutes:5,kissLimit:15,kissDurationSeconds:5,kissPulseSeconds:1,wavesEnabled:true,waveIntervalMinutes:10,jossyWaveDelaySeconds:60,samWaveDelaySeconds:120,waveDurationSeconds:2.4,suggestionsEnabled:true,suggestionDelaySeconds:480,suggestionIntervalMinutes:8,suggestionDurationSeconds:14,suggestionLimit:3,reminderDurationSeconds:18};let actionPolicy={...policyDefaults},jossyIntroDone=false,samIntroDone=false;
   function element(tag,className,text){const el=document.createElement(tag);if(className)el.className=className;if(text!==undefined)el.textContent=text;return el;}
   const safeView=v=>allowed.has(v)?v:'home';
   function navigate(e,view){e.preventDefault();close();if(typeof switchView==='function')switchView(safeView(view));}
@@ -115,21 +115,21 @@
   }
   async function maybeSuggest(now){
     if(!actionPolicy.enabled||!actionPolicy.suggestionsEnabled)return;
-    if(now<nextSuggestionAt||suggestionCount>=3||!$('sjGuideSuggestionsEnabled').checked||suggestion||alert||meeting||!guestsIdle()||Date.now()-lastInteraction<15000)return;
+    if(now<nextSuggestionAt||suggestionCount>=actionPolicy.suggestionLimit||!$('sjGuideSuggestionsEnabled').checked||suggestion||alert||meeting||!guestsIdle()||Date.now()-lastInteraction<15000)return;
     if(document.querySelector('[data-view="chat"]:not(.hidden)'))return;
-    nextSuggestionAt=now+suggestionPeriod;await refresh();
+    nextSuggestionAt=now+actionPolicy.suggestionIntervalMinutes*60000;await refresh();
     if(!data||Date.now()-lastFetch>120000||!$('sjGuideSuggestionsEnabled').checked||suggestion||alert||meeting||!guestsIdle()||Date.now()-lastInteraction<15000||document.querySelector('[data-view="chat"]:not(.hidden)'))return;
     const row=chooseSuggestion(Date.now());if(!row)return;
     const jossy=suggestionCount%2===0; suggestionCount++;
     suggestion=element('aside','sj-guide-alert sj-companion-suggestion'+(jossy?' sj-companion-suggestion--left':''));suggestion.setAttribute('aria-label',(jossy?'Jossy':'Sam')+' activity suggestion');
     if(K.photo(row.image)){const img=element('img');img.src=row.image;img.alt='';img.addEventListener('error',()=>img.remove(),{once:true});suggestion.append(img);}
     const link=element('a');link.href='#'+safeView(row.view);link.append(element('strong','',(jossy?'Jossy':'Sam')+' suggests'),document.createTextNode(row.title),element('small','','Published details · Open '+(pageNames[row.view]||'Home')+' →'));link.addEventListener('click',e=>{dismissSuggestion();navigate(e,row.view);});
-    const dismiss=element('button','','×');dismiss.type='button';dismiss.setAttribute('aria-label','Dismiss companion suggestion');dismiss.addEventListener('click',dismissSuggestion);suggestion.append(link,dismiss);document.body.append(suggestion);suggestionExpiry=setTimeout(dismissSuggestion,14000);
+    const dismiss=element('button','','×');dismiss.type='button';dismiss.setAttribute('aria-label','Dismiss companion suggestion');dismiss.addEventListener('click',dismissSuggestion);suggestion.append(link,dismiss);document.body.append(suggestion);suggestionExpiry=setTimeout(dismissSuggestion,actionPolicy.suggestionDurationSeconds*1000);
   }
   function wave(launcher){
-    if(!actionPolicy.enabled||!actionPolicy.wavesEnabled)return;
-    if(reducedMotion.matches||!guestsIdle()||suggestion||alert||meeting||Date.now()-lastInteraction<15000)return;
-    launcher.classList.add('sj-guide-waving');waveTimers.set(launcher,setTimeout(()=>{launcher.classList.remove('sj-guide-waving');waveTimers.delete(launcher);},2400));
+    if(!actionPolicy.enabled||!actionPolicy.wavesEnabled)return false;
+    if(reducedMotion.matches||!guestsIdle()||suggestion||alert||meeting||Date.now()-lastInteraction<1000)return false;
+    launcher.style.setProperty('--sj-wave-duration',actionPolicy.waveDurationSeconds+'s');launcher.classList.add('sj-guide-waving');waveTimers.set(launcher,setTimeout(()=>{launcher.classList.remove('sj-guide-waving');waveTimers.delete(launcher);},actionPolicy.waveDurationSeconds*1000));return true;
   }
   function stopMeeting(){
     if(!meeting)return;
@@ -138,7 +138,7 @@
   }
   function presentationAllowed(){return actionPolicy.enabled&&guestsIdle()&&!suggestion&&!alert&&!document.querySelector('[data-view="chat"]:not(.hidden),[data-view="gifts"]:not(.hidden),[data-view="livebroadcast"]:not(.hidden)');}
   function meetingAllowed(){return !reducedMotion.matches&&presentationAllowed();}
-  function startMeeting({scheduled=false}={}){
+  function startMeeting({scheduled=false,duration=actionPolicy.kissDurationSeconds}={}){
     if(meeting||!meetingAllowed()||typeof button.animate!=='function')return;
     clearWaves();if(!scheduled){meetingCount++;nextMeetingAt=Date.now()+actionPolicy.kissIntervalMinutes*60000;}
     const app=$('app').getBoundingClientRect(),bar=document.querySelector('.tabbar').getBoundingClientRect(),center=(app.left+app.right)/2;
@@ -147,7 +147,7 @@
     for(const [id,side] of [['sjGuideLaunchJossy',-1],['sjGuideLaunch',1]]){
       const launcher=$(id),from=getComputedStyle(launcher).transform;launcher.classList.add('sj-guide-meeting');const r=launcher.getBoundingClientRect(),dx=center+side*21-(r.left+r.width/2),dy=y-(r.top+r.height/2);
       const together=`translate(${dx}px,${dy}px)`,kiss=`${together} rotate(${-side*11}deg)`;
-      current.animations.push(launcher.animate([{transform:from,offset:0},{transform:together,offset:.12},{transform:kiss,offset:.18},{transform:kiss,offset:.82},{transform:together,offset:.88},{transform:'translate(0,0)',offset:1}],{duration:5000,easing:'ease-in-out'}));
+      current.animations.push(launcher.animate([{transform:from,offset:0},{transform:together,offset:.12},{transform:kiss,offset:.18},{transform:kiss,offset:.82},{transform:together,offset:.88},{transform:'translate(0,0)',offset:1}],{duration:duration*1000,easing:'ease-in-out'}));
     }
     current.timers.push(setTimeout(()=>{
       if(meeting!==current||!meetingAllowed()){stopMeeting();return;}
@@ -156,23 +156,23 @@
         const heart=element('span','sj-guide-heart','♥'),angle=(i/15)*Math.PI*2;
         heart.style.setProperty('--heart-x',(center-app.left)+'px');heart.style.setProperty('--heart-y',(y-22)+'px');heart.style.setProperty('--heart-dx',(Math.cos(angle)*(55+i%3*18))+'px');heart.style.setProperty('--heart-dy',(-30+Math.sin(angle)*85)+'px');heart.style.setProperty('--heart-delay','0ms');heart.style.setProperty('--heart-turn',((i-7)*8)+'deg');hearts.append(heart);
       }
-      current.hearts=hearts;document.body.append(hearts);
+      hearts.style.setProperty('--sj-kiss-duration',duration+'s');hearts.style.setProperty('--sj-kiss-pulse',actionPolicy.kissPulseSeconds+'s');current.hearts=hearts;document.body.append(hearts);
     },0));
-    current.timers.push(setTimeout(stopMeeting,5000));
+    current.timers.push(setTimeout(stopMeeting,duration*1000));
     current.guard=setInterval(()=>{if(!meetingAllowed())stopMeeting();},250);
   }
   function tickCompanions(){
     syncSession();if(!sessionVisible)return;
     const now=Date.now(),elapsed=now-waveEpoch,slot=Math.floor(elapsed/(actionPolicy.waveIntervalMinutes*60000));
-    const intro=Math.min(2,Math.floor(elapsed/60000));
-    if(intro>introWave){introWave=intro;wave($(intro===1?'sjGuideLaunchJossy':'sjGuideLaunch'));}
+    if(!jossyIntroDone&&elapsed>=actionPolicy.jossyWaveDelaySeconds*1000){jossyIntroDone=wave($('sjGuideLaunchJossy'));}
+    else if(!samIntroDone&&elapsed>=actionPolicy.samWaveDelaySeconds*1000){samIntroDone=wave($('sjGuideLaunch'));}
     else if(slot>lastWaveSlot){lastWaveSlot=slot;wave($(slot%2?'sjGuideLaunchJossy':'sjGuideLaunch'));}
     if(actionPolicy.kissEnabled&&now>=nextMeetingAt&&meetingCount<actionPolicy.kissLimit&&now-lastInteraction>=1000&&meetingAllowed())startMeeting();
     if(!document.hidden)maybeSuggest(now);
   }
   function syncSession(){
     const visible=!document.body.classList.contains('locked')&&!$('app')?.classList.contains('hidden');
-    if(visible&&!sessionVisible){waveEpoch=Date.now();introWave=0;lastWaveSlot=0;if(!meetingScheduled){nextMeetingAt=Date.now()+actionPolicy.kissDelaySeconds*1000;meetingScheduled=true;}}
+    if(visible&&!sessionVisible){waveEpoch=Date.now();introWave=0;jossyIntroDone=false;samIntroDone=false;lastWaveSlot=0;if(!meetingScheduled){nextMeetingAt=Date.now()+actionPolicy.kissDelaySeconds*1000;meetingScheduled=true;}}
     sessionVisible=visible;document.body.classList.toggle('sj-companions-floating',visible);
     if(!visible){stopMeeting();clearWaves();dismissSuggestion();}
   }
@@ -197,9 +197,9 @@
   reducedMotion.addEventListener('change',syncMotion);syncMotion();setInterval(tickCompanions,250);
   window.addEventListener('pagehide',()=>{stopMeeting();clearBurst();clearWaves();dismissSuggestion();});
   window.WeddingCompanions={
-    configure(policy){const changed=JSON.stringify(actionPolicy)!==JSON.stringify(policy);actionPolicy={...policy};if(changed&&meetingCount===0)nextMeetingAt=Date.now()+actionPolicy.kissDelaySeconds*1000;if(!policy.enabled||changed&&!policy.kissEnabled)stopMeeting();if(!policy.enabled||!policy.wavesEnabled)clearWaves();if(!policy.enabled||!policy.suggestionsEnabled)dismissSuggestion();if(!policy.enabled)dismissAlert();},
+    configure(policy){const next={...policyDefaults,...policy},changed=JSON.stringify(actionPolicy)!==JSON.stringify(next);actionPolicy=next;if(changed){nextMeetingAt=Date.now()+(meetingCount===0?actionPolicy.kissDelaySeconds*1000:actionPolicy.kissIntervalMinutes*60000);nextSuggestionAt=Date.now()+(suggestionCount===0?actionPolicy.suggestionDelaySeconds*1000:actionPolicy.suggestionIntervalMinutes*60000);waveEpoch=Date.now();lastWaveSlot=0;}if(!policy.enabled||changed&&!policy.kissEnabled)stopMeeting();if(!policy.enabled||!policy.wavesEnabled)clearWaves();if(!policy.enabled||!policy.suggestionsEnabled)dismissSuggestion();if(!policy.enabled)dismissAlert();},
     allowed:()=>presentationAllowed()&&!meeting&&Date.now()-lastInteraction>=1000,
-    perform(action){if(!meetingAllowed()||meeting||Date.now()-lastInteraction<1000)return false;if(action.type==='kiss'){startMeeting({scheduled:true});return !!meeting;}if(action.type==='wave'){for(const side of action.side==='both'?['sam','jossy']:[action.side]){const launcher=$(side==='jossy'?'sjGuideLaunchJossy':'sjGuideLaunch');launcher.classList.add('sj-guide-waving');waveTimers.set(launcher,setTimeout(()=>{launcher.classList.remove('sj-guide-waving');waveTimers.delete(launcher);},2400));}return true;}return false;},
+    perform(action){if(!meetingAllowed()||meeting||Date.now()-lastInteraction<1000)return false;if(action.type==='kiss'){startMeeting({scheduled:true,duration:action.durationSeconds});return !!meeting;}if(action.type==='wave'){for(const side of action.side==='both'?['sam','jossy']:[action.side]){const launcher=$(side==='jossy'?'sjGuideLaunchJossy':'sjGuideLaunch');launcher.style.setProperty('--sj-wave-duration',action.durationSeconds+'s');launcher.classList.add('sj-guide-waving');waveTimers.set(launcher,setTimeout(()=>{launcher.classList.remove('sj-guide-waving');waveTimers.delete(launcher);},action.durationSeconds*1000));}return true;}return false;},
     stop(){stopMeeting();clearWaves();}
   };
   function checkAlert(){
@@ -211,12 +211,12 @@
     if(document.querySelector('[data-view="voicemsg"]:not(.hidden),[data-view="videomsg"]:not(.hidden)'))return;
     const active=document.activeElement;if(active?.matches('input,textarea,[contenteditable="true"]'))return;
     const seen=read('sj_guide_seen',[]),list=Array.isArray(seen)?seen:[],now=Date.now();
-    const a=data.activities.find(a=>(a.live||(a.at<=now+10*60000&&a.at>=now-20*60000))&&!list.includes(a.id+':'+a.version));if(!a)return;
+    const a=data.activities.find(a=>(a.live||(a.at<=now+(actionPolicy.reminderLeadMinutes??10)*60000&&a.at>=now-(actionPolicy.reminderGraceMinutes??20)*60000))&&!list.includes(a.id+':'+a.version));if(!a)return;
     write('sj_guide_seen',[...list,a.id+':'+a.version].slice(-200));
     alert=element('aside','sj-guide-alert');alert.setAttribute('aria-label','Wedding activity reminder');
     if(K.photo(a.image)){const img=element('img');img.src=a.image;img.alt='';img.addEventListener('error',()=>img.remove(),{once:true});alert.append(img);}
     const link=element('a','',a.title);link.href='#'+safeView(a.view);link.append(element('small','',a.live?'Open the live broadcast →':(a.at>now?'Starts soon':'Scheduled now')+' · Open activity →'));link.addEventListener('click',e=>{dismissAlert();navigate(e,a.view);});
-    const dismiss=element('button','','×');dismiss.type='button';dismiss.setAttribute('aria-label','Dismiss activity reminder');dismiss.addEventListener('click',dismissAlert);alert.append(link,dismiss);document.body.append(alert);expiry=setTimeout(dismissAlert,18000);
+    const dismiss=element('button','','×');dismiss.type='button';dismiss.setAttribute('aria-label','Dismiss activity reminder');dismiss.addEventListener('click',dismissAlert);alert.append(link,dismiss);document.body.append(alert);expiry=setTimeout(dismissAlert,actionPolicy.reminderDurationSeconds*1000);
   }
   setInterval(()=>{if(!document.hidden&&(dialog.open||$('sjGuideAlerts').checked))refresh(true);},60000);
   document.addEventListener('visibilitychange',()=>{syncMotion();tickCompanions();if(!document.hidden&&(dialog.open||$('sjGuideAlerts').checked))refresh(true);});

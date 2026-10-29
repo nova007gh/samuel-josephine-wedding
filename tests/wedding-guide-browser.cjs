@@ -105,7 +105,7 @@ exports.check=async({call,evaluate,errors,out})=>{
   assert.equal(await evaluate(`document.querySelector('.sj-guide-waving')?.id`),'sjGuideLaunchJossy','Jossy waves one minute after entry');
   await evaluate(`new Promise(r=>setTimeout(r,2500))`);
   await evaluate(`window.__clockOffset=120000;window.__guideIntervals[0]()`);
-  assert.equal(await evaluate(`document.querySelector('.sj-guide-waving')?.id`),'sjGuideLaunch','Sam follows at two minutes');
+  assert.equal(await evaluate(`document.querySelector('.sj-guide-waving')?.id`),'sjGuideLaunch',JSON.stringify(await evaluate(`({at:Date.now(),ready:WeddingCompanionActions.ready(),locked:document.body.classList.contains('locked'),meeting:!!document.querySelector('.sj-guide-meeting'),alert:!!document.querySelector('.sj-guide-alert'),active:document.activeElement?.id,access:WeddingAccess.canUse()})`))+' Sam follows at two minutes');
   await evaluate(`new Promise(r=>setTimeout(r,2500))`);
   await evaluate(`window.__clockOffset=305000;window.__guideIntervals[0]();new Promise(r=>setTimeout(r,2500))`);
   assert.equal(await evaluate(`document.querySelectorAll('.sj-guide-meeting').length`),2,'Both companions meet again after five minutes');

@@ -1,6 +1,8 @@
 
-const CACHE = 'sj-wedding-v251-menu-reference';
+const CACHE = 'sj-wedding-v252-session-timing';
 const ASSETS = [
+  './browser-storage.js',
+  './session-restore.css',
   './food-menu-reference.css',
   './assets/menu-celebration.svg',
   './tables-food-schema.js',

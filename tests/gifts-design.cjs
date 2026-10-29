@@ -57,7 +57,7 @@ const delay = ms => new Promise(resolve=>setTimeout(resolve,ms));
     return r.result.value;
   };
   await call('Page.enable'); await call('Runtime.enable');
-  if(process.env.WEDDING_E2E_APPROVED_SUITE==='photoskiss')await call('Page.addScriptToEvaluateOnNewDocument',{source:`window.__kissTick=null;window.__kissOffset=0;const realNow=Date.now;Date.now=()=>realNow()+window.__kissOffset;const realInterval=window.setInterval;window.setInterval=function(fn,ms,...args){if(fn.name==='tickCompanions'){window.__kissTick=fn;window.__kissTickMs=ms;return 0;}return realInterval(fn,ms,...args);};`});
+  if(['photoskiss','timings'].includes(process.env.WEDDING_E2E_APPROVED_SUITE))await call('Page.addScriptToEvaluateOnNewDocument',{source:`window.__kissTick=null;window.__kissOffset=0;const realNow=Date.now;Date.now=()=>realNow()+window.__kissOffset;const realInterval=window.setInterval;window.setInterval=function(fn,ms,...args){if(fn.name==='tickCompanions'){window.__kissTick=fn;window.__kissTickMs=ms;return 0;}return realInterval(fn,ms,...args);};`});
    if(process.argv.includes('--guide')||process.env.WEDDING_E2E_APPROVED_SUITE==='guide')await require('./wedding-guide-browser.cjs').setup({call});
    if(process.env.WEDDING_E2E_ADMIN_COMPANIONS_ONLY==='1')await require('./admin-companions-e2e.cjs').setup({call});
   if(process.argv.includes('--refresh')){

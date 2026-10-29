@@ -1,5 +1,38 @@
 # snybena.com live audit — 11 October 2026
 
+## v252 — persistent guest restoration and editable companion timing (candidate)
+
+Returning guests now restore their identity directly from the existing rolling
+400-day HTTP-only session cookie on DOM readiness, even when local/session storage
+is blocked or full. App-scoped storage fallback avoids fatal startup exceptions;
+no native Storage prototype is changed. A bounded startup screen, foreground/
+bfcache/online refresh and reconnect-not-registration copy preserve sign-in through
+transient network errors while access remains fail-closed. Cached names/phones
+never authenticate; missing-cookie users must verify. Explicit logout still
+revokes the server session. Browser-cleared cookies, private/in-app browser
+isolation and different devices cannot safely inherit another browser's identity.
+Production investigation found 58/58 guest sessions active; routine expiry did
+not explain the reported repeated prompts. No backend authentication changes.
+
+Admin AI Actions now exposes all automatic kiss/wave/suggestion/reminder timing,
+including independent first Sam/Jossy waves, animation durations and neon pulse.
+Scheduled actions preserve exact seconds and honour 3–60 second durations. Legacy
+policies receive missing defaults without rewriting saved settings. All approval,
+idle, reduced-motion and foreground-only restrictions remain. Existing appearance,
+manual gifts, ownership, physical arrivals, seating and food publication remain
+unchanged. See `server/COMPANION_ACTIONS.md` for operator details.
+
+Twenty pure suites pass, including denied/quota storage and every timing boundary/
+legacy policy compatibility. Disposable session, custom-timing (including changed
+interval re-anchoring without unchanged-poll resets), actions, photos/kisses,
+guide/lifecycle, profiles, camera check-in, Tables/Food and approval suites pass.
+The guide's synthetic-clock wave assertion initially failed, then passed on its
+diagnostic rerun without a production change; diagnostic state is retained on
+that assertion. Fresh online SQLite,
+tracked frontend, backend shared-schema and private-config hash backups were
+created under `/root/wedding-pre-v252/` before deployment. No provider/OTP messages
+are authorised or sent by these tests.
+
 ## v251 — reference-matched Food & Drinks UI (live)
 
 Refined the guest menu to match the supplied reference composition: curved cream

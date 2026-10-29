@@ -10,15 +10,16 @@
 const API_BASE = '/api';
 const ADMIN_TOKEN_KEY = 'sj_admin_token';
 const POLL_MS = 15000;
+const apiStore = window.WeddingStorage?.local || localStorage;
 
 /* ---------- device identity for the security log ----------
    A random per-browser id + the connection's effective type ride along
    on every API call so the server can attribute events to a device. */
 const DEVICE_ID = (() => {
-  let id = localStorage.getItem('sj_device_id');
+  let id = apiStore.getItem('sj_device_id');
   if (!id){
     id = (crypto.randomUUID ? crypto.randomUUID() : 'd' + Math.random().toString(36).slice(2) + Date.now().toString(36));
-    try { localStorage.setItem('sj_device_id', id); } catch {}
+    try { apiStore.setItem('sj_device_id', id); } catch {}
   }
   return id;
 })();
@@ -37,13 +38,13 @@ function newestFirst(field){
 }
 
 /* ---------- admin session ---------- */
-let adminToken = localStorage.getItem(ADMIN_TOKEN_KEY) || null;
+let adminToken = apiStore.getItem(ADMIN_TOKEN_KEY) || null;
 const authListeners = [];
 
 function setAdminToken(token){
   adminToken = token || null;
-  if (adminToken) localStorage.setItem(ADMIN_TOKEN_KEY, adminToken);
-  else localStorage.removeItem(ADMIN_TOKEN_KEY);
+  if (adminToken) apiStore.setItem(ADMIN_TOKEN_KEY, adminToken);
+  else apiStore.removeItem(ADMIN_TOKEN_KEY);
   authListeners.forEach(cb => { try { cb(!!adminToken); } catch(err){ console.warn(err); } });
 }
 
@@ -448,13 +449,13 @@ async function patchSettings(fields){
 /* ---------- guest's own uploads (edit while still pending) ---------- */
 const MY_UPLOADS_KEY = 'sj_my_uploads';
 function myUploadIds(){
-  try { return JSON.parse(localStorage.getItem(MY_UPLOADS_KEY) || '[]'); } catch { return []; }
+  try { return JSON.parse(apiStore.getItem(MY_UPLOADS_KEY) || '[]'); } catch { return []; }
 }
 function rememberUpload(kind, id){
   if (!id) return;
   const list = myUploadIds();
   list.push({ kind, id });
-  localStorage.setItem(MY_UPLOADS_KEY, JSON.stringify(list.slice(-60)));
+  apiStore.setItem(MY_UPLOADS_KEY, JSON.stringify(list.slice(-60)));
 }
 async function fetchMyUploads(){
   const list = myUploadIds();
@@ -474,7 +475,7 @@ async function editMyMemory(id, data){
 }
 /* guests can remove their own submissions while still pending */
 function forgetUpload(id){
-  localStorage.setItem(MY_UPLOADS_KEY, JSON.stringify(myUploadIds().filter(u => u.id !== id)));
+  apiStore.setItem(MY_UPLOADS_KEY, JSON.stringify(myUploadIds().filter(u => u.id !== id)));
 }
 async function deleteMyMemory(id){
   await api(`/memories/${encodeURIComponent(id)}`, { method: 'DELETE' });

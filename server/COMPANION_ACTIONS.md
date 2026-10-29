@@ -18,11 +18,19 @@ companion scheduler, not an autonomous agent or command execution interface.
 5. Edit, Pause/Resume or Remove saved actions. The top master checkbox pauses
    all scheduled actions and automatic waves/kisses/suggestions after saving.
 
-The Everyday companion behaviour form controls automatic kiss enabled/first
-delay/interval/visit cap, automatic waves/interval and published-activity
-suggestions. Default behaviour remains first kiss after 5 seconds, then every
-5 minutes, maximum 15 per page visit; kisses last 5 seconds with 1-second neon
-pulses. Waves last about 2.4 seconds. Text messages have a 5–20 second lifetime.
+The Everyday companion behaviour form controls kiss first delay, interval, visit
+cap, duration and neon pulse; independent first Sam/Jossy wave delays, recurring
+wave interval and duration; suggestion first delay, interval, lifetime and cap;
+and programme reminder lead time, grace window and lifetime. Existing saved plans
+receive defaults for missing fields on read, without rewriting their saved data.
+Default behaviour remains first kiss after 5 seconds, then every 5 minutes,
+maximum 15 per page visit; kisses last 5 seconds with 1-second neon pulses.
+Jossy/Sam first wave after 60/120 seconds; waves last 2.4 seconds. Suggestions
+start after 8 minutes, recur every 8 minutes, last 14 seconds and cap at 3 per
+visit. Reminders use a 10-minute lead, 20-minute grace and 18-second lifetime.
+Scheduled messages, waves and kisses each honour their 3–60 second duration;
+the editor preserves exact scheduled seconds. Changed policies re-anchor future
+timers; idle/approval/visibility safeguards can defer actual presentation.
 Guide questions and the user's explicit controls remain usable when schedules
 are paused. Private host-activity alerts remain a separate admin-only feature;
 they are not guest announcements or proof of physical arrival.

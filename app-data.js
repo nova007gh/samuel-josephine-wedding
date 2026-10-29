@@ -1,4 +1,5 @@
 'use strict';
+const dataStore=window.WeddingStorage?.local||localStorage;
 
 /* =========================================================
    Server data layer is in api-data.js
@@ -565,7 +566,7 @@ window.addEventListener('online',()=>{retrySitePhotos();syncSiteSettings();});
 /* Retire the legacy photo map: only confirmed settings determine visible photos. */
 function cacheSitePhotos(){
   try {
-    localStorage.removeItem('sj_site_photos');
+    dataStore.removeItem('sj_site_photos');
   } catch {}
 }
 
@@ -930,7 +931,7 @@ function getStoryLikes(){
   try { return JSON.parse(siteSettings.storyLikes || '{}') || {}; } catch { return {}; }
 }
 function myStoryLikes(){
-  try { return JSON.parse(localStorage.getItem('sj_story_likes') || '[]'); } catch { return []; }
+  try { return JSON.parse(dataStore.getItem('sj_story_likes') || '[]'); } catch { return []; }
 }
 
 const TL_MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
@@ -1096,7 +1097,7 @@ document.addEventListener('click', async e => {
   if (countEl) countEl.textContent = Math.max(0, (parseInt(countEl.textContent, 10) || 0) + delta);
   btn.classList.toggle('liked', !liked);
   if (liked) mine.delete(id); else mine.add(id);
-  localStorage.setItem('sj_story_likes', JSON.stringify([...mine]));
+  dataStore.setItem('sj_story_likes', JSON.stringify([...mine]));
   try {
     const res = await likeStoryItem(id, delta);
     if (countEl) countEl.textContent = res.likes;
@@ -1280,7 +1281,7 @@ function renderHomeLikes(){
   const countEl = document.getElementById('homeLikeCount');
   if (!countEl) return;
   countEl.textContent = parseInt(siteSettings.homeLikes || '0', 10) || 0;
-  homeHeart?.classList.toggle('liked', localStorage.getItem('sj_home_liked') === '1');
+  homeHeart?.classList.toggle('liked', dataStore.getItem('sj_home_liked') === '1');
 }
 homeHeart?.addEventListener('click', async () => {
   if (isAdmin()){
@@ -1299,13 +1300,13 @@ homeHeart?.addEventListener('click', async () => {
       }
     } catch {}
   }
-  const mine = localStorage.getItem('sj_home_liked') === '1';
+  const mine = dataStore.getItem('sj_home_liked') === '1';
   const delta = mine ? -1 : 1;
   const countEl = document.getElementById('homeLikeCount');
   homeHeart.classList.toggle('liked', !mine);
   heartBurst(homeHeart);
   if (countEl) countEl.textContent = Math.max(0, (parseInt(countEl.textContent, 10) || 0) + delta);
-  localStorage.setItem('sj_home_liked', mine ? '0' : '1');
+  dataStore.setItem('sj_home_liked', mine ? '0' : '1');
   try {
     const res = await likeHome(delta);
     if (countEl) countEl.textContent = res.likes;
