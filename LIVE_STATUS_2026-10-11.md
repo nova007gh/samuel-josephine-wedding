@@ -1,6 +1,6 @@
 # snybena.com live audit — 11 October 2026
 
-## v252 — persistent guest restoration and editable companion timing (candidate)
+## v252 — persistent guest restoration and editable companion timing (live)
 
 Returning guests now restore their identity directly from the existing rolling
 400-day HTTP-only session cookie on DOM readiness, even when local/session storage
@@ -32,6 +32,23 @@ that assertion. Fresh online SQLite,
 tracked frontend, backend shared-schema and private-config hash backups were
 created under `/root/wedding-pre-v252/` before deployment. No provider/OTP messages
 are authorised or sent by these tests.
+
+Deployed feature **`5ddbef4`** by fast-forwarding the clean live checkout and
+copying the shared companion timing schema to `/opt/wedding-api/`, followed by a
+successful `wedding-api` restart (the Node process caches this shared module).
+No backend auth code, SQL migrations or saved policies were changed. Cache
+`sj-wedding-v252-session-timing` contains **84 precached assets**. GET-only live
+asset/security/health/privacy checks and six-width browser approval/navigation/
+team-entry checks pass, with zero live OTP sends or submissions. All **13 released
+frontend files** match local SHA-256 hashes exactly.
+
+Post-deployment online SQLite snapshot and preservation report are retained under
+`/root/wedding-pre-v252/`. **162 rows across 22 wedding-data tables** are identical,
+including guests, uploads, gifts/payments, settings/publication, ownership, Chat,
+arrivals and seating links; SQLite integrity is `ok`, private configuration is
+byte-identical. Session/OTP/security/presence infrastructure tables are excluded
+from the content comparison because legitimate requests can update them. The
+same-browser/cookie-retention limitation remains; verification is not bypassed.
 
 ## v251 — reference-matched Food & Drinks UI (live)
 
