@@ -1,5 +1,24 @@
 # snybena.com live audit — 11 October 2026
 
+## v254 — blended Bridal Train banner title (candidate)
+
+At the user's request, the title/subtitle blend into the banner rather than sit
+in a separate full-width block. The contained couple photo fades gently into
+cream at its lower edge; the gold title overlaps that lower edge on the left,
+with a transparent radial cream backing for legibility. Navigation returns to
+the upper corners, and the full-photo button remains visible at the upper centre.
+Faces remain in the clear upper image; no crop is introduced. Existing compact
+portrait thumbnails, original-photo mappings, fallback behaviour and saved
+Bridal Train content are unchanged. This is CSS-only apart from asset/cache
+versions: no API restart, auth or data writes.
+
+All 20 pure suites and the complete disposable Bridal Train regression pass,
+including lower-banner blending, clear upper photo, full-frame fitting, original
+viewer/fallback, editor safety and responsive layouts. Candidate composition was
+visually reviewed using the actual saved couple photo (test portraits/content
+remain disposable fixtures, not published guests). Original frontend, online DB
+and private-config hash: `/root/wedding-pre-v254/`.
+
 ## v253 — full-frame Bridal Train banner and accurate portrait previews (live)
 
 Bridal Train preserves the saved 10 bridesmaids and 10 groomsmen, names, roles,
