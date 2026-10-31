@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v254-bridal-blended-banner';
+const CACHE = 'sj-wedding-v255-bridal-reference-banner';
 const ASSETS = [
   './browser-storage.js',
   './session-restore.css',

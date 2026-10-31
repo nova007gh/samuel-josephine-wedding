@@ -1,5 +1,18 @@
 # snybena.com live audit — 11 October 2026
 
+## v255 — screenshot-matched Bridal Train banner (candidate)
+
+The user supplied the original reference again. The title now overlays the
+lower-left portion of the contained couple photo within the same bounded banner
+row, rather than extending into a separate area below it. A bottom cream fade,
+left-aligned title composition, lower-left photo-view label and immediate
+Bridesmaids section match that reference structure. CSS grid overlap accommodates
+wrapped titles without expanding the banner unexpectedly. Full-frame thumbnails,
+saved originals/viewers and wedding data are untouched. Actual couple-photo
+composition visually reviewed; all 20 pure suites and full disposable Bridal
+Train regression pass. Backup: `/root/wedding-pre-v255/`. Frontend CSS/cache
+versions only; no API restart or live submissions.
+
 ## v254 — blended Bridal Train banner title (live)
 
 At the user's request, the title/subtitle blend into the banner rather than sit
