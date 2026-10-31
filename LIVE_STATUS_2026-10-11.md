@@ -1,6 +1,6 @@
 # snybena.com live audit — 11 October 2026
 
-## v253 — full-frame Bridal Train banner and accurate portrait previews (candidate)
+## v253 — full-frame Bridal Train banner and accurate portrait previews (live)
 
 Bridal Train preserves the saved 10 bridesmaids and 10 groomsmen, names, roles,
 photo mappings and compact five-across thumbnail grid. The couple banner now
@@ -19,6 +19,24 @@ Evelyn has no uploaded portrait. The banner is 1706×2560 with an 853×1280 prev
 saved portraits and all content remain unchanged. Frontend-only: no API code,
 settings writes, auth changes or provider messages. Fresh frontend/online DB/
 private-config hash backup: `/root/wedding-pre-v253/`.
+
+All 20 pure suites and disposable Bridal Train, full-photo/default-companion and
+approval/navigation browser regressions pass. New checks cover heading/navigation
+not overlapping the banner, visible touch viewer control, exact saved-original
+viewer mapping, failed thumbnail fallback, unavailable-original messaging and
+uncropped thumbnail fitting across phone/tablet/desktop widths. All **20 saved
+photos and 20 display previews** return HTTP 200 with image content types in a
+HEAD-only live media audit.
+
+Deployed frontend-only feature **`a0fef2d`** by fast-forwarding the clean live
+checkout; no API restart. All four released frontend files match local SHA-256
+hashes; cache `sj-wedding-v253-bridal-full-photos` retains 84 precached assets.
+Live GET-only asset/security/health and six-width approval/privacy/role/navigation
+checks pass, with no OTP sends or submissions. Fresh post-deploy online DB audit
+preserves **162 rows across 22 wedding-data tables**, including the exact saved
+Bridal Train setting and photo mappings. SQLite integrity is `ok`; private config
+is byte-identical. Original frontend, database snapshots and preservation report
+remain under `/root/wedding-pre-v253/`.
 
 ## v252 — persistent guest restoration and editable companion timing (live)
 
