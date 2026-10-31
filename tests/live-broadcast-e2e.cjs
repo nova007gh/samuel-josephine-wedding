@@ -8,7 +8,7 @@ module.exports=async({call,evaluate,wait,request,out})=>{
   await wait(`document.querySelector('#lbCountdownNote')?.textContent==='Broadcast details coming soon'`);
   assert.equal(await evaluate(`document.querySelectorAll('#liveBroadcastContent iframe').length`),0,'No provider loads before Play');
   assert.equal(await evaluate(`document.querySelectorAll('.tabbar [data-tab]').length`),5);
-  for(const width of [320,375,430,1024]){await call('Emulation.setDeviceMetricsOverride',{width,height:1100,deviceScaleFactor:1,mobile:width<600});assert.equal(await evaluate(`document.documentElement.scrollWidth===innerWidth`),true,'Broadcast guest fits '+width);}
+  for(const width of [320,375,430,1024]){await call('Emulation.setDeviceMetricsOverride',{width,height:1100,deviceScaleFactor:1,mobile:width<600});assert.equal(await evaluate(`document.documentElement.scrollWidth===innerWidth`),true,'Broadcast guest fits '+width);assert.equal(await evaluate(`(()=>{const hero=document.querySelector('.showcase-hero'),img=hero.querySelector('img'),copy=hero.querySelector('.lb-hero-copy'),h=hero.getBoundingClientRect(),r=img.getBoundingClientRect(),c=copy.getBoundingClientRect();return getComputedStyle(img).objectFit==='contain'&&r.left===h.left&&r.width<h.width*.7&&c.left>h.left+h.width*.4&&c.top>=h.top&&c.bottom<=h.bottom+1&&getComputedStyle(hero,'::before').backgroundImage.includes('linear-gradient');})()`),true,'Matching full-photo-left blended-heading-right broadcast banner at '+width);}
   await call('Emulation.setDeviceMetricsOverride',{width:430,height:1100,deviceScaleFactor:1,mobile:true});
   const initialShot=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:true});fs.writeFileSync(path.join(out,'live-broadcast-coming-soon.png'),Buffer.from(initialShot.data,'base64'));
   await evaluate(`switchView('events');document.querySelector('[data-view="events"] [data-goto="livebroadcast"]').click()`);assert.equal(await evaluate('currentView'),'livebroadcast');
@@ -76,6 +76,7 @@ module.exports=async({call,evaluate,wait,request,out})=>{
   assert.equal(await evaluate(`document.getElementById('liveBroadcastEditor').elements.title.value`),'Local unsaved draft');
   await evaluate(`switchView('admin');document.querySelector('[data-admin-section="broadcast"]').click();document.getElementById('liveBroadcastEditor').requestSubmit()`);
   await wait(`document.getElementById('liveBroadcastEditorStatus').textContent.includes('changed on another device')`);
+  await wait(`!document.querySelector('#liveBroadcastEditor [data-lb-action="reload"]').disabled&&document.getElementById('liveBroadcastContent').getAttribute('aria-busy')==='false'`);
   await evaluate(`window.__lbConfirm=confirm;confirm=()=>true;document.querySelector('#liveBroadcastEditor [data-lb-action="reload"]').click()`);
   await wait(`document.getElementById('liveBroadcastEditor').elements.title.value==='Remote broadcast change'`);
   await evaluate(`confirm=window.__lbConfirm;(async()=>{await api('/admin/logout',{method:'POST',admin:true});setAdminToken(null);switchView('livebroadcast');})()`);

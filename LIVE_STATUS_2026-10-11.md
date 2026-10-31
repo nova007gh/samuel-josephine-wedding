@@ -1,5 +1,27 @@
 # snybena.com live audit — 11 October 2026
 
+## v256 — shared left-photo/right-heading banners (candidate)
+
+The user supplied a Live Broadcast visual reference and explicitly selected
+**Both pages** when asked whether to apply it to Bridal Train, Live Broadcast or
+both, retaining actual couple photography and existing wedding details. New
+`couple-banners.css`, loaded after existing full-frame styles, gives both pages
+the same full-width cream banner with contained photo on the left, a soft
+horizontal cream blend and large gold script heading on the right. Bridal Train
+keeps its own title; Live keeps its existing Our / Live / Broadcast lettering.
+Navigation stays in the upper corners; Bridal's original-photo viewer remains
+available. All portrait thumbnails, full-original links and saved photos remain
+unchanged. No sample venue, dates/times, viewer counts, live status or imagery is
+copied from the reference. No API/auth changes or saved-content writes.
+
+All 20 pure suites and complete Bridal Train, Broadcast, full-photo/default-kiss
+and approval/navigation disposable regressions pass. Broadcast conflict/reload
+test now waits for the existing disabled/loading guards before clicking Reload,
+avoiding a test race; production editor code is unchanged. Shared banner layout
+and actual couple-photo candidate composition were visually reviewed. Fresh
+frontend, online DB and private-config hash
+backup: `/root/wedding-pre-v256/`.
+
 ## v255 — screenshot-matched Bridal Train banner (live)
 
 The user supplied the original reference again. The title now overlays the
