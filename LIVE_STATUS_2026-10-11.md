@@ -1,6 +1,6 @@
 # snybena.com live audit — 11 October 2026
 
-## v255 — screenshot-matched Bridal Train banner (candidate)
+## v255 — screenshot-matched Bridal Train banner (live)
 
 The user supplied the original reference again. The title now overlays the
 lower-left portion of the contained couple photo within the same bounded banner
@@ -12,6 +12,12 @@ saved originals/viewers and wedding data are untouched. Actual couple-photo
 composition visually reviewed; all 20 pure suites and full disposable Bridal
 Train regression pass. Backup: `/root/wedding-pre-v255/`. Frontend CSS/cache
 versions only; no API restart or live submissions.
+
+Deployed **`f8a827b`** by clean fast-forward. All three released frontend hashes
+match; 84-asset live security/privacy/health checks pass. Cache is
+`sj-wedding-v255-bridal-reference-banner`. Post-deploy online audit preserves
+162 rows across 22 wedding-data tables, private configuration unchanged and
+SQLite integrity `ok`; snapshots/report retained in the backup directory.
 
 ## v254 — blended Bridal Train banner title (live)
 
