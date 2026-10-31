@@ -1,6 +1,6 @@
 # snybena.com live audit — 11 October 2026
 
-## v254 — blended Bridal Train banner title (candidate)
+## v254 — blended Bridal Train banner title (live)
 
 At the user's request, the title/subtitle blend into the banner rather than sit
 in a separate full-width block. The contained couple photo fades gently into
@@ -18,6 +18,14 @@ viewer/fallback, editor safety and responsive layouts. Candidate composition was
 visually reviewed using the actual saved couple photo (test portraits/content
 remain disposable fixtures, not published guests). Original frontend, online DB
 and private-config hash: `/root/wedding-pre-v254/`.
+
+Deployed frontend feature **`21599a9`** by clean fast-forward, without restarting
+the API. All three released frontend files match local SHA-256 hashes. Cache
+`sj-wedding-v254-bridal-blended-banner` retains 84 precached assets; live GET-only
+asset/security/privacy/health checks pass. Post-deploy online DB audit preserves
+162 rows across 22 wedding-data tables, with unchanged private configuration and
+SQLite integrity `ok`. No live OTPs, submissions, photo replacements or guest
+record changes were made.
 
 ## v253 — full-frame Bridal Train banner and accurate portrait previews (live)
 
