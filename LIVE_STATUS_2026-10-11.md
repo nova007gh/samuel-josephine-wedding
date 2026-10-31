@@ -1,6 +1,6 @@
 # snybena.com live audit — 11 October 2026
 
-## v256 — shared left-photo/right-heading banners (candidate)
+## v256 — shared left-photo/right-heading banners (live)
 
 The user supplied a Live Broadcast visual reference and explicitly selected
 **Both pages** when asked whether to apply it to Bridal Train, Live Broadcast or
@@ -21,6 +21,14 @@ avoiding a test race; production editor code is unchanged. Shared banner layout
 and actual couple-photo candidate composition were visually reviewed. Fresh
 frontend, online DB and private-config hash
 backup: `/root/wedding-pre-v256/`.
+
+Deployed frontend feature **`efd4c20`** by clean fast-forward, without an API
+restart. All three released frontend hashes match. Cache
+`sj-wedding-v256-shared-couple-banners` has 85 precached assets; live GET-only
+asset/security/health and six-width browser approval/privacy/navigation checks
+pass with zero OTP sends or submissions. Post-deploy online DB comparison
+preserves 162 rows across 22 wedding-data tables; private configuration is
+unchanged and SQLite integrity is `ok`. Snapshots/report retained with the backup.
 
 ## v255 — screenshot-matched Bridal Train banner (live)
 
