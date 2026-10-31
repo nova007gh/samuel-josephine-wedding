@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v252-session-timing';
+const CACHE = 'sj-wedding-v253-bridal-full-photos';
 const ASSETS = [
   './browser-storage.js',
   './session-restore.css',

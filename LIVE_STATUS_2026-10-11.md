@@ -1,5 +1,25 @@
 # snybena.com live audit — 11 October 2026
 
+## v253 — full-frame Bridal Train banner and accurate portrait previews (candidate)
+
+Bridal Train preserves the saved 10 bridesmaids and 10 groomsmen, names, roles,
+photo mappings and compact five-across thumbnail grid. The couple banner now
+has a bounded, fully contained photo with navigation above and the title/subtitle
+below: no heading, fade or floral overlay covers the photograph. View photo stays
+visible on touchscreens and opens the original saved banner image. Portraits
+remain full-frame contained previews opening their own originals. A failed
+preview retries its original, including the banner; an unavailable portrait
+shows initials and explicit retry guidance rather than a broken-image/duplicate
+name. Available portraits retain accessible named buttons without redundant alt
+text. Missing portraits still say Portrait coming soon; no substitute identities.
+
+Read-only production media inspection confirmed all 19 saved portrait originals
+and the couple banner exist, with proportion-preserving display previews.
+Evelyn has no uploaded portrait. The banner is 1706×2560 with an 853×1280 preview;
+saved portraits and all content remain unchanged. Frontend-only: no API code,
+settings writes, auth changes or provider messages. Fresh frontend/online DB/
+private-config hash backup: `/root/wedding-pre-v253/`.
+
 ## v252 — persistent guest restoration and editable companion timing (live)
 
 Returning guests now restore their identity directly from the existing rolling
