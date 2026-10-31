@@ -26,8 +26,8 @@ module.exports=async({call,evaluate,wait,request,out,errors,token})=>{
     for(const view of ['gallery','story','livebroadcast','bridaltrain']){await evaluate(`switchView(${JSON.stringify(view)});new Promise(r=>setTimeout(r,250))`);assert.equal(await evaluate(`document.documentElement.scrollWidth<=innerWidth+1`),true,view+' fits '+width);}
   }
   await evaluate(`switchView('livebroadcast')`);await wait(`document.querySelector('#liveBroadcastContent .showcase-hero-photo')!==null`);
-  assert.equal(await evaluate(`[...document.querySelectorAll('#liveBroadcastContent .showcase-hero-photo,#liveBroadcastContent .lb-poster,.cat-thumb img,.sj-thumb img,.bt-portrait img')].every(img=>getComputedStyle(img).objectFit==='contain')`),true,'Photos use full-frame containment');
-  assert.equal(await evaluate(`getComputedStyle(document.querySelector('#liveBroadcastContent .showcase-hero-photo')).position`),'relative','Hero is not cropped behind title');
+  assert.equal(await evaluate(`[...document.querySelectorAll('#liveBroadcastContent .lb-poster,.cat-thumb img,.sj-thumb img,.bt-portrait img')].every(img=>getComputedStyle(img).objectFit==='contain')`),true,'Posters and thumbnails retain full-frame containment');
+  assert.equal(await evaluate(`getComputedStyle(document.querySelector('#liveBroadcastContent .showcase-hero-photo')).objectFit`),'cover','Banner alone intentionally fills its entire background');
   await evaluate(`Promise.all([...document.querySelectorAll('#liveBroadcastContent img')].map(img=>{img.src='assets/couple-home.jpg';return img.decode();}))`);
   await call('Emulation.setDeviceMetricsOverride',{width:430,height:1100,deviceScaleFactor:1,mobile:true});await evaluate(`window.scrollTo(0,0)`);fs.writeFileSync(path.join(out,'broadcast-full-frame.png'),Buffer.from((await call('Page.captureScreenshot',{format:'png'})).data,'base64'));
   await evaluate(`switchView('gallery');window.scrollTo(0,0);new Promise(r=>setTimeout(r,700))`);fs.writeFileSync(path.join(out,'gallery-full-frame.png'),Buffer.from((await call('Page.captureScreenshot',{format:'png'})).data,'base64'));

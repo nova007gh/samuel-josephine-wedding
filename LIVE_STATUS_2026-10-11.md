@@ -1,5 +1,28 @@
 # snybena.com live audit — 11 October 2026
 
+## v257 — full-background photographs on every photo banner (candidate)
+
+User explicitly requested the image fill the **whole background**, on all
+banners, replacing the earlier contained-left-photo composition. Existing photo
+banners on Bridal Train, Live Broadcast, Vendors, Entertainment, Chat, Gifts and
+uploaded Food & Drinks headers now use edge-to-edge `object-fit: cover` with no
+portrait masks, cut-out frames or empty side panels. This intentionally permits
+banner-edge cropping; translucent cream gradients and text shadows preserve
+gold-heading legibility without making the right side an opaque cream block.
+Admin-saved vendor positioning remains intact. Non-banner portraits, food/vendor
+thumbnails, gallery images, broadcast posters and original-photo viewers retain
+full-frame containment. No photo is invented for pages without an uploaded
+header; default decorative menu art, missing portraits and publication gates
+remain unchanged. No saved data/API/auth/payment changes.
+
+New DOM-fixture-only banner regression passes all seven photo-banner types at
+320/375/430/768/1024px: cover sizing at all four edges, no masks/side gaps or page
+overflow, and uncropped non-banner thumbnails. All 20 pure suites and full
+disposable Bridal Train, Broadcast, photo/companion, Vendors, Chat/Entertainment,
+reference menu, manual-only Gifts and approval/navigation regressions pass.
+Actual saved couple-photo full-background composition visually reviewed.
+Fresh frontend, online DB and private-config hash: `/root/wedding-pre-v257/`.
+
 ## v256 — shared left-photo/right-heading banners (live)
 
 The user supplied a Live Broadcast visual reference and explicitly selected

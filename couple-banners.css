@@ -1,12 +1,24 @@
-/* Shared reference banner: real full-frame photo left, blended gold copy right. */
+/* Full-bleed photo banners. Cover cropping is intentional only for banners. */
 #bridalTrainContent .bt-hero,#liveBroadcastContent .showcase-hero{display:grid;grid-template-columns:minmax(0,1fr);position:relative;min-height:0;padding:0;margin:0;background:#fff8ed;isolation:isolate;}
 #bridalTrainContent .bt-hero-view{grid-area:1/1;position:relative;width:100%;height:auto;padding:0;background:#fff8ed;}
-#bridalTrainContent .bt-hero-photo,#liveBroadcastContent .showcase-hero-photo{grid-area:1/1;position:relative;inset:auto;display:block;width:65%;height:clamp(300px,80cqw,384px);min-height:0;max-height:none;object-fit:contain;object-position:left center;background:#fff8ed;z-index:0;}
-#bridalTrainContent .bt-hero-view::after,#liveBroadcastContent .showcase-hero::before{content:'';display:block;position:absolute;inset:0;width:auto;height:auto;background:linear-gradient(90deg,transparent 43%,#fff8ed88 57%,#fff8ed 69%);z-index:1;pointer-events:none;}
+#bridalTrainContent .bt-hero-photo,#liveBroadcastContent .showcase-hero-photo{grid-area:1/1;position:relative;inset:auto;display:block;width:100%;height:clamp(300px,80cqw,384px);min-height:0;max-height:none;background:#fff8ed;z-index:0;}
+#bridalTrainContent .bt-hero-view::after,#liveBroadcastContent .showcase-hero::before{content:'';display:block;position:absolute;inset:0;width:auto;height:auto;background:linear-gradient(90deg,#fff8ed08 10%,#fff8ed26 40%,#fff8eda6 70%,#fff8edb8);z-index:1;pointer-events:none;}
 #bridalTrainContent .bt-hero-copy,#liveBroadcastContent .lb-hero-copy{grid-area:1/1;position:relative;z-index:2;align-self:center;justify-self:end;width:52%;min-width:0;min-height:0;box-sizing:border-box;margin:0;padding:58px 8px 24px 0;background:none;text-align:center;pointer-events:none;text-shadow:0 1px 5px #fff8ed,0 0 12px #fff8edcc;}
-#app #bridalTrainContent .bt-hero-photo,#app #liveBroadcastContent .showcase-hero-photo{object-position:left center;}
+#app #bridalTrainContent .bt-hero-photo,#app #liveBroadcastContent .showcase-hero-photo{object-fit:cover;object-position:center 32%;}
 #bridalTrainContent .bt-hero h1{font-size:clamp(40px,12cqw,66px);line-height:1.02;}
 #liveBroadcastContent .showcase-hero h1{font-size:clamp(36px,11cqw,62px);}
 #bridalTrainContent .bt-hero-copy>p,#liveBroadcastContent .lb-hero-copy>p{font-size:clamp(8px,2.1cqw,11px);line-height:1.5;text-wrap:balance;}
 #bridalTrainContent .bt-hero-view>span{left:8px;right:auto;top:auto;bottom:6px;z-index:2;}
 @media(max-width:350px){#bridalTrainContent .bt-hero-copy,#liveBroadcastContent .lb-hero-copy{padding:54px 6px 18px 0;}}
+
+/* Other existing photo banners share the full background, not a cut-out portrait. */
+#app :is(.vendor-hero,.community-hero,.gifts-hero){position:relative;isolation:isolate;overflow:hidden;}
+#app .view :is(.vendor-hero,.community-hero,.gifts-hero)>img{position:absolute;inset:0;display:block;flex:none;width:100%;max-width:none;height:100%;aspect-ratio:auto;object-fit:cover;object-position:center 32%;border:0;border-radius:0;box-shadow:none;opacity:1;mask-image:none;-webkit-mask-image:none;z-index:0;}
+#app .vendor-hero::after,#app .community-hero::before,#app .gifts-hero::before{content:'';position:absolute;inset:0;width:auto;height:auto;background:linear-gradient(90deg,#fff8ed08 10%,#fff8ed26 40%,#fff8eda6 70%,#fff8edb8);transform:none;opacity:1;z-index:1;pointer-events:none;}
+#app :is(.vendor-hero-copy,.community-hero-copy,.gifts-hero-copy){position:relative;z-index:2;flex:none;box-sizing:border-box;width:55%;min-width:0;margin-left:auto;margin-right:0;text-align:center;background:none;text-shadow:0 1px 5px #fff8ed,0 0 12px #fff8edcc;}
+#app .gifts-hero-copy{padding:18px 10px 20px 0;}
+#app .vendor-hero-copy h1{font-family:'Great Vibes',Parisienne,cursive;}
+#app .community-hero--entertainment h1{overflow-wrap:anywhere;}
+#foodMenuContent .food-menu-hero:has(#foodMenuHero:not([hidden])){position:relative;min-height:clamp(220px,60cqw,320px);padding:24px 15% 22px;}
+#app #foodMenuContent #foodMenuHero:not([hidden]){position:absolute;inset:0;width:100%;height:100%;min-height:0;max-height:none;object-fit:cover;object-position:center 32%;z-index:-2;}
+#foodMenuContent .food-menu-hero:has(#foodMenuHero:not([hidden]))::before{content:'';position:absolute;inset:0;display:block;z-index:-1;background:linear-gradient(90deg,#fff8ed26,#fff8ed99 55%,#fff8edb8);pointer-events:none;}
