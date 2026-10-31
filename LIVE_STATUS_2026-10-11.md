@@ -1,6 +1,6 @@
 # snybena.com live audit — 11 October 2026
 
-## v257 — full-background photographs on every photo banner (candidate)
+## v257 — full-background photographs on every photo banner (live)
 
 User explicitly requested the image fill the **whole background**, on all
 banners, replacing the earlier contained-left-photo composition. Existing photo
@@ -22,6 +22,14 @@ disposable Bridal Train, Broadcast, photo/companion, Vendors, Chat/Entertainment
 reference menu, manual-only Gifts and approval/navigation regressions pass.
 Actual saved couple-photo full-background composition visually reviewed.
 Fresh frontend, online DB and private-config hash: `/root/wedding-pre-v257/`.
+
+Deployed frontend feature **`7cb29f8`** by clean fast-forward with no API restart.
+All three released frontend hashes match; cache
+`sj-wedding-v257-full-bleed-banners` has 85 precached assets. Live GET-only asset/
+security/health and six-width browser privacy/approval/navigation checks pass,
+with no OTP sends or submissions. Post-deploy online audit preserves 162 rows
+across 22 wedding-data tables, private config unchanged and SQLite integrity
+`ok`. Snapshots and preservation report remain in the backup directory.
 
 ## v256 — shared left-photo/right-heading banners (live)
 
