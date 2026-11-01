@@ -1,6 +1,8 @@
 
-const CACHE = 'sj-wedding-v257-full-bleed-banners';
+const CACHE = 'sj-wedding-v258-chat-activity-float';
 const ASSETS = [
+  './chat-activity.js',
+  './chat-activity.css',
   './couple-banners.css',
   './browser-storage.js',
   './session-restore.css',

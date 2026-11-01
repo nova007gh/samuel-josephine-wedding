@@ -1,5 +1,31 @@
 # snybena.com live audit — 11 October 2026
 
+## v258 — floating ten-second Wedding Chat activity icon (candidate)
+
+New gold floating Chat icon appears outside the room for new room messages,
+announcements/attachments, reactions from other people and pins. Clicking opens
+Chat; × dismisses it. The fixed ten-second timer is not extended by event bursts.
+No existing history/self-message/reaction replay; guests only discover approved
+room content, while authenticated hosts can discover pending messages for review.
+No snippets/names or private RSVP/gift/arrival activity appear on the icon. The
+icon sits above Sam/navigation, supports reduced motion and defers to protected
+forms/dialogs/uploads/media. Chat entry, hiding, network failures and security
+changes clear it; stale replies cannot restore a revoked baseline.
+
+New read-only actor/approval-gated `/api/chat/activity` exposes bounded metadata
+only, no text, sender identity, attachment URLs or presence writes. Fifteen-second
+visible-page polling; no provider/push/OTP sends. No SQL/auth migrations or changes
+to existing room moderation. Operator limits: `server/CHAT_ACTIVITY.md`.
+
+New pure boundary test and complete disposable browser feature test pass, including
+real ten-second lifetime/burst coalescing, messages/reactions/pins, pending privacy,
+admin review visibility, click-to-chat, dismiss, hidden/dialog cleanup, approval
+revocation, metadata-only/no-store response and five widths. All **21 pure suites**
+and five complete disposable browser suites (Chat discovery, Chat/Entertainment,
+persistent sessions, AI Actions and approval/navigation) pass. Fresh frontend, current flat
+Chat module, online DB and config-hash backup: `/root/wedding-pre-v258/`. Verified
+the flat production Chat module matches committed source before replacement.
+
 ## v257 — full-background photographs on every photo banner (live)
 
 User explicitly requested the image fill the **whole background**, on all

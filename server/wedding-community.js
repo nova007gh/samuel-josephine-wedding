@@ -63,6 +63,12 @@ module.exports=({app,db,requireAdmin,publicWrite,multer,uploadsDir,guest})=>{
     const who=req.communityActor,rows=who.host?db.prepare('SELECT * FROM wedding_chat ORDER BY pinned DESC,createdAt DESC LIMIT 150').all():db.prepare("SELECT * FROM wedding_chat WHERE status='approved' OR actorId=? ORDER BY pinned DESC,createdAt DESC LIMIT 150").all(who.id);
     res.set('Cache-Control','no-store').json({messages:rows.map(r=>present(r,who)),host:who.host,moderation:'approval',activeGuests:db.prepare("SELECT COUNT(*) n FROM wedding_chat_presence WHERE seenAt>? AND actorId!='hosts'").get(Date.now()-45000).n});
   });
+  // Tiny read-only discovery feed; no message text, identities, files or presence writes.
+  app.get('/api/chat/activity',actor,(req,res)=>{
+    const who=req.communityActor,where=who.host?"c.status IN ('approved','pending')":"c.status='approved'";
+    const rows=db.prepare(`SELECT c.id,c.actorId,c.pinned,c.status,COUNT(r.messageId) reactions FROM wedding_chat c LEFT JOIN wedding_chat_reactions r ON r.messageId=c.id AND r.actorId<>? WHERE ${where} GROUP BY c.id ORDER BY c.createdAt DESC,c.id LIMIT 150`).all(who.id);
+    res.set('Cache-Control','no-store').json({actor:who.id,items:rows.map(r=>({id:r.id,own:r.actorId===who.id,pinned:!!r.pinned,status:r.status,reactions:r.reactions}))});
+  });
   app.post('/api/chat/presence',origin,publicWrite,actor,(req,res)=>{
     db.prepare('DELETE FROM wedding_chat_presence WHERE seenAt<?').run(Date.now()-45000);
     db.prepare('INSERT INTO wedding_chat_presence VALUES (?,?) ON CONFLICT(actorId) DO UPDATE SET seenAt=excluded.seenAt').run(req.communityActor.id,Date.now());res.json({ok:true});
