@@ -1,5 +1,39 @@
 # snybena.com live audit — 11 October 2026
 
+## v262 — admin Guest Activity monitor (candidate)
+
+Adds **View Guest Activity** to Overview and a **Guest Activity** admin category.
+The private monitor shows registered guests, latest reported page, last signal,
+honest 90-second “Recently active” status and verified timestamped saved actions.
+Name/recent/24-hour filters, 50-row pagination and per-guest selection are included.
+It does not claim reading, exact connection status, physical arrival or payment.
+Anonymous/pending guests have no identified live signal; unknown is not labelled
+offline. Multiple tabs/devices share the account's latest stored report.
+
+Approved visible guest browsers send only an allowlisted page, using their
+server-verified cookie identity. No raw URLs, drafts, keystrokes, typed content,
+message bodies, vote choices, amounts, attachment URLs or contact information are
+returned by the new monitor. Saved actions reuse verified ownership, never name/
+phone similarity. One new `guest_site_presence` row per guest holds only page and
+server timestamp; no page-history trail. Seven-day expiry, five-second coalescing,
+30-second visible heartbeat and 15-second visible-admin refresh limit collection.
+More → Activity & privacy explains it. Admin requests are no-store and protected;
+private DOM/memory is cleared on hiding/navigation/session loss, with stale-response
+invalidation. Existing account/arrival/profile/payment rules are unchanged.
+
+Initial real HTTP/SQLite and complete browser feature suites pass, including
+ownership/spoofing/CSRF/approval, no drafts/content leakage, recent expiry/retention,
+filtering, actual button routing, five widths and logout/late-response privacy.
+Two new pure suites cover page/clock/retention bounds and client lifecycle.
+All **23 pure suites** and five complete disposable browser suites pass: Guest
+Activity, Detailed Guest List, modern Chat, persistent sessions and approval/
+navigation. The real HTTP/SQLite suite also verifies that neither ballot text
+nor choice IDs leak through display event keys. Candidate dashboard composition
+was visually reviewed; the button scrolls directly to the monitor.
+Production flat guest-details module matched committed source before replacement.
+Fresh frontend, flat module, online DB and config-hash backup:
+`/root/wedding-pre-v262/`. Operator details: `server/GUEST_ACTIVITY.md`.
+
 ## v261 — instant shared Chat, quoted replies and compact modern conversation (live)
 
 The user explicitly removed message-by-message host approval and requested replies

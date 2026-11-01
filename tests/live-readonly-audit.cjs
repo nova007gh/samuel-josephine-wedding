@@ -28,5 +28,6 @@ function headers(response){
   assert.equal((await fetch(new URL('api/admin/arrivals',base),{cache:'no-store'})).status,401,'Entrance admin data requires admin session');
   const chatActivity=await fetch(new URL('api/chat/activity',base),{cache:'no-store'});assert.equal(chatActivity.status,403,'Room activity discovery requires approval');assert.match(chatActivity.headers.get('cache-control'),/no-store/);assert.equal((await chatActivity.json()).code,'guest/approval-required');
   const chat=await fetch(new URL('api/chat',base),{cache:'no-store'});assert.equal(chat.status,403,'Immediate publication does not expose Chat to unverified visitors');assert.equal((await chat.json()).code,'guest/approval-required');
+  const guestActivity=await fetch(new URL('api/admin/guest-activity',base),{cache:'no-store'});assert.equal(guestActivity.status,401,'Guest Activity is admin-only');assert.match(guestActivity.headers.get('cache-control'),/no-store/);
   console.log(`PASS ${assets.length} precached assets, security headers/API no-store, welcome photo MIME, health, live OTP on and unapproved feature lockdown; GET-only`);
 })().catch(error=>{console.error(error.message);process.exitCode=1;});

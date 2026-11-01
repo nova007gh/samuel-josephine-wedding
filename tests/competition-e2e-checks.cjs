@@ -46,6 +46,7 @@ module.exports=async({call,evaluate,errors,out})=>{
     suites.banners='banner-backgrounds-e2e.cjs';
     suites.chatnotice='chat-activity-e2e.cjs';
     suites.modernchat='modern-chat-e2e.cjs';
+    suites.guestactivity='guest-activity-e2e.cjs';
     const suite=suites[process.env.WEDDING_E2E_APPROVED_SUITE];if(!suite)throw new Error('Unknown approved regression suite');
     controllerToken=(await request('/admin/login',{method:'POST',body:{password:'isolated-browser-only'}})).data.token;
     await evaluate(`(async()=>{const r=await api('/guests/login',{method:'POST',body:{phone:'+233240000001',code:'123456'}});setGuest(r.guest);await WeddingAccess.refresh();})()`);await wait('WeddingAccess.canUse()');

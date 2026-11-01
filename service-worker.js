@@ -1,6 +1,9 @@
 
-const CACHE = 'sj-wedding-v261-modern-chat-replies';
+const CACHE = 'sj-wedding-v262-admin-guest-activity';
 const ASSETS = [
+  './guest-activity-schema.js',
+  './guest-activity.js',
+  './guest-activity.css',
   './chat-modern.css',
   './chat-activity.js',
   './chat-activity.css',

@@ -55,6 +55,7 @@
   <link rel="stylesheet" href="couple-banners.css?v=257" />
   <link rel="stylesheet" href="chat-activity.css?v=259" />
   <link rel="stylesheet" href="chat-modern.css?v=261" />
+  <link rel="stylesheet" href="guest-activity.css?v=262" />
   <script src="browser-storage.js?v=252"></script>
   <script>
   /* a checked-in guest goes straight into the app — flag it before first
@@ -779,6 +780,7 @@
        <button id="installButton" class="enter-wide" type="button">INSTALL APP</button>
     </div>
     <p id="shareActionStatus" class="upload-status" role="status" aria-live="polite"></p>
+    <details class="site-activity-privacy"><summary>Activity &amp; privacy</summary><p>While you are signed in and the app is visible, the hosts can see your last reported wedding page and recent saved actions. This does not record drafts, typed text, message contents, vote choices, your location or activity outside this app. A page being open does not prove it is being read or that you have arrived at the wedding.</p></details>
 
     <div class="hash-bar">
       <span class="heart">&#10084;</span>
@@ -1037,6 +1039,7 @@
       <button id="admin-tab-overview" role="tab" aria-selected="true" aria-controls="admin-panel-overview" data-admin-section="overview" type="button"><span aria-hidden="true">&#9638;</span>Overview</button>
       <button id="admin-tab-guests" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-guests" data-admin-section="guests" type="button"><span aria-hidden="true">&#128101;</span>Guests &amp; RSVPs</button>
       <button id="admin-tab-guestdetails" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-guestdetails" data-admin-section="guestdetails" type="button">Detailed Guest List</button>
+      <button id="admin-tab-guestactivity" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-guestactivity" data-admin-section="guestactivity" type="button">Guest Activity</button>
       <button id="admin-tab-aiactions" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-aiactions" data-admin-section="aiactions" type="button">✨ AI Actions · Sam &amp; Jossy</button>
       <button id="admin-tab-tablesfood" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-tablesfood" data-admin-section="tablesfood" type="button">Tables &amp; Food</button>
       <button id="admin-tab-arrivals" role="tab" aria-selected="false" tabindex="-1" aria-controls="admin-panel-arrivals" data-admin-section="arrivals" type="button"><span aria-hidden="true">&#128205;</span>Entrance &amp; Tables</button>
@@ -1086,7 +1089,15 @@
         <section id="guestDetailsDossier" hidden aria-label="Selected guest details"><button id="guestDetailsClose" type="button">Close guest details</button><div id="guestDetailsIdentity"></div><p>Verified activity uses the signed-in account, even if a different display name was entered. Older records without ownership are shown separately as possible matches. Unmatched records remain in the existing content / RSVP / gift editors.</p><p>Gift reports are not proof of payment. Messages are saved in-app messages, not the guest’s external SMS inbox.</p><div class="guest-details-actions"><button id="guestDetailsLinked" type="button" aria-pressed="true">Verified account activity</button><button id="guestDetailsPossible" type="button" aria-pressed="false">Possible legacy matches · unverified</button></div><p id="guestDetailsActivityStatus" role="status" aria-live="polite"></p><div id="guestDetailsActivities"></div><button id="guestDetailsActivityMore" type="button" hidden>Load more activity</button></section>
       </section>
     </div>
+    <div id="admin-panel-guestactivity" class="admin-section-panel hidden" role="tabpanel" aria-labelledby="admin-tab-guestactivity" tabindex="0">
+      <section class="guest-site-activity"><h2>Guest Activity</h2><p>Admin only · See recently reporting browsers and verified saved actions—not private drafts, typing or message contents. “Recently active” is a visible-page signal from the last 90 seconds, not proof of reading or physical arrival.</p><div id="guestActivityCounts" class="guest-site-counts"></div>
+        <form id="guestActivityFilters"><label class="field">Guest name<input id="guestActivitySearch" type="search" maxlength="120" autocomplete="off"></label><label class="field">Show<select id="guestActivityFilter"><option value="all">All registered guests</option><option value="recent">Recently active · 90 seconds</option><option value="today">Seen in the last 24 hours</option></select></label><button type="submit">Search / Refresh</button><button id="guestActivityReset" type="button" hidden>Show all guests</button></form>
+        <p id="guestActivityStatus" role="status" aria-live="polite"></p><div id="guestActivityGuests"></div><div class="guest-site-pages"><button id="guestActivityPrevious" type="button" hidden>Previous guests</button><button id="guestActivityNext" type="button" hidden>Next guests</button></div>
+        <h3 id="guestActivityHeading">Recent saved activity · last 24 hours</h3><div id="guestActivityEvents"></div><p id="guestActivityNotice" class="guest-site-notice"></p>
+      </section>
+    </div>
     <div id="admin-panel-overview" class="admin-section-panel" role="tabpanel" aria-labelledby="admin-tab-overview" tabindex="0">
+    <button id="guestActivityShortcut" class="enter-wide" type="button">View Guest Activity</button>
 
     <h3 class="stats-group-label">&#128101; Guests &amp; RSVPs</h3>
     <div class="admin-stats" id="adminStats">
@@ -1916,6 +1927,8 @@ try{
 <script src="app-social.js?v=252"></script>
 <script src="admin-dashboard.js?v=187"></script>
 <script src="guest-details.js?v=247"></script>
+<script src="guest-activity-schema.js?v=262"></script>
+<script src="guest-activity.js?v=262"></script>
 <script src="reception-program.js?v=190"></script>
 <script src="bridal-train.js?v=253"></script>
 <script src="broadcast-calendar.js?v=196"></script>

@@ -20,7 +20,7 @@ module.exports=({app,db,requireAdmin,guest})=>{
   const sources=[['rsvp','rsvps','submittedAt'],['guestbook','guestbook','createdAt'],['memory','memories','createdAt'],['gift','gifts','createdAt']];
   function activities(g,possible){
     const records=[];
-    const uniqueName=normal(g.name)&&db.prepare('SELECT name FROM guests').all().filter(r=>normal(r.name)===normal(g.name)).length===1;
+    const uniqueName=possible&&normal(g.name)&&db.prepare('SELECT name FROM guests').all().filter(r=>normal(r.name)===normal(g.name)).length===1;
     for(const [kind,table,time]of sources){
       const hasReceipts=kind==='gift'&&db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='manual_gift_receipts'").get();
       const rows=possible?db.prepare(`SELECT r.* FROM ${table} r WHERE NOT EXISTS (SELECT 1 FROM guest_activity_owners o WHERE o.kind=? AND o.recordId=r.id) ${hasReceipts?"AND NOT EXISTS (SELECT 1 FROM manual_gift_receipts x WHERE x.giftId=r.id AND x.owner!='admin')":''}`).all(kind):db.prepare(`SELECT r.* FROM ${table} r WHERE EXISTS (SELECT 1 FROM guest_activity_owners o WHERE o.recordId=r.id AND o.kind=? AND o.guestId=?) ${hasReceipts?"OR (NOT EXISTS (SELECT 1 FROM guest_activity_owners o WHERE o.kind='gift' AND o.recordId=r.id) AND EXISTS (SELECT 1 FROM manual_gift_receipts x WHERE x.giftId=r.id AND x.owner=?))":''}`).all(...(hasReceipts?[kind,g.id,g.id]:[kind,g.id]));
@@ -51,6 +51,7 @@ module.exports=({app,db,requireAdmin,guest})=>{
     }
     return records.sort((a,b)=>(b.at||0)-(a.at||0)||a.kind.localeCompare(b.kind)||a.id.localeCompare(b.id));
   }
+  require('./guest-activity')({app,db,requireAdmin,guest,activities:g=>activities(g,false)});
   app.get('/api/admin/guest-details/:id',requireAdmin,(req,res)=>{
     const page=pageOf(req),mode=req.query.mode||'linked';if(page===null||!['linked','possible'].includes(mode))return res.status(400).json({error:'Choose a valid activity page.'});
     const g=db.prepare('SELECT id,name,phone,email,relation,city,state,country,attending,status,tableGuests,checkedInAt FROM guests WHERE id=?').get(req.params.id);if(!g)return res.status(404).json({error:'Guest not found.'});
