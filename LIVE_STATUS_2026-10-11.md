@@ -1,6 +1,6 @@
 # snybena.com live audit — 11 October 2026
 
-## v258 — floating ten-second Wedding Chat activity icon (candidate)
+## v258 — floating ten-second Wedding Chat activity icon (live)
 
 New gold floating Chat icon appears outside the room for new room messages,
 announcements/attachments, reactions from other people and pins. Clicking opens
@@ -25,6 +25,16 @@ and five complete disposable browser suites (Chat discovery, Chat/Entertainment,
 persistent sessions, AI Actions and approval/navigation) pass. Fresh frontend, current flat
 Chat module, online DB and config-hash backup: `/root/wedding-pre-v258/`. Verified
 the flat production Chat module matches committed source before replacement.
+
+Deployed feature **`3e2e5b6`** by clean fast-forward, installed the verified flat
+Chat module and successfully restarted `wedding-api`. No auth or SQL migrations.
+All four released frontend hashes match. Cache
+`sj-wedding-v258-chat-activity-float` has 87 precached assets. Live GET-only asset/
+security/health/Chat-discovery approval-boundary checks and six-width browser
+privacy/navigation checks pass, with no OTPs or live submissions. Post-deploy
+online DB audit preserves **173 rows across 22 wedding-data tables**, including
+Chat and reactions, with byte-identical private configuration and SQLite integrity
+`ok`. Snapshots/report remain under `/root/wedding-pre-v258/`.
 
 ## v257 — full-background photographs on every photo banner (live)
 
