@@ -1,6 +1,6 @@
 # snybena.com live audit — 11 October 2026
 
-## v261 — instant shared Chat, quoted replies and compact modern conversation (candidate)
+## v261 — instant shared Chat, quoted replies and compact modern conversation (live)
 
 The user explicitly removed message-by-message host approval and requested replies
 and a neater, taller modern room. Approved wedding guests now publish messages,
@@ -37,6 +37,21 @@ coverage includes desktop keyboard behaviour and reading through a failed presen
 heartbeat. Candidate compact conversation visually reviewed. Existing production
 Chat module matched committed source before changes. Fresh frontend, flat API
 module, online DB and config-hash backup: `/root/wedding-pre-v261/`.
+
+Deployed feature **`b1f0f6c`**: verified flat backend installed and API restarted/
+health-checked **before** the frontend fast-forward, so new reply UI never talks
+to an old backend that would ignore its parent ID. Four frontend hashes and the
+installed API module hash match exactly. Cache
+`sj-wedding-v261-modern-chat-replies` has 88 precached assets. Live GET-only
+security/health/Chat-approval-boundary and six-width browser privacy/navigation
+checks pass, with no OTP sends or live submissions.
+
+Post-deploy online audit preserves **183 baseline rows across 22 wedding-data
+tables**, with exactly the requested **one pending → approved Chat publication**
+and no unexpected content changes. The new reply table exists with zero rows;
+no test replies were inserted live. Private config is byte-identical and SQLite
+integrity is `ok`. Original frontend/API module, before/after DB snapshots and
+the migration-aware preservation report remain under `/root/wedding-pre-v261/`.
 
 ## v260 — remove Chat category bar (live)
 
