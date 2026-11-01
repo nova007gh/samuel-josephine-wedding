@@ -31,14 +31,13 @@
   };
   const icon=name=>`<svg class="community-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${iconPaths[name]||iconPaths.other}</svg>`;
   document.querySelectorAll('[data-community-icon]').forEach(el=>el.innerHTML=icon(el.dataset.communityIcon));
-  $('chatFilters').querySelectorAll('button').forEach(b=>{const label=b.textContent;b.setAttribute('aria-label',label);b.innerHTML=icon(b.dataset.chatFilter)+`<span>${esc(b.dataset.chatFilter==='announcements'?'Updates':label)}</span>`;});
   const uuid=()=>crypto.randomUUID();
   const visible=name=>currentView===name&&!document.hidden;
   const adminEditor=()=>isAdmin()&&currentView==='admin'&&!$('admin-panel-entertainment').classList.contains('hidden');
   const options=extra=>({...extra,admin:isAdmin()});
   const date=ms=>ms===null?'Time to be announced':new Intl.DateTimeFormat(undefined,{dateStyle:'medium',timeStyle:'short',timeZoneName:undefined}).format(ms);
   const localDate=ms=>{if(ms===null)return '';const d=new Date(ms),pad=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;};
-  let epoch=0,chatVersion=0,chatLoading=false,chatRefreshPending=false,sending=false,uploading=false,chatFilter='all',messages=[],chatKey='',attachment=null,pending=null;
+  let epoch=0,chatVersion=0,chatLoading=false,chatRefreshPending=false,sending=false,uploading=false,messages=[],chatKey='',attachment=null,pending=null;
   let entertainment=null,entVersion=0,entFilter='all',entLoading=false,entReloadPending=false,entDirty=false,entBusy=false,editorRevision=null,entKey='';
   function photos(){const src=sitePhoto('couple','assets/photo-placeholder.svg');document.querySelectorAll('[data-community-photo]').forEach(img=>{if(img.getAttribute('src')!==src)img.src=src;});}
   document.querySelectorAll('[data-community-photo]').forEach(img=>img.addEventListener('error',()=>{if(!img.src.endsWith('/assets/photo-placeholder.svg'))img.src='assets/photo-placeholder.svg';}));
@@ -57,8 +56,8 @@
   }
   function renderChat(force=false){
     const query=$('chatSearch').value.trim().toLocaleLowerCase();
-    const items=messages.filter(m=>(!query||(m.name+' '+m.text).toLocaleLowerCase().includes(query))&&(chatFilter==='all'||chatFilter==='announcements'&&m.kind==='announcement'||chatFilter==='reactions'&&m.reactions.length||m.attachment?.kind===chatFilter)).sort((a,b)=>Number(b.pinned)-Number(a.pinned)||a.createdAt-b.createdAt);
-    const key=JSON.stringify([items,isAdmin(),chatFilter,query]);if(!force&&key===chatKey)return;chatKey=key;
+    const items=messages.filter(m=>!query||(m.name+' '+m.text).toLocaleLowerCase().includes(query)).sort((a,b)=>Number(b.pinned)-Number(a.pinned)||a.createdAt-b.createdAt);
+    const key=JSON.stringify([items,isAdmin(),query]);if(!force&&key===chatKey)return;chatKey=key;
     const list=$('chatMessages'),nearEnd=list.scrollHeight-list.scrollTop-list.clientHeight<80,scroll=list.scrollTop;
     const template=document.createElement('template');
     template.innerHTML=items.map(m=>{
@@ -87,11 +86,6 @@
     }catch(err){if(auth!==epoch)return;$('chatStatus').textContent=err.message;$('chatStatus').dataset.error='true';$('chatVerify').classList.toggle('hidden',err.code!=='chat/verification-required');}
     finally{chatLoading=false;if(chatRefreshPending){chatRefreshPending=false;if(visible('chat'))loadChat();}}
   }
-  $('chatFilters').addEventListener('click',e=>{
-    const button=e.target.closest('[data-chat-filter]');if(!button)return;chatFilter=button.dataset.chatFilter;
-    $('chatFilters').querySelectorAll('button').forEach(b=>{const on=b===button;b.classList.toggle('active',on);b.setAttribute('aria-pressed',String(on));});
-    $('chatMessages').classList.toggle('hidden',chatFilter==='polls');$('chatPolls').classList.toggle('hidden',chatFilter!=='polls');renderChat();
-  });
   $('chatRetry').addEventListener('click',loadChat);
   $('chatSearchToggle').addEventListener('click',()=>{const open=$('chatSearchPanel').classList.contains('hidden');$('chatSearchPanel').classList.toggle('hidden',!open);$('chatSearchToggle').setAttribute('aria-expanded',String(open));if(open)$('chatSearch').focus();else{$('chatSearch').value='';renderChat();}});
   $('chatSearch').addEventListener('input',()=>renderChat());

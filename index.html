@@ -693,15 +693,11 @@
 
   <section class="view hidden community-page" data-view="chat">
     <header class="community-hero community-hero--chat"><nav class="community-hero-nav" aria-label="Chat navigation"><button data-goto="entertainment" type="button" aria-label="Back to Entertainment">&#10094;</button><span></span><button id="chatSearchToggle" type="button" aria-label="Search chat" aria-expanded="false" aria-controls="chatSearchPanel"><span data-community-icon="search"></span></button><button data-goto="more" type="button" aria-label="Open wedding menu">&#8943;</button></nav><img data-community-photo alt="Samuel and Josephine"><div class="community-hero-copy"><p>Sam &amp; Jossy <span class="community-gold-heart">&#9829;</span></p><h1>Wedding Chat</h1><small id="chatPresence" title="Distinct verified guests active in chat during the last 45 seconds">A place to celebrate together</small></div></header>
-    <div class="community-filters" id="chatFilters" role="group" aria-label="Chat categories">
-      <button type="button" class="chip active" data-chat-filter="all" aria-pressed="true">All Chat</button><button type="button" class="chip" data-chat-filter="announcements" aria-pressed="false">Announcements</button><button type="button" class="chip" data-chat-filter="photos" aria-pressed="false">Photos</button><button type="button" class="chip" data-chat-filter="videos" aria-pressed="false">Videos</button><button type="button" class="chip" data-chat-filter="reactions" aria-pressed="false">Reactions</button><button type="button" class="chip" data-chat-filter="files" aria-pressed="false">Files</button><button type="button" class="chip" data-chat-filter="polls" aria-pressed="false">Polls</button>
-    </div>
     <div id="chatSearchPanel" class="community-search hidden"><label for="chatSearch">Search loaded messages</label><input id="chatSearch" type="search" maxlength="120" placeholder="Search names or messages…"><button id="chatSearchClear" type="button">Clear</button></div>
     <div class="chat-room-tools"><details class="community-guidance"><summary>Messages are reviewed by the hosts</summary><p>Guest messages are reviewed before appearing for everyone. Please keep our chat kind and wedding-related. Only the most recent 150 messages are loaded.</p></details><button id="chatRetry" class="community-icon-button" type="button" aria-label="Refresh chat"><span data-community-icon="refresh"></span></button></div>
     <p id="chatStatus" class="upload-status" role="status" aria-live="polite"></p>
     <button id="chatVerify" class="map-button hidden" type="button">VERIFY GUEST SIGN-IN</button>
     <div id="chatMessages" class="chat-messages" aria-label="Wedding messages"></div>
-    <div id="chatPolls" class="notice-card hidden"><p>Join our wedding polls, games and competitions.</p><button class="map-button" data-goto="competitions" type="button">OPEN POLLS &amp; GAMES</button></div>
     <form id="chatComposer" class="chat-composer">
       <label id="chatAnnouncementLabel" class="hidden"><input id="chatAnnouncement" type="checkbox"> Host announcement</label>
       <div id="chatAttachment" class="community-note" role="status"></div>
@@ -1943,7 +1939,7 @@ try{
 <script src="wedding-guide-knowledge.js?v=241"></script>
 <script src="wedding-guide.js?v=252"></script>
 <script src="admin-companion-alerts.js?v=228"></script>
-<script src="wedding-community.js?v=218"></script>
+<script src="wedding-community.js?v=260"></script>
 <script src="chat-activity.js?v=259"></script>
 <script src="vendor-schema.js?v=229"></script>
 <script src="vendors.js?v=229"></script>

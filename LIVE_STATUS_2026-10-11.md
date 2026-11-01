@@ -1,5 +1,24 @@
 # snybena.com live audit — 11 October 2026
 
+## v260 — remove Chat category bar (candidate)
+
+Removed the user-selected All Chat / Updates / Photos / Videos / Reactions /
+Files / Polls strip from Wedding Chat, including its obsolete filter bindings
+and category-only poll panel. Messages, approved host announcements and shared
+attachments now remain in one feed; loaded-message search, inline reactions,
+moderation, uploads, composer, refresh, floating shortcut and verified ownership
+are preserved. Existing wedding competitions/polls remain available through
+their existing app destination; no saved room/competition data is removed.
+Entertainment category controls are unchanged. Frontend-only, no API restart.
+
+All 21 pure suites and the complete disposable Chat/Entertainment browser suite
+pass, including removed-category assertions, combined announcements/feed, search,
+attachments, send retry/dedup, host moderation, four widths, compact conversation,
+draft/conflict safety and sign-out cleanup. The initial tool response was lost
+during a harness restart; final completion was recorded durably in the approved
+temporary directory. Backup: `/root/wedding-pre-v260/` (frontend, online DB and
+private-config hash).
+
 ## v259 — persistent faint Chat shortcut, bold for new activity (live)
 
 At the user's explicit request after difficulty finding the temporary icon,

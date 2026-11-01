@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v259-persistent-chat-shortcut';
+const CACHE = 'sj-wedding-v260-clean-chat-room';
 const ASSETS = [
   './chat-activity.js',
   './chat-activity.css',

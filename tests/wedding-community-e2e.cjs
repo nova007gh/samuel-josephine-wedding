@@ -34,11 +34,7 @@ module.exports=async({call,evaluate,wait,request,out,errors})=>{
   await wait(`document.querySelector('[data-chat-react="❤️"]').getAttribute('aria-pressed')==='true'`);
   await evaluate(`document.getElementById('chatAnnouncement').checked=true;document.getElementById('chatText').value='Confirmed host announcement';document.getElementById('chatComposer').requestSubmit()`);
   await wait(`document.querySelectorAll('.chat-card').length===2`);
-  await evaluate(`document.querySelector('[data-chat-filter="announcements"]').click()`);
-  assert.equal(await evaluate(`document.querySelectorAll('.chat-card').length`),1);
-  await evaluate(`document.querySelector('[data-chat-filter="polls"]').click()`);
-  assert.equal(await evaluate(`!document.getElementById('chatPolls').classList.contains('hidden')`),true);
-  await evaluate(`document.querySelector('[data-chat-filter="all"]').click()`);
+  assert.equal(await evaluate(`document.getElementById('chatFilters')===null&&document.querySelector('[data-chat-filter]')===null&&document.querySelectorAll('.chat-card').length===2`),true,'No category bar; messages and host announcements share one feed');
   await evaluate(`(async()=>{const canvas=document.createElement('canvas');canvas.width=30;canvas.height=30;canvas.getContext('2d').fillRect(0,0,30,30);const blob=await new Promise(r=>canvas.toBlob(r,'image/png'));const dt=new DataTransfer();dt.items.add(new File([blob],'wedding-chat.png',{type:'image/png'}));const input=document.getElementById('chatFile');input.files=dt.files;input.dispatchEvent(new Event('change'));})()`);
   await wait(`document.getElementById('chatStatus').textContent.includes('Attachment ready')`);
   await evaluate(`document.getElementById('chatText').value='Our photo';document.getElementById('chatComposer').requestSubmit()`);
@@ -53,7 +49,7 @@ module.exports=async({call,evaluate,wait,request,out,errors})=>{
     await call('Emulation.setDeviceMetricsOverride',{width,height:1000,deviceScaleFactor:1,mobile:width<600});
     assert.equal(await evaluate(`document.documentElement.scrollWidth===innerWidth`),true,'Chat fits '+width);
     assert.equal(await evaluate(`getComputedStyle(document.querySelector('.app-header')).display`),'none','Reference hero replaces the separate header');
-    assert.equal(await evaluate(`document.querySelectorAll('#chatFilters button>.community-icon').length`),7,'Seven icon category tabs');
+    assert.equal(await evaluate(`document.getElementById('chatFilters')===null&&document.getElementById('chatPolls')===null`),true,'Removed category bar and obsolete category-only panel');
     assert.equal(await evaluate(`(()=>{const row=document.querySelector('.chat-compose-row');return row.scrollWidth<=row.clientWidth+1;})()`),true,'Composer icons fit '+width);
   }
   await evaluate(`switchView('entertainment')`);
@@ -108,6 +104,6 @@ module.exports=async({call,evaluate,wait,request,out,errors})=>{
   assert.ok(compact.feed>=300,'Populated conversation keeps useful space on the reported screen');assert.equal(compact.clear,true,'No composer/navigation overlap');assert.equal(compact.lastVisible,true,'Can scroll to the complete final message');assert.equal(compact.mediaSmall,true,'Media does not take over the feed');
   const after=(await request('/settings')).data;for(const k of Object.keys(baseline))assert.equal(after[k],baseline[k],'Existing setting preserved '+k);
   await call('Emulation.setDeviceMetricsOverride',{width:430,height:1000,deviceScaleFactor:1,mobile:true});
-  for(const view of ['chat','entertainment']){await evaluate(`switchView('${view}');window.scrollTo({top:0,behavior:'instant'});new Promise(r=>setTimeout(r,650))`);await evaluate(`Promise.all([...document.querySelectorAll('[data-view="${view}"] img')].map(img=>img.decode().catch(()=>{})))`);const shot=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:true});fs.writeFileSync(path.join(out,view+'-mobile.png'),Buffer.from(shot.data,'base64'));}
-  assert.deepEqual(errors,[]);console.log('PASS isolated browser Chat/Entertainment: verified sign-in, lost-response/duplicate recovery, escaped messages, host moderation/pins/reactions/announcements, photo attachments, poll route, honest empty lineup, draft uploads/save failure/conflicts, filters, responsive pages/editor and sign-out cleanup.');
+  for(const view of ['chat','entertainment']){await evaluate(`switchView('${view}');window.scrollTo({top:0,behavior:'instant'});new Promise(r=>setTimeout(r,650))`);await evaluate(`Promise.all([...document.querySelectorAll('[data-view="${view}"] img')].map(img=>img.decode().catch(()=>{})))`);const shot=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:true});try{fs.writeFileSync(path.join(out,view+'-mobile.png'),Buffer.from(shot.data,'base64'));}catch(e){if(e.code!=='ENOSPC')throw e;console.log('Screenshot skipped: disk full; Chat assertions continue.');}}
+  assert.deepEqual(errors,[]);console.log('PASS isolated browser Chat/Entertainment: removed category bar/unified message feed, verified sign-in, lost-response/duplicate recovery, escaped messages, host moderation/pins/reactions/announcements, photo attachments/search, honest empty lineup, draft uploads/save failure/conflicts, responsive pages/editor and sign-out cleanup.');
 };
