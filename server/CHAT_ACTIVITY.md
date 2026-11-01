@@ -11,10 +11,10 @@ animation, not the shortcut/highlight.
 
 ## What triggers it
 
-- New published chat messages, announcements and messages with attachments.
+- New published chat messages/replies, announcements and messages with attachments.
 - New reactions from other people, and newly pinned messages.
-- Hosts can also discover pending messages they are authorised to review.
-- Guests never receive pending/hidden-message discovery. Their own messages and
+- Messages now publish immediately; the former review queue is published on upgrade.
+- Hidden messages never enter guest discovery. Their own messages and
   reactions do not alert them. Passive presence/polling is not chat activity.
 
 The first successful feed establishes a baseline without replaying existing

@@ -54,6 +54,7 @@
   <link rel="stylesheet" href="session-restore.css?v=252" />
   <link rel="stylesheet" href="couple-banners.css?v=257" />
   <link rel="stylesheet" href="chat-activity.css?v=259" />
+  <link rel="stylesheet" href="chat-modern.css?v=261" />
   <script src="browser-storage.js?v=252"></script>
   <script>
   /* a checked-in guest goes straight into the app — flag it before first
@@ -694,13 +695,15 @@
   <section class="view hidden community-page" data-view="chat">
     <header class="community-hero community-hero--chat"><nav class="community-hero-nav" aria-label="Chat navigation"><button data-goto="entertainment" type="button" aria-label="Back to Entertainment">&#10094;</button><span></span><button id="chatSearchToggle" type="button" aria-label="Search chat" aria-expanded="false" aria-controls="chatSearchPanel"><span data-community-icon="search"></span></button><button data-goto="more" type="button" aria-label="Open wedding menu">&#8943;</button></nav><img data-community-photo alt="Samuel and Josephine"><div class="community-hero-copy"><p>Sam &amp; Jossy <span class="community-gold-heart">&#9829;</span></p><h1>Wedding Chat</h1><small id="chatPresence" title="Distinct verified guests active in chat during the last 45 seconds">A place to celebrate together</small></div></header>
     <div id="chatSearchPanel" class="community-search hidden"><label for="chatSearch">Search loaded messages</label><input id="chatSearch" type="search" maxlength="120" placeholder="Search names or messages…"><button id="chatSearchClear" type="button">Clear</button></div>
-    <div class="chat-room-tools"><details class="community-guidance"><summary>Messages are reviewed by the hosts</summary><p>Guest messages are reviewed before appearing for everyone. Please keep our chat kind and wedding-related. Only the most recent 150 messages are loaded.</p></details><button id="chatRetry" class="community-icon-button" type="button" aria-label="Refresh chat"><span data-community-icon="refresh"></span></button></div>
+    <div class="chat-room-tools"><details class="community-guidance"><summary>Messages appear instantly for everyone</summary><p>Share with all approved wedding guests without message-by-message approval. Hosts can hide or remove inappropriate posts. Please keep our chat kind and wedding-related. The most recent 150 messages are loaded.</p></details><button id="chatRetry" class="community-icon-button" type="button" aria-label="Refresh chat"><span data-community-icon="refresh"></span></button></div>
     <p id="chatStatus" class="upload-status" role="status" aria-live="polite"></p>
     <button id="chatVerify" class="map-button hidden" type="button">VERIFY GUEST SIGN-IN</button>
     <div id="chatMessages" class="chat-messages" aria-label="Wedding messages"></div>
+    <button id="chatJumpLatest" class="chat-jump-latest" type="button" hidden>Latest messages ↓</button>
     <form id="chatComposer" class="chat-composer">
       <label id="chatAnnouncementLabel" class="hidden"><input id="chatAnnouncement" type="checkbox"> Host announcement</label>
       <div id="chatAttachment" class="community-note" role="status"></div>
+      <div id="chatReplyPreview" class="chat-reply-preview" hidden><div><strong id="chatReplyName"></strong><span id="chatReplyText"></span></div><button id="chatReplyCancel" type="button" aria-label="Cancel reply">×</button></div>
       <div class="chat-compose-row"><label class="community-attach chat-attach-all" aria-label="Attach a file"><span aria-hidden="true">＋</span><input id="chatFile" type="file" aria-label="Attach a file up to 25 MB" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,application/pdf,audio/mpeg,audio/wav"></label><div class="chat-input-pill"><label class="community-sr-only" for="chatText">Your message</label><textarea id="chatText" maxlength="2000" rows="1" placeholder="Type a message…"></textarea><button id="chatEmojiToggle" class="community-icon-button" type="button" aria-label="Add an emoji" aria-expanded="false" aria-controls="chatEmojiPicker"><span data-community-icon="smile"></span></button></div><label class="community-attach chat-camera" aria-label="Take a photo"><span data-community-icon="camera"></span><input id="chatCamera" type="file" aria-label="Take a photo" accept="image/jpeg,image/png,image/webp" capture="environment"></label><button id="chatMediaPick" class="community-icon-button" type="button" aria-label="Attach a photo or video"><span data-community-icon="photos"></span></button><button class="community-icon-button" data-goto="voicemsg" type="button" aria-label="Record a voice memory"><span data-community-icon="mic"></span></button><button id="chatSend" class="share-btn" type="submit" aria-label="Send message"><span data-community-icon="send"></span></button></div>
       <div id="chatEmojiPicker" class="chat-emoji-picker hidden" role="group" aria-label="Choose a message emoji"></div>
       <input id="chatMedia" class="hidden" type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm" aria-label="Choose a photo or video">
@@ -1939,7 +1942,7 @@ try{
 <script src="wedding-guide-knowledge.js?v=241"></script>
 <script src="wedding-guide.js?v=252"></script>
 <script src="admin-companion-alerts.js?v=228"></script>
-<script src="wedding-community.js?v=260"></script>
+<script src="wedding-community.js?v=261"></script>
 <script src="chat-activity.js?v=259"></script>
 <script src="vendor-schema.js?v=229"></script>
 <script src="vendors.js?v=229"></script>

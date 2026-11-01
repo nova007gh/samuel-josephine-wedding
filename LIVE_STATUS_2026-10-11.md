@@ -1,5 +1,43 @@
 # snybena.com live audit — 11 October 2026
 
+## v261 — instant shared Chat, quoted replies and compact modern conversation (candidate)
+
+The user explicitly removed message-by-message host approval and requested replies
+and a neater, taller modern room. Approved wedding guests now publish messages,
+replies and shared attachments immediately for all approved guests. Verified
+guest/account approval remains separate and enforced. Hosts retain hide/show,
+pin and removal controls; guests can remove only their own posts. Deliberately
+hidden messages remain hidden. Upgrade intentionally publishes the former
+pending Chat queue (one pending row at the pre-deployment backup), not any other
+pending uploads, gifts, guest-book posts, registrations or private records.
+
+`wedding_chat_replies` stores only message/parent IDs. Replies are transactional,
+retry-safe and limited to visible parents. Returned quotes contain bounded plain
+text; hidden/deleted parents become unavailable without disclosing parent text,
+name or attachment URLs. Idempotent retry still works if a parent disappears.
+Reply drafts, cancel, tap-to-original within the conversation, copy-message,
+full-photo viewer, date separators, chronological bubbles and a latest-message
+button are implemented. New arrivals never yank someone reading older messages.
+Desktop Enter sends / Shift+Enter makes a newline; touch input stays multiline.
+
+`chat-modern.css` reduces header height, gaps, ancillary text and contained media,
+aligns message tools/reactions compactly and enlarges the usable scrolling room
+without shrinking message bodies below 13px. Composer remains clear of navigation.
+Five-second visible-room refresh uses best-effort 30-second presence heartbeats;
+presence failures no longer block message reads. No fake typing/read receipts,
+private DMs, E2E-encryption claim or third-party platform integration is added.
+Floating Chat shortcut, manual-only gifts and all other wedding pages are retained.
+
+Initial full modern browser suite and disposable HTTP/SQLite suite pass, including
+cross-guest instant visibility, reply/attachment ownership, lost-response dedup,
+hidden/deleted redaction, restart migration/hidden retention and reply-row cleanup.
+All 21 pure suites, the final modern Chat, existing Chat/Entertainment, floating
+Chat notification and full approval/navigation browser suites pass. Final modern
+coverage includes desktop keyboard behaviour and reading through a failed presence
+heartbeat. Candidate compact conversation visually reviewed. Existing production
+Chat module matched committed source before changes. Fresh frontend, flat API
+module, online DB and config-hash backup: `/root/wedding-pre-v261/`.
+
 ## v260 — remove Chat category bar (live)
 
 Removed the user-selected All Chat / Updates / Photos / Videos / Reactions /

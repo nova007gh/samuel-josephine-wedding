@@ -1,6 +1,7 @@
 
-const CACHE = 'sj-wedding-v260-clean-chat-room';
+const CACHE = 'sj-wedding-v261-modern-chat-replies';
 const ASSETS = [
+  './chat-modern.css',
   './chat-activity.js',
   './chat-activity.css',
   './couple-banners.css',

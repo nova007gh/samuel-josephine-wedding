@@ -42,7 +42,11 @@ module.exports=({app,db,requireAdmin,publicWrite,multer,uploadsDir,guest})=>{
     CREATE TABLE IF NOT EXISTS wedding_chat_reactions (messageId TEXT NOT NULL,actorId TEXT NOT NULL,emoji TEXT NOT NULL,PRIMARY KEY(messageId,actorId,emoji));
     CREATE TABLE IF NOT EXISTS wedding_chat_presence (actorId TEXT PRIMARY KEY,seenAt INTEGER NOT NULL);
     CREATE TABLE IF NOT EXISTS wedding_chat_uploads (id TEXT PRIMARY KEY,actorId TEXT NOT NULL,url TEXT NOT NULL,mime TEXT NOT NULL,kind TEXT NOT NULL,name TEXT NOT NULL,size INTEGER NOT NULL,createdAt INTEGER NOT NULL);
+    CREATE TABLE IF NOT EXISTS wedding_chat_replies (messageId TEXT PRIMARY KEY,replyToId TEXT NOT NULL);
   `);
+  // The hosts have enabled immediate publication, including the former review queue.
+  // Deliberately hidden messages remain hidden.
+  db.prepare("UPDATE wedding_chat SET status='approved' WHERE status='pending'").run();
   function origin(req,res,next){
     if(req.headers['sec-fetch-site']==='cross-site')return res.status(403).json({error:'Open this feature from the wedding app.'});
     if(req.headers.origin){try{if(new URL(req.headers.origin).host!==req.get('host'))throw new Error();}catch{return res.status(403).json({error:'Open this feature from the wedding app.'});}}next();
@@ -57,11 +61,13 @@ module.exports=({app,db,requireAdmin,publicWrite,multer,uploadsDir,guest})=>{
     const counts=db.prepare('SELECT emoji,COUNT(*) count FROM wedding_chat_reactions WHERE messageId=? GROUP BY emoji').all(row.id);
     const mine=db.prepare('SELECT emoji FROM wedding_chat_reactions WHERE messageId=? AND actorId=?').all(row.id,who.id).map(x=>x.emoji);
     const file=row.attachmentId?db.prepare('SELECT url,mime,kind,name,size FROM wedding_chat_uploads WHERE id=?').get(row.attachmentId):null;
-    return {id:row.id,name:row.name,host:!!row.host,text:row.text,kind:row.kind,status:row.status,pinned:!!row.pinned,createdAt:row.createdAt,own:row.actorId===who.id,attachment:file||null,reactions:counts.map(r=>({...r,mine:mine.includes(r.emoji)}))};
+    const link=db.prepare('SELECT replyToId FROM wedding_chat_replies WHERE messageId=?').get(row.id);
+    let replyTo=null;if(link){const parent=db.prepare("SELECT id,name,text,attachmentId FROM wedding_chat WHERE id=? AND status='approved'").get(link.replyToId);replyTo=parent?{id:parent.id,name:parent.name,text:parent.text.slice(0,180),hasAttachment:!!parent.attachmentId}:{id:link.replyToId,unavailable:true};}
+    return {id:row.id,name:row.name,host:!!row.host,text:row.text,kind:row.kind,status:row.status,pinned:!!row.pinned,createdAt:row.createdAt,own:row.actorId===who.id,attachment:file||null,replyTo,reactions:counts.map(r=>({...r,mine:mine.includes(r.emoji)}))};
   }
   app.get('/api/chat',actor,(req,res)=>{
     const who=req.communityActor,rows=who.host?db.prepare('SELECT * FROM wedding_chat ORDER BY pinned DESC,createdAt DESC LIMIT 150').all():db.prepare("SELECT * FROM wedding_chat WHERE status='approved' OR actorId=? ORDER BY pinned DESC,createdAt DESC LIMIT 150").all(who.id);
-    res.set('Cache-Control','no-store').json({messages:rows.map(r=>present(r,who)),host:who.host,moderation:'approval',activeGuests:db.prepare("SELECT COUNT(*) n FROM wedding_chat_presence WHERE seenAt>? AND actorId!='hosts'").get(Date.now()-45000).n});
+    res.set('Cache-Control','no-store').json({messages:rows.map(r=>present(r,who)),host:who.host,moderation:'immediate',activeGuests:db.prepare("SELECT COUNT(*) n FROM wedding_chat_presence WHERE seenAt>? AND actorId!='hosts'").get(Date.now()-45000).n});
   });
   // Tiny read-only discovery feed; no message text, identities, files or presence writes.
   app.get('/api/chat/activity',actor,(req,res)=>{
@@ -75,15 +81,18 @@ module.exports=({app,db,requireAdmin,publicWrite,multer,uploadsDir,guest})=>{
   });
   const create=db.transaction((body,who)=>{
     const id=body.id;if(typeof id!=='string'||!/^[a-f0-9-]{36}$/.test(id))throw new Error('Refresh the page before sending.');
-    const message=text(body.text,2000,'Message'),kind=body.kind==='announcement'&&who.host?'announcement':'chat';
+    const message=text(body.text,2000,'Message'),kind=body.kind==='announcement'&&who.host?'announcement':'chat',replyToId=body.replyToId??null;
+    if(replyToId!==null&&(typeof replyToId!=='string'||!/^[a-f0-9-]{36}$/.test(replyToId)||replyToId===id))throw new Error('Choose an available message to reply to.');
     const old=db.prepare('SELECT * FROM wedding_chat WHERE id=?').get(id);
-    if(old){if(old.actorId!==who.id)throw new Error('This message ID is already in use.');if(old.text!==message||old.kind!==kind||old.attachmentId!==(body.attachmentId||null))throw new Error('This send was already saved with different content. Refresh chat before sending a new message.');return old;}
+    if(old){if(old.actorId!==who.id)throw new Error('This message ID is already in use.');const reply=db.prepare('SELECT replyToId FROM wedding_chat_replies WHERE messageId=?').get(id)?.replyToId||null;if(old.text!==message||old.kind!==kind||old.attachmentId!==(body.attachmentId||null)||reply!==replyToId)throw new Error('This send was already saved with different content. Refresh chat before sending a new message.');return old;}
+    if(replyToId&&!db.prepare("SELECT id FROM wedding_chat WHERE id=? AND status='approved'").get(replyToId))throw new Error('That message is no longer available. Cancel the reply to send a new message.');
     const recent=db.prepare('SELECT COUNT(*) n FROM wedding_chat WHERE actorId=? AND createdAt>?').get(who.id,Date.now()-60000).n;
     if(recent>=12)throw new Error('Please wait a minute before sending more messages.');
     let upload=null;
     if(body.attachmentId){upload=db.prepare('SELECT * FROM wedding_chat_uploads WHERE id=? AND actorId=?').get(body.attachmentId,who.id);if(!upload)throw new Error('Upload this attachment again.');}
     if(!message&&!upload)throw new Error('Write a message or choose an attachment.');
-    db.prepare('INSERT INTO wedding_chat VALUES (?,?,?,?,?,?,?,?,?,?)').run(id,who.id,who.name,who.host?1:0,message,kind,who.host?'approved':'pending',0,upload?.id||null,Date.now());
+    db.prepare('INSERT INTO wedding_chat VALUES (?,?,?,?,?,?,?,?,?,?)').run(id,who.id,who.name,who.host?1:0,message,kind,'approved',0,upload?.id||null,Date.now());
+    if(replyToId)db.prepare('INSERT INTO wedding_chat_replies VALUES (?,?)').run(id,replyToId);
     return db.prepare('SELECT * FROM wedding_chat WHERE id=?').get(id);
   });
   app.post('/api/chat/messages',origin,publicWrite,actor,(req,res)=>{try{res.json(present(create(req.body||{},req.communityActor),req.communityActor));}catch(e){fail(res,e);}});
@@ -97,11 +106,11 @@ module.exports=({app,db,requireAdmin,publicWrite,multer,uploadsDir,guest})=>{
   });
   app.patch('/api/admin/chat/:id',origin,requireAdmin,(req,res)=>{
     const row=db.prepare('SELECT * FROM wedding_chat WHERE id=?').get(req.params.id);if(!row)return res.status(404).json({error:'Message not found.'});
-    const b=req.body||{};if(b.status!==undefined&&!['approved','pending','hidden'].includes(b.status))return res.status(400).json({error:'Invalid message status.'});
+    const b=req.body||{};if(b.status!==undefined&&!['approved','hidden'].includes(b.status))return res.status(400).json({error:'Messages publish immediately. Choose visible or hidden.'});
     if(b.pinned!==undefined&&typeof b.pinned!=='boolean')return res.status(400).json({error:'Invalid pin setting.'});
     db.prepare('UPDATE wedding_chat SET status=?,pinned=? WHERE id=?').run(b.status||row.status,b.pinned===undefined?row.pinned:b.pinned?1:0,row.id);res.json({ok:true});
   });
-  const remove=db.transaction(id=>{db.prepare('DELETE FROM wedding_chat_reactions WHERE messageId=?').run(id);db.prepare('DELETE FROM wedding_chat WHERE id=?').run(id);});
+  const remove=db.transaction(id=>{db.prepare('DELETE FROM wedding_chat_reactions WHERE messageId=?').run(id);db.prepare('DELETE FROM wedding_chat_replies WHERE messageId=?').run(id);db.prepare('DELETE FROM wedding_chat WHERE id=?').run(id);});
   app.delete('/api/chat/messages/:id',origin,publicWrite,actor,(req,res)=>{
     const row=db.prepare('SELECT * FROM wedding_chat WHERE id=?').get(req.params.id);if(!row)return res.json({ok:true});
     if(!req.communityActor.host&&row.actorId!==req.communityActor.id)return res.status(403).json({error:'You can only remove your own messages.'});remove(row.id);res.json({ok:true});

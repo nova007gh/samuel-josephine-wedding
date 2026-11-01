@@ -17,14 +17,13 @@ module.exports=async({call,evaluate,wait,request,out,errors})=>{
   await wait(`document.getElementById('chatStatus').textContent.includes('Synthetic lost response')`);
   assert.equal(await evaluate(`document.getElementById('chatText').value.includes('verified guest message')`),true,'Failed send keeps draft');
   await evaluate(`document.getElementById('chatComposer').requestSubmit();document.getElementById('chatComposer').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}))`);
-  await wait(`document.getElementById('chatStatus').textContent.includes('awaiting host approval')`);
+  await wait(`document.getElementById('chatStatus').textContent==='Message published.'`);
   assert.equal(await evaluate(`document.querySelectorAll('.chat-card').length`),1,'Lost response retry reuses one message');
   assert.equal(await evaluate(`document.querySelectorAll('.chat-card script').length`),0,'Message is escaped');
   assert.equal(await evaluate(`document.getElementById('chatText').value`),'');await evaluate(`api=window.__communityApi`);
   const messageId=await evaluate(`document.querySelector('.chat-card').dataset.chatId`);
   await evaluate(`(async()=>{await adminSignIn('','isolated-browser-only');switchView('chat');document.getElementById('chatRetry').click();})()`);
-  await wait(`!!document.querySelector('[data-chat-action="approve"]')`);
-  await evaluate(`document.querySelector('[data-chat-action="approve"]').click()`);
+  assert.equal(await evaluate(`document.querySelector('[data-chat-action="approve"]')===null`),true,'Guest messages do not need approval');
   await wait(`!!document.querySelector('[data-chat-action="hide"]')`);
   await evaluate(`document.querySelector('[data-chat-action="pin"]').click()`);
   await wait(`document.querySelector('.chat-card').classList.contains('is-pinned')`);
