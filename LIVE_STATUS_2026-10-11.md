@@ -1,6 +1,6 @@
 # snybena.com live audit — 11 October 2026
 
-## v259 — persistent faint Chat shortcut, bold for new activity (candidate)
+## v259 — persistent faint Chat shortcut, bold for new activity (live)
 
 At the user's explicit request after difficulty finding the temporary icon,
 approved guests now have a persistent faint gold **Chat** shortcut above Sam on
@@ -23,6 +23,14 @@ assertions. An extra session suite was interrupted by its inspected browser
 navigating/closing and was not counted as passed. No user browser/profile data was
 cleared; only two earlier agent-created duplicate banner crops were removed.
 Fresh frontend, online DB and config-hash backup: `/root/wedding-pre-v259/`.
+
+Deployed frontend feature **`7b7e6ef`** by clean fast-forward without an API
+restart. All four released frontend hashes match; cache
+`sj-wedding-v259-persistent-chat-shortcut` retains 87 precached assets. Live
+GET-only asset/security/health and Chat-discovery approval-boundary checks pass.
+Post-deployment online audit preserves 173 rows across 22 wedding-data tables,
+with byte-identical private configuration and SQLite integrity `ok`; no OTPs,
+live submissions or saved-data changes. Snapshots/report retained in the backup.
 
 ## v258 — floating ten-second Wedding Chat activity icon (live)
 
