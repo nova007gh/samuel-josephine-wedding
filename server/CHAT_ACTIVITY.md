@@ -1,10 +1,13 @@
 # Floating Wedding Chat activity icon
 
-Approved signed-in guests and authenticated hosts can see a small gold Chat icon
-above the existing Sam launcher when new room activity is detected outside Chat.
-Tap it to open Wedding Chat, or dismiss it with ×. It expires after **10 seconds**;
-several events in a burst do not extend its timer or create a stack of icons.
-Reduced motion disables floating animation, not the alert itself.
+Approved signed-in guests and authenticated hosts have a faint gold **Chat**
+shortcut above the existing Sam launcher outside Chat and admin views. It remains
+available even without new activity. Hover/focus makes it easier to see. New room
+activity makes it bold, adds a red badge and changes its label to **New chat** for
+**10 seconds**, then it returns to faint instead of disappearing. Tap either
+state to open Wedding Chat; × clears only the bold highlight. Bursts do not extend
+the highlight timer or create a stack of icons. Reduced motion disables floating
+animation, not the shortcut/highlight.
 
 ## What triggers it
 
@@ -24,9 +27,12 @@ cannot capture every intermediate change between polls.
 Checks run every **15 seconds while the app is open and visible**, with additional
 checks after navigation/reconnect. It is not a background OS/push notification;
 there are no sounds, provider sends or browser-notification permission prompts.
-Forms, dialogs, uploads and active media defer presentation for up to one minute.
-Opening Chat, backgrounding, security/session changes or unsafe interactions
-remove the icon early. Auth changes invalidate in-flight replies and the baseline.
+Forms, uploads and active media defer bold presentation for up to one minute,
+while the faint shortcut stays available. Dialogs/lightboxes temporarily hide it.
+Opening Chat/admin, backgrounding or security/session changes remove it; it
+returns faint when an authorised ordinary app view is available. Auth changes
+invalidate in-flight replies and the baseline. A failed activity refresh removes
+the bold state, not the generic shortcut; failed approval checks still lock access.
 Private RSVP, gifts, arrivals, ownership and other admin-only app activity are not
 turned into public Chat alerts.
 

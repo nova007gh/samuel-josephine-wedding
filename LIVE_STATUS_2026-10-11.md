@@ -1,5 +1,29 @@
 # snybena.com live audit — 11 October 2026
 
+## v259 — persistent faint Chat shortcut, bold for new activity (candidate)
+
+At the user's explicit request after difficulty finding the temporary icon,
+approved guests now have a persistent faint gold **Chat** shortcut above Sam on
+ordinary app views. It works even with no new room activity. New authorised chat
+activity makes it fully bold with a red badge and **New chat** label for ten
+seconds, then it returns faint; bursts do not extend that timer. Clicking either
+state opens Chat. Dismissing a highlight returns to faint instead of removing the
+shortcut. Hover/focus improves visibility. Protected dialogs/lightboxes, Chat,
+admin views, hidden pages and revoked/unverified access hide it. Inputs/uploads/
+media defer only bold alerts; the generic shortcut remains available. No backend,
+auth, moderation, SQL or saved wedding-data changes; existing metadata feed stays
+read-only, approved-only for guests and memory-only on the client.
+
+All 21 pure suites, the complete persistent-shortcut feature browser test and
+full approval/navigation suite pass. Coverage includes faint/bold visual states,
+ten-second return to faint, both-state routing, privacy, dedup, reduced motion,
+revocation and five widths. Local disk pressure blocked screenshot writes; the
+two affected test helpers now tolerate ENOSPC only, without skipping behavioural
+assertions. An extra session suite was interrupted by its inspected browser
+navigating/closing and was not counted as passed. No user browser/profile data was
+cleared; only two earlier agent-created duplicate banner crops were removed.
+Fresh frontend, online DB and config-hash backup: `/root/wedding-pre-v259/`.
+
 ## v258 — floating ten-second Wedding Chat activity icon (live)
 
 New gold floating Chat icon appears outside the room for new room messages,
