@@ -1,6 +1,6 @@
 # snybena.com live audit — 11 October 2026
 
-## v260 — remove Chat category bar (candidate)
+## v260 — remove Chat category bar (live)
 
 Removed the user-selected All Chat / Updates / Photos / Videos / Reactions /
 Files / Polls strip from Wedding Chat, including its obsolete filter bindings
@@ -18,6 +18,13 @@ draft/conflict safety and sign-out cleanup. The initial tool response was lost
 during a harness restart; final completion was recorded durably in the approved
 temporary directory. Backup: `/root/wedding-pre-v260/` (frontend, online DB and
 private-config hash).
+
+Deployed frontend **`0916a92`** by clean fast-forward. All three released hashes
+match and live HTML contains no category strip. Cache
+`sj-wedding-v260-clean-chat-room` retains 87 precached assets; live GET-only
+asset/security/health/privacy checks pass. Post-deploy online audit preserves
+175 rows across 22 wedding-data tables with unchanged private config and SQLite
+integrity `ok`. No live submissions, OTPs, API restart or saved-data changes.
 
 ## v259 — persistent faint Chat shortcut, bold for new activity (live)
 
