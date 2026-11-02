@@ -1,6 +1,6 @@
 # snybena.com live audit — 11 October 2026
 
-## v262 — admin Guest Activity monitor (candidate)
+## v262 — admin Guest Activity monitor (live)
 
 Adds **View Guest Activity** to Overview and a **Guest Activity** admin category.
 The private monitor shows registered guests, latest reported page, last signal,
@@ -33,6 +33,30 @@ was visually reviewed; the button scrolls directly to the monitor.
 Production flat guest-details module matched committed source before replacement.
 Fresh frontend, flat module, online DB and config-hash backup:
 `/root/wedding-pre-v262/`. Operator details: `server/GUEST_ACTIVITY.md`.
+
+Release **`d11bd22`** is pushed and deployed. The three flat API modules were
+installed and the API restarted/health-checked **before** the frontend fast-forward.
+Live GET-only checks passed all **91 precached assets**, security/health/privacy
+boundaries and six-width anonymous browser checks, without OTP sends or submissions.
+Five frontend assets and all three installed API modules matched local SHA-256
+hashes exactly (the shared schema is installed in both locations):
+
+| Source file | SHA-256 |
+| --- | --- |
+| `index.html` | `6157c917f46b696ec56f5b8c12ce31d9710ee58ab9606a9f651abcbd7f9ffb1c` |
+| `guest-activity-schema.js` | `444ba2b4196ef8a4d77f35456121bb051c7fafce545b611966e149eabfc3e17f` |
+| `guest-activity.js` | `e1eff6c1056eda23f5cae929a626e22ef966246f063919be04c4e786388c7193` |
+| `guest-activity.css` | `d989604ee0e7c95963968f3cc59a8af64f7cc2435661bf8e4e98a17a16fc508c` |
+| `service-worker.js` | `c0ca86b9ed31b59297a9ed9c9f638e05d6a30bf7ec2731773e9aebb8702afa5d` |
+| `server/guest-details.js` | `c4185554f765a0c111ce3d81da5fa033ae8eaae6f4907eeb0166b95c11c7580b` |
+| `server/guest-activity.js` | `fa9c834bf8b1b1385ee4346f6c3389fa49d451fa44b020ac737f0119e2f407b7` |
+
+The online post-deployment SQLite preservation audit compared **188 rows across
+23 baseline wedding-data tables**, finding **no unexpected changes**. Private
+configuration was unchanged and SQLite integrity was `ok`. The sole new table,
+`guest_site_presence`, had zero rows at the audit snapshot; signals begin as
+approved guests open/refresh the updated app. Deployment baseline, post-deploy
+snapshot and `preservation-result.json` are retained in `/root/wedding-pre-v262/`.
 
 ## v261 — instant shared Chat, quoted replies and compact modern conversation (live)
 
