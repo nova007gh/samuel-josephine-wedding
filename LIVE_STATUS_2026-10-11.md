@@ -1,6 +1,6 @@
 # snybena.com live audit — 11 October 2026
 
-## v263 — Seating & Table Map for admin and guests (candidate)
+## v263 — Seating & Table Map for admin and guests (live, 15 November 2026)
 
 One shared renderer (`seating-map.js`) now draws the same auto-generated table
 grid for the admin **Tables & Food** panel and the guest entrance pass. Admin
@@ -18,6 +18,43 @@ No sample data (50 tables / 1,000 seats in the reference design) is seeded; the
 map renders only real saved tables. Seat ranges and map colours are computed
 from the existing verified assignments and arrivals — no new tracking, no new
 guest-facing names, no layout persistence.
+
+Regression: all 23 pure suites plus all 9 disposable browser suites passed
+against the v263 candidate (`/root/wedding-v263-candidate`), including the new
+admin-map (stats/colours/donut/detail/zoom) and aggregate-guest-map assertions
+in `tables-food-e2e` and the no-map-before-approval assertion in
+`guest-approval-live`. Mid-regression the local Mac disk hit 100% full and the
+test browser died twice with transport errors; after freeing 4.2 GB of
+regenerable caches (`~/Library/Caches`, `~/.npm`) the `sessions` and `approval`
+suites passed unchanged — no app change was involved.
+
+Deployment (backend-first, commit `b3b39e2`): flat API modules installed to
+`/opt/wedding-api/` after verifying the live flat modules still matched the
+committed v262 baseline; `wedding-api` restarted, health HTTP 200
+`{"ok":true}`; then the frontend checkout at `/var/www/snybena.com/`
+fast-forwarded to `b3b39e2`. Live hashes verified byte-identical to the repo:
+frontend `index.html 4ee339ed…`, `service-worker.js 4e24bd3a…`,
+`seating-map.js 467da1de…`, `seating-map.css ef009316…`,
+`tables-food.js c24949e7…`, `tables-food-schema.js 5efa61ad…`,
+`guest-arrival.js 37d81332…`; API `tables-food.js 5ef945c4…`,
+`guest-arrival.js fa5786c8…`, `tables-food-schema.js 5efa61ad…`.
+
+Live audits after deploy: `live-readonly-audit` PASS (93 precached assets,
+security headers/API no-store, welcome photo MIME, health, live OTP on,
+unapproved feature lockdown; GET-only) and `gifts-design --approval-live` PASS
+(welcome-only gate, blocked deep links, verification guidance, reachable admin
+sign-in, six widths, large unboxed neon seal, zero OTP sends; no submissions).
+
+Post-deploy preservation audit (`/root/wedding-pre-v263/preservation-result.json`,
+baseline `/root/wedding-pre-v263/baseline.db` taken 14:41 UTC): all 34 tables
+identical, no content diffs, `guest_seating`/`guest_table_links` 0 rows and
+`guest_arrivals` 1 row unchanged, config hash unchanged, integrity ok. The only
+wedding-data change in the window was guest Brian Gborbitey (SAM'S FAMILY)
+moving pending→approved at the entrance after his 14:23 UTC check-in — a
+legitimate admin-panel action from a still-signed-in session (no v263 code path
+writes status; approvals are not logged as security events, verified across the
+full history). Routine bot-scan `suspicious_input` noise and this audit's own
+GET-only `admin_no_token` probes account for the +11 `security_events` rows.
 
 ## v262 — admin Guest Activity monitor (live)
 
