@@ -1,5 +1,44 @@
 # snybena.com live audit — 11 October 2026
 
+## Relationship-based seating configured (live data, 15 November 2026)
+
+The built-in automatic seating (v250+) was already enabled but had **no saved
+rules**, so arrivals fell through as "No saved matching relation / inviter
+rule". With the operator's explicit approval, the plan below was written to the
+live `settings.tablesFood` via an authenticated `PATCH /api/admin/tables-food`
+(localhost-only credentials from `api.env`; database backed up first to
+`/root/wedding-pre-v263/pre-seating-rules-2026-11-15.db`; revision guard
+re-checked before the write). No code changed; the three existing tables stayed
+byte-identical; the menu and `autoEnabled` were untouched.
+
+- **Tables 3 → 5:** added **Jossy's Family** and **Jossy's Friends**, 50 seats
+  each (the operator's chosen capacity pattern), locations left empty for the
+  couple to fill in the real usher directions.
+- **Rules 0 → 16.** Exact-relation rules (case/apostrophe-insensitive matching):
+  SAM'S FAMILY → Sam's Family (overflow OPASS); SAM'S FRIEND → Sam's friends
+  (overflow OPASS); GROOMSMAN, VENDOR, PHOTOBOOTH VENDOR AT THE WEDDING,
+  COORDINATOR, LET'S VIBE, OPASS, KOSEC, COLLEAGUE, CHURCH FAMILY → OPASS;
+  BRIDESMAID → Jossy's Friends (overflow Jossy's Family); JOSSY'S FAMILY →
+  Jossy's Family; JOSSY'S FRIEND → Jossy's Friends. Plus two side catch-alls so
+  **every future signup** is seated by relationship at entrance check-in: any
+  sam/samuel/groom-keyword relation → Sam's Family → Sam's friends → OPASS; any
+  jossy/josephine/bride-keyword relation (e.g. JOSSY'S FRIEND, BRIDE'S JSS MATE,
+  "Other — Jossy's friend") → Jossy's Family → Jossy's Friends → OPASS.
+- **Timing unchanged:** assignment happens inside the entrance-confirmation
+  transaction only (approved + attending + confirmed arrival; whole party must
+  fit). Guests still see their own table only after check-in — no pre-arrival
+  seat leak. The one already-arrived guest (Emmanuel Larbi, SAM'S FAMILY) was
+  seated at Sam's Family via the read-only preview → atomic apply flow
+  (`source=automatic`); the other 46 guests are correctly unassigned until they
+  arrive.
+- `live-readonly-audit` re-run after the write: PASS. Full record:
+  `/root/wedding-pre-v263/preservation-seating-rules.json`.
+- Follow-ups for the couple: fill in the two Jossy table locations in Tables &
+  Food; a guest saved with the legacy typo relation "Groomsmam" and one with a
+  blank relation match no rule (edit their relation or seat them manually);
+  planned v265 frontend nicety: rules editor dropdown of real relations with
+  live match counts.
+
 ## v264 — Seating & Table Map visual upgrade (live, 15 November 2026)
 
 Frontend-only visual pass that brings the live map to the reference design's
