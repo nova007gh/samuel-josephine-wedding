@@ -1,0 +1,56 @@
+/* Shared seating-map visuals for the admin Tables & Food panel and the guest pass. */
+.seat-map{border:1px solid #e2cba4;border-radius:14px;background:linear-gradient(180deg,#fdf3e0,#faf0dd);padding:12px;min-width:0;overflow-wrap:anywhere;}
+.seat-map-stage{display:block;text-align:center;font:700 15px/1.4 Georgia,serif;color:#6d4a17;letter-spacing:.12em;text-transform:uppercase;border-bottom:2px solid #d9b97e;padding:2px 0 8px;margin-bottom:10px;}
+.seat-map-entrance{display:block;text-align:center;font:11px/1.6 system-ui,sans-serif;color:#7a5a20;background:#f6e8cf;border:1px solid #dcc188;border-radius:9px;padding:5px 8px;margin-top:10px;}
+.seat-map-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(calc(56px*var(--seat-zoom,1)),1fr));gap:calc(8px*var(--seat-zoom,1));}
+.seat-tile{aspect-ratio:1/1;display:grid;place-items:center;text-align:center;border-radius:50%;border:2px solid transparent;font:bold calc(13px*var(--seat-zoom,1))/1.15 system-ui,sans-serif;overflow:hidden;padding:2px;min-width:0;}
+.seat-map--admin .seat-tile{color:#fffdf6;box-shadow:inset 0 0 0 2px rgba(255,255,255,.35);}
+.seat-map--admin .seat-tile.is-active{background:#3f7d33;}
+.seat-map--admin .seat-tile.is-partial{background:#d9a013;color:#4c3602;box-shadow:none;}
+.seat-map--admin .seat-tile.is-full{background:#c23b2c;}
+.seat-map--admin .seat-tile.is-empty{background:#a99f8d;}
+.seat-map--admin button.seat-tile{cursor:pointer;}
+.seat-map--guest .seat-tile.is-mine{background:#7a3fd4;color:#fff;box-shadow:0 0 0 3px #c9a6f5;}
+.seat-map--guest .seat-tile.is-full{background:#c23b2c;color:#fff;}
+.seat-map--guest .seat-tile.is-partial{background:#d9a013;color:#4c3602;}
+.seat-map--guest .seat-tile.is-empty{background:#3f7d33;color:#fffdf6;}
+.seat-map-legend{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:10px;font:11px/1.5 system-ui,sans-serif;color:#5f4a26;}
+.seat-legend-chip{display:inline-flex;align-items:center;gap:5px;}
+.seat-legend-chip::before{content:'';width:10px;height:10px;border-radius:50%;display:inline-block;background:currentColor;}
+.seat-map--guest .seat-legend-chip.is-empty::before{background:#3f7d33;}
+.seat-map--guest .seat-legend-chip.is-mine::before{background:#7a3fd4;}
+.seat-legend-chip.is-partial::before{background:#d9a013;}
+.seat-legend-chip.is-full::before{background:#c23b2c;}
+.seat-map--admin .seat-legend-chip.is-active::before{background:#3f7d33;}
+.seat-map--admin .seat-legend-chip.is-empty::before{background:#a99f8d;}
+.seat-map-empty{margin:6px 0;color:#806b4d;font:12px/1.6 system-ui,sans-serif;}
+/* Admin dashboard surroundings */
+.seat-map-admin{min-width:0;overflow-wrap:anywhere;margin:16px 0;}
+.seat-map-admin h3{margin:14px 0 4px;}
+.seat-map-admin p{line-height:1.6;}
+.seat-map-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0;}
+.seat-map-stats>div{display:flex;flex-direction:column;padding:10px 8px;border:1px solid #e2cba4;border-radius:12px;background:#fff9ed;min-width:0;}
+.seat-map-stats strong{font:24px Georgia,serif;color:#604623;}
+.seat-map-stats span{font-size:10px;color:#806b4d;overflow-wrap:anywhere;}
+.seat-map-toolbar{display:flex;gap:6px;justify-content:flex-end;margin:0 0 8px;}
+.seat-map-toolbar button{min-width:44px;min-height:38px;border:1px solid #d6b477;border-radius:10px;background:#fff9ed;color:#79511d;font-size:16px;cursor:pointer;}
+.seat-donut-svg{width:130px;height:130px;max-width:100%;}
+.seat-donut{fill:none;stroke-width:14;stroke-linecap:butt;}
+.seat-donut.is-filled{stroke:#3f7d33;}
+.seat-donut.is-reserved{stroke:#d9a013;}
+.seat-donut.is-available{stroke:#cfc4b0;}
+.seat-donut-total{font:11px system-ui,sans-serif;fill:#604623;}
+.seat-map-donut{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:12px 0;}
+.seat-map-donut .seat-map-legend{flex-direction:column;gap:4px;margin:0;}
+.seat-map-detail{border:1px solid #e8d7b9;border-radius:12px;background:#fffaf2;padding:12px;margin:10px 0;}
+.seat-map-detail h4{margin:0 0 6px;}
+.seat-map-detail p{margin:4px 0;line-height:1.55;}
+.seat-map-detail small{display:block;margin:3px 0;color:#806b4d;}
+/* Guest pass integration */
+.guest-seat-map{margin:14px 0 4px;border:1px solid #e3d2ae;border-radius:14px;background:#fffaf0;padding:12px;min-width:0;overflow-wrap:anywhere;}
+.guest-seat-chips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:8px 0 10px;}
+.guest-seat-chips span{display:flex;flex-direction:column;gap:2px;border:1px solid #ecd9b3;border-radius:10px;background:#fff6e6;padding:8px 6px;min-width:0;}
+.guest-seat-chips strong{font:15px Georgia,serif;color:#604623;overflow-wrap:anywhere;}
+.guest-seat-chips small{font-size:10px;color:#806b4d;}
+#guestSeatMapNote{font-size:11px;color:#806b4d;margin:10px 0 0;line-height:1.6;}
+@media(max-width:350px){.seat-map-stats{grid-template-columns:repeat(2,minmax(0,1fr));}.guest-seat-chips strong{font-size:13px;}}

@@ -34,6 +34,18 @@ module.exports=({app,db,requireAdmin,multer,uploadsDir,publicWrite})=>{
   app.patch('/api/admin/tables-food',requireAdmin,origin,(req,res)=>{try{res.json(save(req.body||{}));}catch(e){res.status(e.status||400).json({error:e.message});}});
   app.patch('/api/admin/tables-food/guests/:id',requireAdmin,origin,(req,res)=>{try{if(typeof req.body?.tableId!=='string')throw fail('Choose a table or Unassigned.');manual(req.params.id,req.body.tableId,req.body.expectedRevision);res.json(snapshot());}catch(e){res.status(e.status||400).json({error:e.message});}});
   function bulk(preview){const {data}=source(),used=load(data),rows=db.prepare('SELECT * FROM guests ORDER BY checkedInAt,id').all().map(g=>propose(g,data,used));if(!preview)for(const p of rows.filter(r=>r.status==='assign')){const t=data.tables.find(t=>t.id===p.tableId);write(p.guestId,t.name,t.location,t.id,'automatic');}return rows;}
+  /* Aggregate-only guest view: every saved table's usage plus this guest's own
+     seat range. Never includes other guests' names, phones or party details. */
+  function guestTables(id){
+    const {data}=source(),seated=db.prepare("SELECT guestId,tableNumber,rowid AS seatOrder FROM guest_seating WHERE tableNumber!='' ORDER BY rowid").all(),links=new Map(db.prepare('SELECT * FROM guest_table_links').all().map(r=>[r.guestId,r])),people=new Map(db.prepare('SELECT * FROM guests').all().map(g=>[g.id,g]));
+    const per=new Map();
+    for(const s of seated){const g=people.get(s.guestId);if(!g)continue;const table=data.tables.find(t=>t.id===links.get(s.guestId)?.tableId)||data.tables.find(t=>S.normal(t.name)===S.normal(s.tableNumber));if(!table)continue;const list=per.get(table.id)||[];list.push({guestId:s.guestId,size:party(g).size});per.set(table.id,list);}
+    const tables=data.tables.map(t=>{const at=per.get(t.id)||[];return {id:t.id,name:t.name,capacity:t.capacity,used:at.reduce((n,r)=>n+r.size,0)};});
+    const mineRow=seated.find(s=>s.guestId===id),myTable=mineRow?data.tables.find(t=>t.id===links.get(id)?.tableId)||data.tables.find(t=>S.normal(t.name)===S.normal(mineRow.tableNumber)):null;
+    let mine=null;
+    if(myTable){const range=S.seatRanges(per.get(myTable.id)||[]).get(id);if(range)mine={id:myTable.id,name:myTable.name,capacity:myTable.capacity,seatStart:range.start,seatEnd:range.end};}
+    return {tables,mine};
+  }
   const token=()=>hash(JSON.stringify({plan:source().revision,guests:db.prepare('SELECT id,status,relation,attending,tableGuests,checkedInAt FROM guests ORDER BY id').all(),seats:db.prepare('SELECT * FROM guest_seating ORDER BY guestId').all(),arrivals:db.prepare('SELECT * FROM guest_arrivals ORDER BY guestId').all(),rsvps:db.prepare('SELECT * FROM rsvps ORDER BY id').all(),owners:db.prepare("SELECT * FROM guest_activity_owners WHERE kind='rsvp' ORDER BY recordId").all()}));
   app.get('/api/admin/tables-food/preview',requireAdmin,(req,res)=>res.json({token:token(),rows:bulk(true)}));
   const apply=db.transaction(expected=>{if(expected!==token())throw fail('Guest list / seating changed. Preview again before applying.',409);return bulk(false);});
@@ -41,5 +53,5 @@ module.exports=({app,db,requireAdmin,multer,uploadsDir,publicWrite})=>{
   app.get('/api/food-menu',(req,res)=>{try{const {data,revision}=source(),m=data.menu,defaults=S.defaults().menu;res.json({revision,published:m.published,title:m.published?m.title:defaults.title,subtitle:m.published?m.subtitle:defaults.subtitle,heroPhotoUrl:m.published?m.heroPhotoUrl:'',items:m.published?m.items.filter(i=>i.published):[]});}catch{res.status(503).json({error:'The menu is temporarily unavailable.'});}});
   const receive=multer({storage:multer.memoryStorage(),limits:{fileSize:8*1024*1024,files:1}}).single('file');
   app.post('/api/admin/tables-food/photo',requireAdmin,origin,publicWrite,receive,(req,res)=>{const type=req.file&&require('./wedding-community').attachmentType(req.file.buffer);if(!type||!['jpg','png','webp'].includes(type[0]))return res.status(400).json({error:'Upload a real JPEG, PNG or WebP photo up to 8 MB.'});const name=crypto.randomUUID()+'.'+type[0];fs.writeFileSync(path.join(uploadsDir,name),req.file.buffer,{flag:'wx'});res.json({url:'/uploads/'+name});});
-  return {autoAssign:db.transaction(automatic),setLegacySeat};
+  return {autoAssign:db.transaction(automatic),setLegacySeat,guestTables};
 };

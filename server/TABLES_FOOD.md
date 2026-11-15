@@ -1,5 +1,33 @@
 # Tables & Food (v250)
 
+## Seating & Table Map (v263)
+
+A live visual map now heads the admin Tables & Food panel, built by one shared
+renderer (`seating-map.js`) that also powers the guest pass. It shows every
+saved table as a labelled tile in an auto-generated grid — no manual layout to
+maintain — with colours from real data only:
+
+- **Admin legend:** Full (red), Checked in / Active (green), Partially filled
+  (yellow), Empty / Reserved (grey). Stats row shows Total Capacity, Total
+  Tables, Seats / Table and Checked In (registered guests with a confirmed
+  arrival). A donut splits total seats into checked-in, reserved-not-arrived and
+  available. Tapping a tile opens its detail card (capacity, reserved, checked-in
+  seats, usher directions and assigned parties — admin-only data they already
+  have). Zoom buttons scale the grid between 0.7× and 1.6×.
+- **Guest map (guest pass):** appears only after **entrance check-in AND a saved
+  table assignment** — the existing visibility rule is unchanged. It highlights
+  My Table, shows aggregate colours for other tables (Available / Reserved /
+  Full) and computes the guest's seat range ("1–10 of 20") sequentially in
+  first-assignment order. Seat ranges are display-only; nothing extra is stored.
+
+Privacy of the guest map: `GET /api/guest-arrival` adds `tables` (aggregate
+`{id,name,capacity,used}` only) and `table` (own `{id,name,capacity,seatStart,
+seatEnd}`) **only** when the caller is approved, arrived and assigned. In every
+other case the response is byte-identical to v262: no map keys, no other guests'
+names, phones, party details or seat positions, and no pre-arrival seat leak.
+Tablemates are deliberately not listed to guests. The mockup-style map contains
+no invented 50-table/1,000-seat sample data — empty plans show guidance instead.
+
 ## Login changes
 
 “Your Relationship / Invited By” now includes **GROOMSMAN**, **BRIDESMAID** and

@@ -1,5 +1,24 @@
 # snybena.com live audit — 11 October 2026
 
+## v263 — Seating & Table Map for admin and guests (candidate)
+
+One shared renderer (`seating-map.js`) now draws the same auto-generated table
+grid for the admin **Tables & Food** panel and the guest entrance pass. Admin
+gets live stats (total capacity, tables, seats/table, checked-in guests), a
+colour-coded map (full / checked-in / partially filled / empty), a filled-
+reserved-available donut, per-table detail cards on tap and clamped zoom. Guests
+see the map on their pass **only after entrance check-in with a saved table**,
+with My Table highlighted, aggregate availability colours and a display-only
+sequential seat range ("1–10 of 20") computed in first-assignment order.
+
+Privacy: `GET /api/guest-arrival` adds aggregate `tables` and own `table` keys
+only for approved, arrived, assigned guests; all other responses are unchanged,
+with no other guests' names or contact details and no pre-arrival seat leak.
+No sample data (50 tables / 1,000 seats in the reference design) is seeded; the
+map renders only real saved tables. Seat ranges and map colours are computed
+from the existing verified assignments and arrivals — no new tracking, no new
+guest-facing names, no layout persistence.
+
 ## v262 — admin Guest Activity monitor (live)
 
 Adds **View Guest Activity** to Overview and a **Guest Activity** admin category.

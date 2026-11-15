@@ -15,5 +15,7 @@
     return {autoEnabled:flag(v.autoEnabled),tables,rules,menu};
   }
   function chooseRule(data,relation,side){const exact=data.rules.find(r=>r.enabled&&r.match==='relation'&&normal(r.value)===normal(relation));return exact||data.rules.find(r=>r.enabled&&r.match===side)||null;}
-  return {categories,normal,defaults,validate,chooseRule};
+  /* Display-only seat ranges in first-assignment order; nothing is persisted. */
+  function seatRanges(rows){const out=new Map();let next=1;for(const r of rows){if(!r||typeof r.guestId!=='string'||!r.guestId)continue;const size=Math.max(1,Math.min(50,Math.floor(Number(r.size)||1)));out.set(r.guestId,{start:next,end:next+size-1});next+=size;}return out;}
+  return {categories,normal,defaults,validate,chooseRule,seatRanges};
 });

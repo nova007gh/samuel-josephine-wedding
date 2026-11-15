@@ -5,3 +5,7 @@ assert.equal(S.chooseRule(data,'GROOMSMAN','sam').id,'role');assert.equal(S.choo
 for(const tables of [[table('x','Garden'),table('y',' garden ')],[table('x','A',0)],[table('x','A',101)]])assert.throws(()=>S.validate({...S.defaults(),tables}));
 assert.throws(()=>S.validate({...data,rules:[...data.rules,{...data.rules[0],id:'duplicate'}]}));assert.throws(()=>S.validate({...data,rules:[{...data.rules[0],tableIds:['missing']}]}));assert.throws(()=>S.validate({...data,menu:{...data.menu,heroPhotoUrl:'https://evil.test/photo.jpg'}}));assert.equal(S.defaults().menu.items.length,0);assert.equal(S.defaults().autoEnabled,false);assert.equal(S.defaults().menu.published,false);
 console.log('PASS saved-table capacity/name/rule/photo validation, explicit exact-relation priority, unknown exclusions and honest unpublished/automatic-off defaults');
+const ranges=S.seatRanges([{guestId:'a',size:2},{guestId:'b',size:3},{guestId:'c',size:1}]);
+assert.deepEqual(ranges.get('a'),{start:1,end:2});assert.deepEqual(ranges.get('b'),{start:3,end:5});assert.deepEqual(ranges.get('c'),{start:6,end:6});
+assert.equal(S.seatRanges([]).size,0);assert.deepEqual(S.seatRanges([{guestId:'x',size:0},{guestId:'y',size:99},{guestId:'z',size:NaN}]).get('z'),{start:52,end:52},'Seat ranges are display-only, ordered and clamped');
+console.log('PASS display-only sequential seat ranges in assignment order with size clamps');

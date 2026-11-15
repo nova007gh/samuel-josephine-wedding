@@ -1,6 +1,8 @@
 
-const CACHE = 'sj-wedding-v262-admin-guest-activity';
+const CACHE = 'sj-wedding-v263-seating-map';
 const ASSETS = [
+  './seating-map.js',
+  './seating-map.css',
   './guest-activity-schema.js',
   './guest-activity.js',
   './guest-activity.css',
