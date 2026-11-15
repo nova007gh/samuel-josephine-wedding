@@ -1,6 +1,6 @@
 # snybena.com live audit — 11 October 2026
 
-## v264 — Seating & Table Map visual upgrade (candidate)
+## v264 — Seating & Table Map visual upgrade (live, 15 November 2026)
 
 Frontend-only visual pass that brings the live map to the reference design's
 look with real data only: photo-ready banquet-hall stage (`assets/hall-
@@ -13,6 +13,31 @@ card with status badge and seats left. No sample tables or invented capacity
 numbers; "Edit Layout" and "Reports & Export" stay out (auto-grid was the
 confirmed decision, export may come later). No API or DB change; the three
 flat modules are byte-identical to live v263.
+
+Regression: all 23 pure suites plus all 9 disposable browser suites passed
+against the v264 candidate (`/root/wedding-v264-candidate` — the API bytes are
+identical to v263, so only the frontend was under test). One suite needed a
+test-only fix: `guest-approval-e2e` asserted the revoked-approval title right
+after a wait that any locked status satisfies; the suite's own `/memories` 403
+fires `guest/approval-required` → `WeddingAccess.lock()` → 'checking', so the
+assert raced the lock-refresh. v263 frontend failed identically (bisected),
+so the wait now requires the settled 'Waiting for admin approval' title —
+no app change. Mid-sweep the local Mac disk dropped to 2.8 GB free; no
+transport failures this time.
+
+Deployment (commit `a8a0a69`, frontend-only): pushed and fast-forwarded at
+`/var/www/snybena.com/`; live hashes verified byte-identical to the repo —
+`index.html 7ab149ff…`, `service-worker.js 5cdadd2a…`, `seating-map.js
+d14b4ff1…`, `seating-map.css 2fc4d2d4…`, `tables-food.js a1814acf…`,
+`guest-arrival.js 37d81332…` (unchanged). Live audits: `live-readonly-audit`
+PASS (93 assets, headers/no-store, health, OTP on, lockdown; GET-only) and
+`gifts-design --approval-live` PASS (zero OTP sends, no submissions).
+Preservation (`/root/wedding-pre-v263/preservation-v264.json`, vs the 14:41 UTC
+baseline): 34 tables identical, no unexplained diffs — the only changes since
+the v263 audit are the public `homeLikes` counter (18→19, a real visitor) and
+Brian's already-classified entrance approval; config unchanged, integrity ok.
+
+## v263 — Seating & Table Map for admin and guests (live, 15 November 2026)
 
 ## v263 — Seating & Table Map for admin and guests (live, 15 November 2026)
 
