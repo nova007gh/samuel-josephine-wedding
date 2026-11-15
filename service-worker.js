@@ -1,5 +1,5 @@
 
-const CACHE = 'sj-wedding-v263-seating-map';
+const CACHE = 'sj-wedding-v264-seat-map-visual';
 const ASSETS = [
   './seating-map.js',
   './seating-map.css',

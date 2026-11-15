@@ -1,56 +1,87 @@
 /* Shared seating-map visuals for the admin Tables & Food panel and the guest pass. */
-.seat-map{border:1px solid #e2cba4;border-radius:14px;background:linear-gradient(180deg,#fdf3e0,#faf0dd);padding:12px;min-width:0;overflow-wrap:anywhere;}
-.seat-map-stage{display:block;text-align:center;font:700 15px/1.4 Georgia,serif;color:#6d4a17;letter-spacing:.12em;text-transform:uppercase;border-bottom:2px solid #d9b97e;padding:2px 0 8px;margin-bottom:10px;}
-.seat-map-entrance{display:block;text-align:center;font:11px/1.6 system-ui,sans-serif;color:#7a5a20;background:#f6e8cf;border:1px solid #dcc188;border-radius:9px;padding:5px 8px;margin-top:10px;}
-.seat-map-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(calc(56px*var(--seat-zoom,1)),1fr));gap:calc(8px*var(--seat-zoom,1));}
-.seat-tile{aspect-ratio:1/1;display:grid;place-items:center;text-align:center;border-radius:50%;border:2px solid transparent;font:bold calc(13px*var(--seat-zoom,1))/1.15 system-ui,sans-serif;overflow:hidden;padding:2px;min-width:0;}
-.seat-map--admin .seat-tile{color:#fffdf6;box-shadow:inset 0 0 0 2px rgba(255,255,255,.35);}
-.seat-map--admin .seat-tile.is-active{background:#3f7d33;}
-.seat-map--admin .seat-tile.is-partial{background:#d9a013;color:#4c3602;box-shadow:none;}
-.seat-map--admin .seat-tile.is-full{background:#c23b2c;}
-.seat-map--admin .seat-tile.is-empty{background:#a99f8d;}
+.seat-map{border:1px solid #e2cba4;border-radius:16px;background:linear-gradient(180deg,#fff9ee,#fdf3e0);padding:10px;min-width:0;overflow-wrap:anywhere;}
+/* Stage: photo backdrop when assets/hall-backdrop.jpg exists, rich gold fallback otherwise. */
+.seat-map-stage{position:relative;display:flex;flex-direction:column;border-radius:12px;border:1px solid #b98a3c;box-shadow:inset 0 0 0 1px rgba(255,244,214,.5);overflow:hidden;padding:10px 10px 12px;
+  background:
+    linear-gradient(180deg,rgba(46,30,8,.38),rgba(46,30,8,.08) 34%,rgba(46,30,8,.12) 62%,rgba(46,30,8,.45)),
+    url('assets/hall-backdrop.jpg'),
+    radial-gradient(130% 95% at 50% 6%,#fdf6e3 0%,#f5e5c2 36%,#d9b06a 68%,#8a5f24 100%);
+  background-size:auto,cover,auto;background-position:center;background-repeat:no-repeat;}
+.seat-map-stage-title{align-self:center;font:700 13px/1.3 Georgia,serif;letter-spacing:.22em;text-transform:uppercase;color:#ffe9b8;background:rgba(36,24,6,.55);border:1px solid rgba(233,196,122,.55);border-radius:999px;padding:5px 14px;text-shadow:0 1px 2px rgba(20,12,0,.6);}
+.seat-map-entrance{align-self:center;margin-top:auto;font:11px/1.5 system-ui,sans-serif;font-weight:600;color:#4a3208;background:linear-gradient(180deg,#ffe8ad,#e7c26a);border:1px solid #a97f22;border-radius:999px;padding:6px 14px;box-shadow:0 2px 6px rgba(40,26,4,.35);}
+.seat-map-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(calc(64px*var(--seat-zoom,1)),1fr));gap:calc(10px*var(--seat-zoom,1));padding:12px 2px 14px;}
+/* Table tiles: gold-rimmed status circles readable on the photo. */
+.seat-tile{position:relative;aspect-ratio:1/1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;text-align:center;border-radius:50%;border:3px solid #d8b656;box-shadow:0 3px 8px rgba(30,20,4,.4),inset 0 0 0 2px rgba(255,250,235,.28);padding:2px;min-width:0;overflow:visible;}
+.seat-tile-name{display:block;font:bold calc(11px*var(--seat-zoom,1))/1.1 system-ui,sans-serif;overflow-wrap:anywhere;max-width:100%;max-height:2.3em;overflow:hidden;}
+.seat-tile-count{display:block;font:600 calc(9px*var(--seat-zoom,1))/1.2 system-ui,sans-serif;opacity:.85;}
+.seat-tile.is-active{background:#2f7d33;color:#fff;}
+.seat-tile.is-partial{background:#d9a013;color:#3c2c02;}
+.seat-tile.is-full{background:#c23b2c;color:#fff;}
+.seat-tile.is-empty{background:#8f867a;color:#fdf8ec;}
+.seat-map--guest .seat-tile.is-mine{background:linear-gradient(180deg,#8a4be0,#6c30c2);color:#fff;box-shadow:0 0 0 3px #e3ccff,0 3px 10px rgba(64,20,140,.55);}
+.seat-tile-pin{position:absolute;top:-13px;left:50%;transform:translateX(-50%);width:19px;height:19px;color:#7c1fd1;filter:drop-shadow(0 1px 2px rgba(30,8,60,.5));}
 .seat-map--admin button.seat-tile{cursor:pointer;}
-.seat-map--guest .seat-tile.is-mine{background:#7a3fd4;color:#fff;box-shadow:0 0 0 3px #c9a6f5;}
-.seat-map--guest .seat-tile.is-full{background:#c23b2c;color:#fff;}
-.seat-map--guest .seat-tile.is-partial{background:#d9a013;color:#4c3602;}
-.seat-map--guest .seat-tile.is-empty{background:#3f7d33;color:#fffdf6;}
-.seat-map-legend{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:10px;font:11px/1.5 system-ui,sans-serif;color:#5f4a26;}
-.seat-legend-chip{display:inline-flex;align-items:center;gap:5px;}
-.seat-legend-chip::before{content:'';width:10px;height:10px;border-radius:50%;display:inline-block;background:currentColor;}
-.seat-map--guest .seat-legend-chip.is-empty::before{background:#3f7d33;}
-.seat-map--guest .seat-legend-chip.is-mine::before{background:#7a3fd4;}
+.seat-map--admin button.seat-tile:active{transform:scale(.97);}
+/* Dark legend pill like the reference design. */
+.seat-map-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px;margin-top:10px;font:11px/1.5 system-ui,sans-serif;color:#f4e8cd;background:rgba(28,20,8,.85);border-radius:999px;padding:7px 12px;}
+.seat-legend-chip{display:inline-flex;align-items:center;gap:6px;}
+.seat-legend-chip::before{content:'';width:10px;height:10px;border-radius:50%;display:inline-block;background:currentColor;box-shadow:inset 0 0 0 1px rgba(255,255,255,.4);}
+.seat-legend-chip.is-active::before{background:#2f7d33;}
 .seat-legend-chip.is-partial::before{background:#d9a013;}
 .seat-legend-chip.is-full::before{background:#c23b2c;}
-.seat-map--admin .seat-legend-chip.is-active::before{background:#3f7d33;}
-.seat-map--admin .seat-legend-chip.is-empty::before{background:#a99f8d;}
+.seat-map--admin .seat-legend-chip.is-empty::before{background:#8f867a;}
+.seat-map--guest .seat-legend-chip.is-empty::before{background:#2f7d33;}
+.seat-map--guest .seat-legend-chip.is-mine::before{background:#8a4be0;}
+.seat-legend-chip.is-filled::before{background:#2f7d33;}
+.seat-legend-chip.is-reserved::before{background:#d9a013;}
+.seat-legend-chip.is-available::before{background:#cfc4b0;box-shadow:inset 0 0 0 1px #a99f8d;}
 .seat-map-empty{margin:6px 0;color:#806b4d;font:12px/1.6 system-ui,sans-serif;}
 /* Admin dashboard surroundings */
 .seat-map-admin{min-width:0;overflow-wrap:anywhere;margin:16px 0;}
 .seat-map-admin h3{margin:14px 0 4px;}
 .seat-map-admin p{line-height:1.6;}
+.seat-map-tabs{display:flex;gap:8px;margin:10px 0 2px;}
+.seat-map-tabs button{flex:1;min-height:40px;border:1px solid #d6b477;border-radius:999px;background:#fff6e4;color:#6d4a17;font:600 12px/1.3 system-ui,sans-serif;padding:6px 8px;cursor:pointer;min-width:0;}
+.seat-map-tabs button[aria-pressed="true"]{background:linear-gradient(180deg,#e8b84b,#c58f1d);color:#3d2a04;border-color:#a97f22;}
 .seat-map-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0;}
-.seat-map-stats>div{display:flex;flex-direction:column;padding:10px 8px;border:1px solid #e2cba4;border-radius:12px;background:#fff9ed;min-width:0;}
-.seat-map-stats strong{font:24px Georgia,serif;color:#604623;}
-.seat-map-stats span{font-size:10px;color:#806b4d;overflow-wrap:anywhere;}
+.seat-map-stats>div{display:flex;align-items:center;gap:8px;padding:9px 8px;border:1px solid #e2cba4;border-radius:14px;background:#fff9ed;min-width:0;}
+.seat-stat-icon{flex:0 0 auto;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(180deg,#e8b84b,#c58f1d);color:#fff;box-shadow:inset 0 0 0 2px rgba(255,250,235,.45);}
+.seat-stat-icon svg{width:19px;height:19px;}
+.seat-stat-icon svg path{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.seat-map-stats .seat-stat-copy{display:flex;flex-direction:column;min-width:0;}
+.seat-map-stats strong{font:22px Georgia,serif;color:#604623;line-height:1.1;}
+.seat-map-stats span{font-size:9px;color:#806b4d;overflow-wrap:anywhere;text-transform:uppercase;letter-spacing:.04em;}
 .seat-map-toolbar{display:flex;gap:6px;justify-content:flex-end;margin:0 0 8px;}
 .seat-map-toolbar button{min-width:44px;min-height:38px;border:1px solid #d6b477;border-radius:10px;background:#fff9ed;color:#79511d;font-size:16px;cursor:pointer;}
 .seat-donut-svg{width:130px;height:130px;max-width:100%;}
 .seat-donut{fill:none;stroke-width:14;stroke-linecap:butt;}
-.seat-donut.is-filled{stroke:#3f7d33;}
+.seat-donut.is-filled{stroke:#2f7d33;}
 .seat-donut.is-reserved{stroke:#d9a013;}
 .seat-donut.is-available{stroke:#cfc4b0;}
-.seat-donut-total{font:11px system-ui,sans-serif;fill:#604623;}
-.seat-map-donut{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:12px 0;}
-.seat-map-donut .seat-map-legend{flex-direction:column;gap:4px;margin:0;}
-.seat-map-detail{border:1px solid #e8d7b9;border-radius:12px;background:#fffaf2;padding:12px;margin:10px 0;}
+.seat-donut-total{font:600 12px system-ui,sans-serif;fill:#604623;}
+.seat-map-donut{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin:12px 0;}
+.seat-map-donut .seat-map-legend{flex-direction:column;align-items:flex-start;gap:5px;margin:0;background:none;color:#5f4a26;padding:0;}
+.seat-map-donut .seat-legend-chip{width:100%;justify-content:flex-start;}
+.seat-map-donut .seat-legend-value{margin-left:auto;font-weight:700;color:#604623;white-space:nowrap;}
+.seat-detail-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;}
+.seat-detail-photo{flex:0 0 auto;width:58px;height:58px;border-radius:14px;border:2px solid #d8b656;background:
+  linear-gradient(180deg,rgba(46,30,8,.15),rgba(46,30,8,.35)),
+  url('assets/hall-backdrop.jpg') center/cover no-repeat,
+  radial-gradient(120% 100% at 50% 0%,#fdf3dc,#d9b06a 70%,#8a5f24);}
+.seat-detail-badge{display:inline-block;font:700 10px/1.4 system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:3px 9px;vertical-align:middle;margin-left:6px;}
+.seat-detail-badge.is-full{background:#c23b2c;color:#fff;}
+.seat-detail-badge.is-active{background:#2f7d33;color:#fff;}
+.seat-detail-badge.is-partial{background:#d9a013;color:#3c2c02;}
+.seat-detail-badge.is-empty{background:#8f867a;color:#fdf8ec;}
+.seat-map-detail{border:1px solid #e8d7b9;border-radius:14px;background:#fffaf2;padding:12px;margin:10px 0;}
 .seat-map-detail h4{margin:0 0 6px;}
 .seat-map-detail p{margin:4px 0;line-height:1.55;}
 .seat-map-detail small{display:block;margin:3px 0;color:#806b4d;}
 /* Guest pass integration */
-.guest-seat-map{margin:14px 0 4px;border:1px solid #e3d2ae;border-radius:14px;background:#fffaf0;padding:12px;min-width:0;overflow-wrap:anywhere;}
+.guest-seat-map{margin:14px 0 4px;border:1px solid #e3d2ae;border-radius:16px;background:#fffaf0;padding:12px;min-width:0;overflow-wrap:anywhere;}
 .guest-seat-chips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:8px 0 10px;}
 .guest-seat-chips span{display:flex;flex-direction:column;gap:2px;border:1px solid #ecd9b3;border-radius:10px;background:#fff6e6;padding:8px 6px;min-width:0;}
 .guest-seat-chips strong{font:15px Georgia,serif;color:#604623;overflow-wrap:anywhere;}
 .guest-seat-chips small{font-size:10px;color:#806b4d;}
 #guestSeatMapNote{font-size:11px;color:#806b4d;margin:10px 0 0;line-height:1.6;}
-@media(max-width:350px){.seat-map-stats{grid-template-columns:repeat(2,minmax(0,1fr));}.guest-seat-chips strong{font-size:13px;}}
+@media(max-width:350px){.seat-map-stats{grid-template-columns:repeat(2,minmax(0,1fr));}.guest-seat-chips strong{font-size:13px;}.seat-tile-name{font-size:10px;}}

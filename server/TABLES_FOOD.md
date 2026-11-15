@@ -1,5 +1,20 @@
 # Tables & Food (v250)
 
+## Seating & Table Map (v264 visual upgrade)
+
+The map now matches the reference design's look while staying honest to real
+data. The stage is a photo backdrop (`assets/hall-backdrop.jpg` — drop the real
+venue photo in and it appears with no code change; until then a rich gold
+gradient is the fallback). Tables are gold-rimmed status circles with the real
+table name and a live `reserved/capacity` count, plus the My Table pin on the
+guest pass. The admin section gains mockup-style view pills (Seating Map /
+Table List / Assign Guests — scroll jumps to the existing sections), icon stat
+cards, a "Seating Overview" donut with counts and percentages, and a detail
+card with photo thumb, status badge and seats-left line. The dark legend pill
+matches the reference. No sample tables, fake capacity numbers or table-type
+fields were added; every number on the map is computed from saved tables,
+reservations and confirmed check-ins. Still frontend-only: v264 changes no API.
+
 ## Seating & Table Map (v263)
 
 A live visual map now heads the admin Tables & Food panel, built by one shared

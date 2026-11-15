@@ -1,5 +1,19 @@
 # snybena.com live audit — 11 October 2026
 
+## v264 — Seating & Table Map visual upgrade (candidate)
+
+Frontend-only visual pass that brings the live map to the reference design's
+look with real data only: photo-ready banquet-hall stage (`assets/hall-
+backdrop.jpg` as a no-code drop-in; rich gold gradient fallback until the real
+venue photo arrives), gold-rimmed status circles with table names and live
+`reserved/capacity` counts, My Table purple pin on the guest pass, mockup-style
+Seating Map / Table List / Assign Guests view pills (scroll jumps), icon stat
+cards, donut with counts + percentages, dark legend pill, and a photo detail
+card with status badge and seats left. No sample tables or invented capacity
+numbers; "Edit Layout" and "Reports & Export" stay out (auto-grid was the
+confirmed decision, export may come later). No API or DB change; the three
+flat modules are byte-identical to live v263.
+
 ## v263 — Seating & Table Map for admin and guests (live, 15 November 2026)
 
 One shared renderer (`seating-map.js`) now draws the same auto-generated table
